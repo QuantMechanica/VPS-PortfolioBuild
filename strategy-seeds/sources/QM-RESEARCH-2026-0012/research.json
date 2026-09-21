@@ -1,21 +1,28 @@
 {
   "author": "Claude",
-  "candidate_edge": "H-V4: NY pre-open session-range breakout on USDJPY (primary) and EURUSD (secondary). Frozen 13213 mechanics on a 60-minute bar grid aligned to :30 server time: range = the N completed grid bars ending 15:30 server (= 08:30 America/New_York; N=2 -> arm C2 primary, N=3 -> arm C3 second frozen arm; EURUSD C3 only), buy stop at range high / sell stop at range low (OCO) at 15:30, SL = opposite edge (stop distance W), no TP, skip when W < 0.4 x ATR(14, same grid) or W > 2.5 x ATR, trail SL to the min/max of the last two completed grid bars once open profit >= 1.0 x initial risk, flat at 23:00 server (= 16:00 New York), framework Friday close 21:00 server and PRE30_POST30 high-impact news blackout unchanged. One position per symbol per day. Bounded integer/double inputs only; no ML.",
+  "candidate_edge": "H-V4 revision 2: NY pre-open session-range breakout on USDJPY (primary) and EURUSD (secondary). Frozen 13213 mechanics on a 60-minute bar grid aligned to :30 server time built from shift-1 pairs of completed M30 bars (chart/set timeframe M30, QM_IsNewBar(PERIOD_M30) gate; day rejected if any required half-bar is missing): range = the N completed grid bars ending 15:30 server (= 08:30 America/New_York; N=2 -> arm C2 primary, N=3 -> arm C3 second frozen arm; EURUSD C3 only), buy stop at range high / sell stop at range low (OCO, both send results retained, one-sided day = cancel and no trade) at the first eligible tick in [15:30, 16:30) server (framework PRE30_POST30 high-impact blackout; no placement at or after 16:30), SL = opposite edge (stop distance W), no TP, skip when W < 0.4 x ATR(14, same grid) or W > 2.5 x ATR, trail SL to the min/max of the last two completed grid bars once open profit >= 1.0 x the CURRENT stop distance (incumbent 13213 behaviour), flat at the first tick at or after 23:00 server (= 16:00 New York; also after a holiday gap), framework Friday close 21:00 server unchanged. One position per symbol per day. Server = America/New_York + 7 h is valid for the Darwinex clock only; an FTMO build derives both times via the governed QM_SessionClock helper. Bounded integer/double inputs only; no ML.",
   "computed_outputs": [
     {
       "claim_ref": "hv4_sweep_extract",
       "file": "sweep_extract.json",
       "sha256": "247c595106904451c162f5ed6296abe09790d46f01195d26e8b8bde7a1b6e6ea"
+    },
+    {
+      "claim_ref": "hv4_critique_extract",
+      "file": "critique_d7ed93cd_extract.json",
+      "sha256": "4f6a73a6ad3619d4ed8c729c9446ee206246de32ed079f06a8083262a543dd6b"
     }
   ],
-  "confidence": "Moderate. For USDJPY the claim rests on four legs: (1) the mechanism is already tester-qualified on the symbol (13213 through Q14), (2) the harness is calibrated against that tester result on the control cell (+1.8 % trades, +0.018R), (3) all nine USDJPY cells of the family are positive on the selection period and eight of nine survive the validation period, and (4) the C2/C3 cells have among the lowest chance-pass probabilities in the grid. The claim does NOT rest on a single p-value: cells of one symbol share days and ranges, the per-cell null is not a family-level test, and 314 cells were searched. Harness-to-tester optimism of ~+0.02R is expected, so the tester should print roughly +0.12R / PF ~1.25 for C2 if the harness is faithful; the pre-registered Q02 bar is +0.08R / PF 1.15. For EURUSD the evidence is thinner (single anchor, lower density 0.62/bd, SEL PF 1.18) and is treated as a secondary slot. Not modelled: real-tick intra-minute paths, spread and slippage (tester Model=4 handles both), the news blackout on exits/trailing.",
+  "confidence": "Moderate for the ABSOLUTE USDJPY edge, low-to-moderate for the replacement claim. Absolute: (1) the mechanism is tester-qualified on the symbol (13213 through Q14), (2) the harness is reconciled against that tester result on the control cell (+1.8 % trades, +0.018R; A3 only), (3) all nine USDJPY cells are positive on the selection period and eight of nine survive validation, (4) the unadjusted 20-bd block intervals for SEL R/bd exclude zero for C2 and C3. Replacement of the 13213 window: after the critic's paired, dependence-preserving comparison against A3 with a max-of-8 correction the uplift is NOT significant (C2-A3 SEL +0.066 R/bd, 95 % [-0.030, +0.160], p=0.164); it is carried as a pre-registered hypothesis with its own Q02 test (criterion 8). The +0.02R harness optimism is an A3-only planning heuristic; arm-specific tester gaps are established only by the Q02 canary. EURUSD C3 is a marginal secondary finding (intervals touch zero in both periods). Not modelled: real-tick intra-minute paths, spread and slippage (tester Model 4), the news blackout on exits/trailing; the harness deviates from the frozen contract on M30 completeness (5 days), news retry resolution and holiday-gap exit (one trade per arm) - none sign-flipping per the critic's sensitivities.",
   "confounders": [
-    "Multiplicity: 314 cells were evaluated; 27 SEL passes vs 17.4 expected and 13 survivors vs 5.5 expected by the per-cell null. The per-cell bootstrap ignores the dependence between cells of one symbol (neighbouring N, overlapping anchors) and is therefore not a family-level test; a symbol-label permutation test is the stronger statement and has not been run (stated gap).",
-    "Same-symbol overlap with the incumbent QM5_13213 (Tokyo window): the NY pre-open trade often follows a Tokyo-range trade on the same day; H-V4 is a candidate REPLACEMENT/upgrade of 13213's window rather than an additional independent sleeve unless the daily-P/L correlation with 13213 measures below 0.5 at Q08 (pre-registered tail test).",
-    "Harness optimism: zero-spread, zero-slippage fills at the level and 18 simulation-only days on the control cell put the harness ~+0.02R above the tester; the Q02 bar is set below the harness figure accordingly.",
-    "News blackout overlap: the 08:30 New York anchor coincides with the densest US high-impact release slot; the harness models PRE30_POST30 only at the placement tick (280 delayed / 91 blocked placement days over 2018-25 for USDJPY C2). The tester's full news handling may remove or shift more trades than modelled.",
+    "Multiplicity: 314 cells were evaluated; 27 SEL passes vs 17.4 expected and 13 survivors vs 5.5 expected by the per-cell null, which ignores dependence between cells of one symbol (8 of the 13 survivors are USDJPY). The critic's paired within-USDJPY test (5,000 circular 20-bd blocks, max-of-8) does not establish C2/C3 as a significant improvement over A3; the replacement claim is a hypothesis (criterion 8), the absolute edge is what the canary tests.",
+    "Same-symbol overlap with the incumbent QM5_13213 (Tokyo window): the NY pre-open trade often follows a Tokyo-range trade on the same day; H-V4 is a candidate REPLACEMENT/upgrade of the 13213 window rather than an additional independent sleeve unless the daily-P/L correlation with 13213 measures below 0.5 at Q08 (pre-registered tail test).",
+    "Harness optimism: zero-spread, zero-slippage fills at the level and 18 simulation-only days on the control cell put the harness ~+0.02R above the tester on A3; this is an A3-only heuristic, the arm-specific gap is unknown until Q02.",
+    "News blackout overlap: the 08:30 New York anchor coincides with the densest US high-impact release slot; the harness models PRE30_POST30 at placement with a one-hour minute-resolution retry (280 delayed / 91 blocked placement days over 2018-25 for USDJPY C2); the frozen EA contract retries on the M30 bar open within [15:30, 16:30). The critic's strict no-retry sensitivity still clears every bar.",
     "Regime: 2021-2022 (JPY depreciation, Fed hiking) contribute 90.6R of the 141.1R SEL net for USDJPY C2 (2018 +24.8, 2019 +12.0, 2020 +13.7, 2021 +51.8, 2022 +38.8), and 2024 contributes 59.2R of the 91.0R VAL net; every SEL and VAL year is nevertheless positive.",
-    "Friday close: 92 of the 998 SEL trades exit at the framework Friday close (21:00 server) before the 23:00 flat; a different Friday policy changes the numbers."
+    "Drawdown at the bar: the USDJPY C2 validation worst-year drawdown is exactly 25.04R against the 25R Q05 bar; C3 (22.20R) is the pre-registered fallback arm.",
+    "Friday close: 92 of the 998 SEL trades exit at the framework Friday close (21:00 server) before the 23:00 flat; a different Friday policy changes the numbers.",
+    "Universe: the registration miscounted the FX universe (33 claimed, 28 exist); the harness enumerated all 36 registered symbols that exist; research_trial_count = 314 is unchanged."
   ],
   "created_utc": "2026-09-21T08:56:21+00:00",
   "critic_receipt": "critic_receipt.json",
@@ -75,6 +82,31 @@
       "claim": "cost model",
       "computed_output_ref": "hv4_sweep_extract",
       "value": "commission = max(0.005 % of notional round trip, 5 USD per lot round trip) per framework/registry/live_commission.json forex class; RISK_FIXED 1000; .DWX spread 0 (stated, not assumed away)"
+    },
+    {
+      "claim": "critic paired within-USDJPY comparison vs A3 (dependence preserved, 5000 circular 20-bd blocks)",
+      "computed_output_ref": "hv4_critique_extract",
+      "value": "C2-A3 SEL +0.0660 R/bd, 95% [-0.0302, +0.1599], max-of-8 p=0.1644; VAL +0.0395 [-0.0953, +0.1817], p=0.5468; C3-A3 SEL +0.0429 [-0.0446, +0.1316], second-order p=0.2458; VAL +0.0304 [-0.0866, +0.1504], p=0.4702"
+    },
+    {
+      "claim": "critic unadjusted 20-bd block intervals for absolute R/bd",
+      "computed_output_ref": "hv4_critique_extract",
+      "value": "USDJPY C2 SEL 0.1201 [0.0487, 0.1911], VAL 0.1163 [-0.0006, 0.2468]; USDJPY C3 SEL 0.0970 [0.0363, 0.1570], VAL 0.1072 [0.0152, 0.2113]; EURUSD C3 SEL 0.0469 [-0.0077, 0.1015], VAL 0.0685 [-0.0118, 0.1589]"
+    },
+    {
+      "claim": "critic strict anchor-blackout sensitivity (no delayed placement)",
+      "computed_output_ref": "hv4_critique_extract",
+      "value": "USDJPY C2 SEL 865 / +0.1893 / 1.413 / 15.77R, VAL 577 / +0.1641 / 1.338 / 21.54R; C3 SEL 797 / +0.1721 / 1.416 / 20.17R, VAL 543 / +0.1479 / 1.334 / 21.83R; EURUSD C3 SEL 612 / +0.0948 / 1.229 / 16.79R, VAL 463 / +0.0977 / 1.207 / 15.72R"
+    },
+    {
+      "claim": "critic initial-risk trail-trigger sensitivity vs recorded current-SL basis",
+      "computed_output_ref": "hv4_critique_extract",
+      "value": "USDJPY C2 SEL 0.1414/1.302/20.83R -> 0.1416/1.300/20.99R, VAL 0.1441/1.295/25.04R -> 0.1442/1.294/24.38R; C3 SEL 0.1231/1.288/20.65R -> 0.1240/1.289/21.43R, VAL 0.1408/1.319/22.20R -> 0.1367/1.308/21.39R; EURUSD C3 SEL 0.0756/1.181/24.68R -> 0.0734/1.176/24.86R, VAL 0.1048/1.225/15.75R -> 0.1034/1.222/16.51R"
+    },
+    {
+      "claim": "M30-pair reconstruction and completeness deviation",
+      "computed_output_ref": "hv4_critique_extract",
+      "value": "48870/48870 USDJPY and 48846/48846 EURUSD shifted-grid bars reconstructed exactly from M30 pairs; 3 USDJPY and 2 EURUSD candidate days had a required range/ATR hour with an incomplete M30 pair (harness accepted, contract rejects)"
     }
   ],
   "related_strategies": [
@@ -89,7 +121,7 @@
   "research_id": "QM-RESEARCH-2026-0012",
   "research_question": "Does the QM5_13213 session-range breakout mechanism (OCO stop orders at the edges of a completed multi-hour range, stop = opposite edge, ATR(14) range filter 0.4-2.5x, two-bar trail after +1R, session-flat) carry materially more R per business day on USDJPY when the range is the 2-3 hours before the 08:30 America/New_York macro/pre-open anchor (15:30 server) instead of Balke's Tokyo 03:00-06:00 GMT+3 window, and does the same NY pre-open range carry expectancy on EURUSD? Answer (pre-registered family-F1 sweep, 0 factory hours): USDJPY C2 SEL E[R] +0.141 / PF 1.30 / +0.120 R per bd vs the incumbent A3 +0.070 / 1.17 / +0.054 in the same harness; VAL +0.144 / 1.30 / +0.116; EURUSD C3 +0.076 / 1.18 (SEL), +0.105 / 1.23 (VAL).",
   "research_trial_count": 314,
-  "revision_note": "Revision 1 (2026-09-21, Fable, claude-fable-5-1): authored from the family-F1 sweep result; awaiting cross-vendor critic (Codex). No card, build or factory row exists.",
+  "revision_note": "Revision 2 (2026-09-21, Fable, claude-fable-5-1): bounded source revision after cross-vendor critique d7ed93cd (Codex, commit 83a61cccb3) - frozen spec made single-valued (M30 runtime/new-bar contract and completeness rule, news retry window [15:30,16:30) server, incumbent current-SL trail basis, first-tick-after-flat gap exit, OCO fail-closed contract, DXZ-only clock with FTMO session-clock helper requirement), Q05 25R bar defined exactly with C2 at 25.04R and C3 as fallback, universe reconciled (28 FX exist, 33 was a miscount; 314 unchanged), 70 % rule relabelled build-regression bar, calibration wording A3-only, replacement claim downgraded to a pre-registered hypothesis with a paired Q02 test (criterion 8). No parameter change, no new sweep. Revision 1 (2026-09-21): authored from the family-F1 sweep result. No card, build or factory row exists; EA identity QM5_41485 reserved only.",
   "schema": "qm.internal-research-source/v1",
   "search_history_ref": "Not a Kimi OBSERVE/DISCOVER ledger product. The search is the pre-registered family-F1 sweep: registration docs/research/velocity/VELOCITY_FAMILY_F1_SESSION_RANGE_SWEEP_2026-09-21.md (commit 60de323f25, written before the run), results commit 270c9a4c98, full grid docs/ops/evidence/2026-09-20_velocity_book/velocity_family_f1_sweep_0921.json (sha256 c9ad5d139e8e77d514d9811806ee5178ef3f4704b5892bb89053d8956d82c6a5), harness tools/strategy_farm/session_tools/velocity_family_f1_sweep_0921.py over hcc_m1_reader_0921.py. research_trial_count = 314 = every cell evaluated in that sweep (the honest multiplicity denominator).",
   "source_datasets": [

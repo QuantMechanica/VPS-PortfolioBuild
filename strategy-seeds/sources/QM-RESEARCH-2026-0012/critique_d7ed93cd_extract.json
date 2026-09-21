@@ -1,0 +1,263 @@
+{
+  "absolute_R_bd_block_intervals": {
+    "description": "unadjusted 20-business-day circular block bootstrap intervals for absolute R/bd",
+    "rows": [
+      {
+        "SEL": {
+          "R_bd": 0.1201,
+          "ci95": [
+            0.0487,
+            0.1911
+          ]
+        },
+        "VAL": {
+          "R_bd": 0.1163,
+          "ci95": [
+            -0.0006,
+            0.2468
+          ]
+        },
+        "arm": "USDJPY C2"
+      },
+      {
+        "SEL": {
+          "R_bd": 0.097,
+          "ci95": [
+            0.0363,
+            0.157
+          ]
+        },
+        "VAL": {
+          "R_bd": 0.1072,
+          "ci95": [
+            0.0152,
+            0.2113
+          ]
+        },
+        "arm": "USDJPY C3"
+      },
+      {
+        "SEL": {
+          "R_bd": 0.0469,
+          "ci95": [
+            -0.0077,
+            0.1015
+          ]
+        },
+        "VAL": {
+          "R_bd": 0.0685,
+          "ci95": [
+            -0.0118,
+            0.1589
+          ]
+        },
+        "arm": "EURUSD C3"
+      }
+    ]
+  },
+  "control_cell_decomposition": {
+    "common_days": 886,
+    "mean_common_day_difference_R": 0.007,
+    "same_direction": 881,
+    "simulation_only_days": 18,
+    "simulation_only_days_R": 9.376
+  },
+  "grid_completeness": {
+    "EURUSD": 2,
+    "USDJPY": 3,
+    "description": "candidate days with at least one required range/ATR hour whose M30 pair was incomplete (harness accepted single-half buckets)",
+    "m30_pair_reconstruction_matches": {
+      "EURUSD": "48846/48846",
+      "USDJPY": "48870/48870"
+    }
+  },
+  "note": "Verbatim copy of the numeric sensitivity tables reported by the cross-vendor critic (Codex, router task d7ed93cd) in hv4_critique_d7ed93cd.md. Produced by the critic in memory from the sealed harness; copied here without change so revision 2 can cite them under the numeric-provenance contract. Not a Fable computation.",
+  "paired_vs_A3_within_USDJPY": {
+    "description": "paired daily-R differences of each USDJPY cell vs A3, cross-cell dependence preserved, 5000 circular blocks of 20 business days; max-of-8 = multiplicity over the eight alternatives to A3",
+    "rows": [
+      {
+        "candidate": "C2",
+        "ci95": [
+          -0.0302,
+          0.1599
+        ],
+        "delta_R_bd": 0.066,
+        "multiplicity": "max-of-8 p=0.1644",
+        "period": "SEL"
+      },
+      {
+        "candidate": "C2",
+        "ci95": [
+          -0.0953,
+          0.1817
+        ],
+        "delta_R_bd": 0.0395,
+        "multiplicity": "max-of-8 p=0.5468",
+        "period": "VAL"
+      },
+      {
+        "candidate": "C3",
+        "ci95": [
+          -0.0446,
+          0.1316
+        ],
+        "delta_R_bd": 0.0429,
+        "multiplicity": "second-order p=0.2458",
+        "period": "SEL"
+      },
+      {
+        "candidate": "C3",
+        "ci95": [
+          -0.0866,
+          0.1504
+        ],
+        "delta_R_bd": 0.0304,
+        "multiplicity": "second-order p=0.4702",
+        "period": "VAL"
+      }
+    ]
+  },
+  "schema": "qm.hv4-critique-extract/v1",
+  "source_commit": "83a61cccb3",
+  "source_file": "docs/ops/evidence/2026-09-20_velocity_book/hv4_critique_d7ed93cd.md",
+  "source_sha256": "edc70b32b13cdf47b49c89e073e7a046a56720d5a12ef5cbd8b41419fe6e94d1",
+  "strict_anchor_blackout_sensitivity": {
+    "description": "every day whose anchor is inside a high-impact blackout is blocked (no delayed placement)",
+    "rows": [
+      {
+        "SEL": {
+          "DD_R": 15.77,
+          "E_R": 0.1893,
+          "PF": 1.413,
+          "n": 865
+        },
+        "VAL": {
+          "DD_R": 21.54,
+          "E_R": 0.1641,
+          "PF": 1.338,
+          "n": 577
+        },
+        "arm": "USDJPY C2"
+      },
+      {
+        "SEL": {
+          "DD_R": 20.17,
+          "E_R": 0.1721,
+          "PF": 1.416,
+          "n": 797
+        },
+        "VAL": {
+          "DD_R": 21.83,
+          "E_R": 0.1479,
+          "PF": 1.334,
+          "n": 543
+        },
+        "arm": "USDJPY C3"
+      },
+      {
+        "SEL": {
+          "DD_R": 16.79,
+          "E_R": 0.0948,
+          "PF": 1.229,
+          "n": 612
+        },
+        "VAL": {
+          "DD_R": 15.72,
+          "E_R": 0.0977,
+          "PF": 1.207,
+          "n": 463
+        },
+        "arm": "EURUSD C3"
+      }
+    ]
+  },
+  "trail_initial_risk_sensitivity": {
+    "description": "harness line 367 replaced by the initial width W as trail trigger basis; recorded = incumbent current-SL basis",
+    "rows": [
+      {
+        "arm": "USDJPY C2",
+        "initial_risk": {
+          "DD_R": 20.99,
+          "E_R": 0.1416,
+          "PF": 1.3
+        },
+        "period": "SEL",
+        "recorded": {
+          "DD_R": 20.83,
+          "E_R": 0.1414,
+          "PF": 1.302
+        }
+      },
+      {
+        "arm": "USDJPY C2",
+        "initial_risk": {
+          "DD_R": 24.38,
+          "E_R": 0.1442,
+          "PF": 1.294
+        },
+        "period": "VAL",
+        "recorded": {
+          "DD_R": 25.04,
+          "E_R": 0.1441,
+          "PF": 1.295
+        }
+      },
+      {
+        "arm": "USDJPY C3",
+        "initial_risk": {
+          "DD_R": 21.43,
+          "E_R": 0.124,
+          "PF": 1.289
+        },
+        "period": "SEL",
+        "recorded": {
+          "DD_R": 20.65,
+          "E_R": 0.1231,
+          "PF": 1.288
+        }
+      },
+      {
+        "arm": "USDJPY C3",
+        "initial_risk": {
+          "DD_R": 21.39,
+          "E_R": 0.1367,
+          "PF": 1.308
+        },
+        "period": "VAL",
+        "recorded": {
+          "DD_R": 22.2,
+          "E_R": 0.1408,
+          "PF": 1.319
+        }
+      },
+      {
+        "arm": "EURUSD C3",
+        "initial_risk": {
+          "DD_R": 24.86,
+          "E_R": 0.0734,
+          "PF": 1.176
+        },
+        "period": "SEL",
+        "recorded": {
+          "DD_R": 24.68,
+          "E_R": 0.0756,
+          "PF": 1.181
+        }
+      },
+      {
+        "arm": "EURUSD C3",
+        "initial_risk": {
+          "DD_R": 16.51,
+          "E_R": 0.1034,
+          "PF": 1.222
+        },
+        "period": "VAL",
+        "recorded": {
+          "DD_R": 15.75,
+          "E_R": 0.1048,
+          "PF": 1.225
+        }
+      }
+    ]
+  }
+}

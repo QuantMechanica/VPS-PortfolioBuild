@@ -110,3 +110,5 @@ bd / E[R] +0.141 / PF 1.30 / +0.120 R per bd, VAL +0.144 / 1.30 / +0.116 — abo
 window (A3 +0.070 / +0.054 R per bd in the same harness); EURUSD C3 +0.076 / +0.105. 9/9 USDJPY cells positive
 on SEL, 8/9 survive VAL; 314 cells searched (27 SEL passes vs 17.4 null, 13 survivors vs 5.5). Sealed `draft`,
 `verify` clean except ledger status; cross-vendor critic (Codex) routed. No card, build or factory row.
+
+**Revision 2 (2026-09-21, Fable):** after critique `d7ed93cd` (Codex: REVISE on all three arms, no sign-flipping defect) the frozen spec was made single-valued (M30 runtime/new-bar contract + completeness rule, news retry [15:30, 16:30) server, incumbent current-SL trail basis, first-tick-after-flat gap exit, OCO fail-closed, DXZ-only clock / FTMO session-clock helper), the Q05 25R bar defined exactly (C2 VAL 25.04R at the bar, C3 fallback), the universe reconciled (28 FX exist; 314 unchanged) and the “2× incumbent” claim downgraded to a pre-registered replacement hypothesis with a paired Q02 test; critic sensitivities sealed as `critique_d7ed93cd_extract.json`. Resealed `draft`, verify clean except ledger status; critique round 2 routed.
