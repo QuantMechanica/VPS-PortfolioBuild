@@ -12,12 +12,12 @@ executable package, the genesis manifest and the preflight report are produced b
 | # | Input | Source | Status 2026-09-21 |
 |---|---|---|---|
 | I1 | Kill-switch governed initializer (Prague day-key helper, named anchor mode, book tag, `KS_DAY_ROLLOVER`, pulse state check), build_check PASS for the six sleeves | Codex `d6189118` → Fable cross-vendor review | IN_PROGRESS |
-| I2 | Demo-day retro audit of 2026-09-18..26 (`BEHAVIOR_IDENTICAL / POTENTIALLY_DIFFERENT / MATERIALLY_INVALID`) | Codex `4505b206` | TODO |
-| I3 | `genesis_manifest.py build/verify` + `sunday_preflight.py` | Codex `94a15624` | TODO |
-| I4 | Sleeve-level P&L attribution tool + sidecar | Codex `74c41987` | TODO |
+| I2 | Demo-day retro audit of 2026-09-18..26 (`BEHAVIOR_IDENTICAL / POTENTIALLY_DIFFERENT / MATERIALLY_INVALID`) | Codex `4505b206` | APPROVED for 09-18..21 (2 valid days); re-run for 09-22..26 with rule v2 before launch |
+| I3 | `genesis_manifest.py build/verify` + `sunday_preflight.py` | Codex `94a15624` | IN_PROGRESS |
+| I4 | Sleeve-level P&L attribution tool + sidecar | Codex `74c41987` | IN_PROGRESS |
 | I5 | News/time archive audit bound (live builds never read the archive; confirms the live news filter path is unaffected) | Codex `a36a5983` | IN_PROGRESS |
-| I6 | Antigravity FTMO-compliance / failure-mode critique of this runbook's checklist and the KS spec | agy `cb0eb674` | IN_PROGRESS |
-| I7 | **Demo account identity for the new generation** — see §1 | OWNER / Fable | OPEN (decision needed by Friday) |
+| I6 | Antigravity FTMO-compliance / failure-mode critique of this runbook's checklist and the KS spec | agy `cb0eb674` | APPROVED (4 uncovered failure modes folded into d6189118 / 94a15624 and the status checklist) |
+| I7 | **Demo account identity for the new generation** — see §1 | OWNER / Fable | DECIDED A 2026-09-21; credentials pending in `.private/secrets/ftmo_demo_gen2_20260927.md` |
 | I8 | FTMO rules snapshot re-verified ≤ 7 days before launch (`docs/ftmo/FTMO_RULES_SNAPSHOT_<date>.md`, official sources, timestamps) | Fable (agy critique cross-checks) | 2026-09-18 snapshot; refresh Friday |
 
 ## 1. Account decision (the one human-interface item)
