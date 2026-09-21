@@ -2,7 +2,7 @@
 
 Authority: OWNER-DEC-FTMO-FINAL-MEGA-20260921 (`decisions/2026-09-21_owner_ftmo_final_mega_prompt_sunday_demo.md`). Fable launches
 autonomously when the critical preflight checks are green; the sole mandatory OWNER approval remains the paid FTMO Challenge purchase.
-Updated by Fable at every material change; last update **2026-09-21 19:5xZ** (cost-sensitivity finding, 11708 decision).
+Updated by Fable at every material change; last update **2026-09-21 20:0xZ** (account decision A recorded).
 
 ## §Y fields
 
@@ -26,7 +26,7 @@ Updated by Fable at every material change; last update **2026-09-21 19:5xZ** (co
 | HARNESS_V2 | **IN_PROGRESS** — Codex `7088da77` (prio 84, exempt) incl. §L golden test vs MT5 Every Real Tick | |
 | NEWS_TIME_ARCHIVE | **IN_PROGRESS** — Codex `a36a5983` (prio 82, exempt); impact bound pending | |
 | GENESIS_MANIFEST | **BLOCKED** — tooling ticket `94a15624` TODO (prio 72, exempt); procedure fixed in `docs/ftmo/genesis/SUNDAY_LAUNCH_RUNBOOK_2026-09-27.md` v0 | |
-| DEMO_ACCOUNT_IDENTITY (runbook §1) | **OPEN — OWNER input by Friday 2026-09-25 12:00Z:** A = fresh FTMO Free-Trial account (client-area login = human MFA; hand Fable login + server, password via the secure channel) or B = same account 1514536732 as a new generation. Auffangregel default: B | runbook §1 |
+| DEMO_ACCOUNT_IDENTITY (runbook §1) | **DECIDED A** (OWNER 2026-09-21 ~19:55Z, receipt `46ea4491`, Claude execution task `90847e73`): fresh FTMO Free-Trial account. **Awaiting credentials:** OWNER creates the account and writes login/server/password into `.private/secrets/ftmo_demo_gen2_20260927.md` (git-ignored) | runbook §1 |
 | FTMO_BOOK_INCUMBENT | D2g6 = PRE_SUNDAY_LIVE_TRIAL since 2026-09-18 04:50Z (3.5 validation days, not representative, pulse WARN ks_day_anchor_missing 0/6) | `D:/QM/reports/state/ftmo_demo_cycle.json`, `ftmo_trial_pulse.json` |
 | FTMO_BOOK_SHADOW | = incumbent (no resolved addition); shadow candidate 11708 EURUSD D1 | `FTMO_BOOK_CURRENT.md` §2 |
 | SHADOW_BOOK_BEST_PENDING_SLEEVE | 11708 EURUSD D1 — SHADOW_BOOK: +0.0058 resolved at 5×40k paths (below the +0.01 bar), −0.0056 under +1 bps/+2 USD/lot cost stress | `2026-09-21_ftmo_book_sim_v2_financed/stress_11708/` |
@@ -47,7 +47,7 @@ Updated by Fable at every material change; last update **2026-09-21 19:5xZ** (co
 | OPERATIONS | terminal AutoTrading flag: TERMINAL_TRADE_ALLOWED == 1 and trading_allowed == true on all six charts after attach | RED (launch-day proof; critique #2) | 94a15624 → Fable |
 | ACCOUNT RISK | weekend non-tick rollover proof: KS_DAY_ROLLOVER after a no-tick boundary (TimeCurrent froze 09-18 23:54:59 → Sunday restarts restored stale anchors) | RED (d6189118 req 8; critique #3) | Codex d6189118 → Fable |
 | OPERATIONS | server-request anomaly thresholds: pulse WARN 200 / LIMIT 500 + 60-s burst alarm (> 25 requests) — FTMO's 2,000 is the termination line, not a monitor | RED (d6189118 req 9; critique #4) | Codex d6189118 |
-| ACCOUNT RISK | clean initial account before attach: balance == 100000.00, PositionsTotal() == 0, OrdersTotal() == 0 | RED (launch-day step; critique #5; depends on the account decision A/B) | Fable |
+| ACCOUNT RISK | clean initial account before attach: balance == 100000.00, PositionsTotal() == 0, OrdersTotal() == 0 | RED (launch-day step; critique #5; decision A = fresh account, credentials pending) | Fable (task 90847e73) |
 | CODE/ARTIFACT | sleeve attribution pre-launch dry-run: Sum(sleeve P&L) == account P&L to 0.00 | RED (74c41987; critique #6) | Codex 74c41987 → Fable |
 | PROOF CHAIN | KS launch proof chain (critique Q5): build_check receipt + installed .ex5 sha → KS_DAY_ANCHOR_SET / KS_BOOK_TAG_SET per magic → ks_state readback → KS_DAY_ROLLOVER at the first Prague midnight without ticks | RED (d6189118 req 10) | Codex → Fable |
 

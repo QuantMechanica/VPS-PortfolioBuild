@@ -33,7 +33,12 @@ OWNER §P says "the next FTMO Demo account starts on Sunday 2026-09-27". Two rea
   pre-Sunday days are cleanly separable; the generation identity then comes from the book tag + launch timestamp, and the account
   history before the timestamp is excluded from the representative evidence. Weaker; use only if A is not available by Saturday.
 
-Default if the OWNER does not answer by Friday 12:00Z (Auffangregel): **B**, recorded as such.
+**DECIDED 2026-09-21 ~19:55Z: A** (OWNER in chat; receipt `46ea4491` on card OWNER-DEC-FTMO-DEMO-ACCOUNT-GEN2-20260927, execution task
+`90847e73` on the Claude lane). Handover path: OWNER creates the Free Trial (100k, 2-Step, Standard, MT5) in the FTMO client area and
+writes login, server and password into `.private/secrets/ftmo_demo_gen2_20260927.md` (git-ignored, local only; the current demo's
+credentials live next to it in `ftmo_demo_20260906.md`) — or names login + server in chat and puts only the password there. Fable then
+retargets the terminal (`terminal64 /login /server /password` start parameters, AutoTrading off), verifies balance 100000.00 / no
+positions / no orders, and binds the identity into the genesis manifest. The Auffangregel B is void.
 
 ## 2. Saturday 2026-09-26 — freeze and package (terminal untouched)
 

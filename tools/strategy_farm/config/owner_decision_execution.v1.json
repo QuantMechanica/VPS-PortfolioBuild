@@ -1268,6 +1268,43 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-FTMO-DEMO-ACCOUNT-GEN2-20260927",
+      "todo_id": "QM-TODO-20260921-FTMO-DEMO-ACCOUNT-GEN2",
+      "priority": 88,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "A: the Sunday 2026-09-27 representative Demo generation runs on a fresh FTMO Free-Trial account (100k 2-Step Standard) created by OWNER; Fable binds the new account identity into the genesis manifest, retargets the FTMO demo terminal (or installs a second terminal instance) to the new login, verifies login/server/balance 100000.00 with zero positions and orders, and keeps the launch itself under the Sunday runbook (docs/ftmo/genesis/SUNDAY_LAUNCH_RUNBOOK_2026-09-27.md) with production discipline.",
+          "allowed_actions": [
+            "Receive login + server from OWNER and the password via the existing secure channel (never repo, never Vault, never chat transcript)",
+            "Retarget the FTMO demo terminal data dir or install a second FTMO terminal instance for the new login (terminal64 /login /server start parameters), AutoTrading off",
+            "Record the new identity (login masked to the last 3 digits, server, terminal id) in the genesis manifest and FTMO_SUNDAY_LAUNCH_STATUS.md",
+            "Verify balance == 100000.00, PositionsTotal() == 0, OrdersTotal() == 0 before any attach (runbook section 3)",
+            "Update OPEN_ITEMS, this execution record and the Vault"
+          ],
+          "acceptance": [
+            "New account login/server verified inside the terminal with no AutoTrading change",
+            "Genesis manifest carries the new identity; the old account 1514536732 stays PRE_SUNDAY_LIVE_TRIAL evidence only",
+            "No credential in git, Vault or reports",
+            "Launch not performed by this task (Sunday runbook step 3.6 remains a separate production action)"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "B: the Sunday generation continues on demo account 1514536732; generation identity = book tag + launch timestamp; history before the launch timestamp is excluded from the representative evidence.",
+          "allowed_actions": [
+            "Record generation identity rule in the genesis manifest and FTMO_SUNDAY_LAUNCH_STATUS.md",
+            "Mark all pre-launch days PRE_SUNDAY_LIVE_TRIAL in ftmo_demo_cycle.json",
+            "Update OPEN_ITEMS, this execution record and the Vault"
+          ],
+          "acceptance": [
+            "Genesis manifest states the same-account rule and the exclusion of pre-launch history",
+            "No terminal or account change"
+          ]
+        }
+      }
     }
   ]
 }
