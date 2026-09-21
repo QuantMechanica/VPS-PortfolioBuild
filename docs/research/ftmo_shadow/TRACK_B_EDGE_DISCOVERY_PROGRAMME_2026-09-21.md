@@ -223,3 +223,44 @@ first bar after the last closed bar the rule reads; D1 ATR = mean of the previou
 engine stop floor 5 × round-trip spread on top of each rule floor; H-CS02 breakeven trail not modelled. Cost priors: USDCAD 1.5 pip RT,
 XTIUSD/XAGUSD reference-only priors. 0 factory hours; discovery 2018-07..2022, validation 2023..2025.
 
+### B4 result (2026-09-21T21:01:39Z, `velocity_family_f6_cross_symbol_0921.json` sha256 `a8fe2f7bb0d03311f6018db5d2b87327904dc7e84b13bdd8b4f8bd5e57b06943`, tool `velocity_family_f6_cross_symbol_0921.py`)
+
+**0 of 14 cells pass the selection bar; 0 survivors** (expected false survivors 0.075). No reference condition earns its keep: the
+source's own falsification test (ref arm ≥ +0.10 R over its control) fails everywhere — H-CS09 +0.06 R (n=80, 0.07/bd), H-CS05 +0.02 R,
+H-CS02 ±0, and H-CS01 / H-CS10 / H-CS12 are *worse* with the reference than without. The mechanism is the B2 lesson in a new coat:
+a reference-symbol threshold acts as a starvation filter (ref arms 0.04-0.13 trades/bd vs 0.19-0.87 for the controls) and the days it
+keeps are not better days. The single dense signal in the family — H-CS09 USDJPY 09:45-10:00 bar continuation at 0.87/bd — is a
+cost sink (−0.06 R net, PF 0.85 on n=1024), and the WTI→USDCAD transmission is wrong-signed on this history (−0.11 R at 0.59/bd, worse
+than USDCAD self-momentum). H-CS07 loses in both directions (with −0.09, fade −0.03 R) — the London-drift package at the COMEX open is
+neither continuation nor reversal after costs. Small positive VAL cells (H-CS09 ref +0.16 R n=43, H-CS05 ref +0.08 R n=55, H-CS07 with
++0.06 R n=46) sit on negative SEL and low density — noise, not findings.
+
+Cost caveat (recorded, does not change the verdict): the engine charges the factory commission table (`live_commission.json`, Darwinex
+classes) — for index CFDs that is a flat per-lot round-trip that FTMO does not charge, and with a 1-USD point value and an 8-12 pt stop the
+lot count makes it 0.07-0.27 R per trade (SP500 0.27 R). Gross of that commission the index cells are still ≤ +0.04 R (column "gross"),
+so no index cell becomes a candidate under the FTMO fee model; venue-fidelity ticket 73434cab replaces the table.
+
+| Cell | State | SEL n | E[R] net | E[R] gross of commission | PF | trades/bd | median hold min | commission R | VAL n | E[R] | PF | chance |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| H-CS01|noref|SP500.DWX | CLEAR_REJECT | 585 | -0.3013 | -0.033 | 0.475 | 0.4979 | 305.0 | 0.2683 | 414 | -0.1987 | 0.633 | 0.02 |
+| H-CS01|ref|SP500.DWX | UNKNOWN | 47 | -0.4053 | -0.091 | 0.413 | 0.04 | 255.0 | 0.3143 | 37 | -0.4649 | 0.385 | None |
+| H-CS02|noref|NDX.DWX | CLEAR_REJECT | 285 | -0.0318 | 0.036 | 0.926 | 0.2426 | 225.0 | 0.0676 | 200 | -0.0135 | 0.97 | None |
+| H-CS02|ref|NDX.DWX | CLEAR_REJECT | 156 | -0.028 | 0.038 | 0.937 | 0.1328 | 225.0 | 0.0657 | 119 | -0.0542 | 0.887 | None |
+| H-CS05|noref|XAUUSD.DWX | CLEAR_REJECT | 226 | -0.1104 | -0.097 | 0.79 | 0.1923 | 100.0 | 0.0139 | 127 | 0.0314 | 1.058 | None |
+| H-CS05|ref|XAUUSD.DWX | CLEAR_REJECT | 102 | -0.0855 | -0.072 | 0.818 | 0.0868 | 126.0 | 0.0137 | 55 | 0.0805 | 1.158 | None |
+| H-CS07|fade|XAUUSD.DWX | CLEAR_REJECT | 75 | -0.0285 | -0.02 | 0.896 | 0.0638 | 195.0 | 0.0086 | 46 | -0.1507 | 0.614 | None |
+| H-CS07|with|XAUUSD.DWX | CLEAR_REJECT | 75 | -0.0929 | -0.084 | 0.715 | 0.0638 | 195.0 | 0.0086 | 46 | 0.0609 | 1.222 | None |
+| H-CS09|noref|USDJPY.DWX | CLEAR_REJECT | 1024 | -0.0558 | -0.032 | 0.854 | 0.8715 | 273.5 | 0.0241 | 678 | -0.0347 | 0.933 | 0.005 |
+| H-CS09|ref|USDJPY.DWX | CLEAR_REJECT | 80 | 0.0059 | 0.03 | 1.016 | 0.0681 | 263.0 | 0.0243 | 43 | 0.1567 | 1.343 | None |
+| H-CS10|noref|EURUSD.DWX | CLEAR_REJECT | 238 | -0.0772 | -0.05 | 0.857 | 0.2026 | 138.0 | 0.0273 | 153 | -0.0103 | 0.98 | None |
+| H-CS10|ref|EURUSD.DWX | CLEAR_REJECT | 98 | -0.0914 | -0.064 | 0.836 | 0.0834 | 130.0 | 0.0273 | 77 | -0.022 | 0.957 | None |
+| H-CS12|ref|USDCAD.DWX | CLEAR_REJECT | 695 | -0.1108 | -0.08 | 0.799 | 0.5915 | 95.0 | 0.031 | 461 | -0.122 | 0.757 | 0.01 |
+| H-CS12|self|USDCAD.DWX | CLEAR_REJECT | 611 | -0.0633 | -0.032 | 0.88 | 0.52 | 100.0 | 0.0309 | 438 | -0.1056 | 0.792 | 0.04 |
+
+Reading for the next round. Six hand-written families (H-V1..V4, B1, B2, B3, C1, B4: 103 cells, 31 hypotheses) have produced no survivor
+under the conservative fill model; hand-picked reference thresholds (B4) starve density exactly like hand-picked price-action qualifiers (B2).
+The remaining Track B capacity goes to the systematic scanners that measure conditional return distributions across the full symbol universe
+before any rule is written (Codex cross-symbol scanner 35bbe0bc, ML rule discovery 08d62fa7, Kimi wave 9d7458f8), and to the FTMO-fee cost
+model (73434cab) so that index-cash cells are judged at the venue's actual friction. Antigravity's next set (if commissioned) must start from a
+measured conditional-edge table, not from a mechanism narrative.
+
