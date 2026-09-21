@@ -1,78 +1,101 @@
-# FTMO_BOOK - current (v1, 2026-09-21)
+# FTMO_BOOK - current (v2, 2026-09-21 18:3xZ)
 
-**Authority:** OWNER-DEC-FTMO-BOOK-PORTFOLIO-20260921 (`decisions/2026-09-21_owner_ftmo_book_portfolio_not_hero_ea.md`).
-**Machine mirror:** `D:/QM/reports/state/ftmo_book_current.json` (schema `qm.ftmo-book-current/v1`).
-**Basis of this v1:** frozen 2026-09-18 evidence (first-passage run `ftmo_first_passage.json` 03:49Z, `docs/ftmo/FTMO_ALT_ROSTER_DEPLOYABLE2_2026-09-18.md`)
-plus a 0-factory-hour quicklook over the frozen W38 Q08 streams (`docs/ops/evidence/2026-09-21_ftmo_book_portfolio_directive/d2g6_book_stats_quicklook.json`).
-The authoritative account-level simulation (chronological trades, open P/L, costs, Daily/Max Loss, marginal deltas, dependence matrix) is
-commissioned as Codex ticket `e5c49db2`; the Mission Control panel as `1a5da47c`. Fields marked NOT_YET_MEASURABLE are exactly that.
+**Authority:** OWNER-DEC-FTMO-FINAL-MEGA-20260921 (`decisions/2026-09-21_owner_ftmo_final_mega_prompt_sunday_demo.md`, sections A-Z) on top of
+OWNER-DEC-FTMO-BOOK-PORTFOLIO-20260921. **Machine mirror:** `D:/QM/reports/state/ftmo_book_current.json` (schema `qm.ftmo-book-current/v1`,
+Codex writer e5c49db2 + Fable overlay fields `incumbent`, `shadow`, `delta_shadow_vs_incumbent`, `strongest_missing_book_behavior`, `financing`).
+**Basis of v2:** the account-level simulator (`tools/strategy_farm/ftmo/book_sim.py`, Codex e5c49db2, accepted 2026-09-21 13:3xZ) re-run by Fable on the
+**financed** 2026-09-18 Q08 streams (`docs/ops/evidence/2026-09-21_ftmo_book_sim_v1_financed/`, 5,000 paths, 1008-bd horizon, 20-day blocks, seed 20260921,
+window 2019-01-22..2025-11-21 = 1,784 bd). The Codex 2026-09-21 12:00Z base run was UNFINANCED (financing library absent, swap fallback 0) and is
+kept as evidence but no longer quoted as the book's headline (`2026-09-21_ftmo_11708_sign_change_reconciliation/README.md` §2.4).
+v1 (quicklook + 2026-09-18 first-passage) is preserved in git history (`dfc697a28a`).
 
-## 1. Current FTMO_BOOK = demo roster D2g6 (deployed 2026-09-18 04:50Z, book risk 1.71875 %)
+## 0. Book status at a glance (OWNER §Y fields, pre-Sunday)
 
-| Sleeve | Symbol / TF | Risk % | Role | Trades | /bd | E[R] | PF | R/bd @1 % | USD/bd @weight | med hold |
-|---|---|---|---|---|---|---|---|---|---|---|
-| QM5_10403 | XAUUSD D1 | 0.3125 | Gold trend (D1 turtle) | 207 | 0.101 | +0.065 | 1.288 | 0.0066 | 2.07 | 75.7 h |
-| QM5_10700 | XAUUSD H1 | 0.3125 | Gold alpha (H1 swing) | 373 | 0.175 | +0.165 | 1.319 | 0.0289 | 9.04 | 19.7 h |
-| QM5_10706 | GBPUSD H1 | 0.3125 | GBP swing alpha (H1, 46 % overnight) | 360 | 0.168 | +0.192 | 1.331 | 0.0322 | 10.06 | 7.7 h |
-| QM5_11422 | USDCAD D1 | 0.3125 | stabilizer (USDCAD D1 trend, low density) | 195 | 0.095 | +0.094 | 1.246 | 0.0090 | 2.80 | 41.0 h |
-| QM5_13213 | USDJPY H1 | 0.15625 | VELOCITY_SLEEVE (session-flat USDJPY, 0 % overnight) | 1596 | 0.743 | +0.064 | 1.149 | 0.0479 | 7.48 | 7.2 h |
-| QM5_41219 | XAUUSD D1 | 0.3125 | Gold mean-reversion (D1, very low density) | 72 | 0.040 | +0.071 | 1.716 | 0.0029 | 0.90 | 48.0 h |
-
-Validated = all six passed the FTMO admission gate (binary identity, no `.DWX` literal, sealed setfile bytes, financed contribution positive)
-and are deployed on the FTMO demo (cycle day 3.251 of 14; NOT representative yet; open defect: kill-switch day anchor, diagnosis `4fd8222f`, fix `d6189118`).
-Near-validated = none beyond the candidates in section 4.
-
-## 2. Book-level economics (closed-P/L quicklook, window 2017-10-09..2025-12-30, 2147 bd)
-
-| Metric | Value |
+| Field | Value |
 |---|---|
-| BOOK_TRADES_PER_DAY | 1.306 |
-| BOOK_ACTIVE_DAYS (share of bd with a closed trade) | 0.85 |
-| BOOK_R_PER_DAY (sum at 1 % risk) | 0.126 R/bd |
-| BOOK_USD_PER_DAY at roster weights | 31.9 USD/bd = 0.032 % of 100k per bd |
-| BOOK_MAX_DD (closed P/L, roster weights) | -5740 USD |
-| BOOK_DAILY_LOSS_BREACH_PROB / MAX_LOSS_BREACH_PROB (phase 1) | 0.0 / 0.0152 |
-| BOOK_EXPECTED_TIME_TO_CHALLENGE_TARGET | median 286 bd (p10 125 / p90 621) |
-| End-to-end to first payout | median 487 bd |
-| P_CHALLENGE_PASS / P_FIRST_NET_FTMO_PAYOUT_LCB | 0.9634 / **0.8839** |
-| BOOK_CONCENTRATION | USD-ENB 4.11 of 6; XAUUSD x3; 13213 = 55 %% of financed drift |
-| BOOK_COST_DRAG | cost stress x1.5 + 2 USD/lot: E2E 0.9034 -> 0.8494; XAU spread/swap live UNMEASURED |
+| FTMO_BOOK_INCUMBENT | `FTMO_DEMO_BOOK_V3_D2G6_20260918` - six sleeves, 1.71875 % book risk, on the FTMO demo since 2026-09-18 04:50Z = **PRE_SUNDAY_LIVE_TRIAL** (OWNER §S) |
+| FTMO_BOOK_SHADOW | = incumbent + nothing resolved. Shadow candidates: 11708 EURUSD D1 (`SHADOW_BOOK`, neutral LCB, +6 % density), no `ADD_NOW` / `QUEUE_FOR_NEXT_DEMO` |
+| SUNDAY_FTMO_BOOK (2026-09-27 generation, planned) | the six D2g6 sleeves with the kill-switch governed initializer (d6189118) applied; roster changes only on resolved evidence |
+| P_FIRST_NET_FTMO_PAYOUT_LCB (financed) | **0.8668** (P 0.8854; unfinanced would read 0.9194) |
+| P_CHALLENGE_PASS / P_VERIFICATION_PASS given challenge | 0.9516 / 0.9775 |
+| MEDIAN_CHALLENGE_DAYS / MEDIAN_FIRST_PAYOUT_DAYS | 289 bd phase 1 (p10 121 / p90 647); end-to-end 489 bd (p10 254 / p90 909); first reward 15 bd after funding |
+| DAILY_LOSS_BREACH_PROB / MAX_LOSS_BREACH_PROB (phase 1) | 0.0 / 0.0202 |
+| DEPENDENCE_HIGHEST_CLUSTER | {10403, 10700, 41219} XAUUSD (position overlap 39 % of the smaller exposure for 10403/41219; loss-day overlap 2.4-2.8x independence; max daily |r| 0.09) |
+| STRONGEST_MISSING_BOOK_BEHAVIOR | session-flat, low-overlap, high-density NY / index cash-session sleeve (zero exposure today) - see section 5 |
+| 11708_SIGN_FLIP | EXPLAINED / EXPECTED_MODEL_IMPROVEMENT; delta unresolved -> SHADOW_BOOK |
 
-## 3. Dependence summary (daily closed P/L, quicklook - full matrix = ticket e5c49db2)
+## 1. INCUMBENT = demo roster D2g6 (frozen 2026-09-18; book risk 1.71875 %)
 
-Max |r| = 0.099, max worst-20-day overlap = 2 days, max lower-decile co-exceedance = 1.92x independence.
-**Flag:** 10403/41219 XAU D1 trade-day overlap 3.9x independence, loss-day overlap 2.7x (same regime days), no tail co-exceedance. Verdict: the sleeves do not fail together; the book problem is speed, not dependence.
+| Sleeve | Symbol / TF | Risk % | Role | Trades (window) | /bd | E[R] | PF | med hold | Q08 stream sha (financed) |
+|---|---|---|---|---|---|---|---|---|---|
+| QM5_10403 | XAUUSD D1 | 0.3125 | Gold trend (D1 turtle) | 207 | 0.101 | +0.065 | 1.288 | 75.7 h | c225c4d1... |
+| QM5_10700 | XAUUSD H1 | 0.3125 | Gold alpha (H1 swing) | 373 | 0.175 | +0.165 | 1.319 | 19.7 h | 5127da4d... |
+| QM5_10706 | GBPUSD H1 | 0.3125 | GBP swing alpha (H1, 46 % overnight) | 360 | 0.168 | +0.192 | 1.331 | 7.7 h | 46e0768f... |
+| QM5_11422 | USDCAD D1 | 0.3125 | stabilizer (USDCAD D1 trend, low density) | 195 | 0.095 | +0.094 | 1.246 | 41.0 h | 2eddc16d... |
+| QM5_13213 | USDJPY H1 | 0.15625 | VELOCITY_SLEEVE (session-flat USDJPY, 0 % overnight) | 1596 | 0.743 | +0.064 | 1.149 | 7.2 h | d4e8d809... |
+| QM5_41219 | XAUUSD D1 | 0.3125 | Gold mean-reversion (D1, very low density) | 72 | 0.040 | +0.071 | 1.716 | 48.0 h | 4a748771... |
 
-| Pair | r | downside r | loss-day overlap x indep | trade-day overlap x indep | lower-decile co-exceed x indep | worst-20 overlap |
+**Account-level metrics (financed, chronological account path, Prague-midnight anchor, active-MAE open-risk envelope):**
+
+| Metric | Financed (headline) | Unfinanced (Codex 12:00Z run, for reference) |
+|---|---|---|
+| BOOK_TRADES_PER_DAY / BOOK_ACTIVE_DAYS | 1.336 / 0.868 | same |
+| BOOK_R_PER_DAY (sum at 1 %) | 0.108 | 0.131 |
+| BOOK_EXPECTED_PROGRESS_USD_PER_DAY | **27.50** | 34.69 |
+| BOOK_COST_DRAG_USD_PER_DAY (commission 9,671 + swap -12,822 USD over 1,784 bd) | **12.61** | 5.42 (commission only) |
+| BOOK_MAX_DD (historical, USD) | 6,262 | 5,787 |
+| P_DAILY_LOSS_BREACH / P_MAX_LOSS_BREACH (phase 1) | 0.0 / 0.0202 | 0.0 / 0.008 |
+| P_CHALLENGE_PASS / P_FIRST_NET_FTMO_PAYOUT / LCB | 0.9516 / 0.8854 / **0.8668** | 0.9852 / 0.945 / 0.9194 |
+| Time to phase-1 target (bd) p10 / p50 / p90 | 121 / 289 / 647 | 110 / 247 / 540 |
+| End-to-end to first payout (bd) p10 / p50 / p90 | 254 / 489 / 909 | - |
+| Demo state | RUNNING since 2026-09-18 04:50Z, 3.5 validation days, NOT representative, pulse WARN `ks_day_anchor_missing 0/6`, `ks_book_tag_missing 0/6` (diagnosis 4fd8222f, fix d6189118) | |
+
+Reading: the incumbent is a **slow but breach-safe** book - the failure mode is time (median 489 bd end-to-end), not survival. Financing costs it
+~0.05 of LCB and ~7 USD/bd; that is a real property of the XAU-heavy roster, not a modelling choice.
+
+## 2. SHADOW book and DELTA_SHADOW_VS_INCUMBENT
+
+No candidate has a **resolved** positive marginal contribution, so the shadow composition equals the incumbent. Candidate actions under OWNER §F:
+
+| Candidate | Book action | Marginal LCB (financed; resolution) | Δ trades/bd | Δ DD USD | Δ cost USD/bd | Why |
 |---|---|---|---|---|---|---|
-| 11422/10403 (USDCAD/XAUUSD) | 0.099 | -0.42 | 2.34 | 3.56 | 0.0 | 0 |
-| 10403/41219 (XAUUSD/XAUUSD) | -0.087 | -0.416 | 2.69 | 3.89 | 0.0 | 0 |
-| 13213/10706 (USDJPY/GBPUSD) | 0.058 | -0.3 | 1.02 | 1.0 | 1.45 | 0 |
-| 13213/10403 (USDJPY/XAUUSD) | -0.055 | -0.434 | 0.98 | 1.05 | 1.92 | 2 |
-| 10700/10403 (XAUUSD/XAUUSD) | 0.026 | -0.489 | 1.42 | 1.77 | 0.0 | 0 |
-| 13213/11422 (USDJPY/USDCAD) | 0.025 | -0.358 | 1.08 | 0.97 | 1.34 | 0 |
-| 10700/11422 (XAUUSD/USDCAD) | 0.025 | -0.573 | 1.64 | 1.72 | 0.0 | 0 |
-| 10706/10700 (GBPUSD/XAUUSD) | -0.019 | -0.512 | 1.26 | 1.12 | 0.0 | 0 |
+| 11708 EURUSD D1 (anon-market-squeeze) | **SHADOW_BOOK** | +0.002 (old params) / +0.012 (5k, 504 bd) / -0.015 (1k, 504 bd) / 5k replicates +0.013 +/- 0.010 -> **UNRESOLVED, ~0 to +0.01** (seed SD 0.007-0.020) | +0.084 | -42 | +0.10 | cheap, genuinely independent FX density; does not move survival or speed measurably; DEMO_RESET_COST irrelevant for Sunday (fresh generation) but no evidence to add |
+| 11421 EURUSD D1 | **HOLD** | -0.002 / -0.012 / 0.000 -> UNRESOLVED, ~0 | +0.045 | +580 | +0.30 | more drawdown and cost for no measurable LCB |
+| 11910 NZDUSD D1 | **REJECT** (FTMO book) | -0.068 (old params) / -0.076 (5k) -> RESOLVED negative | +0.029 | +664 | +0.13 | raises max-loss breach 0.019 -> 0.032 |
+| 10513 XAUUSD D1 | HOLD | -0.029 (Codex, unfinanced 1k) ; no financed stream on disk | +0.035 | +87 | +0.04 | third XAU D1 clone risk (cluster) |
+| H-V4 / QM5_41485 | RETIRED, negative lineage `PRESCREEN_EXECUTION_MODEL_FALSE_POSITIVE` | NOT_MEASURABLE | - | - | - | OWNER §J |
+| H-CW 41475 / H-MR 41476 / H-FXMR 41477 | HOLD until harness v2 (7088da77) prescreens the NY/index cash-session family | - | - | - | - | the missing behaviour, but the v1 harness is not trusted on NY-anchored cells |
 
-## 4. Candidate table (living)
+**DELTA_SHADOW_VS_INCUMBENT = 0** on every §C metric (shadow == incumbent). The leave-one-out runs (unfinanced, Codex) keep every incumbent
+sleeve: removing 10700 would cost 0.24 LCB, 10403 0.03, 41219 0.005.
 
-| Candidate | Standalone edge | Density | Tail | Dependence | Marginal payout probability | Book action |
-|---|---|---|---|---|---|---|
-| H-V4 / QM5_41485 | harness SEL +0.141R / PF 1.30 / 0.85 per bd (not tester-measured) | 0.85/bd | harness worst-year DD 20.8R SEL / 25.04R VAL | same symbol + same mechanism class as 13213 -> replacement candidate unless |r| < 0.5 at Q08 | NOT_YET_MEASURABLE | **RETIRED 2026-09-21 - tester Q02 2018-22 PASS (+0.151R, PF 1.31) but Q04 folds 2023/24/25 pf_net 1.00/0.72/0.92 FAIL; harness release-tick artefact (`qm5_41485_2024_reconciliation.md`)** |
-| 11708 EURUSD (anon-market-squeeze-d1) | +0.015R / PF 1.15 / 0.088 per bd | - | - | genuine diversification (ENB 4.11 -> 4.68 with 11910) | NEGATIVE at +0.3125 %: LCB 0.8839 -> 0.8556 (with 11910) | **HOLD (does not pay for its risk on the full sample)** |
-| 11910 NZDUSD (larry-williams-18ma-2outside-bars-d1) | +0.039R / PF 1.17 / 0.033 per bd | - | - | genuine diversification | NEGATIVE at +0.3125 % (with 11708) | **HOLD** |
-| H-CW 41475 / H-MR 41476 / H-FXMR 41477 | UNMEASURED (0 work items) | - | - | - | NOT_YET_MEASURABLE | **HOLD until prescreened by the M1 harness (0 factory hours) - index M1 history exists for NDX/SP500/GDAXI/UK100/WS30** |
-| 21505 XAGUSD / 13054 XTIUSD | - | - | - | - | - | **BLOCKED (.DWX symbol literal in the as-compiled source; sealed setfile drift)** |
+## 3. Dependence summary (FTMO_BOOK_DEPENDENCE_MATRIX, financed re-run `FTMO_BOOK_DEPENDENCE_MATRIX_financed.md`)
 
-## 5. Strongest failure mode and missing behaviour
+Fail-together cluster {10403, 10700, 41219} XAUUSD (rule: same-symbol position overlap >= 25 % of the smaller exposure, or loss+tail overlap
+>= 2x independence). Top pair 10403/41219: position overlap 39.5 % of the smaller exposure, loss-day overlap 2.37x independence, daily |r| 0.09,
+downside r -0.42, lower-tail co-exceedance 0 - **they trade the same days, they do not lose together**; the cluster is an activity cluster, not a
+tail cluster. Max daily |r| across the book 0.09. XAU carries 0.9375 % of the 1.71875 % (symbol HHI 0.37) - the known concentration, accepted
+because the three XAU sleeves are economically different engines (turtle trend / H1 liquidity break / D1 mean reversion) and the 10700 leave-one-out
+shows the book cannot spare it.
 
-- **Strongest failure mode:** SLOW: median 286 bd to the Challenge target (487 bd end-to-end) at 31.9 USD/bd; the book is not breach-prone (daily-loss breach 0.0, max-loss 0.0152).
-- **Strongest missing behaviour:** A session-flat, low-overlap, high-density sleeve that earns in the New-York / index cash session, where the current book has ZERO exposure (all sleeves except 13213 are overnight swing; 13213 is Tokyo/London USDJPY). Secondary: a second independent return engine on XAUUSD that is NOT a D1 trend/mean-reversion clone of 10403/41219 (activity clustering flag).
-- **Next candidate needed:** 1) H-V4 (USDJPY NY pre-open) as VELOCITY_SLEEVE - measure marginal book value vs replacing the 13213 window; 2) harness prescreen of the NY/index cash-session family on NDX/SP500/GDAXI (H-CW/H-MR mechanics) before any build; 3) account-level simulator (e5c49db2) to turn every candidate into a delta table.
+## 4. Strongest failure mode
 
-## 6. Loop state (CBE for FTMO)
+**SLOW.** Median 289 bd to +10 % (phase 1), 489 bd end-to-end to a first payout at 27.5 USD/bd financed progress. Survival is not the binding
+constraint (daily-loss breach 0.0, max-loss 0.020). Speed can only come from EDGE x DENSITY x DIVERSIFICATION (OWNER §D) - i.e. from a new,
+independent, dense sleeve - never from re-weighting the six upward (D2g6r at 2.34 % tripled the breach probability for a 30 % speed gain, 2026-09-18).
 
-1. Current book established (this file). 2. Failure mode measured: slow. 3. Missing behaviour named above. 4. Hypotheses: H-V4 (velocity, USDJPY)
-in critique round 2; NY/index-session family to be prescreened by the M1 harness. 5-7. Prescreen -> build survivors -> MT5. 8. Marginal contribution:
-simulator e5c49db2. 9-10. Add only if the book improves; conservative re-weighting. Roles per OWNER section 20: velocity / stabilizer / gold alpha /
-counter-regime - no sleeve has to win every role.
+## 5. STRONGEST_MISSING_BOOK_BEHAVIOR
+
+A session-flat, low-overlap, high-density sleeve that earns in the New-York / index cash session, where the current book has ZERO exposure (all
+sleeves except 13213 are overnight swing; 13213 is Tokyo/London USDJPY). Secondary: a second independent return engine on XAUUSD that is NOT a D1
+trend/mean-reversion clone of 10403/41219 (activity clustering flag). Research path (OWNER §H loop): harness v2 with the §L golden test first
+(7088da77), then the NY/index cash-session family (H-CW/H-MR mechanics on NDX/SP500/GDAXI) as pre-registered prescreen cells, build only
+WORTH_MT5_TEST survivors, MT5 Q02-Q04, then the financed account-level marginal before any roster decision.
+
+## 6. Loop state (CBE for FTMO) and Sunday plan
+
+1. Book established and financed (this file). 2. Failure mode: slow. 3. Missing behaviour: NY/index cash session. 4. Hypotheses: none open
+(H-V1..H-V4 falsified 2026-09-21; family-F1 anchors B/C withdrawn pending harness v2). 5. Prescreen: blocked on harness v2 + golden test.
+6-7. Build/MT5: none in flight. 8. Marginal contribution: simulator financed; resolution rule pending Codex 3fae43b2. 9-10. Add only on a resolved
+positive; conservative weights. **Sunday 2026-09-27:** genesis manifest + preflight (94a15624), kill-switch governed initializer (d6189118) deployed
+and proven, demo-day retro audit (4505b206), sleeve attribution (74c41987); roster = the six unless a resolved improvement appears.

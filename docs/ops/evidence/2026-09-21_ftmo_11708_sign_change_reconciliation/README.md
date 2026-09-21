@@ -93,3 +93,18 @@ DD +650 USD, breach probability ×1.7–2). 11421 is neutral on LCB and adds ~58
   table, (c) the fixed-window rule documented against the intersection rule, (d) the canonical state re-run on financed streams.
 - **Roster consequence for Sunday 2026-09-27:** none of 11708 / 11421 / 11910 / 10513 earns a place on the evidence; the
   Sunday incumbent stays the six D2g6 sleeves unless the kill-switch fix or the demo retro-audit changes a sleeve's standing.
+
+## 5. Addendum 18:3xZ — financed marginal replicates at 5,000 paths
+
+Three seeds (11, 12, 13) of the marginal engine on the financed streams, 5,000 marginal paths, 504-bd horizon, 20-day blocks
+(`docs/ops/evidence/2026-09-21_ftmo_book_sim_v1_financed/rep_seed*_marginal.json`):
+
+| Candidate | Δ LCB per seed | mean | SD |
+|---|---|---|---|
+| 11708 EURUSD D1 | +0.0240 / +0.0002 / +0.0154 | **+0.0132** | 0.0098 |
+| 11421 EURUSD D1 | +0.0076 / +0.0004 / +0.0026 | +0.0035 | 0.0030 |
+| 11910 NZDUSD D1 | −0.0198 / −0.0084 / −0.0158 | −0.0147 | 0.0047 |
+
+11708's financed marginal is small-positive on average (+0.013) but spans 0.000..0.024 across seeds — consistent with the §3
+conclusion (≈ 0 to +0.01, unresolved at this replication). `SHADOW_BOOK` stands; a resolved ≥ +0.01 would need ≥ 10 seeds at
+5,000 paths or a larger path count (ticket `3fae43b2`).

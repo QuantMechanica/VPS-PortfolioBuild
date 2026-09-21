@@ -225,3 +225,11 @@ COMPILE_OK rows → next tranche → status table).
   fills, release-day tagging) + sweep re-run -> Codex `7088da77`. Velocity book state after day 1 of the harness: three
   hypothesis families measured and honestly falsified in about one factory hour total; the harness is now calibrated on its
   own failure mode.
+- 18:3xZ (21.09.) - **OWNER FINAL FTMO MEGA prompt received and applied** (`decisions/2026-09-21_owner_ftmo_final_mega_prompt_sunday_demo.md`):
+  next Demo generation starts Sunday 2026-09-27; Codex plan verified `pro` with a fresh weekly window (0 %, reset 09-28 17:57Z) -> budget
+  line re-anchored, card-build fleet pacer disabled, KS fix / harness v2 (+ §L golden test) / news audit exempt and first in the Codex lane;
+  five new Codex tickets (simulator confidence 3fae43b2, demo-day retro audit 4505b206, sleeve P&L attribution 74c41987, genesis manifest +
+  preflight 94a15624, compile-fail taxonomy 4d655789). **Book finding (§V):** the 11708 marginal-LCB sign flip is EXPLAINED (joint add with
+  11910 + intersection window in the 09-18 method; unfinanced streams + 1k-path noise in the 09-21 run); the financed book headline is
+  **LCB 0.8668 / P_challenge 0.9516 / median 289 bd phase 1 / 489 bd end-to-end / max-loss 0.020 / 27.5 USD/bd** (`FTMO_BOOK_CURRENT.md` v2);
+  11708 -> SHADOW_BOOK, 11421 -> HOLD, 11910 -> REJECT. QM5_41485 tagged `PRESCREEN_EXECUTION_MODEL_FALSE_POSITIVE` (OWNER §J).
