@@ -1,0 +1,45 @@
+{
+  "discovery_sample": {
+    "dataset_ids": [
+      "dwx_custom_history_m1_36_symbols_2018-2025"
+    ],
+    "instruments": [
+      "USDJPY",
+      "EURUSD"
+    ],
+    "period": "2018-07-02..2022-12-30"
+  },
+  "mechanization": {
+    "build_delta": "60-minute grid aligned to :30 server (M30 pairs), minute-resolution anchor/flat inputs, range length N in bars; no other logic change",
+    "codex_implementable": true,
+    "parent_ea": "QM5_13213",
+    "spec_section": "source.md#mechanical-spec--frozen-buildable-from-this-section-alone"
+  },
+  "parent_version_id": null,
+  "preregistration": {
+    "document": "docs/research/velocity/VELOCITY_FAMILY_F1_SESSION_RANGE_SWEEP_2026-09-21.md",
+    "registration_commit": "60de323f25",
+    "results_commit": "270c9a4c98",
+    "selection_rule": "SEL n>=300, E[R]>=+0.05R, PF>=1.10, worst-year DD<=25R; VAL E[R]>0 and PF>=1.05; family consistency across N"
+  },
+  "research_id": "QM-RESEARCH-2026-0012",
+  "revision_history": [
+    {
+      "date": "2026-09-21",
+      "note": "Fable draft from the pre-registered family-F1 sweep; critic pending",
+      "version": 1
+    }
+  ],
+  "schema": "qm.research-lineage/v1",
+  "validation_sample": {
+    "dataset_ids": [
+      "dwx_custom_history_m1_36_symbols_2018-2025"
+    ],
+    "instruments": [
+      "USDJPY",
+      "EURUSD"
+    ],
+    "period": "2023-01-02..2025-12-31"
+  },
+  "version": 1
+}

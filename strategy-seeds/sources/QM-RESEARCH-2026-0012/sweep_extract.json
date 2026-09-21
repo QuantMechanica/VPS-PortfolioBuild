@@ -1,0 +1,1821 @@
+{
+ "anchors": {
+  "A": "06:00 GMT+3-equivalent (13213 window end), flat 18:00 GMT+3-equivalent",
+  "B": "08:00 Europe/London cash open, flat 16:00 London",
+  "C": "08:30 America/New_York, flat 16:00 New York (grid shifted 30 min)"
+ },
+ "cells": {
+  "EURUSD.DWX|A2": {
+   "anchor": "A",
+   "cell": "A2",
+   "chance_pass_prob_SEL": 0.03,
+   "chance_pass_prob_VAL": 0.28,
+   "chance_pass_prob_joint": 0.0084,
+   "day_states": {
+    "atr_filtered": 40,
+    "no_fill": 3,
+    "no_range": 33,
+    "one_side_only": 28,
+    "trade": 1883
+   },
+   "n_hours": 2,
+   "passes_SEL_rule": false,
+   "passes_VAL_confirmation": false,
+   "selection": {
+    "E_R": -0.0416,
+    "PF": 0.929,
+    "R_per_bd": -0.0405,
+    "business_days": 1175,
+    "cost_R_median": 0.0454,
+    "density_per_bd": 0.9728,
+    "exit_kinds": {
+     "flat": 105,
+     "stop": 575,
+     "trail_stop": 463
+    },
+    "gross_E_R": 0.0083,
+    "hold_min_median": 249.0,
+    "net_R": -47.582,
+    "net_R_per_year": {
+     "2018": 12.75,
+     "2019": -76.78,
+     "2020": 19.4,
+     "2021": 11.62,
+     "2022": -14.56
+    },
+    "trades": 1143,
+    "trades_per_year": {
+     "2018": 121,
+     "2019": 252,
+     "2020": 253,
+     "2021": 259,
+     "2022": 258
+    },
+    "wins": 415,
+    "worst_year_DD_R": 78.21
+   },
+   "symbol": "EURUSD.DWX",
+   "validation": {
+    "E_R": -0.0666,
+    "PF": 0.891,
+    "R_per_bd": -0.0629,
+    "business_days": 783,
+    "cost_R_median": 0.0439,
+    "density_per_bd": 0.9451,
+    "exit_kinds": {
+     "both_edges_same_bar": 1,
+     "flat": 77,
+     "stop": 393,
+     "trail_stop": 269
+    },
+    "gross_E_R": -0.0189,
+    "hold_min_median": 257.0,
+    "net_R": -49.256,
+    "net_R_per_year": {
+     "2023": -23.3,
+     "2024": -11.63,
+     "2025": -14.32
+    },
+    "trades": 740,
+    "trades_per_year": {
+     "2023": 253,
+     "2024": 252,
+     "2025": 235
+    },
+    "wins": 248,
+    "worst_year_DD_R": 39.75
+   }
+  },
+  "EURUSD.DWX|A3": {
+   "anchor": "A",
+   "cell": "A3",
+   "chance_pass_prob_SEL": 0.04,
+   "chance_pass_prob_VAL": 0.23,
+   "chance_pass_prob_joint": 0.0092,
+   "day_states": {
+    "atr_filtered": 89,
+    "no_fill": 4,
+    "no_range": 33,
+    "one_side_only": 19,
+    "trade": 1833
+   },
+   "n_hours": 3,
+   "passes_SEL_rule": false,
+   "passes_VAL_confirmation": false,
+   "selection": {
+    "E_R": -0.0728,
+    "PF": 0.872,
+    "R_per_bd": -0.0693,
+    "business_days": 1175,
+    "cost_R_median": 0.0365,
+    "density_per_bd": 0.9515,
+    "exit_kinds": {
+     "flat": 165,
+     "stop": 568,
+     "trail_stop": 385
+    },
+    "gross_E_R": -0.0328,
+    "hold_min_median": 290.5,
+    "net_R": -81.37,
+    "net_R_per_year": {
+     "2018": 6.0,
+     "2019": -66.5,
+     "2020": -3.61,
+     "2021": -0.69,
+     "2022": -16.56
+    },
+    "trades": 1118,
+    "trades_per_year": {
+     "2018": 124,
+     "2019": 250,
+     "2020": 244,
+     "2021": 250,
+     "2022": 250
+    },
+    "wins": 427,
+    "worst_year_DD_R": 68.3
+   },
+   "symbol": "EURUSD.DWX",
+   "validation": {
+    "E_R": -0.0379,
+    "PF": 0.934,
+    "R_per_bd": -0.0346,
+    "business_days": 783,
+    "cost_R_median": 0.0364,
+    "density_per_bd": 0.9132,
+    "exit_kinds": {
+     "both_edges_same_bar": 1,
+     "flat": 116,
+     "stop": 367,
+     "trail_stop": 231
+    },
+    "gross_E_R": 0.0015,
+    "hold_min_median": 297.0,
+    "net_R": -27.09,
+    "net_R_per_year": {
+     "2023": -15.26,
+     "2024": -11.1,
+     "2025": -0.73
+    },
+    "trades": 715,
+    "trades_per_year": {
+     "2023": 244,
+     "2024": 247,
+     "2025": 224
+    },
+    "wins": 267,
+    "worst_year_DD_R": 36.71
+   }
+  },
+  "EURUSD.DWX|A4": {
+   "anchor": "A",
+   "cell": "A4",
+   "chance_pass_prob_SEL": 0.055,
+   "chance_pass_prob_VAL": 0.275,
+   "chance_pass_prob_joint": 0.0151,
+   "day_states": {
+    "atr_filtered": 121,
+    "no_fill": 6,
+    "no_range": 33,
+    "one_side_only": 18,
+    "trade": 1799
+   },
+   "n_hours": 4,
+   "passes_SEL_rule": false,
+   "passes_VAL_confirmation": false,
+   "selection": {
+    "E_R": -0.0746,
+    "PF": 0.865,
+    "R_per_bd": -0.07,
+    "business_days": 1175,
+    "cost_R_median": 0.0344,
+    "density_per_bd": 0.9379,
+    "exit_kinds": {
+     "flat": 193,
+     "stop": 544,
+     "trail_stop": 365
+    },
+    "gross_E_R": -0.0371,
+    "hold_min_median": 300.5,
+    "net_R": -82.2,
+    "net_R_per_year": {
+     "2018": 2.14,
+     "2019": -63.59,
+     "2020": -5.02,
+     "2021": -2.65,
+     "2022": -13.08
+    },
+    "trades": 1102,
+    "trades_per_year": {
+     "2018": 121,
+     "2019": 249,
+     "2020": 242,
+     "2021": 247,
+     "2022": 243
+    },
+    "wins": 440,
+    "worst_year_DD_R": 65.31
+   },
+   "symbol": "EURUSD.DWX",
+   "validation": {
+    "E_R": -0.056,
+    "PF": 0.901,
+    "R_per_bd": -0.0499,
+    "business_days": 783,
+    "cost_R_median": 0.0344,
+    "density_per_bd": 0.8902,
+    "exit_kinds": {
+     "both_edges_same_bar": 1,
+     "flat": 126,
+     "stop": 353,
+     "trail_stop": 217
+    },
+    "gross_E_R": -0.0191,
+    "hold_min_median": 314.0,
+    "net_R": -39.036,
+    "net_R_per_year": {
+     "2023": -6.53,
+     "2024": -23.77,
+     "2025": -8.74
+    },
+    "trades": 697,
+    "trades_per_year": {
+     "2023": 244,
+     "2024": 243,
+     "2025": 210
+    },
+    "wins": 260,
+    "worst_year_DD_R": 35.21
+   }
+  },
+  "EURUSD.DWX|B2": {
+   "anchor": "B",
+   "cell": "B2",
+   "chance_pass_prob_SEL": 0.07,
+   "chance_pass_prob_VAL": 0.29,
+   "chance_pass_prob_joint": 0.0203,
+   "day_states": {
+    "atr_filtered": 314,
+    "news_blocked": 59,
+    "news_delayed": 215,
+    "no_bars": 1,
+    "no_fill": 47,
+    "no_range": 34,
+    "one_side_only": 116,
+    "trade": 1504
+   },
+   "n_hours": 2,
+   "passes_SEL_rule": false,
+   "passes_VAL_confirmation": false,
+   "selection": {
+    "E_R": -0.0706,
+    "PF": 0.879,
+    "R_per_bd": -0.0545,
+    "business_days": 1175,
+    "cost_R_median": 0.0369,
+    "density_per_bd": 0.7719,
+    "exit_kinds": {
+     "flat": 173,
+     "stop": 478,
+     "trail_stop": 256
+    },
+    "gross_E_R": -0.0305,
+    "hold_min_median": 224.0,
+    "net_R": -64.002,
+    "net_R_per_year": {
+     "2018": -21.17,
+     "2019": -45.61,
+     "2020": 2.59,
+     "2021": -5.49,
+     "2022": 5.67
+    },
+    "trades": 907,
+    "trades_per_year": {
+     "2018": 88,
+     "2019": 214,
+     "2020": 208,
+     "2021": 192,
+     "2022": 205
+    },
+    "wins": 350,
+    "worst_year_DD_R": 52.64
+   },
+   "symbol": "EURUSD.DWX",
+   "validation": {
+    "E_R": 0.089,
+    "PF": 1.164,
+    "R_per_bd": 0.0678,
+    "business_days": 783,
+    "cost_R_median": 0.0367,
+    "density_per_bd": 0.7612,
+    "exit_kinds": {
+     "flat": 124,
+     "stop": 290,
+     "trail_stop": 182
+    },
+    "gross_E_R": 0.1277,
+    "hold_min_median": 261.5,
+    "net_R": 53.072,
+    "net_R_per_year": {
+     "2023": 34.07,
+     "2024": 1.18,
+     "2025": 17.83
+    },
+    "trades": 596,
+    "trades_per_year": {
+     "2023": 195,
+     "2024": 200,
+     "2025": 201
+    },
+    "wins": 246,
+    "worst_year_DD_R": 23.42
+   }
+  },
+  "EURUSD.DWX|B3": {
+   "anchor": "B",
+   "cell": "B3",
+   "chance_pass_prob_SEL": 0.08,
+   "chance_pass_prob_VAL": 0.315,
+   "chance_pass_prob_joint": 0.0252,
+   "day_states": {
+    "atr_filtered": 424,
+    "news_blocked": 56,
+    "news_delayed": 201,
+    "no_bars": 1,
+    "no_fill": 44,
+    "no_range": 34,
+    "one_side_only": 102,
+    "trade": 1400
+   },
+   "n_hours": 3,
+   "passes_SEL_rule": false,
+   "passes_VAL_confirmation": false,
+   "selection": {
+    "E_R": -0.0831,
+    "PF": 0.855,
+    "R_per_bd": -0.0598,
+    "business_days": 1175,
+    "cost_R_median": 0.0357,
+    "density_per_bd": 0.7191,
+    "exit_kinds": {
+     "flat": 174,
+     "stop": 436,
+     "trail_stop": 235
+    },
+    "gross_E_R": -0.045,
+    "hold_min_median": 231.0,
+    "net_R": -70.244,
+    "net_R_per_year": {
+     "2018": -12.86,
+     "2019": -48.69,
+     "2020": -2.66,
+     "2021": -6.23,
+     "2022": 0.19
+    },
+    "trades": 845,
+    "trades_per_year": {
+     "2018": 78,
+     "2019": 203,
+     "2020": 199,
+     "2021": 177,
+     "2022": 188
+    },
+    "wins": 332,
+    "worst_year_DD_R": 53.79
+   },
+   "symbol": "EURUSD.DWX",
+   "validation": {
+    "E_R": 0.051,
+    "PF": 1.093,
+    "R_per_bd": 0.0361,
+    "business_days": 783,
+    "cost_R_median": 0.0341,
+    "density_per_bd": 0.7075,
+    "exit_kinds": {
+     "flat": 125,
+     "stop": 272,
+     "trail_stop": 157
+    },
+    "gross_E_R": 0.0876,
+    "hold_min_median": 262.5,
+    "net_R": 28.251,
+    "net_R_per_year": {
+     "2023": 22.88,
+     "2024": -1.25,
+     "2025": 6.62
+    },
+    "trades": 554,
+    "trades_per_year": {
+     "2023": 186,
+     "2024": 183,
+     "2025": 185
+    },
+    "wins": 227,
+    "worst_year_DD_R": 22.25
+   }
+  },
+  "EURUSD.DWX|B4": {
+   "anchor": "B",
+   "cell": "B4",
+   "chance_pass_prob_SEL": 0.095,
+   "chance_pass_prob_VAL": 0.36,
+   "chance_pass_prob_joint": 0.0342,
+   "day_states": {
+    "atr_filtered": 549,
+    "news_blocked": 51,
+    "news_delayed": 186,
+    "no_bars": 1,
+    "no_fill": 41,
+    "no_range": 34,
+    "one_side_only": 92,
+    "trade": 1283
+   },
+   "n_hours": 4,
+   "passes_SEL_rule": false,
+   "passes_VAL_confirmation": false,
+   "selection": {
+    "E_R": -0.0812,
+    "PF": 0.855,
+    "R_per_bd": -0.0534,
+    "business_days": 1175,
+    "cost_R_median": 0.0343,
+    "density_per_bd": 0.6579,
+    "exit_kinds": {
+     "flat": 170,
+     "stop": 387,
+     "trail_stop": 216
+    },
+    "gross_E_R": -0.0445,
+    "hold_min_median": 242.0,
+    "net_R": -62.754,
+    "net_R_per_year": {
+     "2018": -11.39,
+     "2019": -47.68,
+     "2020": 2.98,
+     "2021": -5.82,
+     "2022": -0.86
+    },
+    "trades": 773,
+    "trades_per_year": {
+     "2018": 73,
+     "2019": 188,
+     "2020": 182,
+     "2021": 158,
+     "2022": 172
+    },
+    "wins": 309,
+    "worst_year_DD_R": 51.88
+   },
+   "symbol": "EURUSD.DWX",
+   "validation": {
+    "E_R": 0.0091,
+    "PF": 1.016,
+    "R_per_bd": 0.0059,
+    "business_days": 783,
+    "cost_R_median": 0.0327,
+    "density_per_bd": 0.6501,
+    "exit_kinds": {
+     "flat": 122,
+     "stop": 254,
+     "trail_stop": 133
+    },
+    "gross_E_R": 0.0445,
+    "hold_min_median": 270.0,
+    "net_R": 4.649,
+    "net_R_per_year": {
+     "2023": 13.09,
+     "2024": -8.15,
+     "2025": -0.29
+    },
+    "trades": 509,
+    "trades_per_year": {
+     "2023": 172,
+     "2024": 169,
+     "2025": 168
+    },
+    "wins": 201,
+    "worst_year_DD_R": 24.7
+   }
+  },
+  "EURUSD.DWX|C2": {
+   "anchor": "C",
+   "cell": "C2",
+   "chance_pass_prob_SEL": 0.085,
+   "chance_pass_prob_VAL": 0.355,
+   "chance_pass_prob_joint": 0.0302,
+   "day_states": {
+    "atr_filtered": 249,
+    "news_blocked": 104,
+    "news_delayed": 284,
+    "no_fill": 85,
+    "no_range": 35,
+    "one_side_only": 135,
+    "trade": 1486
+   },
+   "n_hours": 2,
+   "passes_SEL_rule": false,
+   "passes_VAL_confirmation": false,
+   "selection": {
+    "E_R": 0.0727,
+    "PF": 1.154,
+    "R_per_bd": 0.0554,
+    "business_days": 1175,
+    "cost_R_median": 0.0293,
+    "density_per_bd": 0.7626,
+    "exit_kinds": {
+     "both_edges_same_bar": 3,
+     "flat": 276,
+     "flat_gap_prev_close": 1,
+     "friday_close": 91,
+     "stop": 344,
+     "trail_stop": 181
+    },
+    "gross_E_R": 0.1042,
+    "hold_min_median": 285.0,
+    "net_R": 65.106,
+    "net_R_per_year": {
+     "2018": 24.86,
+     "2019": 27.66,
+     "2020": 2.04,
+     "2021": 0.69,
+     "2022": 9.85
+    },
+    "trades": 896,
+    "trades_per_year": {
+     "2018": 100,
+     "2019": 203,
+     "2020": 200,
+     "2021": 195,
+     "2022": 198
+    },
+    "wins": 394,
+    "worst_year_DD_R": 27.51
+   },
+   "symbol": "EURUSD.DWX",
+   "validation": {
+    "E_R": 0.0941,
+    "PF": 1.19,
+    "R_per_bd": 0.0708,
+    "business_days": 783,
+    "cost_R_median": 0.03,
+    "density_per_bd": 0.7522,
+    "exit_kinds": {
+     "both_edges_same_bar": 13,
+     "flat": 184,
+     "flat_gap_prev_close": 1,
+     "friday_close": 36,
+     "stop": 234,
+     "trail_stop": 121
+    },
+    "gross_E_R": 0.1256,
+    "hold_min_median": 275.0,
+    "net_R": 55.399,
+    "net_R_per_year": {
+     "2023": 4.23,
+     "2024": 31.29,
+     "2025": 19.88
+    },
+    "trades": 589,
+    "trades_per_year": {
+     "2023": 187,
+     "2024": 190,
+     "2025": 212
+    },
+    "wins": 261,
+    "worst_year_DD_R": 17.92
+   }
+  },
+  "EURUSD.DWX|C3": {
+   "anchor": "C",
+   "cell": "C3",
+   "chance_pass_prob_SEL": 0.075,
+   "chance_pass_prob_VAL": 0.33,
+   "chance_pass_prob_joint": 0.0248,
+   "day_states": {
+    "atr_filtered": 523,
+    "news_blocked": 86,
+    "news_delayed": 225,
+    "no_fill": 73,
+    "no_range": 35,
+    "one_side_only": 101,
+    "trade": 1242
+   },
+   "n_hours": 3,
+   "passes_SEL_rule": true,
+   "passes_VAL_confirmation": true,
+   "selection": {
+    "E_R": 0.0756,
+    "PF": 1.181,
+    "R_per_bd": 0.0469,
+    "business_days": 1175,
+    "cost_R_median": 0.0255,
+    "density_per_bd": 0.6204,
+    "exit_kinds": {
+     "both_edges_same_bar": 1,
+     "flat": 269,
+     "flat_gap_prev_close": 1,
+     "friday_close": 80,
+     "stop": 237,
+     "trail_stop": 141
+    },
+    "gross_E_R": 0.1031,
+    "hold_min_median": 304.0,
+    "net_R": 55.08,
+    "net_R_per_year": {
+     "2018": 17.6,
+     "2019": 6.34,
+     "2020": 17.03,
+     "2021": 12.89,
+     "2022": 1.22
+    },
+    "trades": 729,
+    "trades_per_year": {
+     "2018": 81,
+     "2019": 158,
+     "2020": 164,
+     "2021": 165,
+     "2022": 161
+    },
+    "wins": 339,
+    "worst_year_DD_R": 24.68
+   },
+   "symbol": "EURUSD.DWX",
+   "validation": {
+    "E_R": 0.1048,
+    "PF": 1.225,
+    "R_per_bd": 0.0685,
+    "business_days": 783,
+    "cost_R_median": 0.0262,
+    "density_per_bd": 0.6539,
+    "exit_kinds": {
+     "both_edges_same_bar": 12,
+     "flat": 181,
+     "flat_gap_prev_close": 1,
+     "friday_close": 37,
+     "stop": 180,
+     "trail_stop": 101
+    },
+    "gross_E_R": 0.1326,
+    "hold_min_median": 299.5,
+    "net_R": 53.638,
+    "net_R_per_year": {
+     "2023": 0.06,
+     "2024": 33.51,
+     "2025": 20.07
+    },
+    "trades": 512,
+    "trades_per_year": {
+     "2023": 159,
+     "2024": 165,
+     "2025": 188
+    },
+    "wins": 232,
+    "worst_year_DD_R": 15.75
+   }
+  },
+  "EURUSD.DWX|C4": {
+   "anchor": "C",
+   "cell": "C4",
+   "chance_pass_prob_SEL": 0.175,
+   "chance_pass_prob_VAL": 0.325,
+   "chance_pass_prob_joint": 0.0569,
+   "day_states": {
+    "atr_filtered": 895,
+    "news_blocked": 58,
+    "news_delayed": 163,
+    "no_fill": 60,
+    "no_range": 35,
+    "one_side_only": 68,
+    "trade": 911
+   },
+   "n_hours": 4,
+   "passes_SEL_rule": true,
+   "passes_VAL_confirmation": true,
+   "selection": {
+    "E_R": 0.0852,
+    "PF": 1.218,
+    "R_per_bd": 0.0382,
+    "business_days": 1175,
+    "cost_R_median": 0.0235,
+    "density_per_bd": 0.4485,
+    "exit_kinds": {
+     "flat": 219,
+     "flat_gap_prev_close": 1,
+     "friday_close": 61,
+     "stop": 157,
+     "trail_stop": 89
+    },
+    "gross_E_R": 0.1105,
+    "hold_min_median": 316.0,
+    "net_R": 44.908,
+    "net_R_per_year": {
+     "2018": 17.17,
+     "2019": 0.09,
+     "2020": 5.73,
+     "2021": 14.35,
+     "2022": 7.56
+    },
+    "trades": 527,
+    "trades_per_year": {
+     "2018": 57,
+     "2019": 118,
+     "2020": 106,
+     "2021": 128,
+     "2022": 118
+    },
+    "wins": 254,
+    "worst_year_DD_R": 14.89
+   },
+   "symbol": "EURUSD.DWX",
+   "validation": {
+    "E_R": 0.0818,
+    "PF": 1.18,
+    "R_per_bd": 0.04,
+    "business_days": 783,
+    "cost_R_median": 0.0243,
+    "density_per_bd": 0.4891,
+    "exit_kinds": {
+     "both_edges_same_bar": 7,
+     "flat": 149,
+     "flat_gap_prev_close": 1,
+     "friday_close": 22,
+     "stop": 136,
+     "trail_stop": 68
+    },
+    "gross_E_R": 0.1076,
+    "hold_min_median": 303.0,
+    "net_R": 31.337,
+    "net_R_per_year": {
+     "2023": -3.21,
+     "2024": 16.59,
+     "2025": 17.95
+    },
+    "trades": 383,
+    "trades_per_year": {
+     "2023": 113,
+     "2024": 119,
+     "2025": 151
+    },
+    "wins": 176,
+    "worst_year_DD_R": 15.62
+   }
+  },
+  "USDJPY.DWX|A2": {
+   "anchor": "A",
+   "cell": "A2",
+   "chance_pass_prob_SEL": 0.035,
+   "chance_pass_prob_VAL": 0.365,
+   "chance_pass_prob_joint": 0.0128,
+   "day_states": {
+    "atr_filtered": 148,
+    "news_blocked": 2,
+    "news_delayed": 31,
+    "no_fill": 19,
+    "no_range": 32,
+    "one_side_only": 22,
+    "trade": 1758
+   },
+   "n_hours": 2,
+   "passes_SEL_rule": true,
+   "passes_VAL_confirmation": true,
+   "selection": {
+    "E_R": 0.0952,
+    "PF": 1.201,
+    "R_per_bd": 0.0868,
+    "business_days": 1175,
+    "cost_R_median": 0.0365,
+    "density_per_bd": 0.9123,
+    "exit_kinds": {
+     "flat": 248,
+     "stop": 446,
+     "trail_stop": 378
+    },
+    "gross_E_R": 0.135,
+    "hold_min_median": 376.0,
+    "net_R": 102.045,
+    "net_R_per_year": {
+     "2018": 8.58,
+     "2019": 1.94,
+     "2020": 24.63,
+     "2021": 11.82,
+     "2022": 55.07
+    },
+    "trades": 1072,
+    "trades_per_year": {
+     "2018": 120,
+     "2019": 237,
+     "2020": 242,
+     "2021": 247,
+     "2022": 226
+    },
+    "wins": 493,
+    "worst_year_DD_R": 24.27
+   },
+   "symbol": "USDJPY.DWX",
+   "validation": {
+    "E_R": 0.0874,
+    "PF": 1.186,
+    "R_per_bd": 0.0765,
+    "business_days": 783,
+    "cost_R_median": 0.0245,
+    "density_per_bd": 0.8748,
+    "exit_kinds": {
+     "both_edges_same_bar": 2,
+     "flat": 141,
+     "stop": 290,
+     "trail_stop": 252
+    },
+    "gross_E_R": 0.1159,
+    "hold_min_median": 364.0,
+    "net_R": 59.902,
+    "net_R_per_year": {
+     "2023": 8.09,
+     "2024": 31.17,
+     "2025": 20.64
+    },
+    "trades": 685,
+    "trades_per_year": {
+     "2023": 235,
+     "2024": 233,
+     "2025": 217
+    },
+    "wins": 337,
+    "worst_year_DD_R": 16.27
+   }
+  },
+  "USDJPY.DWX|A3": {
+   "anchor": "A",
+   "cell": "A3",
+   "chance_pass_prob_SEL": 0.08,
+   "chance_pass_prob_VAL": 0.29,
+   "chance_pass_prob_joint": 0.0232,
+   "day_states": {
+    "atr_filtered": 420,
+    "news_blocked": 1,
+    "news_delayed": 23,
+    "no_fill": 24,
+    "no_range": 32,
+    "one_side_only": 12,
+    "trade": 1482
+   },
+   "n_hours": 3,
+   "passes_SEL_rule": true,
+   "passes_VAL_confirmation": true,
+   "selection": {
+    "E_R": 0.0703,
+    "PF": 1.167,
+    "R_per_bd": 0.0541,
+    "business_days": 1175,
+    "cost_R_median": 0.0271,
+    "density_per_bd": 0.7694,
+    "exit_kinds": {
+     "flat": 366,
+     "stop": 322,
+     "trail_stop": 216
+    },
+    "gross_E_R": 0.0995,
+    "hold_min_median": 421.0,
+    "net_R": 63.548,
+    "net_R_per_year": {
+     "2018": 2.99,
+     "2019": -7.71,
+     "2020": 41.8,
+     "2021": 5.95,
+     "2022": 20.51
+    },
+    "trades": 904,
+    "trades_per_year": {
+     "2018": 110,
+     "2019": 199,
+     "2020": 208,
+     "2021": 212,
+     "2022": 175
+    },
+    "wins": 447,
+    "worst_year_DD_R": 19.94
+   },
+   "symbol": "USDJPY.DWX",
+   "validation": {
+    "E_R": 0.1042,
+    "PF": 1.242,
+    "R_per_bd": 0.0768,
+    "business_days": 783,
+    "cost_R_median": 0.019,
+    "density_per_bd": 0.7369,
+    "exit_kinds": {
+     "both_edges_same_bar": 2,
+     "flat": 209,
+     "stop": 217,
+     "trail_stop": 149
+    },
+    "gross_E_R": 0.1262,
+    "hold_min_median": 442.0,
+    "net_R": 60.103,
+    "net_R_per_year": {
+     "2023": 8.7,
+     "2024": 18.43,
+     "2025": 32.98
+    },
+    "trades": 577,
+    "trades_per_year": {
+     "2023": 198,
+     "2024": 198,
+     "2025": 181
+    },
+    "wins": 282,
+    "worst_year_DD_R": 19.34
+   }
+  },
+  "USDJPY.DWX|A4": {
+   "anchor": "A",
+   "cell": "A4",
+   "chance_pass_prob_SEL": 0.075,
+   "chance_pass_prob_VAL": 0.37,
+   "chance_pass_prob_joint": 0.0278,
+   "day_states": {
+    "atr_filtered": 557,
+    "news_blocked": 1,
+    "news_delayed": 22,
+    "no_fill": 22,
+    "no_range": 32,
+    "one_side_only": 9,
+    "trade": 1347
+   },
+   "n_hours": 4,
+   "passes_SEL_rule": true,
+   "passes_VAL_confirmation": true,
+   "selection": {
+    "E_R": 0.0833,
+    "PF": 1.205,
+    "R_per_bd": 0.0589,
+    "business_days": 1175,
+    "cost_R_median": 0.0259,
+    "density_per_bd": 0.7072,
+    "exit_kinds": {
+     "flat": 378,
+     "stop": 280,
+     "trail_stop": 173
+    },
+    "gross_E_R": 0.1109,
+    "hold_min_median": 428.0,
+    "net_R": 69.24,
+    "net_R_per_year": {
+     "2018": 8.29,
+     "2019": -9.39,
+     "2020": 40.13,
+     "2021": 9.68,
+     "2022": 20.54
+    },
+    "trades": 831,
+    "trades_per_year": {
+     "2018": 100,
+     "2019": 184,
+     "2020": 195,
+     "2021": 197,
+     "2022": 155
+    },
+    "wins": 414,
+    "worst_year_DD_R": 16.64
+   },
+   "symbol": "USDJPY.DWX",
+   "validation": {
+    "E_R": 0.1308,
+    "PF": 1.319,
+    "R_per_bd": 0.086,
+    "business_days": 783,
+    "cost_R_median": 0.0184,
+    "density_per_bd": 0.6577,
+    "exit_kinds": {
+     "both_edges_same_bar": 2,
+     "flat": 214,
+     "stop": 181,
+     "trail_stop": 118
+    },
+    "gross_E_R": 0.1517,
+    "hold_min_median": 471.0,
+    "net_R": 67.362,
+    "net_R_per_year": {
+     "2023": 11.44,
+     "2024": 7.15,
+     "2025": 48.76
+    },
+    "trades": 515,
+    "trades_per_year": {
+     "2023": 192,
+     "2024": 167,
+     "2025": 156
+    },
+    "wins": 258,
+    "worst_year_DD_R": 15.12
+   }
+  },
+  "USDJPY.DWX|B2": {
+   "anchor": "B",
+   "cell": "B2",
+   "chance_pass_prob_SEL": 0.03,
+   "chance_pass_prob_VAL": 0.305,
+   "chance_pass_prob_joint": 0.0092,
+   "day_states": {
+    "atr_filtered": 156,
+    "news_blocked": 1,
+    "news_delayed": 25,
+    "no_bars": 1,
+    "no_fill": 14,
+    "no_range": 32,
+    "one_side_only": 25,
+    "trade": 1755
+   },
+   "n_hours": 2,
+   "passes_SEL_rule": false,
+   "passes_VAL_confirmation": false,
+   "selection": {
+    "E_R": 0.0956,
+    "PF": 1.181,
+    "R_per_bd": 0.0883,
+    "business_days": 1175,
+    "cost_R_median": 0.0394,
+    "density_per_bd": 0.9243,
+    "exit_kinds": {
+     "flat": 301,
+     "stop": 506,
+     "trail_stop": 279
+    },
+    "gross_E_R": 0.1389,
+    "hold_min_median": 298.5,
+    "net_R": 103.786,
+    "net_R_per_year": {
+     "2018": 11.25,
+     "2019": -7.63,
+     "2020": 19.07,
+     "2021": 18.07,
+     "2022": 63.01
+    },
+    "trades": 1086,
+    "trades_per_year": {
+     "2018": 120,
+     "2019": 250,
+     "2020": 247,
+     "2021": 231,
+     "2022": 238
+    },
+    "wins": 473,
+    "worst_year_DD_R": 28.4
+   },
+   "symbol": "USDJPY.DWX",
+   "validation": {
+    "E_R": -0.0006,
+    "PF": 0.999,
+    "R_per_bd": -0.0005,
+    "business_days": 783,
+    "cost_R_median": 0.0247,
+    "density_per_bd": 0.8531,
+    "exit_kinds": {
+     "flat": 199,
+     "stop": 326,
+     "trail_stop": 143
+    },
+    "gross_E_R": 0.0282,
+    "hold_min_median": 308.0,
+    "net_R": -0.397,
+    "net_R_per_year": {
+     "2023": 2.29,
+     "2024": 0.29,
+     "2025": -2.97
+    },
+    "trades": 668,
+    "trades_per_year": {
+     "2023": 221,
+     "2024": 229,
+     "2025": 218
+    },
+    "wins": 274,
+    "worst_year_DD_R": 29.29
+   }
+  },
+  "USDJPY.DWX|B3": {
+   "anchor": "B",
+   "cell": "B3",
+   "chance_pass_prob_SEL": 0.05,
+   "chance_pass_prob_VAL": 0.27,
+   "chance_pass_prob_joint": 0.0135,
+   "day_states": {
+    "atr_filtered": 280,
+    "news_blocked": 1,
+    "news_delayed": 23,
+    "no_bars": 1,
+    "no_fill": 14,
+    "no_range": 32,
+    "one_side_only": 22,
+    "trade": 1631
+   },
+   "n_hours": 3,
+   "passes_SEL_rule": true,
+   "passes_VAL_confirmation": true,
+   "selection": {
+    "E_R": 0.1237,
+    "PF": 1.248,
+    "R_per_bd": 0.1071,
+    "business_days": 1175,
+    "cost_R_median": 0.0361,
+    "density_per_bd": 0.8655,
+    "exit_kinds": {
+     "flat": 346,
+     "stop": 439,
+     "trail_stop": 232
+    },
+    "gross_E_R": 0.1628,
+    "hold_min_median": 314.0,
+    "net_R": 125.81,
+    "net_R_per_year": {
+     "2018": 8.62,
+     "2019": 9.7,
+     "2020": 26.07,
+     "2021": 17.81,
+     "2022": 63.61
+    },
+    "trades": 1017,
+    "trades_per_year": {
+     "2018": 115,
+     "2019": 241,
+     "2020": 233,
+     "2021": 213,
+     "2022": 215
+    },
+    "wins": 455,
+    "worst_year_DD_R": 20.47
+   },
+   "symbol": "USDJPY.DWX",
+   "validation": {
+    "E_R": 0.0641,
+    "PF": 1.128,
+    "R_per_bd": 0.0501,
+    "business_days": 783,
+    "cost_R_median": 0.0227,
+    "density_per_bd": 0.7829,
+    "exit_kinds": {
+     "flat": 217,
+     "stop": 272,
+     "trail_stop": 124
+    },
+    "gross_E_R": 0.0906,
+    "hold_min_median": 319.0,
+    "net_R": 39.263,
+    "net_R_per_year": {
+     "2023": 16.96,
+     "2024": 15.66,
+     "2025": 6.64
+    },
+    "trades": 613,
+    "trades_per_year": {
+     "2023": 198,
+     "2024": 209,
+     "2025": 206
+    },
+    "wins": 264,
+    "worst_year_DD_R": 19.26
+   }
+  },
+  "USDJPY.DWX|B4": {
+   "anchor": "B",
+   "cell": "B4",
+   "chance_pass_prob_SEL": 0.065,
+   "chance_pass_prob_VAL": 0.35,
+   "chance_pass_prob_joint": 0.0227,
+   "day_states": {
+    "atr_filtered": 418,
+    "news_blocked": 1,
+    "news_delayed": 22,
+    "no_bars": 1,
+    "no_fill": 13,
+    "no_range": 32,
+    "one_side_only": 17,
+    "trade": 1494
+   },
+   "n_hours": 4,
+   "passes_SEL_rule": true,
+   "passes_VAL_confirmation": true,
+   "selection": {
+    "E_R": 0.1101,
+    "PF": 1.23,
+    "R_per_bd": 0.0884,
+    "business_days": 1175,
+    "cost_R_median": 0.0335,
+    "density_per_bd": 0.8034,
+    "exit_kinds": {
+     "flat": 366,
+     "stop": 389,
+     "trail_stop": 189
+    },
+    "gross_E_R": 0.1465,
+    "hold_min_median": 326.0,
+    "net_R": 103.896,
+    "net_R_per_year": {
+     "2018": 8.42,
+     "2019": 8.05,
+     "2020": 19.13,
+     "2021": 9.8,
+     "2022": 58.49
+    },
+    "trades": 944,
+    "trades_per_year": {
+     "2018": 111,
+     "2019": 231,
+     "2020": 221,
+     "2021": 192,
+     "2022": 189
+    },
+    "wins": 439,
+    "worst_year_DD_R": 19.11
+   },
+   "symbol": "USDJPY.DWX",
+   "validation": {
+    "E_R": 0.0469,
+    "PF": 1.097,
+    "R_per_bd": 0.0329,
+    "business_days": 783,
+    "cost_R_median": 0.0215,
+    "density_per_bd": 0.7011,
+    "exit_kinds": {
+     "both_edges_same_bar": 1,
+     "flat": 210,
+     "stop": 231,
+     "trail_stop": 107
+    },
+    "gross_E_R": 0.072,
+    "hold_min_median": 318.5,
+    "net_R": 25.763,
+    "net_R_per_year": {
+     "2023": 6.45,
+     "2024": 10.92,
+     "2025": 8.39
+    },
+    "trades": 549,
+    "trades_per_year": {
+     "2023": 179,
+     "2024": 186,
+     "2025": 184
+    },
+    "wins": 242,
+    "worst_year_DD_R": 23.34
+   }
+  },
+  "USDJPY.DWX|C2": {
+   "anchor": "C",
+   "cell": "C2",
+   "chance_pass_prob_SEL": 0.05,
+   "chance_pass_prob_VAL": 0.27,
+   "chance_pass_prob_joint": 0.0135,
+   "day_states": {
+    "atr_filtered": 97,
+    "news_blocked": 91,
+    "news_delayed": 280,
+    "no_fill": 107,
+    "no_range": 33,
+    "one_side_only": 145,
+    "trade": 1631
+   },
+   "n_hours": 2,
+   "passes_SEL_rule": true,
+   "passes_VAL_confirmation": true,
+   "selection": {
+    "E_R": 0.1414,
+    "PF": 1.302,
+    "R_per_bd": 0.1201,
+    "business_days": 1175,
+    "cost_R_median": 0.0346,
+    "density_per_bd": 0.8494,
+    "exit_kinds": {
+     "both_edges_same_bar": 8,
+     "flat": 319,
+     "friday_close": 92,
+     "stop": 377,
+     "trail_stop": 202
+    },
+    "gross_E_R": 0.1809,
+    "hold_min_median": 283.5,
+    "net_R": 141.125,
+    "net_R_per_year": {
+     "2018": 24.84,
+     "2019": 11.97,
+     "2020": 13.71,
+     "2021": 51.83,
+     "2022": 38.77
+    },
+    "trades": 998,
+    "trades_per_year": {
+     "2018": 116,
+     "2019": 234,
+     "2020": 225,
+     "2021": 202,
+     "2022": 221
+    },
+    "wins": 448,
+    "worst_year_DD_R": 20.83
+   },
+   "symbol": "USDJPY.DWX",
+   "validation": {
+    "E_R": 0.1441,
+    "PF": 1.295,
+    "R_per_bd": 0.1163,
+    "business_days": 783,
+    "cost_R_median": 0.0249,
+    "density_per_bd": 0.8072,
+    "exit_kinds": {
+     "both_edges_same_bar": 21,
+     "flat": 199,
+     "flat_gap_prev_close": 1,
+     "friday_close": 43,
+     "stop": 243,
+     "trail_stop": 125
+    },
+    "gross_E_R": 0.173,
+    "hold_min_median": 273.0,
+    "net_R": 91.046,
+    "net_R_per_year": {
+     "2023": 5.16,
+     "2024": 59.24,
+     "2025": 26.66
+    },
+    "trades": 632,
+    "trades_per_year": {
+     "2023": 206,
+     "2024": 203,
+     "2025": 223
+    },
+    "wins": 269,
+    "worst_year_DD_R": 25.04
+   }
+  },
+  "USDJPY.DWX|C3": {
+   "anchor": "C",
+   "cell": "C3",
+   "chance_pass_prob_SEL": 0.065,
+   "chance_pass_prob_VAL": 0.275,
+   "chance_pass_prob_joint": 0.0179,
+   "day_states": {
+    "atr_filtered": 207,
+    "news_blocked": 87,
+    "news_delayed": 264,
+    "no_fill": 109,
+    "no_range": 33,
+    "one_side_only": 122,
+    "trade": 1523
+   },
+   "n_hours": 3,
+   "passes_SEL_rule": true,
+   "passes_VAL_confirmation": true,
+   "selection": {
+    "E_R": 0.1231,
+    "PF": 1.288,
+    "R_per_bd": 0.097,
+    "business_days": 1175,
+    "cost_R_median": 0.0307,
+    "density_per_bd": 0.7881,
+    "exit_kinds": {
+     "both_edges_same_bar": 5,
+     "flat": 339,
+     "friday_close": 94,
+     "stop": 302,
+     "trail_stop": 186
+    },
+    "gross_E_R": 0.1577,
+    "hold_min_median": 296.0,
+    "net_R": 113.95,
+    "net_R_per_year": {
+     "2018": 19.58,
+     "2019": 4.24,
+     "2020": 22.61,
+     "2021": 45.43,
+     "2022": 22.1
+    },
+    "trades": 926,
+    "trades_per_year": {
+     "2018": 109,
+     "2019": 218,
+     "2020": 204,
+     "2021": 188,
+     "2022": 207
+    },
+    "wins": 435,
+    "worst_year_DD_R": 20.65
+   },
+   "symbol": "USDJPY.DWX",
+   "validation": {
+    "E_R": 0.1408,
+    "PF": 1.319,
+    "R_per_bd": 0.1072,
+    "business_days": 783,
+    "cost_R_median": 0.0218,
+    "density_per_bd": 0.7612,
+    "exit_kinds": {
+     "both_edges_same_bar": 15,
+     "flat": 216,
+     "flat_gap_prev_close": 1,
+     "friday_close": 54,
+     "stop": 203,
+     "trail_stop": 107
+    },
+    "gross_E_R": 0.1661,
+    "hold_min_median": 289.0,
+    "net_R": 83.903,
+    "net_R_per_year": {
+     "2023": 8.34,
+     "2024": 55.24,
+     "2025": 20.33
+    },
+    "trades": 596,
+    "trades_per_year": {
+     "2023": 192,
+     "2024": 191,
+     "2025": 213
+    },
+    "wins": 273,
+    "worst_year_DD_R": 22.2
+   }
+  },
+  "USDJPY.DWX|C4": {
+   "anchor": "C",
+   "cell": "C4",
+   "chance_pass_prob_SEL": 0.085,
+   "chance_pass_prob_VAL": 0.265,
+   "chance_pass_prob_joint": 0.0225,
+   "day_states": {
+    "atr_filtered": 384,
+    "news_blocked": 82,
+    "news_delayed": 239,
+    "no_fill": 103,
+    "no_range": 33,
+    "one_side_only": 102,
+    "trade": 1357
+   },
+   "n_hours": 4,
+   "passes_SEL_rule": true,
+   "passes_VAL_confirmation": true,
+   "selection": {
+    "E_R": 0.0848,
+    "PF": 1.213,
+    "R_per_bd": 0.0591,
+    "business_days": 1175,
+    "cost_R_median": 0.0282,
+    "density_per_bd": 0.6962,
+    "exit_kinds": {
+     "both_edges_same_bar": 5,
+     "flat": 331,
+     "friday_close": 92,
+     "stop": 241,
+     "trail_stop": 149
+    },
+    "gross_E_R": 0.1162,
+    "hold_min_median": 307.0,
+    "net_R": 69.389,
+    "net_R_per_year": {
+     "2018": 11.99,
+     "2019": -11.36,
+     "2020": 17.71,
+     "2021": 28.25,
+     "2022": 22.8
+    },
+    "trades": 818,
+    "trades_per_year": {
+     "2018": 94,
+     "2019": 198,
+     "2020": 182,
+     "2021": 165,
+     "2022": 179
+    },
+    "wins": 392,
+    "worst_year_DD_R": 23.24
+   },
+   "symbol": "USDJPY.DWX",
+   "validation": {
+    "E_R": 0.0898,
+    "PF": 1.215,
+    "R_per_bd": 0.0617,
+    "business_days": 783,
+    "cost_R_median": 0.0197,
+    "density_per_bd": 0.6871,
+    "exit_kinds": {
+     "both_edges_same_bar": 10,
+     "flat": 217,
+     "flat_gap_prev_close": 1,
+     "friday_close": 64,
+     "stop": 165,
+     "trail_stop": 81
+    },
+    "gross_E_R": 0.112,
+    "hold_min_median": 313.0,
+    "net_R": 48.301,
+    "net_R_per_year": {
+     "2023": 1.47,
+     "2024": 39.88,
+     "2025": 6.96
+    },
+    "trades": 538,
+    "trades_per_year": {
+     "2023": 171,
+     "2024": 176,
+     "2025": 191
+    },
+    "wins": 244,
+    "worst_year_DD_R": 19.88
+   }
+  }
+ },
+ "commission_classes": {
+  "forex": {
+   "flat_per_lot_rt": 5.0,
+   "pct_rate_rt": 5e-05
+  }
+ },
+ "commission_model": "max(pct_rate_rt*notional_acct, flat_per_lot_rt*volume)",
+ "control_cell": {
+  "days_common": 886,
+  "days_report_only": 2,
+  "days_sim_only": 18,
+  "direction_mismatch_days": [
+   {
+    "day": "2019-02-28",
+    "rep": -1.045,
+    "sim": 0.11
+   },
+   {
+    "day": "2020-01-29",
+    "rep": -1.033,
+    "sim": 0.01
+   },
+   {
+    "day": "2020-10-22",
+    "rep": -1.031,
+    "sim": -1.032
+   },
+   {
+    "day": "2021-05-28",
+    "rep": -1.042,
+    "sim": -1.037
+   },
+   {
+    "day": "2022-04-21",
+    "rep": -0.87,
+    "sim": -1.01
+   }
+  ],
+  "net_R_diff_on_common_same_dir_days": {
+   "mean": 0.007,
+   "median": 0.0034,
+   "p10": -0.002,
+   "p90": 0.0339
+  },
+  "reference_q02": {
+   "E_R_after_commission": 0.0525,
+   "net_profit_usd": 46636.78,
+   "profit_factor": 1.12,
+   "total_trades": 888,
+   "work_item": "652e0768"
+  },
+  "report_only_by_year": {
+   "2018": 1,
+   "2019": 0,
+   "2020": 0,
+   "2021": 0,
+   "2022": 1
+  },
+  "report_only_days": [
+   {
+    "comment": "sl 112.402",
+    "day": "2018-12-18",
+    "net_r": 1.29
+   },
+   {
+    "comment": "qm_tm_close",
+    "day": "2022-01-31",
+    "net_r": -0.563
+   }
+  ],
+  "same_direction_on_common_days": 881,
+  "sim_only_by_year": {
+   "2018": 5,
+   "2019": 5,
+   "2020": 3,
+   "2021": 3,
+   "2022": 2
+  },
+  "sim_only_days": [
+   {
+    "day": "2018-09-19",
+    "exit_kind": "stop",
+    "fill_t": 1537337880,
+    "net_r": -1.041
+   },
+   {
+    "day": "2018-09-21",
+    "exit_kind": "flat",
+    "fill_t": 1537509600,
+    "net_r": -0.652
+   },
+   {
+    "day": "2018-10-22",
+    "exit_kind": "flat",
+    "fill_t": 1540189860,
+    "net_r": 0.922
+   },
+   {
+    "day": "2018-10-31",
+    "exit_kind": "stop",
+    "fill_t": 1540975260,
+    "net_r": -1.02
+   },
+   {
+    "day": "2018-12-20",
+    "exit_kind": "trail_stop",
+    "fill_t": 1545283500,
+    "net_r": 3.096
+   },
+   {
+    "day": "2019-01-17",
+    "exit_kind": "flat",
+    "fill_t": 1547715540,
+    "net_r": -0.5
+   },
+   {
+    "day": "2019-02-11",
+    "exit_kind": "flat",
+    "fill_t": 1549861260,
+    "net_r": 3.98
+   },
+   {
+    "day": "2019-05-02",
+    "exit_kind": "flat",
+    "fill_t": 1556776800,
+    "net_r": -0.604
+   },
+   {
+    "day": "2019-05-27",
+    "exit_kind": "flat",
+    "fill_t": 1558948080,
+    "net_r": 0.082
+   },
+   {
+    "day": "2019-12-19",
+    "exit_kind": "flat",
+    "fill_t": 1576757280,
+    "net_r": 1.818
+   },
+   {
+    "day": "2020-07-15",
+    "exit_kind": "trail_stop",
+    "fill_t": 1594806300,
+    "net_r": 2.031
+   },
+   {
+    "day": "2020-09-04",
+    "exit_kind": "flat",
+    "fill_t": 1599199200,
+    "net_r": 0.53
+   },
+   {
+    "day": "2020-09-17",
+    "exit_kind": "trail_stop",
+    "fill_t": 1600335720,
+    "net_r": 0.346
+   },
+   {
+    "day": "2021-01-21",
+    "exit_kind": "flat",
+    "fill_t": 1611208380,
+    "net_r": -0.468
+   },
+   {
+    "day": "2021-10-28",
+    "exit_kind": "flat",
+    "fill_t": 1635405840,
+    "net_r": 0.451
+   },
+   {
+    "day": "2021-12-17",
+    "exit_kind": "flat",
+    "fill_t": 1639719540,
+    "net_r": 0.847
+   },
+   {
+    "day": "2022-07-21",
+    "exit_kind": "stop",
+    "fill_t": 1658387400,
+    "net_r": -1.02
+   },
+   {
+    "day": "2022-10-28",
+    "exit_kind": "trail_stop",
+    "fill_t": 1666951800,
+    "net_r": 0.576
+   }
+  ],
+  "sim_only_net_R_sum": 9.376,
+  "simulation": {
+   "E_R": 0.0703,
+   "PF": 1.167,
+   "hold_min_median": 421.0,
+   "net_R": 63.55,
+   "trades": 904,
+   "trades_per_year": {
+    "2018": 110,
+    "2019": 199,
+    "2020": 208,
+    "2021": 212,
+    "2022": 175
+   }
+  },
+  "tester_report": {
+   "E_R": 0.0525,
+   "PF": 1.122,
+   "hold_min_median": 419.3,
+   "net_R": 46.64,
+   "trades": 888,
+   "trades_per_year": {
+    "2018": 106,
+    "2019": 194,
+    "2020": 205,
+    "2021": 209,
+    "2022": 174
+   }
+  }
+ },
+ "family_consistency": {
+  "EURUSD.DWX|A": {
+   "SEL_E_R_by_N": [
+    -0.0416,
+    -0.0728,
+    -0.0746
+   ],
+   "all_positive_SEL": false
+  },
+  "EURUSD.DWX|B": {
+   "SEL_E_R_by_N": [
+    -0.0706,
+    -0.0831,
+    -0.0812
+   ],
+   "all_positive_SEL": false
+  },
+  "EURUSD.DWX|C": {
+   "SEL_E_R_by_N": [
+    0.0727,
+    0.0756,
+    0.0852
+   ],
+   "all_positive_SEL": true
+  },
+  "USDJPY.DWX|A": {
+   "SEL_E_R_by_N": [
+    0.0952,
+    0.0703,
+    0.0833
+   ],
+   "all_positive_SEL": true
+  },
+  "USDJPY.DWX|B": {
+   "SEL_E_R_by_N": [
+    0.0956,
+    0.1237,
+    0.1101
+   ],
+   "all_positive_SEL": true
+  },
+  "USDJPY.DWX|C": {
+   "SEL_E_R_by_N": [
+    0.1414,
+    0.1231,
+    0.0848
+   ],
+   "all_positive_SEL": true
+  }
+ },
+ "fill_model": "M1 bar touching the level fills at the level; both edges in one bar = full loss at the stop; trailing evaluated on M1 closes",
+ "hypothesis": "H-V4",
+ "mechanism": "QM5_13213 Balke session-range breakout, replicated (see module docstring)",
+ "n_hours": [
+  2,
+  3,
+  4
+ ],
+ "news_model": "PRE30_POST30 high-impact (news_calendar_2015_2025.csv, UTC) on the strict symbol currencies; delays/blocks the placement tick only",
+ "null": {
+  "caveat": "cells of one symbol share days and ranges (neighbouring N, overlapping anchors) and are not independent; the sums are per-cell expectations, not a family-level test",
+  "cells_evaluated": 314,
+  "cells_with_n_ge_300": 314,
+  "expected_false_SEL_survivors": 17.41,
+  "expected_false_survivors_after_VAL": 5.481,
+  "fraction_cells_SEL_E_R_positive": 0.3726,
+  "method": "centred circular block bootstrap (block 20 trades, 200 resamples, seed 20260921) of each cell's SEL net-R sequence; P(meets SEL rule)"
+ },
+ "observed": {
+  "cells_passing_SEL_rule": 27,
+  "survivors_after_VAL_confirmation": 13,
+  "survivors_family_consistent": 13
+ },
+ "registration": "docs/research/velocity/VELOCITY_FAMILY_F1_SESSION_RANGE_SWEEP_2026-09-21.md",
+ "research_id": "QM-RESEARCH-2026-0012",
+ "risk_fixed": 1000.0,
+ "schema": "qm.velocity-hv4-sweep-extract/v1",
+ "source_file": "docs/ops/evidence/2026-09-20_velocity_book/velocity_family_f1_sweep_0921.json",
+ "source_sha256": "c9ad5d139e8e77d514d9811806ee5178ef3f4704b5892bb89053d8956d82c6a5"
+}

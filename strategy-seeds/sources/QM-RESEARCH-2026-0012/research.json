@@ -1,0 +1,107 @@
+{
+  "author": "Claude",
+  "candidate_edge": "H-V4: NY pre-open session-range breakout on USDJPY (primary) and EURUSD (secondary). Frozen 13213 mechanics on a 60-minute bar grid aligned to :30 server time: range = the N completed grid bars ending 15:30 server (= 08:30 America/New_York; N=2 -> arm C2 primary, N=3 -> arm C3 second frozen arm; EURUSD C3 only), buy stop at range high / sell stop at range low (OCO) at 15:30, SL = opposite edge (stop distance W), no TP, skip when W < 0.4 x ATR(14, same grid) or W > 2.5 x ATR, trail SL to the min/max of the last two completed grid bars once open profit >= 1.0 x initial risk, flat at 23:00 server (= 16:00 New York), framework Friday close 21:00 server and PRE30_POST30 high-impact news blackout unchanged. One position per symbol per day. Bounded integer/double inputs only; no ML.",
+  "computed_outputs": [
+    {
+      "claim_ref": "hv4_sweep_extract",
+      "file": "sweep_extract.json",
+      "sha256": "247c595106904451c162f5ed6296abe09790d46f01195d26e8b8bde7a1b6e6ea"
+    }
+  ],
+  "confidence": "Moderate. For USDJPY the claim rests on four legs: (1) the mechanism is already tester-qualified on the symbol (13213 through Q14), (2) the harness is calibrated against that tester result on the control cell (+1.8 % trades, +0.018R), (3) all nine USDJPY cells of the family are positive on the selection period and eight of nine survive the validation period, and (4) the C2/C3 cells have among the lowest chance-pass probabilities in the grid. The claim does NOT rest on a single p-value: cells of one symbol share days and ranges, the per-cell null is not a family-level test, and 314 cells were searched. Harness-to-tester optimism of ~+0.02R is expected, so the tester should print roughly +0.12R / PF ~1.25 for C2 if the harness is faithful; the pre-registered Q02 bar is +0.08R / PF 1.15. For EURUSD the evidence is thinner (single anchor, lower density 0.62/bd, SEL PF 1.18) and is treated as a secondary slot. Not modelled: real-tick intra-minute paths, spread and slippage (tester Model=4 handles both), the news blackout on exits/trailing.",
+  "confounders": [
+    "Multiplicity: 314 cells were evaluated; 27 SEL passes vs 17.4 expected and 13 survivors vs 5.5 expected by the per-cell null. The per-cell bootstrap ignores the dependence between cells of one symbol (neighbouring N, overlapping anchors) and is therefore not a family-level test; a symbol-label permutation test is the stronger statement and has not been run (stated gap).",
+    "Same-symbol overlap with the incumbent QM5_13213 (Tokyo window): the NY pre-open trade often follows a Tokyo-range trade on the same day; H-V4 is a candidate REPLACEMENT/upgrade of 13213's window rather than an additional independent sleeve unless the daily-P/L correlation with 13213 measures below 0.5 at Q08 (pre-registered tail test).",
+    "Harness optimism: zero-spread, zero-slippage fills at the level and 18 simulation-only days on the control cell put the harness ~+0.02R above the tester; the Q02 bar is set below the harness figure accordingly.",
+    "News blackout overlap: the 08:30 New York anchor coincides with the densest US high-impact release slot; the harness models PRE30_POST30 only at the placement tick (280 delayed / 91 blocked placement days over 2018-25 for USDJPY C2). The tester's full news handling may remove or shift more trades than modelled.",
+    "Regime: 2021-2022 (JPY depreciation, Fed hiking) contribute 90.6R of the 141.1R SEL net for USDJPY C2 (2018 +24.8, 2019 +12.0, 2020 +13.7, 2021 +51.8, 2022 +38.8), and 2024 contributes 59.2R of the 91.0R VAL net; every SEL and VAL year is nevertheless positive.",
+    "Friday close: 92 of the 998 SEL trades exit at the framework Friday close (21:00 server) before the 23:00 flat; a different Friday policy changes the numbers."
+  ],
+  "created_utc": "2026-09-21T08:56:21+00:00",
+  "critic_receipt": "critic_receipt.json",
+  "lineage": "lineage.json",
+  "ml_method": null,
+  "model": "claude-fable-5-1",
+  "observations": "Pre-registered sweep (registration committed before the run: docs/research/velocity/VELOCITY_FAMILY_F1_SESSION_RANGE_SWEEP_2026-09-21.md @ 60de323f25; results @ 270c9a4c98) over 36 symbols x 3 anchors x N in {2,3,4} hours = 314 cells with trades on .DWX M1 custom history, closed-bar M1 simulation (stop fills at the level on the touching M1 bar, both edges in one bar = full loss), registry commission, .DWX spread 0. Control cell USDJPY A3 reproduces the tester Q02 of the byte-identical 13213 lineage (work item 652e0768) within +1.8 % trades and +0.018R (harness systematically ~+0.02R optimistic: zero spread/slippage fills, 18 simulation-only days). Selection 2018-07-02..2022-12-30, validation 2023-01-02..2025-12-31, floor/cap and rule frozen before the run. 27 of 314 cells pass the SEL rule (17.4 expected by the per-cell centred block-bootstrap null), 13 survive VAL confirmation (5.5 expected), all 13 family-consistent. USDJPY: 9/9 cells SEL-positive, 8/9 survivors (B2 fails VAL at -0.0006R); C2 is the best cell in the whole grid (SEL n=998, 0.85/bd, +0.141R, PF 1.302, worst-year DD 20.8R, +0.120 R/bd; VAL n=632, 0.81/bd, +0.144R, PF 1.295, DD 25.0R, +0.116 R/bd; chance-pass probability joint 0.0135). EURUSD: A and B anchors negative on SEL (all six cells), C2/C3/C4 positive on SEL and VAL; C2 fails only the 25R DD bar (27.5R), C3 and C4 are survivors. Indices, EUR/CHF/CAD crosses, AUDNZD, GBPNZD negative everywhere; XAUUSD C cells positive only in 2023-25 (not selectable).",
+  "originating_task_id": "fable-velocity-hv4-20260921",
+  "proposed_mechanism": "USDJPY's intraday information flow is concentrated around the 08:30 New York macro-release / pre-open hour (US data prints, Treasury-yield repricing, the JPY carry-book adjustment into the US session). A completed 2-3 hour range immediately before that anchor bounds the pre-release consolidation; a stop-order breakout of that range at the anchor converts the release into a directional trade with a stop equal to the range width and no fixed target, exactly the risk geometry that already qualified on USDJPY at the Tokyo window (QM5_13213, Q02..Q14). The sweep shows the anchor, not the mechanism, was the limiting factor: every USDJPY cell of the family is positive on the selection period (9/9), and the NY pre-open cells roughly double R per business day at equal density. On EURUSD the same NY anchor is the ONLY positive anchor (A and B cells are all negative on SEL), consistent with the pair's US-session macro sensitivity rather than a London-open microstructure effect (the H-V1 result).",
+  "quantitative_claims": [
+    {
+      "claim": "USDJPY C2 (2-h range ending 15:30 server) selection period 2018-07-02..2022-12-30",
+      "computed_output_ref": "hv4_sweep_extract",
+      "value": "n=998, 0.85 trades/bd, E[R] +0.1414 after commission, PF 1.302, worst-year DD 20.83R, +0.1201 R/bd, wins 448, cost_R median 0.0346, hold median 284 min; per-year net R 2018 +24.84, 2019 +11.97, 2020 +13.71, 2021 +51.83, 2022 +38.77"
+    },
+    {
+      "claim": "USDJPY C2 validation period 2023-01-02..2025-12-31",
+      "computed_output_ref": "hv4_sweep_extract",
+      "value": "n=632, 0.81 trades/bd, E[R] +0.1441, PF 1.295, worst-year DD 25.04R, +0.1163 R/bd, wins 269; per-year net R 2023 +5.16, 2024 +59.24, 2025 +26.66"
+    },
+    {
+      "claim": "USDJPY C3 (3-h range) SEL / VAL",
+      "computed_output_ref": "hv4_sweep_extract",
+      "value": "SEL n=926, 0.79/bd, +0.1231R, PF 1.288, DD 20.65R, +0.0970 R/bd; VAL n=596, 0.76/bd, +0.1408R, PF 1.319, DD 22.2R, +0.1072 R/bd"
+    },
+    {
+      "claim": "USDJPY incumbent window A3 (13213 Tokyo 03-06 GMT+3) in the same harness, SEL / VAL",
+      "computed_output_ref": "hv4_sweep_extract",
+      "value": "SEL n=904, 0.77/bd, +0.0703R, PF 1.167, DD 19.94R, +0.0541 R/bd; VAL n=577, +0.1042R, PF 1.242, +0.0768 R/bd"
+    },
+    {
+      "claim": "USDJPY family consistency: SEL E[R] by N for anchors A / B / C",
+      "computed_output_ref": "hv4_sweep_extract",
+      "value": "A: +0.0952 / +0.0703 / +0.0833; B: +0.0956 / +0.1237 / +0.1101; C: +0.1414 / +0.1231 / +0.0848 (9/9 positive); survivors 8/9 (B2 fails VAL: -0.0006R)"
+    },
+    {
+      "claim": "EURUSD C3 (secondary slot) SEL / VAL; C2 and C4 for context",
+      "computed_output_ref": "hv4_sweep_extract",
+      "value": "C3 SEL n=729, 0.62/bd, +0.0756R, PF 1.181, DD 24.68R, +0.0469 R/bd; VAL n=512, +0.1048R, PF 1.225, DD 15.75R, +0.0685 R/bd. C2 SEL +0.0727R PF 1.154 DD 27.5R (fails the 25R DD bar); C4 SEL +0.0852R PF 1.218 at 0.45/bd. EURUSD A and B anchors: all six SEL cells negative (-0.042..-0.083R)"
+    },
+    {
+      "claim": "control cell USDJPY A3 simulation vs tester Q02 652e0768 (byte-identical 13213 lineage QM5_41484)",
+      "computed_output_ref": "hv4_sweep_extract",
+      "value": "simulation 904 trades / 63.55R / E[R] 0.0703 / PF 1.167 / hold 421 min vs tester 888 / 46.64R / 0.0525 / 1.122 / 419.3 min; 886 common trade days, 881 same direction, 18 simulation-only days (+9.376R), per-trade difference on common days mean +0.007R"
+    },
+    {
+      "claim": "grid multiplicity and null",
+      "computed_output_ref": "hv4_sweep_extract",
+      "value": "314 cells evaluated; fraction with SEL E[R] > 0 = 0.3726; cells passing the SEL rule 27 vs 17.41 expected (centred circular block bootstrap, block 20 trades, 200 resamples, seed 20260921); survivors after VAL confirmation 13 vs 5.481 expected; family-consistent 13; USDJPY C2 chance-pass probability SEL 0.05, VAL 0.27, joint 0.0135"
+    },
+    {
+      "claim": "USDJPY C2 day states 2018-07..2025 (whole span)",
+      "computed_output_ref": "hv4_sweep_extract",
+      "value": "trade 1631, one_side_only 145, no_fill 107, atr_filtered 97, news_delayed 280, news_blocked 91, no_range 33; SEL exit kinds: stop 377, trail_stop 202, flat 319, friday_close 92, both_edges_same_bar 8"
+    },
+    {
+      "claim": "cost model",
+      "computed_output_ref": "hv4_sweep_extract",
+      "value": "commission = max(0.005 % of notional round trip, 5 USD per lot round trip) per framework/registry/live_commission.json forex class; RISK_FIXED 1000; .DWX spread 0 (stated, not assumed away)"
+    }
+  ],
+  "related_strategies": [
+    "QM5_13213",
+    "QM5_41484",
+    "QM5_41097",
+    "QM5_41398",
+    "QM5_41405",
+    "QM5_10706",
+    "QM5_10700"
+  ],
+  "research_id": "QM-RESEARCH-2026-0012",
+  "research_question": "Does the QM5_13213 session-range breakout mechanism (OCO stop orders at the edges of a completed multi-hour range, stop = opposite edge, ATR(14) range filter 0.4-2.5x, two-bar trail after +1R, session-flat) carry materially more R per business day on USDJPY when the range is the 2-3 hours before the 08:30 America/New_York macro/pre-open anchor (15:30 server) instead of Balke's Tokyo 03:00-06:00 GMT+3 window, and does the same NY pre-open range carry expectancy on EURUSD? Answer (pre-registered family-F1 sweep, 0 factory hours): USDJPY C2 SEL E[R] +0.141 / PF 1.30 / +0.120 R per bd vs the incumbent A3 +0.070 / 1.17 / +0.054 in the same harness; VAL +0.144 / 1.30 / +0.116; EURUSD C3 +0.076 / 1.18 (SEL), +0.105 / 1.23 (VAL).",
+  "research_trial_count": 314,
+  "revision_note": "Revision 1 (2026-09-21, Fable, claude-fable-5-1): authored from the family-F1 sweep result; awaiting cross-vendor critic (Codex). No card, build or factory row exists.",
+  "schema": "qm.internal-research-source/v1",
+  "search_history_ref": "Not a Kimi OBSERVE/DISCOVER ledger product. The search is the pre-registered family-F1 sweep: registration docs/research/velocity/VELOCITY_FAMILY_F1_SESSION_RANGE_SWEEP_2026-09-21.md (commit 60de323f25, written before the run), results commit 270c9a4c98, full grid docs/ops/evidence/2026-09-20_velocity_book/velocity_family_f1_sweep_0921.json (sha256 c9ad5d139e8e77d514d9811806ee5178ef3f4704b5892bb89053d8956d82c6a5), harness tools/strategy_farm/session_tools/velocity_family_f1_sweep_0921.py over hcc_m1_reader_0921.py. research_trial_count = 314 = every cell evaluated in that sweep (the honest multiplicity denominator).",
+  "source_datasets": [
+    {
+      "dataset_id": "dwx_custom_history_m1_36_symbols_2018-2025",
+      "path": "sweep_extract.json",
+      "sha256": "247c595106904451c162f5ed6296abe09790d46f01195d26e8b8bde7a1b6e6ea"
+    },
+    {
+      "dataset_id": "q02_tester_report_652e0768_QM5_41484_USDJPY_H1",
+      "path": "sweep_extract.json",
+      "sha256": "247c595106904451c162f5ed6296abe09790d46f01195d26e8b8bde7a1b6e6ea"
+    }
+  ]
+}

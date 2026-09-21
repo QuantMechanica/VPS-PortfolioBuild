@@ -97,3 +97,16 @@ factory time and should precede every future Velocity card; and the lesson gener
 a one-hour pre-open range on FX majors / gold is a cost trap at RISK_FIXED sizing, so the next hypotheses
 must either use wider structural ranges (multi-hour, ATR-scaled stops) or mechanisms whose expectancy per
 trade is an order of magnitude above 0.05R.
+
+## H-V4 (2026-09-21, Fable) — NY pre-open session-range breakout on USDJPY, from the family-F1 sweep
+
+[QM-RESEARCH-2026-0012](../../../strategy-seeds/sources/QM-RESEARCH-2026-0012/source.md) — the one artifact
+minted from the pre-registered family-F1 sweep (`VELOCITY_FAMILY_F1_SESSION_RANGE_SWEEP_2026-09-21.md`,
+registration `60de323f25`, results `270c9a4c98`): QM5_13213 mechanics unchanged, range = the N completed
+60-minute bars of a :30-aligned grid ending 15:30 server (= 08:30 America/New_York, server = NY + 7 h all
+year), flat 23:00 server. Frozen arms C2 (N=2, primary) and C3 (N=3) on USDJPY, C3 on EURUSD (secondary).
+Harness figures (≈ +0.02R optimistic vs the tester, control-cell calibrated): USDJPY C2 SEL n=998 / 0.85 per
+bd / E[R] +0.141 / PF 1.30 / +0.120 R per bd, VAL +0.144 / 1.30 / +0.116 — about twice the incumbent Tokyo
+window (A3 +0.070 / +0.054 R per bd in the same harness); EURUSD C3 +0.076 / +0.105. 9/9 USDJPY cells positive
+on SEL, 8/9 survive VAL; 314 cells searched (27 SEL passes vs 17.4 null, 13 survivors vs 5.5). Sealed `draft`,
+`verify` clean except ledger status; cross-vendor critic (Codex) routed. No card, build or factory row.
