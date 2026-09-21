@@ -118,3 +118,11 @@ COMPILE_OK rows → next tranche → status table).
   CHFJPY −0.097R). Card falsification rule met (fewer than two survivors besides USDJPY) → **lineage RETIRED**; pending
   successors parked under `VELOCITY_LINEAGE_RETIRED_20260920`. Lesson: the Balke Tokyo-range window is a USDJPY-specific
   edge, not a transferable mechanism; the next fan-outs must pair each mechanism with its own session structure.
+- 01:23Z (21.09.) — QM5_10827 tv-vol-exp M15 canaries show net>0 / PF>1.1 on NDX, WS30, XAUUSD but with 2–4 trades in
+  4.5 years: **excluded as noise** (n<30), no priority track. Codex delivered overnight: 3c44384d 15/18 modernised →
+  14 Q02 canaries (all net-negative except the noise above), de9d8271 19/22 registry identities repaired, 690be249
+  QM5_41141 canary f6e9e133, a0780fc3 Q05-v2 analysis (TP0/FP0/TN26/FN35 v1 vs projected TP27/FP18/TN8/FN8 v2 at
+  RISK_FIXED=500) — all four closed APPROVED. Eight source-stale first-successor compile holds superseded
+  (`reconcile_compile_rollout_holds --apply`, 8/8). Build lane unblocked (origin registry, DRAFT DXZ add-10700 record,
+  41002 review archive committed `2b4427a0a3`). Q05 v2: independent critique ab50ed9a (Claude seat, creator=Codex) +
+  gated shadow-only 61-row RISK_FIXED=500 measurement 160843a0 (no gate change).
