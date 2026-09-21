@@ -366,10 +366,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    g_strategy_range_low = range_low;
    g_strategy_range_day_key = day_key;
 
-   QM_EntryRequest buy_req = {};
-   QM_EntryRequest sell_req = {};
-   ZeroMemory(buy_req);
-   ZeroMemory(sell_req);
+   QM_EntryRequest buy_req;
+   ZeroMemory(buy_req);  // MQL5: struct initializer lists are not allowed (compile fix 2026-09-21, Fable)
+   QM_EntryRequest sell_req;
+   ZeroMemory(sell_req);  // MQL5: struct initializer lists are not allowed (compile fix 2026-09-21, Fable)
    Strategy_PopulateEntry(buy_req, QM_BUY_STOP, range_high, range_low, "NY_PREOPEN_RANGE_BUY_STOP");
    Strategy_PopulateEntry(sell_req, QM_SELL_STOP, range_low, range_high, "NY_PREOPEN_RANGE_SELL_STOP");
    buy_req.type = QM_BUY_STOP;
