@@ -76,6 +76,14 @@ Reading: the incumbent is a **slow but breach-safe** book - the failure mode is 
 
 ## 2. SHADOW book and DELTA_SHADOW_VS_INCUMBENT
 
+> **Rebuilt identities (2026-09-21T23:27:17Z, Codex 273f2de8 accepted):** the shadow sleeves 12710 and 20266 were rebuilt under the symbol-input rule as
+> **QM5_41488** (`commodity-tsmom-12m-atr-symbolinput`, magic 414880000) and **QM5_41489** (`collins-66mom-symbolinput`, magic 414890000);
+> identity proof `EQUIVALENT_EXACT` on the governed Q02 window (95/95 and 491/491 deal rows). Their own chain is progressing in the factory
+> (Q02 PASS, Q04 PASS, Q05 active); 41489 may inherit the qualified parent Q08 evidence (20266 PASS), 41488 needs its own Q08 (parent 12710
+> FAIL_SOFT). The shadow roster maps 12710→41488 and 20266→41489 as soon as the rebuilt Q08 streams exist. Evidence:
+> `docs/ops/evidence/2026-09-22_oil_symbol_input_rebuilds/README.md`.
+
+
 No candidate has a **resolved** positive marginal contribution, so the shadow composition equals the incumbent. Candidate actions under OWNER §F:
 
 | Candidate | Book action | Marginal LCB (financed; resolution) | Δ trades/bd | Δ DD USD | Δ cost USD/bd | Why |
