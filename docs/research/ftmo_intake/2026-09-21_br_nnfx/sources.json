@@ -1,0 +1,45 @@
+{
+  "schema": "qm.ftmo-br-nnfx-source-review/v1",
+  "sources": [
+    {
+      "url": "https://github.com/alexcercos/AlgoMasterNNFX-V1",
+      "path": "README.md",
+      "route_status": "ROUTE_GITHUB_API",
+      "retrieved_at_utc": "2026-09-21T20:07:50.799859+00:00",
+      "commit_sha": "12f1eea500677725a79dbe0630fbd8eb95cc2d01",
+      "displayed_commit_timestamp": "2023-05-27T17:04:19Z",
+      "blob_sha": "6b6b06da365554a0643a66b8987e2315e948452a",
+      "content_sha256": "493db4a774bd96f748b565db8885944fd95b67e8684176e7d97bccdd02da3a63",
+      "permalink": "https://github.com/alexcercos/AlgoMasterNNFX-V1/blob/12f1eea500677725a79dbe0630fbd8eb95cc2d01/README.md",
+      "novelty": "No literal match in searched local Markdown/MQ5 corpus; README-only lead, not a verified strategy.",
+      "review_scope": "Read complete bounded text file only. No code executed, binary retrieved, or full linked manual reviewed.",
+      "source_approval": "NOT_GRANTED_BY_RETRIEVAL",
+      "paraphrase": "Community NNFX algorithm tester, mainly Daily; notes bar synchronisation, indicator fidelity and omission of costs except MT5 real-trade mode. No reliable payout success evidence."
+    },
+    {
+      "url": "https://github.com/stfl/backtestd-doc",
+      "path": "NNFX Algo/Algorithm Rules.org",
+      "route_status": "ROUTE_GITHUB_API",
+      "retrieved_at_utc": "2026-09-21T20:07:51.523110+00:00",
+      "commit_sha": "20396101aa6b6101b6a773ebce3e414ce50510e7",
+      "displayed_commit_timestamp": "2020-08-24T11:23:19Z",
+      "blob_sha": "11ff9f0f0e5f8a0d4349ccf45d7ec70d5efc9230",
+      "content_sha256": "33999560bfc50b9db24c34983d37ede2fdf683a88fbe077847259f78edd9dc74",
+      "permalink": "https://github.com/stfl/backtestd-doc/blob/20396101aa6b6101b6a773ebce3e414ce50510e7/NNFX%20Algo/Algorithm%20Rules.org",
+      "novelty": "Already referenced by VARIANT_REALIZATION_SURVEY_2026-06.md; not a new source.",
+      "review_scope": "Read complete bounded text file only. No code executed, binary retrieved, or full linked manual reviewed.",
+      "source_approval": "NOT_GRANTED_BY_RETRIEVAL",
+      "paraphrase": "Community entry rules distinguish confirmation and baseline triggers, one-candle filter delay, ATR proximity and pullback; continuation state-machine section is unfinished."
+    }
+  ],
+  "official_rules_review": {
+    "date": "2026-09-21",
+    "method": "web tool official FTMO CFD pages; concise paraphrases in PLAN.md",
+    "urls": [
+      "https://ftmo.com/en/trading-objectives/",
+      "https://ftmo.com/en/faq/can-i-trade-news/",
+      "https://ftmo.com/en/faq/how-do-i-withdraw-my-profits/",
+      "https://ftmo.com/en/faq/how-long-does-it-take-to-become-an-ftmo-trader/"
+    ]
+  }
+}

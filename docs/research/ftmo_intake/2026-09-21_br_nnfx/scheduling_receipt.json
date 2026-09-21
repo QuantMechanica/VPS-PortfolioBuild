@@ -1,0 +1,73 @@
+{
+  "schema": "qm.ftmo-br-nnfx-scheduling-receipt/v1",
+  "programme_id": "FTMO_BR_NNFX_20260921",
+  "db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "packet_file_sha256": "302cdc4c08c9782ad048547bce864e71ffcbd4615b7092e43ffefcc3e260b75f",
+  "created_at_utc": "2026-09-21T20:10:36.315770+00:00",
+  "method": "agent_router.enqueue_task, lane pin in payload; no worker launched",
+  "tasks": [
+    {
+      "packet_key": "N-RECOVERY",
+      "lane_pin": "codex",
+      "priority": 72,
+      "enqueued": true,
+      "task_id": "cd3b761c-54d4-4b71-ba7e-f60018df57d3",
+      "task_type": "ops_issue",
+      "state": "TODO"
+    },
+    {
+      "packet_key": "R-RECOVERY",
+      "lane_pin": "codex",
+      "priority": 74,
+      "enqueued": true,
+      "task_id": "df1cae9b-76c7-4020-b732-9c2be501584d",
+      "task_type": "ops_issue",
+      "state": "TODO"
+    },
+    {
+      "packet_key": "BR1",
+      "lane_pin": "codex",
+      "priority": 79,
+      "enqueued": true,
+      "task_id": "a42aa6f7-e8b8-4ccf-b9df-833080d94b89",
+      "task_type": "research_strategy",
+      "state": "TODO"
+    },
+    {
+      "packet_key": "BR2",
+      "lane_pin": "codex",
+      "priority": 78,
+      "enqueued": true,
+      "task_id": "2eba7ef7-ba70-4d0e-b9f2-94c5ea54efa2",
+      "task_type": "research_strategy",
+      "state": "TODO"
+    },
+    {
+      "packet_key": "BR3",
+      "lane_pin": "codex",
+      "priority": 78,
+      "enqueued": true,
+      "task_id": "ff6826f5-6686-476b-8d30-bde83e363ad9",
+      "task_type": "research_strategy",
+      "state": "TODO"
+    },
+    {
+      "packet_key": "N-GAPS",
+      "lane_pin": "gemini",
+      "priority": 70,
+      "enqueued": true,
+      "task_id": "9ace7476-09d4-45cb-a349-72ab9ceb8985",
+      "task_type": "research_strategy",
+      "state": "TODO"
+    },
+    {
+      "packet_key": "PAYOUT80",
+      "lane_pin": "codex",
+      "priority": 80,
+      "enqueued": true,
+      "task_id": "e5cc5e95-c3d5-490a-b6c0-a3fded57a38c",
+      "task_type": "ops_issue",
+      "state": "TODO"
+    }
+  ]
+}

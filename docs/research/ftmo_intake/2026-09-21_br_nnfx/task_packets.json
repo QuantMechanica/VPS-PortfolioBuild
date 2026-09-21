@@ -1,0 +1,350 @@
+{
+  "schema": "qm.ftmo-br-nnfx-task-packets/v1",
+  "programme_id": "FTMO_BR_NNFX_20260921",
+  "packets": [
+    {
+      "packet_key": "N-RECOVERY",
+      "task_type": "ops_issue",
+      "assigned_agent": "codex",
+      "priority": 72,
+      "state": "TODO",
+      "payload": {
+        "programme_id": "FTMO_BR_NNFX_20260921",
+        "owner_decision": "OWNER-REQUEST-FTMO-BR-NNFX-20260921",
+        "owner_directive": "decisions/2026-09-21_owner_ftmo_br_nnfx_research_intake.md",
+        "plan_path": "docs/research/ftmo_intake/2026-09-21_br_nnfx/PLAN.md",
+        "context": [
+          "docs/research/ftmo_intake/2026-09-21_br_nnfx/inventory.json",
+          "docs/research/ftmo_intake/2026-09-21_br_nnfx/sources.json",
+          "docs/ftmo/FTMO_BOOK_CURRENT.md",
+          "docs/ftmo/FTMO_KPI_CONTRACT.md",
+          "docs/research/ftmo_shadow/TRACK_B_EDGE_DISCOVERY_PROGRAMME_2026-09-21.md"
+        ],
+        "constraints": [
+          "Deliver research/recovery under the current OWNER order. No live/demo configuration, AutoTrading, purchase, gate-contract change, or incumbent weight change.",
+          "Read PLAN.md completely. Claims of expected PF, win rate or challenge pass rate in old cards are UNVERIFIED unless bound to real evidence. AI approval is not economic PASS.",
+          "Deduplicate against current registry, code/specs, work_items and active agent_tasks before mutations. Link/resume existing build/review/Q02 tasks; never duplicate them or overwrite verdicts.",
+          "Hypothesis cells remain non-approved research. Use current cross-vendor critique and governed source/card/build/Qxx lifecycle. No manual terminal launch or direct verdict writes.",
+          "All prices/signals are causal; canonical timezones/DST and measured FTMO costs. No inferred real volume from CFD tick volume. No ML in trading decision logic.",
+          "Follow existing budget/slot governors. Payload dependency lists are worker preconditions, not enforced router DAG edges. If a prerequisite is missing, complete independent evidence and explicitly retain the unresolved follow-on work."
+        ],
+        "reporting": "Return REVIEW with a durable artifact, exact evidence hashes, work item/task IDs, counts of duplicates/gaps/survivors, and unresolved dependencies. Arrange canonical follow-on tasks for reviewed survivors; a plan alone does not count as completed testing.",
+        "packet_key": "N-RECOVERY",
+        "title": "FTMO NNFX: recover seven identities without economic tests; reuse existing build/review and pending Q02 rows",
+        "requirements": [
+          "Inventory QM5_36001,36003,36004,36008,11963,11964,11965 from the supplied census. Re-read runtime state; create one per-identity disposition with exact blocker and original task link.",
+          "For the four compiled identities audit compile/build identity, current review validity, card/code fidelity, symbol/magic/setfile contracts and deterministic closed-bar indicator behaviour. EX5 presence is not compile approval. Resolve original review failures before governed first-Q02 intake. Preserve 36008 pending Q02 without duplication.",
+          "For 11963/11964/11965 recover the original source and card from canonical stores. No card or no mechanical disclosure -> explicit source/mechanization gap with a follow-on task, never a fabricated build. Do not call the registered name a strategy specification.",
+          "Document unverified 84.8/87.0/87.5% pass-rate claims and discard them from ranking. No destructive editing of source evidence. Prioritise measured net R/day after costs and whole-book benefit; D1 does not get intraday-speed credit.",
+          "After all existing gates accept an unchanged identity, use canonical build/intake scheduling on that identity. Any logic repair requires its own reviewed lineage. Report started/pending/blocked separately."
+        ],
+        "dependency_task_ids": [],
+        "existing_task_ids": [
+          "3c1da904-b03a-40d5-a1b3-c23e9ffad4b8",
+          "019d50ff-a716-46a4-b097-c5c650dea63b",
+          "22225e01-3ed6-4a1f-8fca-b55655117d01",
+          "bab6e8bf-435d-4da2-a25f-1e651cb33960"
+        ],
+        "expected_artifact": "docs/research/ftmo_intake/2026-09-21_br_nnfx/results/N-RECOVERY.md",
+        "required_capabilities": [
+          "code",
+          "ops"
+        ]
+      }
+    },
+    {
+      "packet_key": "R-RECOVERY",
+      "task_type": "ops_issue",
+      "assigned_agent": "codex",
+      "priority": 74,
+      "state": "TODO",
+      "payload": {
+        "programme_id": "FTMO_BR_NNFX_20260921",
+        "owner_decision": "OWNER-REQUEST-FTMO-BR-NNFX-20260921",
+        "owner_directive": "decisions/2026-09-21_owner_ftmo_br_nnfx_research_intake.md",
+        "plan_path": "docs/research/ftmo_intake/2026-09-21_br_nnfx/PLAN.md",
+        "context": [
+          "docs/research/ftmo_intake/2026-09-21_br_nnfx/inventory.json",
+          "docs/research/ftmo_intake/2026-09-21_br_nnfx/sources.json",
+          "docs/ftmo/FTMO_BOOK_CURRENT.md",
+          "docs/ftmo/FTMO_KPI_CONTRACT.md",
+          "docs/research/ftmo_shadow/TRACK_B_EDGE_DISCOVERY_PROGRAMME_2026-09-21.md"
+        ],
+        "constraints": [
+          "Deliver research/recovery under the current OWNER order. No live/demo configuration, AutoTrading, purchase, gate-contract change, or incumbent weight change.",
+          "Read PLAN.md completely. Claims of expected PF, win rate or challenge pass rate in old cards are UNVERIFIED unless bound to real evidence. AI approval is not economic PASS.",
+          "Deduplicate against current registry, code/specs, work_items and active agent_tasks before mutations. Link/resume existing build/review/Q02 tasks; never duplicate them or overwrite verdicts.",
+          "Hypothesis cells remain non-approved research. Use current cross-vendor critique and governed source/card/build/Qxx lifecycle. No manual terminal launch or direct verdict writes.",
+          "All prices/signals are causal; canonical timezones/DST and measured FTMO costs. No inferred real volume from CFD tick volume. No ML in trading decision logic.",
+          "Follow existing budget/slot governors. Payload dependency lists are worker preconditions, not enforced router DAG edges. If a prerequisite is missing, complete independent evidence and explicitly retain the unresolved follow-on work."
+        ],
+        "reporting": "Return REVIEW with a durable artifact, exact evidence hashes, work item/task IDs, counts of duplicates/gaps/survivors, and unresolved dependencies. Arrange canonical follow-on tasks for reviewed survivors; a plan alone does not count as completed testing.",
+        "packet_key": "R-RECOVERY",
+        "title": "FTMO retest: resolve untested engulf/retest and POC/profile inventory gaps",
+        "requirements": [
+          "Inspect QM5_9241, QM5_12038, QM5_20078 and their existing blocked build tasks. Recover exact original blocker and card/source data dependencies.",
+          "Resolve reversible implementation/intake defects through the governed build workflow; do not revive retired identities or duplicate original build tasks. If card/source/volume data is missing, make the gap explicit and commission its actual resolution.",
+          "For volume-profile candidates prove data semantics (exchange volume, tick volume or time-at-price) and source/code parity. Reject a falsely labelled proxy and do not invent data.",
+          "Schedule first canaries only after valid current compile, review, registry and intake checks. Return per-identity receipts and FTMO speed relevance; no profitability claim from a successful compile."
+        ],
+        "dependency_task_ids": [],
+        "existing_task_ids": [
+          "d00d7571-74f4-45ea-b652-57fa439f7bd9",
+          "751d8eb5-d9de-4cfe-85c6-27468c409078"
+        ],
+        "expected_artifact": "docs/research/ftmo_intake/2026-09-21_br_nnfx/results/R-RECOVERY.md",
+        "required_capabilities": [
+          "code",
+          "ops"
+        ]
+      }
+    },
+    {
+      "packet_key": "BR1",
+      "task_type": "research_strategy",
+      "assigned_agent": "codex",
+      "priority": 79,
+      "state": "TODO",
+      "payload": {
+        "programme_id": "FTMO_BR_NNFX_20260921",
+        "owner_decision": "OWNER-REQUEST-FTMO-BR-NNFX-20260921",
+        "owner_directive": "decisions/2026-09-21_owner_ftmo_br_nnfx_research_intake.md",
+        "plan_path": "docs/research/ftmo_intake/2026-09-21_br_nnfx/PLAN.md",
+        "context": [
+          "docs/research/ftmo_intake/2026-09-21_br_nnfx/inventory.json",
+          "docs/research/ftmo_intake/2026-09-21_br_nnfx/sources.json",
+          "docs/ftmo/FTMO_BOOK_CURRENT.md",
+          "docs/ftmo/FTMO_KPI_CONTRACT.md",
+          "docs/research/ftmo_shadow/TRACK_B_EDGE_DISCOVERY_PROGRAMME_2026-09-21.md"
+        ],
+        "constraints": [
+          "Deliver research/recovery under the current OWNER order. No live/demo configuration, AutoTrading, purchase, gate-contract change, or incumbent weight change.",
+          "Read PLAN.md completely. Claims of expected PF, win rate or challenge pass rate in old cards are UNVERIFIED unless bound to real evidence. AI approval is not economic PASS.",
+          "Deduplicate against current registry, code/specs, work_items and active agent_tasks before mutations. Link/resume existing build/review/Q02 tasks; never duplicate them or overwrite verdicts.",
+          "Hypothesis cells remain non-approved research. Use current cross-vendor critique and governed source/card/build/Qxx lifecycle. No manual terminal launch or direct verdict writes.",
+          "All prices/signals are causal; canonical timezones/DST and measured FTMO costs. No inferred real volume from CFD tick volume. No ML in trading decision logic.",
+          "Follow existing budget/slot governors. Payload dependency lists are worker preconditions, not enforced router DAG edges. If a prerequisite is missing, complete independent evidence and explicitly retain the unresolved follow-on work."
+        ],
+        "reporting": "Return REVIEW with a durable artifact, exact evidence hashes, work item/task IDs, counts of duplicates/gaps/survivors, and unresolved dependencies. Arrange canonical follow-on tasks for reviewed survivors; a plan alone does not count as completed testing.",
+        "packet_key": "BR1",
+        "title": "FTMO BR1: US cash-open first accepted OR retest with peer confirmation",
+        "requirements": [
+          "NDX/SP500/WS30, 09:30-09:45 NY OR; closed-bar retest + peer vs no-peer control, 6 cells. Compare 10181/10659/10668/10724 and Track-B H-B2/H-B4.",
+          "Use exact PLAN.md rules as the initial bounded specification. First compare semantic nearest neighbours and current work from 2caa90f8; identical cells close as duplicates. Document the specific new state/anchor/execution difference, not just a new title.",
+          "Freeze pre-registration, parameter values, comparison arms, data/cost/code hashes and training/validation boundaries before computing outcomes. Across BR1-BR3 there are 16 cells, not unlimited parameter or symbol searches.",
+          "Use the accepted v2/golden-tested shared harness. Until dependency 7088da77 is accepted and causal fill/news checks pass, only dedup/spec/data preparation is allowed. Extend that harness in an isolated worktree if needed; do not fork a rival simulator.",
+          "After prerequisites pass, run the bounded prescreen with next-open fills, gap-stop stress and funded-news policy. Label reused 2023-2025 validation honestly. Log failed cells and all comparisons; the existing multiple-testing and Q contracts remain binding.",
+          "Only unique, cost-robust survivors receive the ordinary independent critique and mechanical source/card intake, then a governed MT5 canary. Return WORTH_MT5_TEST or explicit kill/gap reasons; never call a Python prescreen economic validation. Request marginal evaluation from PAYOUT80 after valid streams exist."
+        ],
+        "dependency_task_ids": [
+          "7088da77-9e03-45cf-a568-581863f03ef1",
+          "73434cab-cf1c-4c17-8a11-9ca52c11d99e"
+        ],
+        "existing_task_ids": [
+          "2caa90f8-fb99-4545-b650-668feeb453a8"
+        ],
+        "expected_artifact": "docs/research/ftmo_intake/2026-09-21_br_nnfx/results/BR1.md",
+        "required_capabilities": [
+          "code",
+          "research",
+          "strategy"
+        ]
+      }
+    },
+    {
+      "packet_key": "BR2",
+      "task_type": "research_strategy",
+      "assigned_agent": "codex",
+      "priority": 78,
+      "state": "TODO",
+      "payload": {
+        "programme_id": "FTMO_BR_NNFX_20260921",
+        "owner_decision": "OWNER-REQUEST-FTMO-BR-NNFX-20260921",
+        "owner_directive": "decisions/2026-09-21_owner_ftmo_br_nnfx_research_intake.md",
+        "plan_path": "docs/research/ftmo_intake/2026-09-21_br_nnfx/PLAN.md",
+        "context": [
+          "docs/research/ftmo_intake/2026-09-21_br_nnfx/inventory.json",
+          "docs/research/ftmo_intake/2026-09-21_br_nnfx/sources.json",
+          "docs/ftmo/FTMO_BOOK_CURRENT.md",
+          "docs/ftmo/FTMO_KPI_CONTRACT.md",
+          "docs/research/ftmo_shadow/TRACK_B_EDGE_DISCOVERY_PROGRAMME_2026-09-21.md"
+        ],
+        "constraints": [
+          "Deliver research/recovery under the current OWNER order. No live/demo configuration, AutoTrading, purchase, gate-contract change, or incumbent weight change.",
+          "Read PLAN.md completely. Claims of expected PF, win rate or challenge pass rate in old cards are UNVERIFIED unless bound to real evidence. AI approval is not economic PASS.",
+          "Deduplicate against current registry, code/specs, work_items and active agent_tasks before mutations. Link/resume existing build/review/Q02 tasks; never duplicate them or overwrite verdicts.",
+          "Hypothesis cells remain non-approved research. Use current cross-vendor critique and governed source/card/build/Qxx lifecycle. No manual terminal launch or direct verdict writes.",
+          "All prices/signals are causal; canonical timezones/DST and measured FTMO costs. No inferred real volume from CFD tick volume. No ML in trading decision logic.",
+          "Follow existing budget/slot governors. Payload dependency lists are worker preconditions, not enforced router DAG edges. If a prerequisite is missing, complete independent evidence and explicitly retain the unresolved follow-on work."
+        ],
+        "reporting": "Return REVIEW with a durable artifact, exact evidence hashes, work item/task IDs, counts of duplicates/gaps/survivors, and unresolved dependencies. Arrange canonical follow-on tasks for reviewed survivors; a plan alone does not count as completed testing.",
+        "packet_key": "BR2",
+        "title": "FTMO BR2: compressed Asia range first retest in the London handoff",
+        "requirements": [
+          "EURUSD/GBPUSD/USDJPY, London-clock overnight range and entry window; compression vs no-compression paired control, 6 cells. Compare 9987/9725 and incumbent 13213, quantify joint USD exposure.",
+          "Use exact PLAN.md rules as the initial bounded specification. First compare semantic nearest neighbours and current work from 2caa90f8; identical cells close as duplicates. Document the specific new state/anchor/execution difference, not just a new title.",
+          "Freeze pre-registration, parameter values, comparison arms, data/cost/code hashes and training/validation boundaries before computing outcomes. Across BR1-BR3 there are 16 cells, not unlimited parameter or symbol searches.",
+          "Use the accepted v2/golden-tested shared harness. Until dependency 7088da77 is accepted and causal fill/news checks pass, only dedup/spec/data preparation is allowed. Extend that harness in an isolated worktree if needed; do not fork a rival simulator.",
+          "After prerequisites pass, run the bounded prescreen with next-open fills, gap-stop stress and funded-news policy. Label reused 2023-2025 validation honestly. Log failed cells and all comparisons; the existing multiple-testing and Q contracts remain binding.",
+          "Only unique, cost-robust survivors receive the ordinary independent critique and mechanical source/card intake, then a governed MT5 canary. Return WORTH_MT5_TEST or explicit kill/gap reasons; never call a Python prescreen economic validation. Request marginal evaluation from PAYOUT80 after valid streams exist."
+        ],
+        "dependency_task_ids": [
+          "7088da77-9e03-45cf-a568-581863f03ef1",
+          "73434cab-cf1c-4c17-8a11-9ca52c11d99e"
+        ],
+        "existing_task_ids": [
+          "2caa90f8-fb99-4545-b650-668feeb453a8"
+        ],
+        "expected_artifact": "docs/research/ftmo_intake/2026-09-21_br_nnfx/results/BR2.md",
+        "required_capabilities": [
+          "code",
+          "research",
+          "strategy"
+        ]
+      }
+    },
+    {
+      "packet_key": "BR3",
+      "task_type": "research_strategy",
+      "assigned_agent": "codex",
+      "priority": 78,
+      "state": "TODO",
+      "payload": {
+        "programme_id": "FTMO_BR_NNFX_20260921",
+        "owner_decision": "OWNER-REQUEST-FTMO-BR-NNFX-20260921",
+        "owner_directive": "decisions/2026-09-21_owner_ftmo_br_nnfx_research_intake.md",
+        "plan_path": "docs/research/ftmo_intake/2026-09-21_br_nnfx/PLAN.md",
+        "context": [
+          "docs/research/ftmo_intake/2026-09-21_br_nnfx/inventory.json",
+          "docs/research/ftmo_intake/2026-09-21_br_nnfx/sources.json",
+          "docs/ftmo/FTMO_BOOK_CURRENT.md",
+          "docs/ftmo/FTMO_KPI_CONTRACT.md",
+          "docs/research/ftmo_shadow/TRACK_B_EDGE_DISCOVERY_PROGRAMME_2026-09-21.md"
+        ],
+        "constraints": [
+          "Deliver research/recovery under the current OWNER order. No live/demo configuration, AutoTrading, purchase, gate-contract change, or incumbent weight change.",
+          "Read PLAN.md completely. Claims of expected PF, win rate or challenge pass rate in old cards are UNVERIFIED unless bound to real evidence. AI approval is not economic PASS.",
+          "Deduplicate against current registry, code/specs, work_items and active agent_tasks before mutations. Link/resume existing build/review/Q02 tasks; never duplicate them or overwrite verdicts.",
+          "Hypothesis cells remain non-approved research. Use current cross-vendor critique and governed source/card/build/Qxx lifecycle. No manual terminal launch or direct verdict writes.",
+          "All prices/signals are causal; canonical timezones/DST and measured FTMO costs. No inferred real volume from CFD tick volume. No ML in trading decision logic.",
+          "Follow existing budget/slot governors. Payload dependency lists are worker preconditions, not enforced router DAG edges. If a prerequisite is missing, complete independent evidence and explicitly retain the unresolved follow-on work."
+        ],
+        "reporting": "Return REVIEW with a durable artifact, exact evidence hashes, work item/task IDs, counts of duplicates/gaps/survivors, and unresolved dependencies. Arrange canonical follow-on tasks for reviewed survivors; a plan alone does not count as completed testing.",
+        "packet_key": "BR3",
+        "title": "FTMO BR3: Gold/Silver NY first retest of the completed London range",
+        "requirements": [
+          "XAUUSD/XAGUSD, London range frozen before NY window; retest package vs direct-breakout control, 4 cells. Compare 10181/10989 and existing XAU book, quantify cost and loss-day dependence.",
+          "Use exact PLAN.md rules as the initial bounded specification. First compare semantic nearest neighbours and current work from 2caa90f8; identical cells close as duplicates. Document the specific new state/anchor/execution difference, not just a new title.",
+          "Freeze pre-registration, parameter values, comparison arms, data/cost/code hashes and training/validation boundaries before computing outcomes. Across BR1-BR3 there are 16 cells, not unlimited parameter or symbol searches.",
+          "Use the accepted v2/golden-tested shared harness. Until dependency 7088da77 is accepted and causal fill/news checks pass, only dedup/spec/data preparation is allowed. Extend that harness in an isolated worktree if needed; do not fork a rival simulator.",
+          "After prerequisites pass, run the bounded prescreen with next-open fills, gap-stop stress and funded-news policy. Label reused 2023-2025 validation honestly. Log failed cells and all comparisons; the existing multiple-testing and Q contracts remain binding.",
+          "Only unique, cost-robust survivors receive the ordinary independent critique and mechanical source/card intake, then a governed MT5 canary. Return WORTH_MT5_TEST or explicit kill/gap reasons; never call a Python prescreen economic validation. Request marginal evaluation from PAYOUT80 after valid streams exist."
+        ],
+        "dependency_task_ids": [
+          "7088da77-9e03-45cf-a568-581863f03ef1",
+          "73434cab-cf1c-4c17-8a11-9ca52c11d99e"
+        ],
+        "existing_task_ids": [
+          "2caa90f8-fb99-4545-b650-668feeb453a8"
+        ],
+        "expected_artifact": "docs/research/ftmo_intake/2026-09-21_br_nnfx/results/BR3.md",
+        "required_capabilities": [
+          "code",
+          "research",
+          "strategy"
+        ]
+      }
+    },
+    {
+      "packet_key": "N-GAPS",
+      "task_type": "research_strategy",
+      "assigned_agent": "gemini",
+      "priority": 70,
+      "state": "TODO",
+      "payload": {
+        "programme_id": "FTMO_BR_NNFX_20260921",
+        "owner_decision": "OWNER-REQUEST-FTMO-BR-NNFX-20260921",
+        "owner_directive": "decisions/2026-09-21_owner_ftmo_br_nnfx_research_intake.md",
+        "plan_path": "docs/research/ftmo_intake/2026-09-21_br_nnfx/PLAN.md",
+        "context": [
+          "docs/research/ftmo_intake/2026-09-21_br_nnfx/inventory.json",
+          "docs/research/ftmo_intake/2026-09-21_br_nnfx/sources.json",
+          "docs/ftmo/FTMO_BOOK_CURRENT.md",
+          "docs/ftmo/FTMO_KPI_CONTRACT.md",
+          "docs/research/ftmo_shadow/TRACK_B_EDGE_DISCOVERY_PROGRAMME_2026-09-21.md"
+        ],
+        "constraints": [
+          "Deliver research/recovery under the current OWNER order. No live/demo configuration, AutoTrading, purchase, gate-contract change, or incumbent weight change.",
+          "Read PLAN.md completely. Claims of expected PF, win rate or challenge pass rate in old cards are UNVERIFIED unless bound to real evidence. AI approval is not economic PASS.",
+          "Deduplicate against current registry, code/specs, work_items and active agent_tasks before mutations. Link/resume existing build/review/Q02 tasks; never duplicate them or overwrite verdicts.",
+          "Hypothesis cells remain non-approved research. Use current cross-vendor critique and governed source/card/build/Qxx lifecycle. No manual terminal launch or direct verdict writes.",
+          "All prices/signals are causal; canonical timezones/DST and measured FTMO costs. No inferred real volume from CFD tick volume. No ML in trading decision logic.",
+          "Follow existing budget/slot governors. Payload dependency lists are worker preconditions, not enforced router DAG edges. If a prerequisite is missing, complete independent evidence and explicitly retain the unresolved follow-on work."
+        ],
+        "reporting": "Return REVIEW with a durable artifact, exact evidence hashes, work item/task IDs, counts of duplicates/gaps/survivors, and unresolved dependencies. Arrange canonical follow-on tasks for reviewed survivors; a plan alone does not count as completed testing.",
+        "packet_key": "N-GAPS",
+        "title": "FTMO NNFX: prove remaining state-machine coverage gaps and preregister one H1 session-flat adaptation",
+        "requirements": [
+          "Reconcile source/spec/code/test coverage for NNFX Standard/C1, Baseline, one-candle, ATR pullback, continuation and exits, against the June variant survey and 12534/12742/2010/2011. stfl/backtestd-doc is already known. AlgoMaster README is a lead only; review source text through the approved source route without executing third-party code.",
+          "Do not claim novel canonical rules where the implementation already covers them. Do not fill incomplete external continuation state-machine sections by imagination. Prove a coverage defect before proposing a new lineage.",
+          "For the PLAN.md N2 experiment, recover and freeze the reviewed McGinley/SSL/WAE formulas and periods; preregister only four symbols x two H1 execution arms = 8 cells, session-flat vs all-hours, with identical signal and risk rules and financing. This is NNFX-inspired, not original D1 NNFX.",
+          "Research delivery includes a buildable finite spec, economic speed/cost hypothesis, duplicate/coverage table, data requirements and kill criteria. No code or terminal changes from this research lane. Commission the deterministic prescreen implementation only if uniqueness and source fidelity survive review; link N-RECOVERY and the shared harness dependency."
+        ],
+        "dependency_task_ids": [
+          "7088da77-9e03-45cf-a568-581863f03ef1"
+        ],
+        "existing_task_ids": [],
+        "expected_artifact": "docs/research/ftmo_intake/2026-09-21_br_nnfx/results/N-GAPS.md"
+      }
+    },
+    {
+      "packet_key": "PAYOUT80",
+      "task_type": "ops_issue",
+      "assigned_agent": "codex",
+      "priority": 80,
+      "state": "TODO",
+      "payload": {
+        "programme_id": "FTMO_BR_NNFX_20260921",
+        "owner_decision": "OWNER-REQUEST-FTMO-BR-NNFX-20260921",
+        "owner_directive": "decisions/2026-09-21_owner_ftmo_br_nnfx_research_intake.md",
+        "plan_path": "docs/research/ftmo_intake/2026-09-21_br_nnfx/PLAN.md",
+        "context": [
+          "docs/research/ftmo_intake/2026-09-21_br_nnfx/inventory.json",
+          "docs/research/ftmo_intake/2026-09-21_br_nnfx/sources.json",
+          "docs/ftmo/FTMO_BOOK_CURRENT.md",
+          "docs/ftmo/FTMO_KPI_CONTRACT.md",
+          "docs/research/ftmo_shadow/TRACK_B_EDGE_DISCOVERY_PROGRAMME_2026-09-21.md"
+        ],
+        "constraints": [
+          "Deliver research/recovery under the current OWNER order. No live/demo configuration, AutoTrading, purchase, gate-contract change, or incumbent weight change.",
+          "Read PLAN.md completely. Claims of expected PF, win rate or challenge pass rate in old cards are UNVERIFIED unless bound to real evidence. AI approval is not economic PASS.",
+          "Deduplicate against current registry, code/specs, work_items and active agent_tasks before mutations. Link/resume existing build/review/Q02 tasks; never duplicate them or overwrite verdicts.",
+          "Hypothesis cells remain non-approved research. Use current cross-vendor critique and governed source/card/build/Qxx lifecycle. No manual terminal launch or direct verdict writes.",
+          "All prices/signals are causal; canonical timezones/DST and measured FTMO costs. No inferred real volume from CFD tick volume. No ML in trading decision logic.",
+          "Follow existing budget/slot governors. Payload dependency lists are worker preconditions, not enforced router DAG edges. If a prerequisite is missing, complete independent evidence and explicitly retain the unresolved follow-on work."
+        ],
+        "reporting": "Return REVIEW with a durable artifact, exact evidence hashes, work item/task IDs, counts of duplicates/gaps/survivors, and unresolved dependencies. Arrange canonical follow-on tasks for reviewed survivors; a plan alone does not count as completed testing.",
+        "packet_key": "PAYOUT80",
+        "title": "FTMO 80/20 speed frontier: evaluate complete two-step-to-first-net-payout chain for this intake",
+        "requirements": [
+          "Use existing tools/strategy_farm/ftmo/book_sim.py and current KPI contract; integrate with bc00c556 hygiene and 73434cab venue fidelity. Do not replace or silently redefine the canonical estimator.",
+          "Implement/report an additive research view of the OWNER 80/20 objective: full-chain success lower bound >=0.80 with calendar time to first positive net cash payout. Report payout-by-day 30/45/60/90, unconditional t80 if reached, conditional median/p90, breaches and unresolved paths separately.",
+          "Initial assumption USD100k; evaluate first permitted positive reward and 0.5/1/2% funded account gains. Official 80% reward share, fee/refund accounting and separate Challenge/Verification administration plus funded wait/payment lag. Actual bank receipt remains an evidence gap until observed; administrative rejection probability must not be invented.",
+          "Model 10%/5% targets, 4 entry days each, 5% daily equity loss and static 10% total loss, Prague midnight, floating P/L, commission, swap, measured venue spreads/gaps, correlated open risk and funded Standard news execution restrictions. Same frozen strategy policy across phases.",
+          "Read programme candidate streams only after current provenance and validation checks. Pre-register bounded offline risk comparisons within the current account contract. Compare marginal speed and payout safety to the incumbent; no live weight change, no fabricated numerical result when candidate streams are absent.",
+          "Coordinate with current book work so evaluator readiness can complete now and an explicit dependent batch evaluates survivors later. Deliver schema/example using existing evidenced streams if useful, clearly labelled diagnostic; do not mark new strategies successful or the whole intake economically complete."
+        ],
+        "dependency_task_ids": [
+          "73434cab-cf1c-4c17-8a11-9ca52c11d99e",
+          "bc00c556-b41e-4386-b9d5-5db3bb731fac"
+        ],
+        "existing_task_ids": [],
+        "expected_artifact": "docs/research/ftmo_intake/2026-09-21_br_nnfx/results/PAYOUT80.md",
+        "required_capabilities": [
+          "code",
+          "ops"
+        ]
+      }
+    }
+  ]
+}

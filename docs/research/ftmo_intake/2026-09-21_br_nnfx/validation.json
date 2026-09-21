@@ -1,0 +1,28 @@
+{
+  "schema": "qm.ftmo-br-nnfx-intake-validation/v1",
+  "verified_at_utc": "2026-09-21T20:13:08.560533+00:00",
+  "checks": {
+    "packet_count": 7,
+    "unique_packet_keys": 7,
+    "runtime_readback": "PASS",
+    "lane_pins_and_priorities": "PASS",
+    "json_parse": "PASS",
+    "python_ast_parse": "PASS",
+    "packet_hash_matches_receipt": "PASS"
+  },
+  "economic_tests_run_this_turn": 0,
+  "new_economic_success_claims": 0,
+  "vault_page": "G:\\My Drive\\QuantMechanica - Company Reference\\12 ToDo\\AI ToDos\\FTMO Break Retest NNFX 2026-09-21.md",
+  "scope": "Inventory, provenance, pre-registration proposals and actual router scheduling. No terminal or live-account mutation.",
+  "vault_lint": {
+    "status": "FAIL_EXISTING_VAULT_DEBT",
+    "findings": 16,
+    "new_programme_page_reported": false,
+    "examples": [
+      "old gate tokens in existing Codex/OWNER/War Room pages",
+      "existing broken wikilinks in Book Evolution",
+      "legacy GER40.DWX in Second-Chance Register"
+    ],
+    "scope_action": "Recorded, not repaired: outside the strategy intake scope."
+  }
+}
