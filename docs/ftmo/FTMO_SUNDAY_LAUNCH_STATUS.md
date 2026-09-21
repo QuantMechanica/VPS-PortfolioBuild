@@ -2,7 +2,7 @@
 
 Authority: OWNER-DEC-FTMO-FINAL-MEGA-20260921 (`decisions/2026-09-21_owner_ftmo_final_mega_prompt_sunday_demo.md`). Fable launches
 autonomously when the critical preflight checks are green; the sole mandatory OWNER approval remains the paid FTMO Challenge purchase.
-Updated by Fable at every material change; last update **2026-09-21 19:2xZ**.
+Updated by Fable at every material change; last update **2026-09-21 19:4xZ** (Antigravity Go/No-Go critique cb0eb674 folded in).
 
 ## §Y fields
 
@@ -43,6 +43,13 @@ Updated by Fable at every material change; last update **2026-09-21 19:2xZ**.
 | PORTFOLIO | dependence matrix current, weights intentional, no duplicate exposure, XAU cluster understood, first-passage current | GREEN (financed re-run 2026-09-21) | Fable |
 | OPERATIONS | sleeve P&L attribution, logs, recovery procedure, demo account clean before attach, post-attach verification | RED (attribution 74c41987; account-clean + post-attach = launch-day steps) | Codex 74c41987 → Fable |
 | DEMO DAYS | retro-audit classification of the 2026-09-18..27 days (BEHAVIOR_IDENTICAL / POTENTIALLY_DIFFERENT / MATERIALLY_INVALID) | GREEN for 09-18..21 (1 INVALID / 2 POTENTIALLY_DIFFERENT / 1 IDENTICAL; 2 valid completed days; all PRE_SUNDAY_LIVE_TRIAL, not merged) — re-run for 09-22..26 before launch | Codex 4505b206 APPROVED (`2026-09-21_ftmo_demo_day_retro_audit/`) |
+| CODE/EXECUTION | live news feed binding: every sleeve preset points at the live calendar (D:/QM/data/news_calendar + FILE_COMMON, mtime < 24 h), never a static backtest CSV | RED (preflight row to be built; critique cb0eb674 #1) | 94a15624 |
+| OPERATIONS | terminal AutoTrading flag: TERMINAL_TRADE_ALLOWED == 1 and trading_allowed == true on all six charts after attach | RED (launch-day proof; critique #2) | 94a15624 → Fable |
+| ACCOUNT RISK | weekend non-tick rollover proof: KS_DAY_ROLLOVER after a no-tick boundary (TimeCurrent froze 09-18 23:54:59 → Sunday restarts restored stale anchors) | RED (d6189118 req 8; critique #3) | Codex d6189118 → Fable |
+| OPERATIONS | server-request anomaly thresholds: pulse WARN 200 / LIMIT 500 + 60-s burst alarm (> 25 requests) — FTMO's 2,000 is the termination line, not a monitor | RED (d6189118 req 9; critique #4) | Codex d6189118 |
+| ACCOUNT RISK | clean initial account before attach: balance == 100000.00, PositionsTotal() == 0, OrdersTotal() == 0 | RED (launch-day step; critique #5; depends on the account decision A/B) | Fable |
+| CODE/ARTIFACT | sleeve attribution pre-launch dry-run: Sum(sleeve P&L) == account P&L to 0.00 | RED (74c41987; critique #6) | Codex 74c41987 → Fable |
+| PROOF CHAIN | KS launch proof chain (critique Q5): build_check receipt + installed .ex5 sha → KS_DAY_ANCHOR_SET / KS_BOOK_TAG_SET per magic → ks_state readback → KS_DAY_ROLLOVER at the first Prague midnight without ticks | RED (d6189118 req 10) | Codex → Fable |
 
 ## Next five actions (ordered)
 

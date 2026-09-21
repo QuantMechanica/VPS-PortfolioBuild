@@ -108,3 +108,15 @@ Three seeds (11, 12, 13) of the marginal engine on the financed streams, 5,000 m
 11708's financed marginal is small-positive on average (+0.013) but spans 0.000..0.024 across seeds — consistent with the §3
 conclusion (≈ 0 to +0.01, unresolved at this replication). `SHADOW_BOOK` stands; a resolved ≥ +0.01 would need ≥ 10 seeds at
 5,000 paths or a larger path count (ticket `3fae43b2`).
+
+## 6. Cross-provider critique outcome (Antigravity `3960afee`, 2026-09-21 19:2xZ, `agy_critique_3960afee.md`)
+
+Q1 classification confirmed; Q2 resolution argument confirmed with the estimator reform **Common Random Numbers / paired paths**
+(same block trajectory for base and variant → Var(Δ) falls by ~10×, a 0.01 delta resolves at 5,000 paired paths); Q3 headline
+consistent (the block-length change 10 → 20 explains −0.013 of the 0.8839 → 0.8668 move); Q4 actions confirmed. Four defects
+ranked and accepted: (1) candidate streams must be coterminous with the base window (fail-closed `STREAM_WINDOW_INSUFFICIENT`,
+otherwise a truncated loser is flattered), (2) CRN paired sampling for marginals, (3) `profit`-field assertion so swap is never
+double-counted on a `net`-only row, (4) `marginal_delta_se` + `is_statistically_resolved` in the machine read-model. All four are
+routed into the simulator-confidence work (`3fae43b2`). 11910 stays `REJECT` for the FTMO book on the present evidence; it may only
+be re-opened with a coterminous financed stream.
+
