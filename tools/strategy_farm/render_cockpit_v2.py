@@ -87,6 +87,8 @@ ALIAS_PATH = Path(r"D:\QM\strategy_farm\dashboards\cockpit_v2.html")
 FACTORY_POPULATION_PATH = Path(r"D:\QM\reports\state\factory_population.json")
 FTMO_BOOK_STATE_PATH = Path(r"D:\QM\reports\state\ftmo_book_current.json")
 FTMO_BOOK_STATE_SCHEMA = "qm.ftmo-book-current/v1"
+FTMO_SLEEVE_ATTRIBUTION_PATH = Path(r"D:\QM\reports\state\ftmo_sleeve_attribution.json")
+FTMO_SLEEVE_ATTRIBUTION_SCHEMA = "qm.ftmo-sleeve-attribution/v1"
 
 
 def load_factory_population(path: Path | None = None) -> dict | None:
@@ -129,6 +131,33 @@ def load_ftmo_book_current(path: Path | None = None) -> dict:
     if schema != FTMO_BOOK_STATE_SCHEMA:
         read_model["error"] = (
             f"schema mismatch: expected {FTMO_BOOK_STATE_SCHEMA}, got {schema or 'MISSING'}"
+        )
+        return read_model
+    read_model["present"] = True
+    read_model["payload"] = payload
+    return read_model
+
+
+def load_ftmo_sleeve_attribution(path: Path | None = None) -> dict:
+    """Fail-visible, read-only loader for the sleeve money sidecar."""
+
+    source = Path(path or FTMO_SLEEVE_ATTRIBUTION_PATH)
+    read_model = {"present": False, "source_path": str(source), "payload": {}, "error": None}
+    try:
+        payload = json.loads(source.read_text(encoding="utf-8-sig"))
+    except FileNotFoundError:
+        read_model["error"] = "state file missing"
+        return read_model
+    except (OSError, ValueError, UnicodeDecodeError) as exc:
+        read_model["error"] = f"state file unreadable: {type(exc).__name__}"
+        return read_model
+    if not isinstance(payload, dict):
+        read_model["error"] = "state root is not an object"
+        return read_model
+    schema = payload.get("schema")
+    if schema != FTMO_SLEEVE_ATTRIBUTION_SCHEMA:
+        read_model["error"] = (
+            f"schema mismatch: expected {FTMO_SLEEVE_ATTRIBUTION_SCHEMA}, got {schema or 'MISSING'}"
         )
         return read_model
     read_model["present"] = True
@@ -1395,7 +1424,109 @@ def _ftmo_probability(value: Any) -> str:
     return _ftmo_value(value)
 
 
-def _render_ftmo_book(read_model: dict | None = None) -> str:
+def _ftmo_arm_block(label: str, arm: Any) -> str:
+    """Render one OWNER section-G book arm without deriving portfolio metrics."""
+
+    if not isinstance(arm, dict):
+        return f'<div class="mc-ftmo-arm"><b>{e(label)}</b><span class="mc-ftmo-nym">NOT_YET_MEASURABLE</span></div>'
+    sleeve_lines = []
+    for sleeve in arm.get("sleeves") or []:
+        if not isinstance(sleeve, dict):
+            continue
+        sleeve_lines.append(
+            f'<span class="mc-mono">QM5_{e(sleeve.get("ea_id"))} '
+            f'{e(sleeve.get("symbol"))}/{e(sleeve.get("timeframe"))}</span> '
+            f'· {e(sleeve.get("role"))} · {_ftmo_value(sleeve.get("risk_percent"), dec=5, suffix=" %")}'
+        )
+    sleeve_html = "<br>".join(sleeve_lines) or '<span class="mc-ftmo-nym">NOT_YET_MEASURABLE · sleeves</span>'
+    cluster = arm.get("STRONGEST_DEPENDENCE_CLUSTER")
+    if isinstance(cluster, list):
+        cluster = " / ".join(str(item) for item in cluster)
+    return f'''
+      <div class="mc-ftmo-arm">
+        <div class="mc-sublabel">{e(label)} · {e(arm.get("status"))}</div>
+        <div class="mc-ftmo-arm-sleeves">{sleeve_html}</div>
+        <div class="mc-foot-line"><b>R/day</b> {_ftmo_value(arm.get("R_PER_DAY"), dec=6)} · <b>trades/day</b> {_ftmo_value(arm.get("TRADES_PER_DAY"), dec=6)} · <b>active days</b> {_ftmo_probability(arm.get("ACTIVE_DAY_RATIO"))}</div>
+        <div class="mc-foot-line"><b>breach P</b> daily {_ftmo_probability(arm.get("P_DAILY_LOSS_BREACH"))} · max {_ftmo_probability(arm.get("P_MAX_LOSS_BREACH"))} · <b>payout LCB</b> {_ftmo_probability(arm.get("P_FIRST_NET_FTMO_PAYOUT_LCB"))}</div>
+        <div class="mc-foot-line"><b>median days</b> challenge {_ftmo_value(arm.get("MEDIAN_CHALLENGE_DAYS_BD"), dec=1)} · first payout {_ftmo_value(arm.get("MEDIAN_FIRST_PAYOUT_DAYS_BD"), dec=1)} · <b>cluster</b> {_ftmo_value(cluster)}</div>
+      </div>'''
+
+
+def _render_ftmo_section_g(payload: dict) -> str:
+    """Render the OWNER section-G fields verbatim from ftmo_book_current.json."""
+
+    delta = payload.get("delta_shadow_vs_incumbent")
+    delta_rows = []
+    if isinstance(delta, dict):
+        for key in (
+            "DELTA_P_FIRST_NET_FTMO_PAYOUT_LCB",
+            "DELTA_P_CHALLENGE_PASS",
+            "DELTA_P_DAILY_LOSS_BREACH",
+            "DELTA_P_MAX_LOSS_BREACH",
+            "DELTA_EXPECTED_TIME_TO_CHALLENGE",
+            "DELTA_TRADE_DENSITY",
+            "DELTA_MAX_DRAWDOWN",
+            "DELTA_COST_DRAG",
+        ):
+            delta_rows.append(f'<span class="mc-mono">{e(key)}={_ftmo_value(delta.get(key), dec=6)}</span>')
+        if delta.get("note"):
+            delta_rows.append(e(delta["note"]))
+    delta_html = " · ".join(delta_rows) or '<span class="mc-ftmo-nym">NOT_YET_MEASURABLE</span>'
+    financing = payload.get("financing")
+    financing_label = financing.get("label") if isinstance(financing, dict) else financing
+    missing = _ftmo_first(payload, "strongest_missing_book_behavior", "strongest_missing_behavior")
+    return f'''
+    <div class="mc-sublabel">OWNER section G · incumbent / shadow</div>
+    <div class="mc-ftmo-grid">
+      {_ftmo_arm_block("INCUMBENT", payload.get("incumbent"))}
+      {_ftmo_arm_block("SHADOW", payload.get("shadow"))}
+    </div>
+    <div class="mc-foot-line"><b>Shadow − incumbent:</b> {delta_html}</div>
+    <div class="mc-foot-line"><b>Strongest missing book behaviour:</b> {_ftmo_value(missing)}</div>
+    <div class="mc-foot-line"><b>Financing:</b> {_ftmo_value(financing_label)}</div>'''
+
+
+def _render_ftmo_attribution(read_model: dict) -> str:
+    """Compact SLEEVE P&L block; all values come directly from the sidecar."""
+
+    if not read_model.get("present"):
+        return (
+            '<div class="mc-sublabel">SLEEVE P&amp;L</div>'
+            f'<div class="mc-be-missing"><b>EVIDENCE_MISSING:</b> {e(read_model.get("error"))} · '
+            f'{e(read_model.get("source_path"))}</div>'
+        )
+    payload = read_model.get("payload") or {}
+    reconciliation = payload.get("reconciliation") if isinstance(payload.get("reconciliation"), dict) else {}
+    rows = []
+    for sleeve in payload.get("sleeves") or []:
+        if not isinstance(sleeve, dict):
+            continue
+        rows.append(
+            "<tr>"
+            f'<td class="mc-mono">{e(sleeve.get("magic"))}</td>'
+            f'<td class="mc-mono">QM5_{e(sleeve.get("ea_id"))} {e(sleeve.get("symbol"))}</td>'
+            f'<td class="mc-num">{_ftmo_value(sleeve.get("realised_usd"), dec=2)}</td>'
+            f'<td class="mc-num">{_ftmo_value(sleeve.get("latest_floating_usd"), dec=2)}</td>'
+            f'<td class="mc-num">{_ftmo_value(sleeve.get("trade_count"))}</td>'
+            "</tr>"
+        )
+    if not rows:
+        rows.append('<tr><td colspan="5" class="mc-ftmo-nym">NOT_YET_MEASURABLE · no sleeve rows</td></tr>')
+    status = "PASS" if payload.get("reconciliation_ok") is True else "FAIL"
+    return f'''
+    <div class="mc-sublabel">SLEEVE P&amp;L · broker-deal reconciliation</div>
+    <div class="mc-foot-line"><b>{e(status)}</b> · account {_ftmo_value(reconciliation.get("account_realised_usd"), dec=2, suffix=" USD")} = roster {_ftmo_value(reconciliation.get("roster_realised_usd"), dec=2, suffix=" USD")} + unattributed {_ftmo_value(reconciliation.get("unattributed_realised_usd"), dec=2, suffix=" USD")} · difference {_ftmo_value(reconciliation.get("difference_usd"), dec=2)} · days {_ftmo_value(payload.get("day_count"))} · latest {_ftmo_value(payload.get("latest_prague_day"))}</div>
+    <div class="mc-ftmo-table-wrap"><table class="mc-table mc-ftmo-table">
+      <thead><tr><th>Magic</th><th>Sleeve</th><th class="mc-num">Realised USD</th><th class="mc-num">Floating</th><th class="mc-num">Trades</th></tr></thead>
+      <tbody>{''.join(rows)}</tbody>
+    </table></div>
+    <div class="mc-foot-line"><b>Unattributed deals:</b> {_ftmo_value(payload.get("unattributed_deal_count"))} · generated {e(str(payload.get("generated_at_utc") or "")[:19])} · source {e(read_model.get("source_path"))}</div>'''
+
+
+def _render_ftmo_book(
+    read_model: dict | None = None,
+    attribution_model: dict | None = None,
+) -> str:
     """Render the account-level FTMO_BOOK state as a first-class panel.
 
     Only fields in ``qm.ftmo-book-current/v1`` are shown. Missing fields stay
@@ -1414,6 +1545,11 @@ def _render_ftmo_book(read_model: dict | None = None) -> str:
   </section>'''
 
     p = rm.get("payload") or {}
+    attribution = (
+        attribution_model
+        if isinstance(attribution_model, dict)
+        else load_ftmo_sleeve_attribution()
+    )
     sleeves = p.get("sleeves") if isinstance(p.get("sleeves"), list) else []
     candidates = p.get("candidates") if isinstance(p.get("candidates"), list) else []
     metrics = p.get("book_metrics") if isinstance(p.get("book_metrics"), dict) else {}
@@ -1572,7 +1708,8 @@ def _render_ftmo_book(read_model: dict | None = None) -> str:
         </table></div>
       </div>
     </div>
-    <div class="mc-ftmo-missing"><b>Strongest missing behaviour</b>{_ftmo_value(p.get("strongest_missing_behavior"))}</div>
+    {_render_ftmo_section_g(p)}
+    {_render_ftmo_attribution(attribution)}
     <div class="mc-foot">
       <div class="mc-foot-line"><b>Cost drag:</b> {_ftmo_value(cost_drag)}</div>
       <div class="mc-foot-line"><b>Source:</b> {e(rm.get("source_path"))} · schema {e(p.get("schema"))}</div>
@@ -2293,6 +2430,12 @@ _PAGE_CSS = """
   .mc-ftmo-action-add{color:var(--pass)}
   .mc-ftmo-action-test,.mc-ftmo-action-hold{color:var(--warn)}
   .mc-ftmo-action-reject{color:var(--fail)}
+  .mc-ftmo-arm{border:1px solid var(--border);background:var(--surface-2);
+    padding:var(--space-3);margin-bottom:var(--space-4);min-width:0}
+  .mc-ftmo-arm-sleeves{font-size:var(--fs-xs);color:var(--text-2);
+    line-height:var(--lh-normal);margin-bottom:var(--space-3);overflow-wrap:anywhere}
+  .mc-ftmo-book>.mc-sublabel{margin-top:var(--space-5)}
+  .mc-ftmo-book>.mc-foot-line{margin:var(--space-2) 0;overflow-wrap:anywhere}
   .mc-ftmo-missing{margin-top:var(--space-5);padding:var(--space-4);
     border:1px solid var(--signal);background:var(--surface-2);line-height:var(--lh-normal)}
   .mc-ftmo-missing>b{display:block;margin-bottom:var(--space-2);color:var(--signal);

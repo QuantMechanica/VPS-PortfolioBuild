@@ -1,0 +1,902 @@
+{
+  "book_id": "FTMO_DEMO_BOOK_V3_D2G6_20260918",
+  "day_count": 4,
+  "days": [
+    {
+      "account": {
+        "daily_loss_headroom_consumed_usd": 0.0,
+        "daily_loss_headroom_remaining_usd": 5000.0,
+        "daily_loss_limit_usd": 5000.0,
+        "prague_midnight_balance_usd": 99811.49,
+        "realised_usd": 1.73,
+        "reconciliation_difference_usd": 0.0,
+        "reconciliation_ok": true,
+        "roster_realised_usd": -34.95,
+        "unattributed_realised_usd": 36.68,
+        "worst_equity_at_utc": "2026-09-18T17:46:10Z",
+        "worst_equity_usd": 99812.09
+      },
+      "coverage": {
+        "first_sample_utc": "2026-09-18T04:50:00Z",
+        "last_sample_utc": "2026-09-18T21:59:59Z",
+        "midnight_distance_seconds": 24600.0,
+        "midnight_status": "UNAVAILABLE_OUTSIDE_TOLERANCE",
+        "sample_count": 139723
+      },
+      "prague_day": "2026-09-18",
+      "sleeves": [
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 10403,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": null,
+          "magic": 104030002,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "XAUUSD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 10700,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": null,
+          "magic": 107000003,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "XAUUSD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 10706,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": null,
+          "magic": 107060001,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "GBPUSD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": -2.7,
+          "contribution_at_account_worst_usd": -36.08,
+          "cumulative_realised_usd": -34.95,
+          "daily_loss_headroom_consumption_share": 1.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 11422,
+          "entries": 1,
+          "exits": 1,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": null,
+          "magic": 114220004,
+          "profit_usd": -32.25,
+          "realised_usd": -34.95,
+          "swap_usd": 0.0,
+          "symbol": "USDCAD",
+          "trade_count": 1,
+          "worst_intraday_mae_proxy_usd": -34.73
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 13213,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": null,
+          "magic": 132130000,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "USDJPY",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 41219,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": null,
+          "magic": 412190000,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "XAUUSD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        }
+      ],
+      "unattributed": {
+        "daily_loss_headroom_consumption_share": 0.0,
+        "deal_count": 1,
+        "floating_at_prague_midnight_usd": null,
+        "realised_usd": 36.68
+      }
+    },
+    {
+      "account": {
+        "daily_loss_headroom_consumed_usd": 0.0,
+        "daily_loss_headroom_remaining_usd": 5000.0,
+        "daily_loss_limit_usd": 5000.0,
+        "prague_midnight_balance_usd": 99813.22,
+        "realised_usd": 0.0,
+        "reconciliation_difference_usd": 0.0,
+        "reconciliation_ok": true,
+        "roster_realised_usd": 0.0,
+        "unattributed_realised_usd": 0.0,
+        "worst_equity_at_utc": "2026-09-18T22:00:00Z",
+        "worst_equity_usd": 99813.22
+      },
+      "coverage": {
+        "first_sample_utc": "2026-09-18T22:00:00Z",
+        "last_sample_utc": "2026-09-19T21:59:59Z",
+        "midnight_distance_seconds": 0.0,
+        "midnight_status": "NEAREST_SAMPLE_PROXY",
+        "sample_count": 86401
+      },
+      "prague_day": "2026-09-19",
+      "sleeves": [
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 10403,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 104030002,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "XAUUSD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 10700,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 107000003,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "XAUUSD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 10706,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 107060001,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "GBPUSD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": -34.95,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 11422,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 114220004,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "USDCAD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 13213,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 132130000,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "USDJPY",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 41219,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 412190000,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "XAUUSD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        }
+      ],
+      "unattributed": {
+        "daily_loss_headroom_consumption_share": 0.0,
+        "deal_count": 0,
+        "floating_at_prague_midnight_usd": 0.0,
+        "realised_usd": 0.0
+      }
+    },
+    {
+      "account": {
+        "daily_loss_headroom_consumed_usd": 0.0,
+        "daily_loss_headroom_remaining_usd": 5000.0,
+        "daily_loss_limit_usd": 5000.0,
+        "prague_midnight_balance_usd": 99813.22,
+        "realised_usd": 0.0,
+        "reconciliation_difference_usd": 0.0,
+        "reconciliation_ok": true,
+        "roster_realised_usd": 0.0,
+        "unattributed_realised_usd": 0.0,
+        "worst_equity_at_utc": "2026-09-19T22:00:00Z",
+        "worst_equity_usd": 99813.22
+      },
+      "coverage": {
+        "first_sample_utc": "2026-09-19T22:00:00Z",
+        "last_sample_utc": "2026-09-20T21:59:59Z",
+        "midnight_distance_seconds": 0.0,
+        "midnight_status": "NEAREST_SAMPLE_PROXY",
+        "sample_count": 86697
+      },
+      "prague_day": "2026-09-20",
+      "sleeves": [
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 10403,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 104030002,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "XAUUSD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 10700,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 107000003,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "XAUUSD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 10706,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 107060001,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "GBPUSD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": -34.95,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 11422,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 114220004,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "USDCAD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 13213,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 132130000,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "USDJPY",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 41219,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 412190000,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "XAUUSD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        }
+      ],
+      "unattributed": {
+        "daily_loss_headroom_consumption_share": 0.0,
+        "deal_count": 0,
+        "floating_at_prague_midnight_usd": 0.0,
+        "realised_usd": 0.0
+      }
+    },
+    {
+      "account": {
+        "daily_loss_headroom_consumed_usd": 99.27,
+        "daily_loss_headroom_remaining_usd": 4900.73,
+        "daily_loss_limit_usd": 5000.0,
+        "prague_midnight_balance_usd": 99813.22,
+        "realised_usd": 118.88,
+        "reconciliation_difference_usd": 0.0,
+        "reconciliation_ok": true,
+        "roster_realised_usd": 118.88,
+        "unattributed_realised_usd": 0.0,
+        "worst_equity_at_utc": "2026-09-21T11:52:47Z",
+        "worst_equity_usd": 99713.95
+      },
+      "coverage": {
+        "first_sample_utc": "2026-09-20T22:00:00Z",
+        "last_sample_utc": "2026-09-21T20:04:57Z",
+        "midnight_distance_seconds": 0.0,
+        "midnight_status": "NEAREST_SAMPLE_PROXY",
+        "sample_count": 147968
+      },
+      "prague_day": "2026-09-21",
+      "sleeves": [
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 10403,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 104030002,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "XAUUSD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 10700,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 107000003,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "XAUUSD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 10706,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 107060001,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "GBPUSD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        },
+        {
+          "commission_usd": -2.55,
+          "contribution_at_account_worst_usd": -130.79,
+          "cumulative_realised_usd": -37.5,
+          "daily_loss_headroom_consumption_share": 1.0,
+          "daily_loss_headroom_consumption_usd": 99.27,
+          "ea_id": 11422,
+          "entries": 1,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 114220004,
+          "profit_usd": 0.0,
+          "realised_usd": -2.55,
+          "swap_usd": 0.0,
+          "symbol": "USDCAD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": -143.57
+        },
+        {
+          "commission_usd": -2.5,
+          "contribution_at_account_worst_usd": 31.52,
+          "cumulative_realised_usd": 121.43,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 13213,
+          "entries": 1,
+          "exits": 1,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 132130000,
+          "profit_usd": 123.93,
+          "realised_usd": 121.43,
+          "swap_usd": 0.0,
+          "symbol": "USDJPY",
+          "trade_count": 1,
+          "worst_intraday_mae_proxy_usd": -31.22
+        },
+        {
+          "commission_usd": 0.0,
+          "contribution_at_account_worst_usd": 0.0,
+          "cumulative_realised_usd": 0.0,
+          "daily_loss_headroom_consumption_share": 0.0,
+          "daily_loss_headroom_consumption_usd": 0.0,
+          "ea_id": 41219,
+          "entries": 0,
+          "exits": 0,
+          "fee_usd": 0.0,
+          "floating_at_prague_midnight_usd": 0.0,
+          "magic": 412190000,
+          "profit_usd": 0.0,
+          "realised_usd": 0.0,
+          "swap_usd": 0.0,
+          "symbol": "XAUUSD",
+          "trade_count": 0,
+          "worst_intraday_mae_proxy_usd": 0.0
+        }
+      ],
+      "unattributed": {
+        "daily_loss_headroom_consumption_share": 0.0,
+        "deal_count": 0,
+        "floating_at_prague_midnight_usd": 0.0,
+        "realised_usd": 0.0
+      }
+    }
+  ],
+  "generated_at_utc": "2026-09-21T20:04:57.956429Z",
+  "latest_prague_day": "2026-09-21",
+  "method": {
+    "first_partial_day_warning": "A period beginning after Prague midnight has coverage-limited midnight/headroom evidence.",
+    "floating": "collector position profit + swap; nearest sample within midnight tolerance",
+    "headroom_share": "negative sleeve contribution at the account's worst observed equity, divided by all negative roster + unattributed contributions",
+    "mae_proxy": "minimum observed per-magic floating P&L within the Prague day",
+    "realised": "broker deal profit + commission + swap + fee, cent-rounded per deal"
+  },
+  "period": {
+    "end_utc": "2026-09-21T20:04:57.956429Z",
+    "start_utc": "2026-09-18T04:50:00Z",
+    "timezone": "Europe/Prague"
+  },
+  "reconciliation": {
+    "account_realised_usd": 120.61,
+    "cent_rounding": "ROUND_HALF_UP_PER_DEAL_COMPONENT",
+    "difference_usd": 0.0,
+    "identity": "roster_realised + unattributed_realised == account_history_realised",
+    "roster_realised_usd": 83.93,
+    "unattributed_realised_usd": 36.68
+  },
+  "reconciliation_ok": true,
+  "schema": "qm.ftmo-sleeve-attribution/v1",
+  "sleeves": [
+    {
+      "commission_usd": 0.0,
+      "cumulative_curve": [
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-18"
+        },
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-19"
+        },
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-20"
+        },
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-21"
+        }
+      ],
+      "ea_id": 10403,
+      "ea_label": "QM5_10403_et-turtle20x",
+      "entries": 0,
+      "exits": 0,
+      "fee_usd": 0.0,
+      "latest_floating_usd": 0.0,
+      "magic": 104030002,
+      "profit_usd": 0.0,
+      "realised_usd": 0.0,
+      "risk_percent": 0.3125,
+      "role": null,
+      "slot": 2,
+      "swap_usd": 0.0,
+      "symbol": "XAUUSD",
+      "timeframe": "D1",
+      "trade_count": 0
+    },
+    {
+      "commission_usd": 0.0,
+      "cumulative_curve": [
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-18"
+        },
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-19"
+        },
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-20"
+        },
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-21"
+        }
+      ],
+      "ea_id": 10700,
+      "ea_label": "QM5_10700_tv-liq-break",
+      "entries": 0,
+      "exits": 0,
+      "fee_usd": 0.0,
+      "latest_floating_usd": 0.0,
+      "magic": 107000003,
+      "profit_usd": 0.0,
+      "realised_usd": 0.0,
+      "risk_percent": 0.3125,
+      "role": null,
+      "slot": 3,
+      "swap_usd": 0.0,
+      "symbol": "XAUUSD",
+      "timeframe": "H1",
+      "trade_count": 0
+    },
+    {
+      "commission_usd": 0.0,
+      "cumulative_curve": [
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-18"
+        },
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-19"
+        },
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-20"
+        },
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-21"
+        }
+      ],
+      "ea_id": 10706,
+      "ea_label": "QM5_10706_tv-mon-ls",
+      "entries": 0,
+      "exits": 0,
+      "fee_usd": 0.0,
+      "latest_floating_usd": 0.0,
+      "magic": 107060001,
+      "profit_usd": 0.0,
+      "realised_usd": 0.0,
+      "risk_percent": 0.3125,
+      "role": null,
+      "slot": 1,
+      "swap_usd": 0.0,
+      "symbol": "GBPUSD",
+      "timeframe": "H1",
+      "trade_count": 0
+    },
+    {
+      "commission_usd": -5.25,
+      "cumulative_curve": [
+        {
+          "cumulative_realised_usd": -34.95,
+          "daily_realised_usd": -34.95,
+          "prague_day": "2026-09-18"
+        },
+        {
+          "cumulative_realised_usd": -34.95,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-19"
+        },
+        {
+          "cumulative_realised_usd": -34.95,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-20"
+        },
+        {
+          "cumulative_realised_usd": -37.5,
+          "daily_realised_usd": -2.55,
+          "prague_day": "2026-09-21"
+        }
+      ],
+      "ea_id": 11422,
+      "ea_label": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+      "entries": 2,
+      "exits": 1,
+      "fee_usd": 0.0,
+      "latest_floating_usd": 153.32,
+      "magic": 114220004,
+      "profit_usd": -32.25,
+      "realised_usd": -37.5,
+      "risk_percent": 0.3125,
+      "role": null,
+      "slot": 4,
+      "swap_usd": 0.0,
+      "symbol": "USDCAD",
+      "timeframe": "D1",
+      "trade_count": 1
+    },
+    {
+      "commission_usd": -2.5,
+      "cumulative_curve": [
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-18"
+        },
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-19"
+        },
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-20"
+        },
+        {
+          "cumulative_realised_usd": 121.43,
+          "daily_realised_usd": 121.43,
+          "prague_day": "2026-09-21"
+        }
+      ],
+      "ea_id": 13213,
+      "ea_label": "QM5_13213_balke-gmt3-range-breakout",
+      "entries": 1,
+      "exits": 1,
+      "fee_usd": 0.0,
+      "latest_floating_usd": 0.0,
+      "magic": 132130000,
+      "profit_usd": 123.93,
+      "realised_usd": 121.43,
+      "risk_percent": 0.15625,
+      "role": null,
+      "slot": 0,
+      "swap_usd": 0.0,
+      "symbol": "USDJPY",
+      "timeframe": "H1",
+      "trade_count": 1
+    },
+    {
+      "commission_usd": 0.0,
+      "cumulative_curve": [
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-18"
+        },
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-19"
+        },
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-20"
+        },
+        {
+          "cumulative_realised_usd": 0.0,
+          "daily_realised_usd": 0.0,
+          "prague_day": "2026-09-21"
+        }
+      ],
+      "ea_id": 41219,
+      "ea_label": "QM5_41219_cum-rsi2-commodity-requal8",
+      "entries": 0,
+      "exits": 0,
+      "fee_usd": 0.0,
+      "latest_floating_usd": 0.0,
+      "magic": 412190000,
+      "profit_usd": 0.0,
+      "realised_usd": 0.0,
+      "risk_percent": 0.3125,
+      "role": null,
+      "slot": 0,
+      "swap_usd": 0.0,
+      "symbol": "XAUUSD",
+      "timeframe": "D1",
+      "trade_count": 0
+    }
+  ],
+  "sources": {
+    "deals": {
+      "account_login_masked": "*******732",
+      "mode": "RUNNING_MT5_READ_ONLY",
+      "preexisting_process_ids": [
+        11756
+      ],
+      "query_row_count": 6,
+      "query_sha256": "2d51c3c3e7e12fe1eef0921b229994107019b3ba086e959af7927ef3716664bd",
+      "server": "FTMO-Demo",
+      "terminal_executable": "C:\\Program Files\\FTMO Global Markets MT5 Terminal\\terminal64.exe"
+    },
+    "roster": {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-18_ftmo_demo_book_v3_D2g6\\roster.json",
+      "sha256": "53a1387081ab6b6267afc785a242a8fbe1c9a338fcc71910493fe5b67b9a690b"
+    },
+    "telemetry": {
+      "bytes_read": 329579848,
+      "malformed_rows": 0,
+      "midnight_tolerance_seconds": 300,
+      "parsed_sample_rows": 460789,
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM\\ftmo_trial\\FTMO_DEMO_BOOK_V3_D2G6_20260918\\trial_telemetry_raw.jsonl",
+      "sha256_prefix_read": "0bdc04ff5de9f5bc876fb06fbb43dff2090e524650cffda79e5858ed756ce001"
+    }
+  },
+  "unattributed": [
+    {
+      "commission_usd": -0.02,
+      "deal_id": 522542664,
+      "entry": "OUT",
+      "fee_usd": 0.0,
+      "magic": 15370001,
+      "operation_kind": "TRADE_DEAL",
+      "position_id": 545056207,
+      "prague_day": "2026-09-18",
+      "profit_usd": 36.7,
+      "realised_usd": 36.68,
+      "reason": "MAGIC_NOT_IN_ROSTER",
+      "swap_usd": 0.0,
+      "symbol": "XAGUSD",
+      "time_utc": "2026-09-18T07:50:42Z"
+    }
+  ],
+  "unattributed_deal_count": 1
+}
