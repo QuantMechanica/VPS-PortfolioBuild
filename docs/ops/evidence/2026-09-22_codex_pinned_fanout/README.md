@@ -115,3 +115,17 @@ setting.
 | `tools/strategy_farm/run_agent_orchestration_task.py` | `72db2d5eb26cc67a4a93233074e9b2d7a3e88cf05b0c59ad5f284dec0123a390` |
 | `tools/strategy_farm/tests/test_run_agent_orchestration_fanout.py` | `b0ba190428885dcc5fae58e4e66abedbca3b381ea1bba6a9e02738577bd61fd7` |
 
+## Fable activation (2026-09-21T22:28:16Z)
+
+Review: implementation accepted (commit `f0b94aa4a5` in HEAD ancestry; focused suite re-run by Fable `26 passed`; production
+read-only dry-run re-run by Fable: `safe_slots_ready`, slots 2/3/4 planned, slot 1 refused as dirty (162 porcelain rows,
+`worktree_dirty_refuse_update`), required head `6f5ff19f5d`). Rollout step 2 executed under OWNER-DEC-FTMO-FULL-THROTTLE-20260921
+section 7/8 (Codex on production AND research in parallel): the scheduled-task action of `QM_StrategyFarm_CodexOrchestration_15min`
+was changed from `--max-sessions 1` to `--max-sessions 3` while the single-session controller started 2026-09-21T20:45Z was still
+running (`IgnoreNew`; the change binds at the next scheduler-started instance after that controller exits).
+Evidence: `scheduler_before_fable_activation.xml`, `scheduler_after_fable_activation.xml`.
+
+Observation plan (Fable hourly watch): the first two scheduler-started max-3 cycles are read from
+`D:/QM/strategy_farm/logs/codex_orchestration_slot{2,3,4}_*.json` — leased task ids per slot, worktree commit, lease-conflict
+result, model-ledger attribution. **Rollback** on any duplicate lease, unpinned prompt, stale-code slot, ledger or lock anomaly:
+set the action back to `--max-sessions 1` (before-XML is the exact restore point).
