@@ -26,7 +26,7 @@ Updated by Fable at every material change; last update **2026-09-21 20:0xZ** (ac
 | HARNESS_V2 | **IN_PROGRESS** — Codex `7088da77` (prio 84, exempt) incl. §L golden test vs MT5 Every Real Tick | |
 | NEWS_TIME_ARCHIVE | **IN_PROGRESS** — Codex `a36a5983` (prio 82, exempt); impact bound pending | |
 | GENESIS_MANIFEST | **BLOCKED** — tooling ticket `94a15624` TODO (prio 72, exempt); procedure fixed in `docs/ftmo/genesis/SUNDAY_LAUNCH_RUNBOOK_2026-09-27.md` v0 | |
-| DEMO_ACCOUNT_IDENTITY (runbook §1) | **DECIDED A** (OWNER 2026-09-21 ~19:55Z, receipt `46ea4491`, Claude execution task `90847e73`): fresh FTMO Free-Trial account. **Awaiting credentials:** OWNER creates the account and writes login/server/password into `.private/secrets/ftmo_demo_gen2_20260927.md` (git-ignored) | runbook §1 |
+| DEMO_ACCOUNT_IDENTITY (runbook §1) | **DECIDED A** (OWNER 2026-09-21 ~19:55Z, receipt `46ea4491`, Claude execution task `90847e73`): fresh FTMO Free-Trial account. **Credentials arrive Sunday 2026-09-27 (OWNER creates the account that morning; needed by 12:00Z):** login/server/password into `.private/secrets/ftmo_demo_gen2_20260927.md` (git-ignored) | runbook §1, §3 timing |
 | FTMO_BOOK_INCUMBENT | D2g6 = PRE_SUNDAY_LIVE_TRIAL since 2026-09-18 04:50Z (3.5 validation days, not representative, pulse WARN ks_day_anchor_missing 0/6) | `D:/QM/reports/state/ftmo_demo_cycle.json`, `ftmo_trial_pulse.json` |
 | FTMO_BOOK_SHADOW | = incumbent (no resolved addition); shadow candidate 11708 EURUSD D1 | `FTMO_BOOK_CURRENT.md` §2 |
 | SHADOW_BOOK_BEST_PENDING_SLEEVE | 11708 EURUSD D1 — SHADOW_BOOK: +0.0058 resolved at 5×40k paths (below the +0.01 bar), −0.0056 under +1 bps/+2 USD/lot cost stress | `2026-09-21_ftmo_book_sim_v2_financed/stress_11708/` |

@@ -65,6 +65,12 @@ positions / no orders, and binds the identity into the genesis manifest. The Auf
 
 ## 3. Sunday 2026-09-27 — install and attach (market closed; nothing can fill)
 
+**Timing (OWNER 2026-09-21: the account is created on Sunday itself).** OWNER creates the Free Trial on Sunday morning and drops the
+credentials into `.private/secrets/ftmo_demo_gen2_20260927.md`; from that moment Fable needs about three hours (steps 0–6 below plus
+post-attach checks) — the market opens 22:00Z Prague-Sunday (00:00 Prague Monday = first rollover proof), so the credentials should
+be in place by **Sunday 12:00Z** at the latest. Step 0: log the terminal into the new account (`terminal64 /login /server /password`,
+AutoTrading off), readback login/server/balance 100000.00 / no positions / no orders; only then continue.
+
 Follow the D2g6 runbook steps 1–7 with the new package, in this order, each with its readback:
 1. Reference backup of the chart profile + presets (hashes listed).
 2. AutoTrading OFF, clean terminal shutdown (`CloseMainWindow`, never `Stop-Process`), `[Experts] Enabled` reads 0, authoritative
