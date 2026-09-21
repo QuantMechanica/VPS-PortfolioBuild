@@ -1,6 +1,6 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
-> **RESULT 2026-09-21 21:2xZ — Familie B4 + Second-Chance-Identitaeten (Fable):**
+> **RESULT 2026-09-21 21:0xZ — Familie B4 + Second-Chance-Identitaeten (Fable):**
 > - **B4 (Antigravity Cross-Symbol 7636afc9, APPROVED):** 12 Hypothesen, 5 auf dem Papier getoetet, 7 Ueberlebende + je ein Kontrollarm im F2-Motor (Tool `velocity_family_f6_cross_symbol_0921.py`, 14 Zellen) — **0 Ueberlebende**; Referenzbedingungen verduennen die Dichte (0,04-0,13/bd) ohne E[R] zu heben (Falsifikationstest der Quelle ueberall verfehlt); WTI->USDCAD falsch-signiert; London-Drift->COMEX verliert in beide Richtungen. Kommissions-Caveat fuer Index-Zellen (Darwinex-Tabelle statt FTMO 0) dokumentiert, aendert das Urteil nicht. Bilanz heute: 6 Familien, 103 Zellen, 31 Hypothesen, 0 Ueberlebende -> Restkapazitaet auf die systematischen Scanner (35bbe0bc, 08d62fa7, 9d7458f8) und das FTMO-Kostenmodell (73434cab).
 > - **Track C Identitaeten:** Second-Chance-v2-Karten unter NEUEN Identitaeten (agy-Revision: alte Verdicts nie wieder oeffnen): QM5_41486 connors-rsi2-sma200-mean-reversion-d1-v2 (3 Slots), QM5_41487 ft-binhv45-v2 (4 Slots); reserve-ea-ids -> approve-card -> governed_magic_allocator, Registry + Resolver committed (ae8ea16228, 6ff6c70c94); Precondition-Tasks 35f8c652/a8177dca/c572b6c2/2f2f8190 geschlossen. Build via Intake-Pumpe (naechster Stundenlauf).
 
