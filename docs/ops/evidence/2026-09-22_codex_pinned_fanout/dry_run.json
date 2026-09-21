@@ -1,0 +1,88 @@
+{
+  "agent": "codex",
+  "dry_run": true,
+  "dry_run_verified": true,
+  "max_sessions": 3,
+  "ok": true,
+  "planned_slots": [
+    2,
+    3,
+    4
+  ],
+  "planned_task_ids": [
+    "d6189118-c2e7-4517-a914-049c89d19a75",
+    "7088da77-9e03-45cf-a568-581863f03ef1",
+    "a36a5983-8cfc-4528-8277-8b5d21787f82"
+  ],
+  "reason": "codex_pinned_fanout_plan",
+  "requested_max_sessions": 3,
+  "returncode": 0,
+  "worktree_plan": {
+    "accepted": [
+      {
+        "branch": "agents/codex-orchestration-2",
+        "branch_exists": false,
+        "branch_head": null,
+        "create": false,
+        "created": false,
+        "current": true,
+        "ok": true,
+        "path": "C:\\QM\\worktrees\\codex-orchestration-2",
+        "required_head": "f0b94aa4a52dccb3910b49878ec263b9081a9301",
+        "slot": 2,
+        "would_create": true,
+        "would_fast_forward": false
+      },
+      {
+        "branch": "agents/codex-orchestration-3",
+        "branch_exists": false,
+        "branch_head": null,
+        "create": false,
+        "created": false,
+        "current": true,
+        "ok": true,
+        "path": "C:\\QM\\worktrees\\codex-orchestration-3",
+        "required_head": "f0b94aa4a52dccb3910b49878ec263b9081a9301",
+        "slot": 3,
+        "would_create": true,
+        "would_fast_forward": false
+      },
+      {
+        "branch": "agents/codex-orchestration-4",
+        "branch_exists": false,
+        "branch_head": null,
+        "create": false,
+        "created": false,
+        "current": true,
+        "ok": true,
+        "path": "C:\\QM\\worktrees\\codex-orchestration-4",
+        "required_head": "f0b94aa4a52dccb3910b49878ec263b9081a9301",
+        "slot": 4,
+        "would_create": true,
+        "would_fast_forward": false
+      }
+    ],
+    "ok": true,
+    "reason": "safe_slots_ready",
+    "rejected": [
+      {
+        "branch": "agents/codex-orchestration-1",
+        "create": false,
+        "dirty_path_count": 162,
+        "ok": false,
+        "path": "C:\\QM\\worktrees\\codex-orchestration-1",
+        "reason": "worktree_dirty_refuse_update",
+        "required_head": "f0b94aa4a52dccb3910b49878ec263b9081a9301",
+        "slot": 1
+      }
+    ],
+    "requested": 3,
+    "required_head": "f0b94aa4a52dccb3910b49878ec263b9081a9301",
+    "slot_ids": [
+      2,
+      3,
+      4
+    ]
+  }
+}
+
