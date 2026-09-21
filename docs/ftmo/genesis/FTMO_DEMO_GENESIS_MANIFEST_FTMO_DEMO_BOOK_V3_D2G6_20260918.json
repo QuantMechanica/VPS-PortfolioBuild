@@ -1,0 +1,578 @@
+{
+  "account_governor": {
+    "allowed_magics": [
+      104030002,
+      107000003,
+      107060001,
+      114220004,
+      132130000,
+      412190000
+    ],
+    "challenge_id_masked": "M13_D2G6_20260918_*******732",
+    "installed_ex5": {
+      "bytes": 113812,
+      "hash_mode": "raw_bytes_sha256",
+      "kind": "governor_ex5",
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_13206_ftmo-account-governor.ex5",
+      "resolved_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_13206_ftmo-account-governor.ex5",
+      "sha256": "e5e827cd05163de0d0c7919e9e072759efbd91a6b1e464cf9e962e850f4878f6"
+    },
+    "setfile": {
+      "bytes": 1160,
+      "hash_mode": "raw_bytes_sha256",
+      "kind": "governor_setfile",
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_active.set",
+      "resolved_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_active.set",
+      "sha256": "f1b277a6bf46ce6fa634e3e3a264f0ccbe667e5013417f6cf5c36f5a3d8fa5c6"
+    },
+    "source": {
+      "bytes": 32619,
+      "hash_mode": "raw_bytes_sha256",
+      "kind": "governor_source",
+      "path": "framework/EAs/QM5_13206_ftmo-account-governor/QM5_13206_ftmo-account-governor.mq5",
+      "resolved_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13206_ftmo-account-governor\\QM5_13206_ftmo-account-governor.mq5",
+      "sha256": "1f3dbdf75adc2280e4aaf3b2bf6a79053879a4a46e3fae937d1ae08ba1029da9"
+    }
+  },
+  "account_risk_limits": {
+    "combined_open_risk_contract": "QM_AccountRiskReservation.mqh",
+    "daily_loss_percent": 5.0,
+    "daily_loss_usd": 5000.0,
+    "maximum_loss_floor_usd": 90000.0,
+    "maximum_loss_percent": 10.0
+  },
+  "book_id": "FTMO_DEMO_BOOK_V3_D2G6_20260918",
+  "build_evidence": {
+    "bytes": 2309,
+    "hash_mode": "raw_bytes_sha256",
+    "kind": "build_receipt",
+    "path": "docs/ops/evidence/2026-09-18_ftmo_demo_book_v3_D2g6/RECEIPT_alias_builds.md",
+    "resolved_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-18_ftmo_demo_book_v3_D2g6\\RECEIPT_alias_builds.md",
+    "sha256": "549b51a03a2854363030aed8156f59e0e7778c2f18e81f0f28eefe45fa0b3793"
+  },
+  "daily_loss_controls": {
+    "anchor_mode": null,
+    "basis": "Prague-midnight balance; equity includes open P/L, swap and commission",
+    "configuration_status": "MISSING_GOVERNED_INITIALIZER",
+    "offset_policy": null
+  },
+  "demo_account": {
+    "autotrading_enabled_at_inventory": true,
+    "login_masked": "*******732",
+    "server": "FTMO-Demo",
+    "terminal_id": "81A933A9AFC5DE3C23B15CAB19C63850",
+    "terminal_root": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850"
+  },
+  "generation_id": "FTMO_DEMO_BOOK_V3_D2G6_20260918_REHEARSAL",
+  "inventory_scope": "READ_ONLY_PRE_SUNDAY_REHEARSAL",
+  "kill_switch": {
+    "anchor_mode": null,
+    "book_tag": null,
+    "configuration_status": "MISSING_CONFIGURATION_PROOF",
+    "expected_proof_events": [
+      "KS_DAY_ANCHOR_SET",
+      "KS_BOOK_TAG_SET",
+      "KS_DAY_ROLLOVER"
+    ],
+    "offset_policy": null
+  },
+  "launch_timestamp_utc": null,
+  "logging": {
+    "governor_log": "MQL5/Files/QM/ftmo_governor_events.jsonl",
+    "kill_switch_state_glob": "MQL5/Files/QM/kill_switch/*.state",
+    "trial_directory": "MQL5/Files/QM/ftmo_trial/FTMO_DEMO_BOOK_V3_D2G6_20260918_REHEARSAL"
+  },
+  "manifest_sha256": "2f079710d5cd2d051ea2499b82c9127ef6ca18c763fafe7ec8abfb453b4a6f06",
+  "maximum_loss_controls": {
+    "floor_usd": 90000.0,
+    "governor_source": "framework/EAs/QM5_13206_ftmo-account-governor/QM5_13206_ftmo-account-governor.mq5",
+    "mode": "STATIC_INITIAL_BALANCE_FLOOR"
+  },
+  "news_policy": {
+    "blackout": "PRE30_POST30_PLUS_FTMO_COMPLIANCE",
+    "fail_closed": true,
+    "source": "NATIVE_MT5_CALENDAR_LIVE",
+    "stale_max_hours_upper_bound": 336
+  },
+  "registries": {
+    "ea_id": {
+      "bytes": 584657,
+      "hash_mode": "raw_bytes_sha256",
+      "kind": "ea_id_registry",
+      "path": "framework/registry/ea_id_registry.csv",
+      "resolved_path": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "sha256": "6b8e09f6113c6448f3e27850a2a861a3ec1fde4db6900997ac9fd675d2e41983"
+    },
+    "ea_rows": [
+      {
+        "created_at": "2026-05-21",
+        "ea_id": "10403",
+        "owner": "Research",
+        "retired_at": "",
+        "retired_evidence": "",
+        "retired_reason": "",
+        "slug": "et-turtle20x",
+        "status": "active",
+        "strategy_id": "d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe"
+      },
+      {
+        "created_at": "2026-05-22",
+        "ea_id": "10700",
+        "owner": "Research",
+        "retired_at": "",
+        "retired_evidence": "",
+        "retired_reason": "",
+        "slug": "tv-liq-break",
+        "status": "active",
+        "strategy_id": "d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7"
+      },
+      {
+        "created_at": "2026-05-22",
+        "ea_id": "10706",
+        "owner": "Research",
+        "retired_at": "",
+        "retired_evidence": "",
+        "retired_reason": "",
+        "slug": "tv-mon-ls",
+        "status": "active",
+        "strategy_id": "d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7"
+      },
+      {
+        "created_at": "2026-05-23",
+        "ea_id": "11422",
+        "owner": "Research",
+        "retired_at": "",
+        "retired_evidence": "",
+        "retired_reason": "",
+        "slug": "williams-18ma-outside-bar-entry-d1",
+        "status": "active",
+        "strategy_id": "bb9e26af-ebd1-5a26-b1a8-cc4d78835f03"
+      },
+      {
+        "created_at": "2026-07-14",
+        "ea_id": "13213",
+        "owner": "Claude",
+        "retired_at": "",
+        "retired_evidence": "",
+        "retired_reason": "",
+        "slug": "balke-gmt3-range-breakout",
+        "status": "active",
+        "strategy_id": "6e967762-b26d-59a3-b076-35c17f2e7c36"
+      },
+      {
+        "created_at": "2026-08-30",
+        "ea_id": "41219",
+        "owner": "Research",
+        "retired_at": "",
+        "retired_evidence": "",
+        "retired_reason": "",
+        "slug": "cum-rsi2-commodity-requal8",
+        "status": "active",
+        "strategy_id": "OWNER-DEC-Q09HOLD-REQUAL-8-20260829:QM5_12567"
+      }
+    ],
+    "magic": {
+      "bytes": 1463605,
+      "hash_mode": "raw_bytes_sha256",
+      "kind": "magic_registry",
+      "path": "framework/registry/magic_numbers.csv",
+      "resolved_path": "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv",
+      "sha256": "47f4a31b62bdcb2978f7920422a0f71ea9d2088f1539f3c33d95fbb3b6096c5c"
+    },
+    "selected_magic_rows": [
+      {
+        "ea_id": "13213",
+        "ea_slug": "balke-gmt3-range-breakout",
+        "magic": "132130000",
+        "reserved_at": "2026-07-14",
+        "reserved_by": "Claude",
+        "status": "active",
+        "symbol": "USDJPY.DWX",
+        "symbol_slot": "0"
+      },
+      {
+        "ea_id": "10706",
+        "ea_slug": "tv-mon-ls",
+        "magic": "107060001",
+        "reserved_at": "2026-06-05",
+        "reserved_by": "Development",
+        "status": "active",
+        "symbol": "GBPUSD.DWX",
+        "symbol_slot": "1"
+      },
+      {
+        "ea_id": "10700",
+        "ea_slug": "tv-liq-break",
+        "magic": "107000003",
+        "reserved_at": "2026-05-31",
+        "reserved_by": "Development",
+        "status": "active",
+        "symbol": "XAUUSD.DWX",
+        "symbol_slot": "3"
+      },
+      {
+        "ea_id": "11422",
+        "ea_slug": "williams-18ma-outside-bar-entry-d1",
+        "magic": "114220004",
+        "reserved_at": "2026-06-11",
+        "reserved_by": "Development",
+        "status": "active",
+        "symbol": "USDCAD.DWX",
+        "symbol_slot": "4"
+      },
+      {
+        "ea_id": "10403",
+        "ea_slug": "et-turtle20x",
+        "magic": "104030002",
+        "reserved_at": "2026-05-25",
+        "reserved_by": "Development",
+        "status": "active",
+        "symbol": "XAUUSD.DWX",
+        "symbol_slot": "2"
+      },
+      {
+        "ea_id": "41219",
+        "ea_slug": "cum-rsi2-commodity-requal8",
+        "magic": "412190000",
+        "reserved_at": "2026-08-30",
+        "reserved_by": "Codex governed allocator",
+        "status": "active",
+        "symbol": "XAUUSD.DWX",
+        "symbol_slot": "0"
+      }
+    ]
+  },
+  "rollover_semantics": {
+    "day_boundary": "00:00 Europe/Prague",
+    "dst_policy": "IANA Europe/Prague; dynamic CET/CEST",
+    "helper_source": "framework/include/QM/QM_FTMOGovernorPolicy.mqh",
+    "timezone": "Europe/Prague"
+  },
+  "roster": {
+    "binding": {
+      "bytes": 2268,
+      "hash_mode": "raw_bytes_sha256",
+      "kind": "roster",
+      "path": "docs/ops/evidence/2026-09-18_ftmo_demo_book_v3_D2g6/roster.json",
+      "resolved_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-18_ftmo_demo_book_v3_D2g6\\roster.json",
+      "sha256": "53a1387081ab6b6267afc785a242a8fbe1c9a338fcc71910493fe5b67b9a690b"
+    },
+    "sleeve_count": 6,
+    "sleeves": [
+      {
+        "ea_id": 13213,
+        "ea_label": "QM5_13213_balke-gmt3-range-breakout",
+        "installed_ex5": {
+          "bytes": 440594,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "installed_ex5",
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_13213_balke-gmt3-range-breakout.ex5",
+          "resolved_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_13213_balke-gmt3-range-breakout.ex5",
+          "sha256": "85b5d4ed6443d77cc24db2b8046a42473e9e0572407680731d0e60733ad9d2e8"
+        },
+        "magic": 132130000,
+        "risk_percent": 0.15625,
+        "role": "VELOCITY_SLEEVE",
+        "runtime_policy": {
+          "environment": null,
+          "friday_close_enabled": "true",
+          "friday_close_hour_broker": "21",
+          "kill_switch_anchor_mode": null,
+          "kill_switch_book_tag": null,
+          "news_compliance": "2",
+          "news_stale_max_hours": "336",
+          "news_temporal": "3",
+          "risk_fixed": "0",
+          "risk_percent": "0.15625"
+        },
+        "setfile": {
+          "bytes": 1188,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "installed_setfile",
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_13213_USDJPY_H1_live_trial.set",
+          "resolved_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_13213_USDJPY_H1_live_trial.set",
+          "sha256": "19c771ff8224dcffa5e86df0814f5c51ecac8b2d7f5d898d1ee2e855c849a777"
+        },
+        "slot": 0,
+        "source": {
+          "bytes": 21409,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "ea_source",
+          "path": "framework/EAs/QM5_13213_balke-gmt3-range-breakout/QM5_13213_balke-gmt3-range-breakout.mq5",
+          "resolved_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13213_balke-gmt3-range-breakout\\QM5_13213_balke-gmt3-range-breakout.mq5",
+          "sha256": "d140d313c3bbcd87ccefacfb2068bf164f9db9edfbe49ba410a83fcd4d79054f"
+        },
+        "symbol": "USDJPY",
+        "timeframe": "H1",
+        "weight": 0.0909090909
+      },
+      {
+        "ea_id": 10706,
+        "ea_label": "QM5_10706_tv-mon-ls",
+        "installed_ex5": {
+          "bytes": 440374,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "installed_ex5",
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_10706_tv-mon-ls.ex5",
+          "resolved_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_10706_tv-mon-ls.ex5",
+          "sha256": "e6701607ef44e02733558bde9cf096aed9ab8e83a57fea4d64c84ad6259574e4"
+        },
+        "magic": 107060001,
+        "risk_percent": 0.3125,
+        "role": "GBP swing alpha",
+        "runtime_policy": {
+          "environment": null,
+          "friday_close_enabled": "true",
+          "friday_close_hour_broker": "21",
+          "kill_switch_anchor_mode": null,
+          "kill_switch_book_tag": null,
+          "news_compliance": "2",
+          "news_stale_max_hours": "336",
+          "news_temporal": "3",
+          "risk_fixed": "0",
+          "risk_percent": "0.3125"
+        },
+        "setfile": {
+          "bytes": 1718,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "installed_setfile",
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_10706_GBPUSD_H1_live_trial.set",
+          "resolved_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_10706_GBPUSD_H1_live_trial.set",
+          "sha256": "31c37ec30421a51d7938ebfe911ef13e6615c678d0727ded9def09cb5cd1d140"
+        },
+        "slot": 1,
+        "source": {
+          "bytes": 19391,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "ea_source",
+          "path": "framework/EAs/QM5_10706_tv-mon-ls/QM5_10706_tv-mon-ls.mq5",
+          "resolved_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.mq5",
+          "sha256": "c932fdd800548a7dae4c39d910c3726491e46b506c5ee60ba1abef523c78bf1e"
+        },
+        "symbol": "GBPUSD",
+        "timeframe": "H1",
+        "weight": 0.1818181818
+      },
+      {
+        "ea_id": 10700,
+        "ea_label": "QM5_10700_tv-liq-break",
+        "installed_ex5": {
+          "bytes": 431876,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "installed_ex5",
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_10700_tv-liq-break.ex5",
+          "resolved_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_10700_tv-liq-break.ex5",
+          "sha256": "5dcb1a235f5b78cdff274eaa32e48d4713d19f1415da3a2153c98e48b501d6a1"
+        },
+        "magic": 107000003,
+        "risk_percent": 0.3125,
+        "role": "Gold alpha",
+        "runtime_policy": {
+          "environment": null,
+          "friday_close_enabled": "true",
+          "friday_close_hour_broker": "21",
+          "kill_switch_anchor_mode": null,
+          "kill_switch_book_tag": null,
+          "news_compliance": "2",
+          "news_stale_max_hours": "336",
+          "news_temporal": "3",
+          "risk_fixed": "0",
+          "risk_percent": "0.3125"
+        },
+        "setfile": {
+          "bytes": 1283,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "installed_setfile",
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_10700_XAUUSD_H1_live_trial.set",
+          "resolved_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_10700_XAUUSD_H1_live_trial.set",
+          "sha256": "6e319d98e5ea7b6790b8c05a7cf2d3b24cb184c070576f20d906fcb0dcd69dd7"
+        },
+        "slot": 3,
+        "source": {
+          "bytes": 19209,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "ea_source",
+          "path": "framework/EAs/QM5_10700_tv-liq-break/QM5_10700_tv-liq-break.mq5",
+          "resolved_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\QM5_10700_tv-liq-break.mq5",
+          "sha256": "064d670b736e5125a1def88c10ba00f68fc43253ee904b3d82168d8e2380b850"
+        },
+        "symbol": "XAUUSD",
+        "timeframe": "H1",
+        "weight": 0.1818181818
+      },
+      {
+        "ea_id": 11422,
+        "ea_label": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+        "installed_ex5": {
+          "bytes": 432262,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "installed_ex5",
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_11422_williams-18ma-outside-bar-entry-d1.ex5",
+          "resolved_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_11422_williams-18ma-outside-bar-entry-d1.ex5",
+          "sha256": "76e59831ca36c4bd55312686c56c1266f1f11c784b4942250e362b9a9a6c5bb1"
+        },
+        "magic": 114220004,
+        "risk_percent": 0.3125,
+        "role": "stabilizer",
+        "runtime_policy": {
+          "environment": null,
+          "friday_close_enabled": "true",
+          "friday_close_hour_broker": "21",
+          "kill_switch_anchor_mode": null,
+          "kill_switch_book_tag": null,
+          "news_compliance": "2",
+          "news_stale_max_hours": "336",
+          "news_temporal": "3",
+          "risk_fixed": "0",
+          "risk_percent": "0.3125"
+        },
+        "setfile": {
+          "bytes": 1243,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "installed_setfile",
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_11422_USDCAD_D1_live_trial.set",
+          "resolved_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_11422_USDCAD_D1_live_trial.set",
+          "sha256": "215615b5da7ae2f49dd3d9dae7e85cbdff522940f69892d04cdf3c0f61378ea5"
+        },
+        "slot": 4,
+        "source": {
+          "bytes": 14331,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "ea_source",
+          "path": "framework/EAs/QM5_11422_williams-18ma-outside-bar-entry-d1/QM5_11422_williams-18ma-outside-bar-entry-d1.mq5",
+          "resolved_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\QM5_11422_williams-18ma-outside-bar-entry-d1.mq5",
+          "sha256": "a68b9f02372edd490f2af9ea32efa6606df7c2d8b40e30f3ddac2e2d56cab84e"
+        },
+        "symbol": "USDCAD",
+        "timeframe": "D1",
+        "weight": 0.1818181818
+      },
+      {
+        "ea_id": 10403,
+        "ea_label": "QM5_10403_et-turtle20x",
+        "installed_ex5": {
+          "bytes": 443012,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "installed_ex5",
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_10403_et-turtle20x.ex5",
+          "resolved_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_10403_et-turtle20x.ex5",
+          "sha256": "fbe198f7210b52853741ae3c987416b0b51ebd2a521c70fe18b71061de27ebcc"
+        },
+        "magic": 104030002,
+        "risk_percent": 0.3125,
+        "role": "Gold trend",
+        "runtime_policy": {
+          "environment": null,
+          "friday_close_enabled": "true",
+          "friday_close_hour_broker": "21",
+          "kill_switch_anchor_mode": null,
+          "kill_switch_book_tag": null,
+          "news_compliance": "2",
+          "news_stale_max_hours": "336",
+          "news_temporal": "3",
+          "risk_fixed": "0",
+          "risk_percent": "0.3125"
+        },
+        "setfile": {
+          "bytes": 1729,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "installed_setfile",
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_10403_XAUUSD_D1_live_trial.set",
+          "resolved_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_10403_XAUUSD_D1_live_trial.set",
+          "sha256": "9d8414ce65912a6b75228717d9cf24cdd8329d2f31a8171851242e051132b1ef"
+        },
+        "slot": 2,
+        "source": {
+          "bytes": 18941,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "ea_source",
+          "path": "framework/EAs/QM5_10403_et-turtle20x/QM5_10403_et-turtle20x.mq5",
+          "resolved_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10403_et-turtle20x\\QM5_10403_et-turtle20x.mq5",
+          "sha256": "b38cfd471fd31811bb23a5447c430cc1bfcc1f370eb816236c99bb88be55d251"
+        },
+        "symbol": "XAUUSD",
+        "timeframe": "D1",
+        "weight": 0.1818181818
+      },
+      {
+        "ea_id": 41219,
+        "ea_label": "QM5_41219_cum-rsi2-commodity-requal8",
+        "installed_ex5": {
+          "bytes": 431854,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "installed_ex5",
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_41219_cum-rsi2-commodity-requal8.ex5",
+          "resolved_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_41219_cum-rsi2-commodity-requal8.ex5",
+          "sha256": "e00915b9ac7cbffe177680863f77871262629a42dc64e5385e4580707b1d10ae"
+        },
+        "magic": 412190000,
+        "risk_percent": 0.3125,
+        "role": "Gold mean-reversion",
+        "runtime_policy": {
+          "environment": null,
+          "friday_close_enabled": "true",
+          "friday_close_hour_broker": "21",
+          "kill_switch_anchor_mode": null,
+          "kill_switch_book_tag": null,
+          "news_compliance": "2",
+          "news_stale_max_hours": "336",
+          "news_temporal": "3",
+          "risk_fixed": "0",
+          "risk_percent": "0.3125"
+        },
+        "setfile": {
+          "bytes": 1191,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "installed_setfile",
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_41219_XAUUSD_D1_live_trial.set",
+          "resolved_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_41219_XAUUSD_D1_live_trial.set",
+          "sha256": "ba8ffd63db87de12495a7536ff8f8fef4e9447a9795c76d82ef2416f08d5f128"
+        },
+        "slot": 0,
+        "source": {
+          "bytes": 8560,
+          "hash_mode": "raw_bytes_sha256",
+          "kind": "ea_source",
+          "path": "framework/EAs/QM5_41219_cum-rsi2-commodity-requal8/QM5_41219_cum-rsi2-commodity-requal8.mq5",
+          "resolved_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41219_cum-rsi2-commodity-requal8\\QM5_41219_cum-rsi2-commodity-requal8.mq5",
+          "sha256": "cd2a0ac6e3f4a677cbb30197e23eaeb8338f06f69d66341eeedfc45cb68746b3"
+        },
+        "symbol": "XAUUSD",
+        "timeframe": "D1",
+        "weight": 0.1818181818
+      }
+    ],
+    "total_book_risk_percent": 1.71875
+  },
+  "rules": {
+    "initial_balance_usd": 100000.0,
+    "phase1_profit_target_percent": 10.0,
+    "product": "FTMO Challenge 2-Step / USD 100000 / Standard",
+    "snapshot": {
+      "bytes": 5884,
+      "hash_mode": "raw_bytes_sha256",
+      "kind": "rules_snapshot",
+      "path": "docs/ftmo/FTMO_RULES_SNAPSHOT_2026-09-18.md",
+      "resolved_path": "C:\\QM\\repo\\docs\\ftmo\\FTMO_RULES_SNAPSHOT_2026-09-18.md",
+      "sha256": "20558e424f29024fc584c72c8a2af605c45bab9bd5d35d3621d3eaab55fe64d5"
+    },
+    "verification_profit_target_percent": 5.0
+  },
+  "schema": "qm.ftmo-demo-genesis-manifest/v1",
+  "server_request_safety": {
+    "close_deviation_points": 50,
+    "governor_timer_ms": 200,
+    "provider_hyperactive_positions_per_day": 2000,
+    "provider_simultaneous_order_limit": 200
+  },
+  "session_policy": {
+    "evidence": "Each sleeve source and setfile are hash-bound above",
+    "mode": "EA_DEFINED_HASH_BOUND"
+  },
+  "sleeve_pnl_attribution_sidecar": "D:\\QM\\reports\\state\\ftmo_sleeve_attribution.json",
+  "status": "PRELAUNCH_MUTABLE",
+  "weekend_policy": {
+    "book": "Friday flat policy from per-sleeve setfiles",
+    "evaluation": "FTMO evaluation permits weekend holding"
+  }
+}

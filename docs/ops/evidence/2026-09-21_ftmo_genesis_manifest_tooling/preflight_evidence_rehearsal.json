@@ -1,0 +1,86 @@
+{
+  "schema": "qm.ftmo-sunday-preflight-evidence/v1",
+  "scope": "PRE_SUNDAY_LIVE_TRIAL_REHEARSAL",
+  "checks": {
+    "kill_switch_test": {
+      "state": "RED",
+      "evidence_path": "docs/ops/evidence/2026-09-21_4fd8222f_ftmo_d2g6_kill_switch_anchor_diagnosis.md",
+      "reason": "Current D2g6 diagnosis proves legacy/raw-equity anchor behavior; the governed initializer and runtime proof are still pending."
+    },
+    "cost_assumptions": {
+      "state": "GREEN",
+      "evidence_path": "docs/ops/evidence/2026-09-21_ftmo_book_sim_v2_financed/README.md",
+      "reason": "Financed simulator binds commission registry and per-trade swap metadata."
+    },
+    "fill_fidelity": {
+      "state": "RED",
+      "evidence_path": "docs/ftmo/FTMO_SUNDAY_LAUNCH_STATUS.md",
+      "reason": "Harness-v2 execution-fidelity ticket remains open; current evidence cannot clear fill fidelity."
+    },
+    "oco": {
+      "state": "GREEN",
+      "evidence_path": "docs/ftmo/FTMO_SUNDAY_LAUNCH_STATUS.md",
+      "reason": "Current six-sleeve roster has no bracket/OCO EA; the launch status records OCO as not applicable to this roster."
+    },
+    "session_calendars": {
+      "state": "NOT_CHECKABLE",
+      "evidence_path": "docs/ftmo/FTMO_SUNDAY_LAUNCH_STATUS.md",
+      "reason": "No single current session-calendar validation receipt is bound for all six sleeves."
+    },
+    "dst": {
+      "state": "RED",
+      "evidence_path": "docs/ftmo/FTMO_SUNDAY_LAUNCH_STATUS.md",
+      "reason": "The news/archive DST audit is still in progress."
+    },
+    "news": {
+      "state": "RED",
+      "evidence_path": "docs/ftmo/FTMO_SUNDAY_LAUNCH_STATUS.md",
+      "reason": "News handling cannot be cleared until the archive audit and live-path separation evidence are closed."
+    },
+    "dependence_matrix": {
+      "state": "GREEN",
+      "evidence_path": "docs/ops/evidence/2026-09-21_ftmo_book_sim_v2_financed/FTMO_BOOK_DEPENDENCE_MATRIX_financed.json",
+      "reason": "Current financed D2g6 dependence matrix."
+    },
+    "duplicate_exposure": {
+      "state": "GREEN",
+      "evidence_path": "docs/ops/evidence/2026-09-21_ftmo_book_sim_v2_financed/FTMO_BOOK_DEPENDENCE_MATRIX_financed.md",
+      "reason": "Same-symbol exposure and overlap are explicitly classified rather than assumed diversified."
+    },
+    "xau_cluster": {
+      "state": "GREEN",
+      "evidence_path": "docs/ops/evidence/2026-09-21_ftmo_book_sim_v2_financed/FTMO_BOOK_DEPENDENCE_MATRIX_financed.md",
+      "reason": "The three-sleeve XAU activity cluster is documented."
+    },
+    "first_passage": {
+      "state": "GREEN",
+      "evidence_path": "D:/QM/reports/state/ftmo_first_passage.json",
+      "reason": "Current first-passage state artifact is present; Saturday preflight must regenerate it for the frozen generation."
+    },
+    "sleeve_attribution": {
+      "state": "RED",
+      "evidence_path": "D:/QM/reports/state/ftmo_sleeve_attribution.json",
+      "reason": "Required sleeve-attribution sidecar does not yet exist."
+    },
+    "logs": {
+      "state": "GREEN",
+      "evidence_path": "D:/QM/reports/state/ftmo_trial_pulse.json",
+      "reason": "PRE_SUNDAY collector/pulse evidence exists; launch generation must establish fresh logs."
+    },
+    "recovery": {
+      "state": "GREEN",
+      "evidence_path": "docs/ftmo/genesis/SUNDAY_LAUNCH_RUNBOOK_2026-09-27.md",
+      "reason": "The runbook has an explicit rollback/recovery section."
+    },
+    "demo_account_clean": {
+      "state": "NOT_CHECKABLE",
+      "evidence_path": "docs/ftmo/genesis/SUNDAY_LAUNCH_RUNBOOK_2026-09-27.md",
+      "reason": "Launch-day account cleanliness cannot be proved during the PRE_SUNDAY rehearsal."
+    },
+    "post_attach": {
+      "state": "NOT_CHECKABLE",
+      "evidence_path": "docs/ftmo/genesis/SUNDAY_LAUNCH_RUNBOOK_2026-09-27.md",
+      "reason": "Post-attach verification is intentionally launch-dependent."
+    }
+  }
+}

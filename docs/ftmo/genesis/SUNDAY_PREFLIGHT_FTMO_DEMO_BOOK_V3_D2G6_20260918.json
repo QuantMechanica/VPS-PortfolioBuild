@@ -1,0 +1,310 @@
+{
+  "checks": [
+    {
+      "area": "CODE_ARTIFACT",
+      "automatic": true,
+      "check": "All included EAs compile with 0 errors / 0 warnings",
+      "check_id": "compile_clean",
+      "critical": true,
+      "evidence_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-18_ftmo_demo_book_v3_D2g6\\RECEIPT_alias_builds.md",
+      "reason": "compile receipt states 0 errors / 0 warnings",
+      "state": "GREEN"
+    },
+    {
+      "area": "CODE_ARTIFACT",
+      "automatic": true,
+      "check": "Exact installed EX5 binding",
+      "check_id": "exact_ex5_binding",
+      "critical": true,
+      "evidence_path": null,
+      "reason": "7/7 installed EX5 hashes match",
+      "state": "GREEN"
+    },
+    {
+      "area": "CODE_ARTIFACT",
+      "automatic": true,
+      "check": "Exact installed setfile binding",
+      "check_id": "exact_setfile_binding",
+      "critical": true,
+      "evidence_path": null,
+      "reason": "7/7 setfile hashes match",
+      "state": "GREEN"
+    },
+    {
+      "area": "CODE_ARTIFACT",
+      "automatic": true,
+      "check": "Magic registry clean",
+      "check_id": "magic_registry_clean",
+      "critical": true,
+      "evidence_path": "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv",
+      "reason": "selected rows are active and formula-consistent",
+      "state": "GREEN"
+    },
+    {
+      "area": "CODE_ARTIFACT",
+      "automatic": true,
+      "check": "No unknown artifact drift",
+      "check_id": "no_artifact_drift",
+      "critical": true,
+      "evidence_path": null,
+      "reason": "Genesis verification status PASS (0 drift rows)",
+      "state": "GREEN"
+    },
+    {
+      "area": "ACCOUNT_RISK",
+      "automatic": true,
+      "check": "Account governor present and hash-bound",
+      "check_id": "account_governor_present",
+      "critical": true,
+      "evidence_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13206_ftmo-account-governor\\QM5_13206_ftmo-account-governor.mq5",
+      "reason": "governor source, installed EX5 and preset are hash-bound",
+      "state": "GREEN"
+    },
+    {
+      "area": "ACCOUNT_RISK",
+      "automatic": true,
+      "check": "Daily Loss anchor mode correct",
+      "check_id": "daily_loss_anchor",
+      "critical": true,
+      "evidence_path": null,
+      "reason": "configuration_status=MISSING_GOVERNED_INITIALIZER; anchor_mode=None",
+      "state": "RED"
+    },
+    {
+      "area": "ACCOUNT_RISK",
+      "automatic": true,
+      "check": "Prague rollover helper and configuration present",
+      "check_id": "prague_rollover",
+      "critical": true,
+      "evidence_path": "C:\\QM\\repo\\framework\\include\\QM\\QM_FTMOGovernorPolicy.mqh",
+      "reason": "helper or governed anchor configuration missing",
+      "state": "RED"
+    },
+    {
+      "area": "ACCOUNT_RISK",
+      "automatic": true,
+      "check": "Maximum Loss logic present",
+      "check_id": "maximum_loss",
+      "critical": true,
+      "evidence_path": "C:\\QM\\repo\\framework\\include\\QM\\QM_FTMOGovernorPolicy.mqh",
+      "reason": "governor binds the signed policy's static official_total_floor",
+      "state": "GREEN"
+    },
+    {
+      "area": "ACCOUNT_RISK",
+      "automatic": true,
+      "check": "Combined open-risk calculation present",
+      "check_id": "combined_open_risk",
+      "critical": true,
+      "evidence_path": "C:\\QM\\repo\\framework\\include\\QM\\QM_AccountRiskReservation.mqh",
+      "reason": "account risk reservation calculates request loss",
+      "state": "GREEN"
+    },
+    {
+      "area": "ACCOUNT_RISK",
+      "automatic": false,
+      "check": "Kill-Switch test evidence",
+      "check_id": "kill_switch_test",
+      "critical": true,
+      "evidence_path": "docs/ops/evidence/2026-09-21_4fd8222f_ftmo_d2g6_kill_switch_anchor_diagnosis.md",
+      "reason": "Current D2g6 diagnosis proves legacy/raw-equity anchor behavior; the governed initializer and runtime proof are still pending.",
+      "state": "RED"
+    },
+    {
+      "area": "ACCOUNT_RISK",
+      "automatic": true,
+      "check": "Book-generation identity",
+      "check_id": "book_generation_identity",
+      "critical": true,
+      "evidence_path": null,
+      "reason": "generation_id=FTMO_DEMO_BOOK_V3_D2G6_20260918_REHEARSAL; book_tag=None",
+      "state": "RED"
+    },
+    {
+      "area": "EXECUTION",
+      "automatic": false,
+      "check": "Spread and commission assumptions realistic",
+      "check_id": "cost_assumptions",
+      "critical": true,
+      "evidence_path": "docs/ops/evidence/2026-09-21_ftmo_book_sim_v2_financed/README.md",
+      "reason": "Financed simulator binds commission registry and per-trade swap metadata.",
+      "state": "GREEN"
+    },
+    {
+      "area": "EXECUTION",
+      "automatic": false,
+      "check": "No known unrealistic fill dependency",
+      "check_id": "fill_fidelity",
+      "critical": true,
+      "evidence_path": "docs/ftmo/FTMO_SUNDAY_LAUNCH_STATUS.md",
+      "reason": "Harness-v2 execution-fidelity ticket remains open; current evidence cannot clear fill fidelity.",
+      "state": "RED"
+    },
+    {
+      "area": "EXECUTION",
+      "automatic": false,
+      "check": "OCO verified where relevant",
+      "check_id": "oco",
+      "critical": true,
+      "evidence_path": "docs/ftmo/FTMO_SUNDAY_LAUNCH_STATUS.md",
+      "reason": "Current six-sleeve roster has no bracket/OCO EA; the launch status records OCO as not applicable to this roster.",
+      "state": "GREEN"
+    },
+    {
+      "area": "EXECUTION",
+      "automatic": false,
+      "check": "Session calendars valid",
+      "check_id": "session_calendars",
+      "critical": true,
+      "evidence_path": "docs/ftmo/FTMO_SUNDAY_LAUNCH_STATUS.md",
+      "reason": "No single current session-calendar validation receipt is bound for all six sleeves.",
+      "state": "NOT_CHECKABLE"
+    },
+    {
+      "area": "EXECUTION",
+      "automatic": false,
+      "check": "DST handling valid",
+      "check_id": "dst",
+      "critical": true,
+      "evidence_path": "docs/ftmo/FTMO_SUNDAY_LAUNCH_STATUS.md",
+      "reason": "The news/archive DST audit is still in progress.",
+      "state": "RED"
+    },
+    {
+      "area": "EXECUTION",
+      "automatic": false,
+      "check": "News handling valid",
+      "check_id": "news",
+      "critical": true,
+      "evidence_path": "docs/ftmo/FTMO_SUNDAY_LAUNCH_STATUS.md",
+      "reason": "News handling cannot be cleared until the archive audit and live-path separation evidence are closed.",
+      "state": "RED"
+    },
+    {
+      "area": "PORTFOLIO",
+      "automatic": false,
+      "check": "Dependence matrix current",
+      "check_id": "dependence_matrix",
+      "critical": true,
+      "evidence_path": "docs/ops/evidence/2026-09-21_ftmo_book_sim_v2_financed/FTMO_BOOK_DEPENDENCE_MATRIX_financed.json",
+      "reason": "Current financed D2g6 dependence matrix.",
+      "state": "GREEN"
+    },
+    {
+      "area": "PORTFOLIO",
+      "automatic": true,
+      "check": "Sleeve weights intentional",
+      "check_id": "intentional_weights",
+      "critical": true,
+      "evidence_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-18_ftmo_demo_book_v3_D2g6\\roster.json",
+      "reason": "risk-normalized sleeve weights sum to one",
+      "state": "GREEN"
+    },
+    {
+      "area": "PORTFOLIO",
+      "automatic": false,
+      "check": "No accidental duplicate exposure",
+      "check_id": "duplicate_exposure",
+      "critical": true,
+      "evidence_path": "docs/ops/evidence/2026-09-21_ftmo_book_sim_v2_financed/FTMO_BOOK_DEPENDENCE_MATRIX_financed.md",
+      "reason": "Same-symbol exposure and overlap are explicitly classified rather than assumed diversified.",
+      "state": "GREEN"
+    },
+    {
+      "area": "PORTFOLIO",
+      "automatic": false,
+      "check": "XAU cluster documented",
+      "check_id": "xau_cluster",
+      "critical": true,
+      "evidence_path": "docs/ops/evidence/2026-09-21_ftmo_book_sim_v2_financed/FTMO_BOOK_DEPENDENCE_MATRIX_financed.md",
+      "reason": "The three-sleeve XAU activity cluster is documented.",
+      "state": "GREEN"
+    },
+    {
+      "area": "PORTFOLIO",
+      "automatic": false,
+      "check": "First-passage simulation current",
+      "check_id": "first_passage",
+      "critical": true,
+      "evidence_path": "D:/QM/reports/state/ftmo_first_passage.json",
+      "reason": "Current first-passage state artifact is present; Saturday preflight must regenerate it for the frozen generation.",
+      "state": "GREEN"
+    },
+    {
+      "area": "OPERATIONS",
+      "automatic": false,
+      "check": "Sleeve P&L attribution working",
+      "check_id": "sleeve_attribution",
+      "critical": true,
+      "evidence_path": "D:/QM/reports/state/ftmo_sleeve_attribution.json",
+      "reason": "Required sleeve-attribution sidecar does not yet exist.",
+      "state": "RED"
+    },
+    {
+      "area": "OPERATIONS",
+      "automatic": false,
+      "check": "Logs working",
+      "check_id": "logs",
+      "critical": true,
+      "evidence_path": "D:/QM/reports/state/ftmo_trial_pulse.json",
+      "reason": "PRE_SUNDAY collector/pulse evidence exists; launch generation must establish fresh logs.",
+      "state": "GREEN"
+    },
+    {
+      "area": "OPERATIONS",
+      "automatic": false,
+      "check": "Recovery procedure documented",
+      "check_id": "recovery",
+      "critical": true,
+      "evidence_path": "docs/ftmo/genesis/SUNDAY_LAUNCH_RUNBOOK_2026-09-27.md",
+      "reason": "The runbook has an explicit rollback/recovery section.",
+      "state": "GREEN"
+    },
+    {
+      "area": "OPERATIONS",
+      "automatic": false,
+      "check": "Demo account clean before attach",
+      "check_id": "demo_account_clean",
+      "critical": true,
+      "evidence_path": "docs/ftmo/genesis/SUNDAY_LAUNCH_RUNBOOK_2026-09-27.md",
+      "reason": "Launch-day account cleanliness cannot be proved during the PRE_SUNDAY rehearsal.",
+      "state": "NOT_CHECKABLE"
+    },
+    {
+      "area": "OPERATIONS",
+      "automatic": false,
+      "check": "Post-attach verification complete",
+      "check_id": "post_attach",
+      "critical": true,
+      "evidence_path": "docs/ftmo/genesis/SUNDAY_LAUNCH_RUNBOOK_2026-09-27.md",
+      "reason": "Post-attach verification is intentionally launch-dependent.",
+      "state": "NOT_CHECKABLE"
+    }
+  ],
+  "counts": {
+    "GREEN": 17,
+    "NOT_CHECKABLE": 3,
+    "RED": 8
+  },
+  "critical_not_checkable": [
+    "session_calendars",
+    "demo_account_clean",
+    "post_attach"
+  ],
+  "critical_red": [
+    "daily_loss_anchor",
+    "prague_rollover",
+    "kill_switch_test",
+    "book_generation_identity",
+    "fill_fidelity",
+    "dst",
+    "news",
+    "sleeve_attribution"
+  ],
+  "decision": "NO_GO",
+  "generation_id": "FTMO_DEMO_BOOK_V3_D2G6_20260918_REHEARSAL",
+  "manifest_path": "C:\\QM\\repo\\docs\\ftmo\\genesis\\FTMO_DEMO_GENESIS_MANIFEST_FTMO_DEMO_BOOK_V3_D2G6_20260918.json",
+  "manifest_sha256": "2f079710d5cd2d051ea2499b82c9127ef6ca18c763fafe7ec8abfb453b4a6f06",
+  "schema": "qm.ftmo-sunday-preflight/v1",
+  "scope": "READ_ONLY_PRE_SUNDAY_REHEARSAL"
+}
