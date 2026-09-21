@@ -2,7 +2,7 @@
 
 Authority: OWNER-DEC-FTMO-FINAL-MEGA-20260921 (`decisions/2026-09-21_owner_ftmo_final_mega_prompt_sunday_demo.md`). Fable launches
 autonomously when the critical preflight checks are green; the sole mandatory OWNER approval remains the paid FTMO Challenge purchase.
-Updated by Fable at every material change; last update **2026-09-21 21:5xZ** (full-throttle override; attribution accepted; families B1/B2/B3/C1 all without survivors).
+Updated by Fable at every material change; last update **2026-09-21 20:5xZ** (full-throttle override; attribution accepted; families B1/B2/B3/C1 all without survivors).
 
 ## §Y fields
 

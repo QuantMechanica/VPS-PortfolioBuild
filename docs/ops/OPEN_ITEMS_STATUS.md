@@ -1,6 +1,6 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
-> **RESULT 2026-09-21 21:5xZ — OWNER Full-Throttle-Override umgesetzt (Fable):**
+> **RESULT 2026-09-21 20:5xZ — OWNER Full-Throttle-Override umgesetzt (Fable):**
 > - Record `decisions/2026-09-21_owner_ftmo_full_throttle_research.md` (verbatim Evidence, CLAUDE.md). Primaer-KPI P80_DAYS_TO_FIRST_NET_FTMO_PAYOUT; drei Spuren A/B/C dauerhaft; nichts wird wegen Sonntag geparkt.
 > - **Entparkt (RUN_NOW):** N-RECOVERY cd3b761c, R-RECOVERY df1cae9b (Codex, TODO); Second-Chance-Karten QM5_11563 (approved, D:+C:) und QM5_11211 (approved, Magic-Precondition a8177dca offen); Oel-Rebuild 273f2de8 bleibt TODO. BR1-BR3 = REJECT (Familie B3: 0/16).
 > - **Neue Tickets:** Codex Cross-Symbol-Scanner 35bbe0bc (78, exempt), Codex ML-Rule-Discovery 08d62fa7 (76, exempt), Codex Pinned-Fanout fuer parallele Codex-Sessions 0d64aba8 (79, exempt), Kimi Discovery-Wave 9d7458f8 (80, wartet auf Lane ~22.09. mittags), Antigravity Cross-Symbol-Set 7636afc9 (77), Preflight-Zeilen 01806354 (75).
