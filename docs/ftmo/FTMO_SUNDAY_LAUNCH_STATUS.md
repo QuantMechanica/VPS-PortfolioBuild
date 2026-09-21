@@ -2,7 +2,7 @@
 
 Authority: OWNER-DEC-FTMO-FINAL-MEGA-20260921 (`decisions/2026-09-21_owner_ftmo_final_mega_prompt_sunday_demo.md`). Fable launches
 autonomously when the critical preflight checks are green; the sole mandatory OWNER approval remains the paid FTMO Challenge purchase.
-Updated by Fable at every material change; last update **2026-09-21 20:4xZ** (genesis tooling delivered; shadow book; Track B B1 result).
+Updated by Fable at every material change; last update **2026-09-21 21:5xZ** (full-throttle override; attribution accepted; families B1/B2/B3/C1 all without survivors).
 
 ## §Y fields
 
@@ -41,7 +41,7 @@ Updated by Fable at every material change; last update **2026-09-21 20:4xZ** (ge
 | ACCOUNT RISK | governor, Daily-Loss anchor, Prague rollover, Max-Loss, combined open risk, KS tested, book-generation identity | RED (d6189118 + runtime proofs) | Codex d6189118 → Fable |
 | EXECUTION | spread/commission realistic, no unrealistic fill dependency, OCO verified, calendars/DST/news valid | AMBER — commission/financing modelled (financed run) but **venue spread unmeasured for 4 of 6 symbols and the book is cost-sensitive (LCB 0.87 → 0.61 under +1 bps/+2 USD/lot)** → Codex `73434cab` VENUE_ADJUSTED; news archive DST audit open (a36a5983); OCO not relevant to the six | a36a5983, 73434cab |
 | PORTFOLIO | dependence matrix current, weights intentional, no duplicate exposure, XAU cluster understood, first-passage current | GREEN (financed re-run 2026-09-21) | Fable |
-| OPERATIONS | sleeve P&L attribution, logs, recovery procedure, demo account clean before attach, post-attach verification | RED (attribution 74c41987; account-clean + post-attach = launch-day steps) | Codex 74c41987 → Fable |
+| OPERATIONS | sleeve P&L attribution, logs, recovery procedure, demo account clean before attach, post-attach verification | AMBER — attribution tool delivered and accepted (74c41987: reconciliation to 0.00 over 4 days, Mission Control block); account-clean + post-attach = launch-day steps | Fable |
 | DEMO DAYS | retro-audit classification of the 2026-09-18..27 days (BEHAVIOR_IDENTICAL / POTENTIALLY_DIFFERENT / MATERIALLY_INVALID) | GREEN for 09-18..21 (1 INVALID / 2 POTENTIALLY_DIFFERENT / 1 IDENTICAL; 2 valid completed days; all PRE_SUNDAY_LIVE_TRIAL, not merged) — re-run for 09-22..26 before launch | Codex 4505b206 APPROVED (`2026-09-21_ftmo_demo_day_retro_audit/`) |
 | CODE/EXECUTION | live news feed binding: every sleeve preset points at the live calendar (D:/QM/data/news_calendar + FILE_COMMON, mtime < 24 h), never a static backtest CSV | RED (preflight row to be built; critique cb0eb674 #1) | 94a15624 |
 | OPERATIONS | terminal AutoTrading flag: TERMINAL_TRADE_ALLOWED == 1 and trading_allowed == true on all six charts after attach | RED (launch-day proof; critique #2) | 94a15624 → Fable |
