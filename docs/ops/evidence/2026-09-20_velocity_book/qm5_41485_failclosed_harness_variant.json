@@ -1,0 +1,716 @@
+{
+ "schema": "qm.hv4-failclosed-harness-variant/v1",
+ "rule": "one rejected stop send at placement -> cancel survivor, no trade that day (QM-RESEARCH-2026-0012 rev 2 point 5); everything else identical to velocity_family_f1_sweep_0921.simulate_cell",
+ "cells": {
+  "USDJPY C2": {
+   "baseline_harness": {
+    "SEL": {
+     "trades": 998,
+     "business_days": 1175,
+     "wins": 448,
+     "net_R": 141.125,
+     "E_R": 0.1414,
+     "PF": 1.302,
+     "density_per_bd": 0.8494,
+     "R_per_bd": 0.1201,
+     "worst_year_DD_R": 20.83,
+     "gross_E_R": 0.1809,
+     "cost_R_median": 0.0346,
+     "hold_min_median": 283.5,
+     "net_R_per_year": {
+      "2018": 24.84,
+      "2019": 11.97,
+      "2020": 13.71,
+      "2021": 51.83,
+      "2022": 38.77
+     },
+     "trades_per_year": {
+      "2018": 116,
+      "2019": 234,
+      "2020": 225,
+      "2021": 202,
+      "2022": 221
+     },
+     "exit_kinds": {
+      "both_edges_same_bar": 8,
+      "flat": 319,
+      "friday_close": 92,
+      "stop": 377,
+      "trail_stop": 202
+     }
+    },
+    "VAL": {
+     "trades": 632,
+     "business_days": 783,
+     "wins": 269,
+     "net_R": 91.046,
+     "E_R": 0.1441,
+     "PF": 1.295,
+     "density_per_bd": 0.8072,
+     "R_per_bd": 0.1163,
+     "worst_year_DD_R": 25.04,
+     "gross_E_R": 0.173,
+     "cost_R_median": 0.0249,
+     "hold_min_median": 273.0,
+     "net_R_per_year": {
+      "2023": 5.16,
+      "2024": 59.24,
+      "2025": 26.66
+     },
+     "trades_per_year": {
+      "2023": 206,
+      "2024": 203,
+      "2025": 223
+     },
+     "exit_kinds": {
+      "both_edges_same_bar": 21,
+      "flat": 199,
+      "flat_gap_prev_close": 1,
+      "friday_close": 43,
+      "stop": 243,
+      "trail_stop": 125
+     }
+    },
+    "by_year": {
+     "2018": {
+      "n": 117,
+      "net_R": 25.13,
+      "PF": 1.471
+     },
+     "2019": {
+      "n": 234,
+      "net_R": 11.97,
+      "PF": 1.093
+     },
+     "2020": {
+      "n": 225,
+      "net_R": 13.71,
+      "PF": 1.125
+     },
+     "2021": {
+      "n": 202,
+      "net_R": 51.83,
+      "PF": 1.61
+     },
+     "2022": {
+      "n": 221,
+      "net_R": 38.77,
+      "PF": 1.423
+     },
+     "2023": {
+      "n": 206,
+      "net_R": 5.16,
+      "PF": 1.05
+     },
+     "2024": {
+      "n": 203,
+      "net_R": 59.24,
+      "PF": 1.67
+     },
+     "2025": {
+      "n": 223,
+      "net_R": 26.66,
+      "PF": 1.227
+     }
+    },
+    "one_side_only_days": 145
+   },
+   "fail_closed_harness": {
+    "SEL": {
+     "trades": 967,
+     "business_days": 1175,
+     "wins": 438,
+     "net_R": 150.983,
+     "E_R": 0.1561,
+     "PF": 1.338,
+     "density_per_bd": 0.823,
+     "R_per_bd": 0.1285,
+     "worst_year_DD_R": 20.83,
+     "gross_E_R": 0.1954,
+     "cost_R_median": 0.0342,
+     "hold_min_median": 288.0,
+     "net_R_per_year": {
+      "2018": 20.08,
+      "2019": 13.42,
+      "2020": 17.88,
+      "2021": 55.39,
+      "2022": 44.22
+     },
+     "trades_per_year": {
+      "2018": 111,
+      "2019": 228,
+      "2020": 221,
+      "2021": 196,
+      "2022": 211
+     },
+     "exit_kinds": {
+      "both_edges_same_bar": 8,
+      "flat": 313,
+      "friday_close": 88,
+      "stop": 358,
+      "trail_stop": 200
+     }
+    },
+    "VAL": {
+     "trades": 615,
+     "business_days": 783,
+     "wins": 260,
+     "net_R": 78.544,
+     "E_R": 0.1277,
+     "PF": 1.259,
+     "density_per_bd": 0.7854,
+     "R_per_bd": 0.1003,
+     "worst_year_DD_R": 26.03,
+     "gross_E_R": 0.1565,
+     "cost_R_median": 0.0248,
+     "hold_min_median": 273.0,
+     "net_R_per_year": {
+      "2023": 7.26,
+      "2024": 51.08,
+      "2025": 20.2
+     },
+     "trades_per_year": {
+      "2023": 202,
+      "2024": 195,
+      "2025": 218
+     },
+     "exit_kinds": {
+      "both_edges_same_bar": 21,
+      "flat": 190,
+      "flat_gap_prev_close": 1,
+      "friday_close": 42,
+      "stop": 239,
+      "trail_stop": 122
+     }
+    },
+    "by_year": {
+     "2018": {
+      "n": 112,
+      "net_R": 20.36,
+      "PF": 1.398
+     },
+     "2019": {
+      "n": 228,
+      "net_R": 13.42,
+      "PF": 1.108
+     },
+     "2020": {
+      "n": 221,
+      "net_R": 17.88,
+      "PF": 1.17
+     },
+     "2021": {
+      "n": 196,
+      "net_R": 55.39,
+      "PF": 1.682
+     },
+     "2022": {
+      "n": 211,
+      "net_R": 44.22,
+      "PF": 1.524
+     },
+     "2023": {
+      "n": 202,
+      "net_R": 7.26,
+      "PF": 1.073
+     },
+     "2024": {
+      "n": 195,
+      "net_R": 51.08,
+      "PF": 1.586
+     },
+     "2025": {
+      "n": 218,
+      "net_R": 20.2,
+      "PF": 1.175
+     }
+    },
+    "skipped_one_sided_days": 145
+   },
+   "one_sided_contribution_net_R_by_year": {
+    "2018": 4.77,
+    "2019": -1.45,
+    "2020": -4.17,
+    "2021": -3.56,
+    "2022": -5.45,
+    "2023": -2.1,
+    "2024": 8.16,
+    "2025": 6.46
+   }
+  },
+  "USDJPY C3": {
+   "baseline_harness": {
+    "SEL": {
+     "trades": 926,
+     "business_days": 1175,
+     "wins": 435,
+     "net_R": 113.95,
+     "E_R": 0.1231,
+     "PF": 1.288,
+     "density_per_bd": 0.7881,
+     "R_per_bd": 0.097,
+     "worst_year_DD_R": 20.65,
+     "gross_E_R": 0.1577,
+     "cost_R_median": 0.0307,
+     "hold_min_median": 296.0,
+     "net_R_per_year": {
+      "2018": 19.58,
+      "2019": 4.24,
+      "2020": 22.61,
+      "2021": 45.43,
+      "2022": 22.1
+     },
+     "trades_per_year": {
+      "2018": 109,
+      "2019": 218,
+      "2020": 204,
+      "2021": 188,
+      "2022": 207
+     },
+     "exit_kinds": {
+      "both_edges_same_bar": 5,
+      "flat": 339,
+      "friday_close": 94,
+      "stop": 302,
+      "trail_stop": 186
+     }
+    },
+    "VAL": {
+     "trades": 596,
+     "business_days": 783,
+     "wins": 273,
+     "net_R": 83.903,
+     "E_R": 0.1408,
+     "PF": 1.319,
+     "density_per_bd": 0.7612,
+     "R_per_bd": 0.1072,
+     "worst_year_DD_R": 22.2,
+     "gross_E_R": 0.1661,
+     "cost_R_median": 0.0218,
+     "hold_min_median": 289.0,
+     "net_R_per_year": {
+      "2023": 8.34,
+      "2024": 55.24,
+      "2025": 20.33
+     },
+     "trades_per_year": {
+      "2023": 192,
+      "2024": 191,
+      "2025": 213
+     },
+     "exit_kinds": {
+      "both_edges_same_bar": 15,
+      "flat": 216,
+      "flat_gap_prev_close": 1,
+      "friday_close": 54,
+      "stop": 203,
+      "trail_stop": 107
+     }
+    },
+    "by_year": {
+     "2018": {
+      "n": 110,
+      "net_R": 19.84,
+      "PF": 1.429
+     },
+     "2019": {
+      "n": 218,
+      "net_R": 4.24,
+      "PF": 1.038
+     },
+     "2020": {
+      "n": 204,
+      "net_R": 22.61,
+      "PF": 1.263
+     },
+     "2021": {
+      "n": 188,
+      "net_R": 45.43,
+      "PF": 1.644
+     },
+     "2022": {
+      "n": 207,
+      "net_R": 22.1,
+      "PF": 1.274
+     },
+     "2023": {
+      "n": 192,
+      "net_R": 8.34,
+      "PF": 1.097
+     },
+     "2024": {
+      "n": 191,
+      "net_R": 55.24,
+      "PF": 1.741
+     },
+     "2025": {
+      "n": 213,
+      "net_R": 20.33,
+      "PF": 1.198
+     }
+    },
+    "one_side_only_days": 122
+   },
+   "fail_closed_harness": {
+    "SEL": {
+     "trades": 903,
+     "business_days": 1175,
+     "wins": 428,
+     "net_R": 122.371,
+     "E_R": 0.1355,
+     "PF": 1.323,
+     "density_per_bd": 0.7685,
+     "R_per_bd": 0.1041,
+     "worst_year_DD_R": 20.65,
+     "gross_E_R": 0.1699,
+     "cost_R_median": 0.0305,
+     "hold_min_median": 300.0,
+     "net_R_per_year": {
+      "2018": 15.46,
+      "2019": 5.76,
+      "2020": 25.72,
+      "2021": 48.12,
+      "2022": 27.31
+     },
+     "trades_per_year": {
+      "2018": 106,
+      "2019": 213,
+      "2020": 201,
+      "2021": 184,
+      "2022": 199
+     },
+     "exit_kinds": {
+      "both_edges_same_bar": 5,
+      "flat": 335,
+      "friday_close": 91,
+      "stop": 288,
+      "trail_stop": 184
+     }
+    },
+    "VAL": {
+     "trades": 580,
+     "business_days": 783,
+     "wins": 265,
+     "net_R": 73.982,
+     "E_R": 0.1276,
+     "PF": 1.287,
+     "density_per_bd": 0.7407,
+     "R_per_bd": 0.0945,
+     "worst_year_DD_R": 22.2,
+     "gross_E_R": 0.1528,
+     "cost_R_median": 0.0217,
+     "hold_min_median": 290.0,
+     "net_R_per_year": {
+      "2023": 9.7,
+      "2024": 47.5,
+      "2025": 16.78
+     },
+     "trades_per_year": {
+      "2023": 188,
+      "2024": 183,
+      "2025": 209
+     },
+     "exit_kinds": {
+      "both_edges_same_bar": 15,
+      "flat": 207,
+      "flat_gap_prev_close": 1,
+      "friday_close": 52,
+      "stop": 200,
+      "trail_stop": 105
+     }
+    },
+    "by_year": {
+     "2018": {
+      "n": 107,
+      "net_R": 15.72,
+      "PF": 1.346
+     },
+     "2019": {
+      "n": 213,
+      "net_R": 5.76,
+      "PF": 1.053
+     },
+     "2020": {
+      "n": 201,
+      "net_R": 25.72,
+      "PF": 1.311
+     },
+     "2021": {
+      "n": 184,
+      "net_R": 48.12,
+      "PF": 1.711
+     },
+     "2022": {
+      "n": 199,
+      "net_R": 27.31,
+      "PF": 1.368
+     },
+     "2023": {
+      "n": 188,
+      "net_R": 9.7,
+      "PF": 1.117
+     },
+     "2024": {
+      "n": 183,
+      "net_R": 47.5,
+      "PF": 1.648
+     },
+     "2025": {
+      "n": 209,
+      "net_R": 16.78,
+      "PF": 1.166
+     }
+    },
+    "skipped_one_sided_days": 122
+   },
+   "one_sided_contribution_net_R_by_year": {
+    "2018": 4.12,
+    "2019": -1.52,
+    "2020": -3.11,
+    "2021": -2.69,
+    "2022": -5.21,
+    "2023": -1.36,
+    "2024": 7.74,
+    "2025": 3.55
+   }
+  },
+  "EURUSD C3": {
+   "baseline_harness": {
+    "SEL": {
+     "trades": 729,
+     "business_days": 1175,
+     "wins": 339,
+     "net_R": 55.08,
+     "E_R": 0.0756,
+     "PF": 1.181,
+     "density_per_bd": 0.6204,
+     "R_per_bd": 0.0469,
+     "worst_year_DD_R": 24.68,
+     "gross_E_R": 0.1031,
+     "cost_R_median": 0.0255,
+     "hold_min_median": 304.0,
+     "net_R_per_year": {
+      "2018": 17.6,
+      "2019": 6.34,
+      "2020": 17.03,
+      "2021": 12.89,
+      "2022": 1.22
+     },
+     "trades_per_year": {
+      "2018": 81,
+      "2019": 158,
+      "2020": 164,
+      "2021": 165,
+      "2022": 161
+     },
+     "exit_kinds": {
+      "both_edges_same_bar": 1,
+      "flat": 269,
+      "flat_gap_prev_close": 1,
+      "friday_close": 80,
+      "stop": 237,
+      "trail_stop": 141
+     }
+    },
+    "VAL": {
+     "trades": 512,
+     "business_days": 783,
+     "wins": 232,
+     "net_R": 53.638,
+     "E_R": 0.1048,
+     "PF": 1.225,
+     "density_per_bd": 0.6539,
+     "R_per_bd": 0.0685,
+     "worst_year_DD_R": 15.75,
+     "gross_E_R": 0.1326,
+     "cost_R_median": 0.0262,
+     "hold_min_median": 299.5,
+     "net_R_per_year": {
+      "2023": 0.06,
+      "2024": 33.51,
+      "2025": 20.07
+     },
+     "trades_per_year": {
+      "2023": 159,
+      "2024": 165,
+      "2025": 188
+     },
+     "exit_kinds": {
+      "both_edges_same_bar": 12,
+      "flat": 181,
+      "flat_gap_prev_close": 1,
+      "friday_close": 37,
+      "stop": 180,
+      "trail_stop": 101
+     }
+    },
+    "by_year": {
+     "2018": {
+      "n": 82,
+      "net_R": 16.57,
+      "PF": 1.588
+     },
+     "2019": {
+      "n": 158,
+      "net_R": 6.34,
+      "PF": 1.091
+     },
+     "2020": {
+      "n": 164,
+      "net_R": 17.03,
+      "PF": 1.272
+     },
+     "2021": {
+      "n": 165,
+      "net_R": 12.89,
+      "PF": 1.171
+     },
+     "2022": {
+      "n": 161,
+      "net_R": 1.22,
+      "PF": 1.018
+     },
+     "2023": {
+      "n": 159,
+      "net_R": 0.06,
+      "PF": 1.001
+     },
+     "2024": {
+      "n": 165,
+      "net_R": 33.51,
+      "PF": 1.439
+     },
+     "2025": {
+      "n": 188,
+      "net_R": 20.07,
+      "PF": 1.24
+     }
+    },
+    "one_side_only_days": 101
+   },
+   "fail_closed_harness": {
+    "SEL": {
+     "trades": 701,
+     "business_days": 1175,
+     "wins": 326,
+     "net_R": 54.523,
+     "E_R": 0.0778,
+     "PF": 1.185,
+     "density_per_bd": 0.5966,
+     "R_per_bd": 0.0464,
+     "worst_year_DD_R": 21.45,
+     "gross_E_R": 0.1053,
+     "cost_R_median": 0.0255,
+     "hold_min_median": 307.5,
+     "net_R_per_year": {
+      "2018": 16.17,
+      "2019": 4.32,
+      "2020": 16.47,
+      "2021": 15.33,
+      "2022": 2.24
+     },
+     "trades_per_year": {
+      "2018": 78,
+      "2019": 153,
+      "2020": 161,
+      "2021": 160,
+      "2022": 149
+     },
+     "exit_kinds": {
+      "both_edges_same_bar": 1,
+      "flat": 254,
+      "flat_gap_prev_close": 1,
+      "friday_close": 77,
+      "stop": 230,
+      "trail_stop": 138
+     }
+    },
+    "VAL": {
+     "trades": 501,
+     "business_days": 783,
+     "wins": 226,
+     "net_R": 53.331,
+     "E_R": 0.1064,
+     "PF": 1.227,
+     "density_per_bd": 0.6398,
+     "R_per_bd": 0.0681,
+     "worst_year_DD_R": 15.72,
+     "gross_E_R": 0.1344,
+     "cost_R_median": 0.0262,
+     "hold_min_median": 301.0,
+     "net_R_per_year": {
+      "2023": 2.02,
+      "2024": 32.46,
+      "2025": 18.85
+     },
+     "trades_per_year": {
+      "2023": 154,
+      "2024": 162,
+      "2025": 185
+     },
+     "exit_kinds": {
+      "both_edges_same_bar": 12,
+      "flat": 174,
+      "flat_gap_prev_close": 1,
+      "friday_close": 36,
+      "stop": 178,
+      "trail_stop": 100
+     }
+    },
+    "by_year": {
+     "2018": {
+      "n": 79,
+      "net_R": 15.15,
+      "PF": 1.541
+     },
+     "2019": {
+      "n": 153,
+      "net_R": 4.32,
+      "PF": 1.063
+     },
+     "2020": {
+      "n": 161,
+      "net_R": 16.47,
+      "PF": 1.264
+     },
+     "2021": {
+      "n": 160,
+      "net_R": 15.33,
+      "PF": 1.212
+     },
+     "2022": {
+      "n": 149,
+      "net_R": 2.24,
+      "PF": 1.035
+     },
+     "2023": {
+      "n": 154,
+      "net_R": 2.02,
+      "PF": 1.027
+     },
+     "2024": {
+      "n": 162,
+      "net_R": 32.46,
+      "PF": 1.425
+     },
+     "2025": {
+      "n": 185,
+      "net_R": 18.85,
+      "PF": 1.227
+     }
+    },
+    "skipped_one_sided_days": 101
+   },
+   "one_sided_contribution_net_R_by_year": {
+    "2018": 1.42,
+    "2019": 2.02,
+    "2020": 0.56,
+    "2021": -2.44,
+    "2022": -1.02,
+    "2023": -1.96,
+    "2024": 1.05,
+    "2025": 1.22
+   }
+  }
+ }
+}

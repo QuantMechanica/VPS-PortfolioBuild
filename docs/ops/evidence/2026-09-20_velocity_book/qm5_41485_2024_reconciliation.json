@@ -1,0 +1,4384 @@
+{
+ "schema": "qm.hv4-2024-reconciliation/v1",
+ "cell": "USDJPY C2",
+ "summary": {
+  "harness_2024": {
+   "n": 203,
+   "net_R": 59.24
+  },
+  "tester_2024": {
+   "n": 148,
+   "net_R": -23.46
+  },
+  "days_common": 148,
+  "days_sim_only": 55,
+  "days_tester_only": 0,
+  "same_direction_common": 139,
+  "direction_mismatch": 9,
+  "fill_time_diff_min_tester_minus_sim": {
+   "median": 0.2,
+   "p10": -0.8,
+   "p90": 0.8,
+   "n": 135
+  },
+  "net_R_diff_same_dir": {
+   "sum": 13.99,
+   "mean": 0.1007,
+   "median": 0.0147
+  },
+  "sim_only_net_R": 55.73,
+  "tester_only_net_R": 0,
+  "mismatch_dir_net_R_sim_minus_tester": 12.97,
+  "tester_multi_trade_days": 0,
+  "sim_exit_kinds_2024": {
+   "flat": 69,
+   "trail_stop": 44,
+   "stop": 67,
+   "friday_close": 16,
+   "both_edges_same_bar": 7
+  },
+  "tester_comments_2024": {
+   "qm_tm_close": 56,
+   "sl 145.051": 1,
+   "sl 144.003": 1,
+   "sl 144.189": 1,
+   "sl 146.787": 1,
+   "sl 147.935": 1,
+   "sl 148.469": 1,
+   "sl 147.577": 1,
+   "sl 147.957": 1,
+   "sl 149.352": 1,
+   "sl 149.294": 1,
+   "sl 150.499": 1,
+   "sl 150.097": 1,
+   "sl 150.141": 1,
+   "sl 150.149": 1,
+   "sl 149.947": 1,
+   "sl 150.740": 1,
+   "sl 149.897": 1,
+   "sl 150.320": 1,
+   "sl 150.185": 1,
+   "sl 147.001": 1,
+   "sl 146.817": 1,
+   "sl 147.770": 1,
+   "sl 147.656": 1,
+   "sl 149.008": 1,
+   "sl 151.631": 1,
+   "sl 151.377": 1,
+   "sl 151.732": 1,
+   "sl 154.536": 1,
+   "sl 154.699": 1,
+   "sl 154.607": 1,
+   "sl 155.735": 1,
+   "sl 153.827": 1,
+   "sl 154.629": 1,
+   "sl 155.650": 1,
+   "sl 156.180": 1,
+   "sl 156.615": 1,
+   "sl 156.864": 1,
+   "sl 157.294": 1,
+   "sl 155.980": 1,
+   "sl 157.215": 1,
+   "sl 157.270": 1,
+   "sl 157.919": 1,
+   "sl 158.275": 1,
+   "sl 159.570": 1,
+   "sl 160.433": 1,
+   "sl 160.538": 1,
+   "sl 161.577": 1,
+   "sl 157.960": 1,
+   "sl 158.460": 1,
+   "sl 157.328": 1,
+   "sl 153.591": 1,
+   "sl 153.874": 1,
+   "sl 148.731": 1,
+   "sl 147.504": 1,
+   "sl 147.144": 1,
+   "sl 147.042": 1,
+   "sl 146.174": 1,
+   "sl 143.962": 1,
+   "sl 145.183": 1,
+   "sl 142.896": 1,
+   "sl 141.549": 1,
+   "sl 142.648": 1,
+   "sl 144.430": 1,
+   "sl 143.781": 1,
+   "sl 144.442": 1,
+   "sl 143.560": 1,
+   "sl 149.140": 1,
+   "sl 149.415": 1,
+   "sl 149.731": 1,
+   "": 1,
+   "sl 149.629": 1,
+   "sl 150.748": 1,
+   "sl 152.627": 1,
+   "sl 153.209": 1,
+   "sl 152.307": 1,
+   "sl 152.336": 1,
+   "sl 154.058": 1,
+   "sl 153.688": 1,
+   "sl 154.703": 1,
+   "sl 154.208": 1,
+   "sl 155.434": 1,
+   "sl 154.563": 1,
+   "sl 150.258": 1,
+   "sl 149.916": 1,
+   "sl 149.447": 1,
+   "sl 150.041": 1,
+   "sl 151.836": 1,
+   "sl 152.101": 1,
+   "sl 153.663": 1,
+   "sl 154.125": 1,
+   "sl 153.971": 1,
+   "sl 157.262": 1
+  }
+ },
+ "joined_days_2024": [
+  {
+   "day": "2024-01-02",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-01-02 16:46",
+    "entry": 141.714,
+    "exit": 141.963,
+    "exit_kind": "flat",
+    "net_r": -0.513,
+    "hold_min": 374.0,
+    "w": 0.499
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-01-02 16:46",
+    "exit_t": "2024-01-02 23:00",
+    "net_r": -0.544,
+    "hold_min": 374.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-01-03",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-01-03 16:05",
+    "entry": 143.063,
+    "exit": 142.816,
+    "exit_kind": "trail_stop",
+    "net_r": -0.914,
+    "hold_min": 59.0,
+    "w": 0.278
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-01-05",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-01-05 15:30",
+    "entry": 145.298,
+    "exit": 145.051,
+    "exit_kind": "stop",
+    "net_r": -1.029,
+    "hold_min": 57.0,
+    "w": 0.247
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-01-05 15:30",
+    "exit_t": "2024-01-05 16:27",
+    "net_r": -1.171,
+    "hold_min": 58.0,
+    "comment": "sl 145.051",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-01-08",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-01-08 15:30",
+    "entry": 144.378,
+    "exit": 144.003,
+    "exit_kind": "trail_stop",
+    "net_r": 1.214,
+    "hold_min": 273.0,
+    "w": 0.303
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-01-08 15:30",
+    "exit_t": "2024-01-08 20:02",
+    "net_r": 1.202,
+    "hold_min": 273.0,
+    "comment": "sl 144.003",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-01-09",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-01-09 15:38",
+    "entry": 143.954,
+    "exit": 144.189,
+    "exit_kind": "stop",
+    "net_r": -1.031,
+    "hold_min": 126.0,
+    "w": 0.235
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-01-09 15:38",
+    "exit_t": "2024-01-09 17:44",
+    "net_r": -1.038,
+    "hold_min": 126.0,
+    "comment": "sl 144.189",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-01-10",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-01-10 16:01",
+    "entry": 145.331,
+    "exit": 145.8,
+    "exit_kind": "flat",
+    "net_r": 1.248,
+    "hold_min": 419.0,
+    "w": 0.37
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-01-10 16:01",
+    "exit_t": "2024-01-10 23:00",
+    "net_r": 1.236,
+    "hold_min": 419.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-01-15",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-01-15 16:21",
+    "entry": 145.911,
+    "exit": 145.79,
+    "exit_kind": "flat",
+    "net_r": -0.347,
+    "hold_min": 399.0,
+    "w": 0.37
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-01-15 16:21",
+    "exit_t": "2024-01-15 23:00",
+    "net_r": -0.351,
+    "hold_min": 399.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-01-16",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-01-16 15:30",
+    "entry": 146.582,
+    "exit": 146.787,
+    "exit_kind": "stop",
+    "net_r": -1.036,
+    "hold_min": 90.0,
+    "w": 0.205
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-01-16 15:30",
+    "exit_t": "2024-01-16 17:00",
+    "net_r": -1.08,
+    "hold_min": 90.0,
+    "comment": "sl 146.787",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-01-19",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-01-19 15:43",
+    "entry": 148.185,
+    "exit": 148.243,
+    "exit_kind": "friday_close",
+    "net_r": 0.223,
+    "hold_min": 317.0,
+    "w": 0.227
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-01-19 15:43",
+    "exit_t": "2024-01-19 21:00",
+    "net_r": 0.222,
+    "hold_min": 317.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-01-22",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-01-22 15:41",
+    "entry": 147.705,
+    "exit": 147.935,
+    "exit_kind": "stop",
+    "net_r": -1.032,
+    "hold_min": 63.0,
+    "w": 0.23
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-01-22 15:41",
+    "exit_t": "2024-01-22 16:44",
+    "net_r": -1.058,
+    "hold_min": 63.0,
+    "comment": "sl 147.935",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-01-23",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-01-23 16:05",
+    "entry": 148.137,
+    "exit": 148.469,
+    "exit_kind": "trail_stop",
+    "net_r": 1.225,
+    "hold_min": 268.0,
+    "w": 0.265
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-01-23 16:05",
+    "exit_t": "2024-01-23 20:33",
+    "net_r": 1.22,
+    "hold_min": 268.0,
+    "comment": "sl 148.469",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-01-25",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-01-25 18:55",
+    "entry": 147.76,
+    "exit": 147.72,
+    "exit_kind": "flat",
+    "net_r": -0.165,
+    "hold_min": 245.0,
+    "w": 0.287
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-01-26",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-01-26 16:02",
+    "entry": 147.635,
+    "exit": 147.827,
+    "exit_kind": "stop",
+    "net_r": -1.038,
+    "hold_min": 13.0,
+    "w": 0.192
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-01-29",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-01-29 17:15",
+    "entry": 147.835,
+    "exit": 147.45,
+    "exit_kind": "flat",
+    "net_r": 1.487,
+    "hold_min": 345.0,
+    "w": 0.254
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-01-29 17:15",
+    "exit_t": "2024-01-29 23:00",
+    "net_r": 1.457,
+    "hold_min": 344.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-01-30",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-01-30 16:22",
+    "entry": 147.297,
+    "exit": 147.577,
+    "exit_kind": "stop",
+    "net_r": -1.026,
+    "hold_min": 38.0,
+    "w": 0.28
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-01-30 16:22",
+    "exit_t": "2024-01-30 17:00",
+    "net_r": -1.176,
+    "hold_min": 37.0,
+    "comment": "sl 147.577",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-01-31",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-01-31 15:46",
+    "entry": 147.574,
+    "exit": 146.461,
+    "exit_kind": "trail_stop",
+    "net_r": 3.613,
+    "hold_min": 300.0,
+    "w": 0.306
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-02-05",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-02-05 17:00",
+    "entry": 148.678,
+    "exit": 148.642,
+    "exit_kind": "flat",
+    "net_r": -0.116,
+    "hold_min": 360.0,
+    "w": 0.373
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-02-05 17:00",
+    "exit_t": "2024-02-05 23:00",
+    "net_r": -0.239,
+    "hold_min": 360.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-02-06",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-02-06 16:44",
+    "entry": 148.458,
+    "exit": 147.844,
+    "exit_kind": "flat",
+    "net_r": 1.866,
+    "hold_min": 376.0,
+    "w": 0.325
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-02-06 16:44",
+    "exit_t": "2024-02-06 23:00",
+    "net_r": 1.844,
+    "hold_min": 375.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-02-07",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-02-07 15:50",
+    "entry": 148.254,
+    "exit": 147.957,
+    "exit_kind": "stop",
+    "net_r": -1.025,
+    "hold_min": 50.0,
+    "w": 0.297
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-02-07 15:50",
+    "exit_t": "2024-02-07 16:40",
+    "net_r": -1.035,
+    "hold_min": 50.0,
+    "comment": "sl 147.957",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-02-09",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-02-09 15:31",
+    "entry": 149.352,
+    "exit": 149.361,
+    "exit_kind": "friday_close",
+    "net_r": -0.09,
+    "hold_min": 329.0,
+    "w": 0.183
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-02-09 15:30",
+    "exit_t": "2024-02-09 15:31",
+    "net_r": -1.084,
+    "hold_min": 1.0,
+    "comment": "sl 149.352",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-02-12",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-02-12 15:30",
+    "entry": 149.111,
+    "exit": 149.294,
+    "exit_kind": "trail_stop",
+    "net_r": 0.934,
+    "hold_min": 241.0,
+    "w": 0.188
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-02-12 15:30",
+    "exit_t": "2024-02-12 19:31",
+    "net_r": 0.931,
+    "hold_min": 241.0,
+    "comment": "sl 149.294",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-02-14",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-02-14 15:50",
+    "entry": 150.668,
+    "exit": 150.499,
+    "exit_kind": "stop",
+    "net_r": -1.045,
+    "hold_min": 41.0,
+    "w": 0.169
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-02-14 15:49",
+    "exit_t": "2024-02-14 16:31",
+    "net_r": -1.073,
+    "hold_min": 42.0,
+    "comment": "sl 150.499",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-02-15",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-02-15 15:30",
+    "entry": 149.926,
+    "exit": 150.097,
+    "exit_kind": "stop",
+    "net_r": -1.044,
+    "hold_min": 131.0,
+    "w": 0.171
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-02-15 15:30",
+    "exit_t": "2024-02-15 15:34",
+    "net_r": -1.312,
+    "hold_min": 5.0,
+    "comment": "sl 150.097",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-02-16",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-02-16 15:30",
+    "entry": 150.372,
+    "exit": 150.141,
+    "exit_kind": "stop",
+    "net_r": -1.033,
+    "hold_min": 133.0,
+    "w": 0.231
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-02-16 15:30",
+    "exit_t": "2024-02-16 17:43",
+    "net_r": -1.156,
+    "hold_min": 134.0,
+    "comment": "sl 150.141",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-02-19",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-02-19 16:32",
+    "entry": 150.033,
+    "exit": 150.149,
+    "exit_kind": "trail_stop",
+    "net_r": 1.119,
+    "hold_min": 257.0,
+    "w": 0.097
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-02-19 16:31",
+    "exit_t": "2024-02-19 20:49",
+    "net_r": 1.116,
+    "hold_min": 258.0,
+    "comment": "sl 150.149",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-02-20",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-02-20 15:31",
+    "entry": 150.058,
+    "exit": 149.947,
+    "exit_kind": "trail_stop",
+    "net_r": 0.539,
+    "hold_min": 224.0,
+    "w": 0.192
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-02-20 15:31",
+    "exit_t": "2024-02-20 19:14",
+    "net_r": 0.508,
+    "hold_min": 224.0,
+    "comment": "sl 149.947",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-02-21",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-02-21 16:30",
+    "entry": 150.094,
+    "exit": 150.229,
+    "exit_kind": "trail_stop",
+    "net_r": 0.787,
+    "hold_min": 273.0,
+    "w": 0.162
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-02-22",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-02-22 15:30",
+    "entry": 150.468,
+    "exit": 150.503,
+    "exit_kind": "flat",
+    "net_r": 0.104,
+    "hold_min": 450.0,
+    "w": 0.265
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-02-22 15:30",
+    "exit_t": "2024-02-22 23:00",
+    "net_r": 0.006,
+    "hold_min": 450.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-02-26",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-02-26 16:07",
+    "entry": 150.697,
+    "exit": 150.679,
+    "exit_kind": "flat",
+    "net_r": -0.147,
+    "hold_min": 413.0,
+    "w": 0.174
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-02-26 16:07",
+    "exit_t": "2024-02-26 23:00",
+    "net_r": -0.147,
+    "hold_min": 413.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-02-27",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-02-27 15:30",
+    "entry": 150.166,
+    "exit": 150.376,
+    "exit_kind": "stop",
+    "net_r": -1.036,
+    "hold_min": 57.0,
+    "w": 0.21
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-02-28",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-02-28 15:31",
+    "entry": 150.592,
+    "exit": 150.74,
+    "exit_kind": "stop",
+    "net_r": -1.051,
+    "hold_min": 29.0,
+    "w": 0.148
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-02-28 15:31",
+    "exit_t": "2024-02-28 15:56",
+    "net_r": -1.057,
+    "hold_min": 25.0,
+    "comment": "sl 150.740",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-02-29",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-02-29 15:30",
+    "entry": 149.923,
+    "exit": 149.897,
+    "exit_kind": "trail_stop",
+    "net_r": 0.082,
+    "hold_min": 209.0,
+    "w": 0.227
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-02-29 15:30",
+    "exit_t": "2024-02-29 18:59",
+    "net_r": 0.06,
+    "hold_min": 209.0,
+    "comment": "sl 149.897",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-03-01",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-03-01 15:37",
+    "entry": 150.648,
+    "exit": 150.32,
+    "exit_kind": "stop",
+    "net_r": -1.023,
+    "hold_min": 83.0,
+    "w": 0.328
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-03-01 15:37",
+    "exit_t": "2024-03-01 17:00",
+    "net_r": -1.05,
+    "hold_min": 83.0,
+    "comment": "sl 150.320",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-03-04",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-03-04 16:58",
+    "entry": 150.341,
+    "exit": 150.515,
+    "exit_kind": "flat",
+    "net_r": -0.796,
+    "hold_min": 362.0,
+    "w": 0.228
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-03-04 16:58",
+    "exit_t": "2024-03-04 23:00",
+    "net_r": -0.84,
+    "hold_min": 361.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-03-05",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-03-05 15:30",
+    "entry": 150.222,
+    "exit": 150.185,
+    "exit_kind": "trail_stop",
+    "net_r": 0.135,
+    "hold_min": 190.0,
+    "w": 0.219
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-03-05 15:30",
+    "exit_t": "2024-03-05 18:40",
+    "net_r": 0.135,
+    "hold_min": 189.0,
+    "comment": "sl 150.185",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-03-06",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-03-06 15:49",
+    "entry": 149.48,
+    "exit": 149.365,
+    "exit_kind": "trail_stop",
+    "net_r": 0.337,
+    "hold_min": 351.0,
+    "w": 0.319
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-03-07",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-03-07 16:10",
+    "entry": 147.923,
+    "exit": 148.078,
+    "exit_kind": "flat",
+    "net_r": 0.433,
+    "hold_min": 410.0,
+    "w": 0.341
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-03-07 16:10",
+    "exit_t": "2024-03-07 23:00",
+    "net_r": 0.425,
+    "hold_min": 409.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-03-08",
+   "sim": {
+    "dir": 1,
+    "fill_t": null,
+    "entry": 147.304,
+    "exit": 147.001,
+    "exit_kind": "both_edges_same_bar",
+    "net_r": -1.024,
+    "hold_min": 0.0,
+    "w": 0.303
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-03-08 15:30",
+    "exit_t": "2024-03-08 15:30",
+    "net_r": -1.05,
+    "hold_min": 1.0,
+    "comment": "sl 147.001",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-03-11",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-03-11 15:41",
+    "entry": 146.837,
+    "exit": 146.742,
+    "exit_kind": "trail_stop",
+    "net_r": -0.425,
+    "hold_min": 283.0,
+    "w": 0.241
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-03-11 15:30",
+    "exit_t": "2024-03-11 20:01",
+    "net_r": -0.13,
+    "hold_min": 271.0,
+    "comment": "sl 146.817",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-03-13",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-03-13 16:19",
+    "entry": 147.889,
+    "exit": 147.77,
+    "exit_kind": "trail_stop",
+    "net_r": 0.803,
+    "hold_min": 331.0,
+    "w": 0.139
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-03-13 16:19",
+    "exit_t": "2024-03-13 21:48",
+    "net_r": 0.796,
+    "hold_min": 329.0,
+    "comment": "sl 147.770",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-03-14",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-03-14 15:30",
+    "entry": 147.826,
+    "exit": 147.656,
+    "exit_kind": "stop",
+    "net_r": -1.043,
+    "hold_min": 10.0,
+    "w": 0.17
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-03-14 15:30",
+    "exit_t": "2024-03-14 15:40",
+    "net_r": -1.125,
+    "hold_min": 10.0,
+    "comment": "sl 147.656",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-03-15",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-03-15 15:32",
+    "entry": 148.798,
+    "exit": 149.037,
+    "exit_kind": "friday_close",
+    "net_r": 1.077,
+    "hold_min": 328.0,
+    "w": 0.215
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-03-15 15:32",
+    "exit_t": "2024-03-15 21:00",
+    "net_r": 1.074,
+    "hold_min": 328.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-03-18",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-03-18 16:13",
+    "entry": 149.197,
+    "exit": 149.008,
+    "exit_kind": "stop",
+    "net_r": -1.039,
+    "hold_min": 232.0,
+    "w": 0.189
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-03-18 15:40",
+    "exit_t": "2024-03-18 20:05",
+    "net_r": -1.092,
+    "hold_min": 265.0,
+    "comment": "sl 149.008",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-03-19",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-03-19 16:31",
+    "entry": 150.607,
+    "exit": 150.895,
+    "exit_kind": "flat",
+    "net_r": 1.054,
+    "hold_min": 389.0,
+    "w": 0.266
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-03-19 16:31",
+    "exit_t": "2024-03-19 23:00",
+    "net_r": 1.039,
+    "hold_min": 388.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-03-20",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-03-20 15:36",
+    "entry": 151.746,
+    "exit": 151.631,
+    "exit_kind": "stop",
+    "net_r": -1.066,
+    "hold_min": 95.0,
+    "w": 0.115
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-03-20 15:34",
+    "exit_t": "2024-03-20 17:11",
+    "net_r": -1.065,
+    "hold_min": 97.0,
+    "comment": "sl 151.631",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-03-21",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-03-21 15:30",
+    "entry": 151.185,
+    "exit": 151.658,
+    "exit_kind": "trail_stop",
+    "net_r": 1.639,
+    "hold_min": 377.0,
+    "w": 0.284
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-03-25",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-03-25 15:30",
+    "entry": 151.23,
+    "exit": 151.377,
+    "exit_kind": "stop",
+    "net_r": -1.051,
+    "hold_min": 145.0,
+    "w": 0.147
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-03-25 15:30",
+    "exit_t": "2024-03-25 17:44",
+    "net_r": -1.051,
+    "hold_min": 135.0,
+    "comment": "sl 151.377",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-03-26",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-03-26 15:30",
+    "entry": 151.422,
+    "exit": 151.578,
+    "exit_kind": "flat",
+    "net_r": 0.839,
+    "hold_min": 450.0,
+    "w": 0.177
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-03-27",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-03-27 15:30",
+    "entry": 151.274,
+    "exit": 151.321,
+    "exit_kind": "flat",
+    "net_r": 0.156,
+    "hold_min": 450.0,
+    "w": 0.253
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-03-27 15:30",
+    "exit_t": "2024-03-27 23:00",
+    "net_r": 0.151,
+    "hold_min": 450.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-03-29",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-03-29 15:30",
+    "entry": 151.282,
+    "exit": 151.257,
+    "exit_kind": "trail_stop",
+    "net_r": 0.2,
+    "hold_min": 222.0,
+    "w": 0.087
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-04-01",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-04-01 16:26",
+    "entry": 151.481,
+    "exit": 151.637,
+    "exit_kind": "trail_stop",
+    "net_r": 1.108,
+    "hold_min": 221.0,
+    "w": 0.134
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-04-03",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-04-03 16:41",
+    "entry": 151.913,
+    "exit": 151.681,
+    "exit_kind": "stop",
+    "net_r": -1.033,
+    "hold_min": 19.0,
+    "w": 0.232
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-04-04",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-04-04 15:54",
+    "entry": 151.61,
+    "exit": 151.231,
+    "exit_kind": "flat",
+    "net_r": 2.336,
+    "hold_min": 426.0,
+    "w": 0.159
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-04-04 15:54",
+    "exit_t": "2024-04-04 23:00",
+    "net_r": 2.293,
+    "hold_min": 425.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-04-08",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-04-08 16:03",
+    "entry": 151.826,
+    "exit": 151.833,
+    "exit_kind": "flat",
+    "net_r": -0.126,
+    "hold_min": 417.0,
+    "w": 0.116
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-04-08 16:03",
+    "exit_t": "2024-04-08 23:00",
+    "net_r": -0.195,
+    "hold_min": 417.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-04-09",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-04-09 15:35",
+    "entry": 151.762,
+    "exit": 151.732,
+    "exit_kind": "trail_stop",
+    "net_r": 0.267,
+    "hold_min": 370.0,
+    "w": 0.084
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-04-09 15:35",
+    "exit_t": "2024-04-09 21:32",
+    "net_r": 0.243,
+    "hold_min": 356.0,
+    "comment": "sl 151.732",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-04-10",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-04-10 15:30",
+    "entry": 151.854,
+    "exit": 152.851,
+    "exit_kind": "trail_stop",
+    "net_r": 12.368,
+    "hold_min": 301.0,
+    "w": 0.08
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-04-15",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-04-15 15:30",
+    "entry": 153.984,
+    "exit": 153.952,
+    "exit_kind": "trail_stop",
+    "net_r": -0.323,
+    "hold_min": 127.0,
+    "w": 0.123
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-04-16",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-04-16 16:02",
+    "entry": 154.705,
+    "exit": 154.536,
+    "exit_kind": "stop",
+    "net_r": -1.046,
+    "hold_min": 36.0,
+    "w": 0.169
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-04-16 16:00",
+    "exit_t": "2024-04-16 16:38",
+    "net_r": -1.069,
+    "hold_min": 39.0,
+    "comment": "sl 154.536",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-04-17",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-04-17 16:11",
+    "entry": 154.584,
+    "exit": 154.699,
+    "exit_kind": "stop",
+    "net_r": -1.067,
+    "hold_min": 56.0,
+    "w": 0.115
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-04-17 16:11",
+    "exit_t": "2024-04-17 17:04",
+    "net_r": -1.093,
+    "hold_min": 53.0,
+    "comment": "sl 154.699",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-04-18",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-04-18 16:39",
+    "entry": 154.51,
+    "exit": 154.62,
+    "exit_kind": "flat",
+    "net_r": 0.522,
+    "hold_min": 381.0,
+    "w": 0.196
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-04-18 16:36",
+    "exit_t": "2024-04-18 23:00",
+    "net_r": 0.521,
+    "hold_min": 383.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-04-19",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-04-19 15:34",
+    "entry": 154.503,
+    "exit": 154.607,
+    "exit_kind": "stop",
+    "net_r": -1.074,
+    "hold_min": 42.0,
+    "w": 0.104
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-04-19 15:34",
+    "exit_t": "2024-04-19 16:16",
+    "net_r": -1.093,
+    "hold_min": 42.0,
+    "comment": "sl 154.607",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-04-22",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-04-22 18:33",
+    "entry": 154.777,
+    "exit": 154.831,
+    "exit_kind": "flat",
+    "net_r": 0.487,
+    "hold_min": 267.0,
+    "w": 0.095
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-04-22 17:05",
+    "exit_t": "2024-04-22 23:00",
+    "net_r": 0.486,
+    "hold_min": 354.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-04-23",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-04-23 15:47",
+    "entry": 154.823,
+    "exit": 154.761,
+    "exit_kind": "stop",
+    "net_r": -1.125,
+    "hold_min": 58.0,
+    "w": 0.062
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-04-29",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-04-29 15:37",
+    "entry": 156.453,
+    "exit": 155.735,
+    "exit_kind": "stop",
+    "net_r": -1.011,
+    "hold_min": 246.0,
+    "w": 0.718
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-04-29 15:37",
+    "exit_t": "2024-04-29 19:43",
+    "net_r": -1.08,
+    "hold_min": 246.0,
+    "comment": "sl 155.735",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-04-30",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-04-30 15:30",
+    "entry": 157.137,
+    "exit": 157.71,
+    "exit_kind": "flat",
+    "net_r": 1.871,
+    "hold_min": 450.0,
+    "w": 0.302
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-05-01",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-05-01 15:32",
+    "entry": 157.812,
+    "exit": 157.681,
+    "exit_kind": "trail_stop",
+    "net_r": 1.119,
+    "hold_min": 328.0,
+    "w": 0.11
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-05-02",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-05-02 15:40",
+    "entry": 154.564,
+    "exit": 153.187,
+    "exit_kind": "flat",
+    "net_r": 1.753,
+    "hold_min": 440.0,
+    "w": 0.781
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-05-02 15:40",
+    "exit_t": "2024-05-02 23:00",
+    "net_r": 1.759,
+    "hold_min": 440.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-05-03",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-05-03 15:30",
+    "entry": 153.039,
+    "exit": 152.899,
+    "exit_kind": "friday_close",
+    "net_r": 0.499,
+    "hold_min": 330.0,
+    "w": 0.265
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-05-06",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-05-06 15:31",
+    "entry": 153.51,
+    "exit": 153.827,
+    "exit_kind": "stop",
+    "net_r": -1.024,
+    "hold_min": 132.0,
+    "w": 0.317
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-05-06 15:31",
+    "exit_t": "2024-05-06 17:42",
+    "net_r": -1.027,
+    "hold_min": 131.0,
+    "comment": "sl 153.827",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-05-07",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-05-07 16:04",
+    "entry": 154.379,
+    "exit": 154.629,
+    "exit_kind": "stop",
+    "net_r": -1.031,
+    "hold_min": 253.0,
+    "w": 0.25
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-05-07 16:04",
+    "exit_t": "2024-05-07 20:17",
+    "net_r": -1.038,
+    "hold_min": 253.0,
+    "comment": "sl 154.629",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-05-08",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-05-08 15:31",
+    "entry": 155.607,
+    "exit": 155.63,
+    "exit_kind": "flat",
+    "net_r": 0.055,
+    "hold_min": 449.0,
+    "w": 0.275
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-05-08 15:31",
+    "exit_t": "2024-05-08 23:00",
+    "net_r": 0.041,
+    "hold_min": 448.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-05-13",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-05-13 17:12",
+    "entry": 155.895,
+    "exit": 156.213,
+    "exit_kind": "flat",
+    "net_r": 2.926,
+    "hold_min": 348.0,
+    "w": 0.106
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-05-15",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-05-15 15:30",
+    "entry": 155.374,
+    "exit": 154.966,
+    "exit_kind": "flat",
+    "net_r": 0.824,
+    "hold_min": 450.0,
+    "w": 0.486
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-05-15 15:30",
+    "exit_t": "2024-05-15 23:00",
+    "net_r": 0.484,
+    "hold_min": 450.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-05-17",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-05-17 15:45",
+    "entry": 155.761,
+    "exit": 155.65,
+    "exit_kind": "trail_stop",
+    "net_r": 0.662,
+    "hold_min": 295.0,
+    "w": 0.156
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-05-17 15:45",
+    "exit_t": "2024-05-17 20:38",
+    "net_r": 0.662,
+    "hold_min": 293.0,
+    "comment": "sl 155.650",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-05-20",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-05-20 15:35",
+    "entry": 155.964,
+    "exit": 156.29,
+    "exit_kind": "flat",
+    "net_r": 1.153,
+    "hold_min": 445.0,
+    "w": 0.276
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-05-21",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-05-21 16:01",
+    "entry": 156.391,
+    "exit": 156.18,
+    "exit_kind": "stop",
+    "net_r": -1.037,
+    "hold_min": 9.0,
+    "w": 0.211
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-05-21 16:01",
+    "exit_t": "2024-05-21 16:10",
+    "net_r": -1.051,
+    "hold_min": 9.0,
+    "comment": "sl 156.180",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-05-22",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-05-22 16:40",
+    "entry": 156.409,
+    "exit": 156.615,
+    "exit_kind": "stop",
+    "net_r": -1.038,
+    "hold_min": 278.0,
+    "w": 0.206
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-05-22 16:40",
+    "exit_t": "2024-05-22 21:18",
+    "net_r": -1.042,
+    "hold_min": 277.0,
+    "comment": "sl 156.615",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-05-23",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-05-23 15:56",
+    "entry": 156.728,
+    "exit": 156.96,
+    "exit_kind": "trail_stop",
+    "net_r": 1.115,
+    "hold_min": 278.0,
+    "w": 0.201
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-05-27",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-05-27 15:30",
+    "entry": 156.819,
+    "exit": 156.864,
+    "exit_kind": "trail_stop",
+    "net_r": -0.714,
+    "hold_min": 195.0,
+    "w": 0.074
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-05-27 15:30",
+    "exit_t": "2024-05-27 18:37",
+    "net_r": -0.714,
+    "hold_min": 187.0,
+    "comment": "sl 156.864",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-05-28",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-05-28 16:19",
+    "entry": 156.655,
+    "exit": 156.888,
+    "exit_kind": "stop",
+    "net_r": -1.034,
+    "hold_min": 41.0,
+    "w": 0.233
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-05-29",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-05-29 15:32",
+    "entry": 157.195,
+    "exit": 157.294,
+    "exit_kind": "stop",
+    "net_r": -1.079,
+    "hold_min": 47.0,
+    "w": 0.099
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-05-29 15:32",
+    "exit_t": "2024-05-29 16:19",
+    "net_r": -1.119,
+    "hold_min": 47.0,
+    "comment": "sl 157.294",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-06-03",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-06-03 17:00",
+    "entry": 156.636,
+    "exit": 156.161,
+    "exit_kind": "trail_stop",
+    "net_r": 1.547,
+    "hold_min": 236.0,
+    "w": 0.302
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-06-05",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-06-05 16:23",
+    "entry": 155.935,
+    "exit": 156.208,
+    "exit_kind": "stop",
+    "net_r": -1.029,
+    "hold_min": 40.0,
+    "w": 0.273
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-06-06",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-06-06 15:30",
+    "entry": 155.98,
+    "exit": 156.259,
+    "exit_kind": "stop",
+    "net_r": -1.028,
+    "hold_min": 21.0,
+    "w": 0.279
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-06-06 15:30",
+    "exit_t": "2024-06-06 15:30",
+    "net_r": -1.161,
+    "hold_min": 0.0,
+    "comment": "sl 155.980",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-06-07",
+   "sim": {
+    "dir": 1,
+    "fill_t": null,
+    "entry": 155.671,
+    "exit": 155.361,
+    "exit_kind": "both_edges_same_bar",
+    "net_r": -1.025,
+    "hold_min": 0.0,
+    "w": 0.31
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-06-10",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-06-10 15:30",
+    "entry": 156.965,
+    "exit": 157.01,
+    "exit_kind": "flat",
+    "net_r": 0.22,
+    "hold_min": 450.0,
+    "w": 0.169
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-06-10 15:30",
+    "exit_t": "2024-06-10 23:00",
+    "net_r": 0.196,
+    "hold_min": 449.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-06-11",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-06-11 15:31",
+    "entry": 156.972,
+    "exit": 157.215,
+    "exit_kind": "stop",
+    "net_r": -1.032,
+    "hold_min": 102.0,
+    "w": 0.243
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-06-11 15:31",
+    "exit_t": "2024-06-11 17:12",
+    "net_r": -1.039,
+    "hold_min": 101.0,
+    "comment": "sl 157.215",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-06-13",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-06-13 15:30",
+    "entry": 157.034,
+    "exit": 156.918,
+    "exit_kind": "trail_stop",
+    "net_r": 0.458,
+    "hold_min": 317.0,
+    "w": 0.236
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-06-13 15:30",
+    "exit_t": "2024-06-13 16:56",
+    "net_r": -1.041,
+    "hold_min": 86.0,
+    "comment": "sl 157.270",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-06-17",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-06-17 15:31",
+    "entry": 157.884,
+    "exit": 157.728,
+    "exit_kind": "flat",
+    "net_r": -0.561,
+    "hold_min": 449.0,
+    "w": 0.292
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-06-17 15:31",
+    "exit_t": "2024-06-17 23:00",
+    "net_r": -0.56,
+    "hold_min": 449.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-06-18",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-06-18 15:30",
+    "entry": 157.919,
+    "exit": 157.862,
+    "exit_kind": "flat",
+    "net_r": 0.21,
+    "hold_min": 450.0,
+    "w": 0.234
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-06-18 15:30",
+    "exit_t": "2024-06-18 15:30",
+    "net_r": -2.31,
+    "hold_min": 0.0,
+    "comment": "sl 157.919",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-06-19",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-06-19 20:53",
+    "entry": 157.95,
+    "exit": 158.006,
+    "exit_kind": "flat",
+    "net_r": 0.362,
+    "hold_min": 127.0,
+    "w": 0.133
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-06-19 20:52",
+    "exit_t": "2024-06-19 23:00",
+    "net_r": 0.361,
+    "hold_min": 128.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-06-20",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-06-20 15:30",
+    "entry": 158.275,
+    "exit": 158.449,
+    "exit_kind": "stop",
+    "net_r": -1.045,
+    "hold_min": 5.0,
+    "w": 0.174
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-06-20 15:30",
+    "exit_t": "2024-06-20 15:30",
+    "net_r": -1.2,
+    "hold_min": 0.0,
+    "comment": "sl 158.275",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-06-21",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-06-21 16:11",
+    "entry": 159.019,
+    "exit": 159.575,
+    "exit_kind": "friday_close",
+    "net_r": 3.224,
+    "hold_min": 289.0,
+    "w": 0.17
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-06-24",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-06-24 15:53",
+    "entry": 159.343,
+    "exit": 159.57,
+    "exit_kind": "stop",
+    "net_r": -1.035,
+    "hold_min": 90.0,
+    "w": 0.227
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-06-24 15:53",
+    "exit_t": "2024-06-24 17:23",
+    "net_r": -1.038,
+    "hold_min": 90.0,
+    "comment": "sl 159.570",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-06-25",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-06-25 15:30",
+    "entry": 159.505,
+    "exit": 159.651,
+    "exit_kind": "trail_stop",
+    "net_r": 0.986,
+    "hold_min": 390.0,
+    "w": 0.14
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-06-28",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-06-28 15:30",
+    "entry": 160.433,
+    "exit": 160.658,
+    "exit_kind": "stop",
+    "net_r": -1.036,
+    "hold_min": 140.0,
+    "w": 0.225
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-06-28 15:30",
+    "exit_t": "2024-06-28 15:30",
+    "net_r": -1.454,
+    "hold_min": 0.0,
+    "comment": "sl 160.433",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-07-01",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-07-01 15:39",
+    "entry": 161.274,
+    "exit": 161.072,
+    "exit_kind": "stop",
+    "net_r": -1.04,
+    "hold_min": 81.0,
+    "w": 0.202
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-07-04",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-07-04 15:55",
+    "entry": 161.176,
+    "exit": 161.211,
+    "exit_kind": "flat",
+    "net_r": 0.118,
+    "hold_min": 425.0,
+    "w": 0.229
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-07-04 15:55",
+    "exit_t": "2024-07-04 23:00",
+    "net_r": 0.109,
+    "hold_min": 424.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-07-05",
+   "sim": {
+    "dir": 1,
+    "fill_t": null,
+    "entry": 160.881,
+    "exit": 160.538,
+    "exit_kind": "both_edges_same_bar",
+    "net_r": -1.023,
+    "hold_min": 0.0,
+    "w": 0.343
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-07-05 15:30",
+    "exit_t": "2024-07-05 15:30",
+    "net_r": -1.149,
+    "hold_min": 0.0,
+    "comment": "sl 160.538",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-07-08",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-07-08 15:35",
+    "entry": 160.765,
+    "exit": 160.792,
+    "exit_kind": "flat",
+    "net_r": -0.12,
+    "hold_min": 445.0,
+    "w": 0.291
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-07-08 15:35",
+    "exit_t": "2024-07-08 23:00",
+    "net_r": -0.138,
+    "hold_min": 445.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-07-10",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-07-10 15:51",
+    "entry": 161.435,
+    "exit": 161.577,
+    "exit_kind": "stop",
+    "net_r": -1.057,
+    "hold_min": 56.0,
+    "w": 0.142
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-07-10 15:51",
+    "exit_t": "2024-07-10 16:46",
+    "net_r": -1.056,
+    "hold_min": 55.0,
+    "comment": "sl 161.577",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-07-11",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-07-11 15:30",
+    "entry": 161.507,
+    "exit": 158.73,
+    "exit_kind": "trail_stop",
+    "net_r": 24.504,
+    "hold_min": 304.0,
+    "w": 0.113
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-07-15",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-07-15 16:40",
+    "entry": 157.896,
+    "exit": 157.96,
+    "exit_kind": "trail_stop",
+    "net_r": -0.258,
+    "hold_min": 207.0,
+    "w": 0.279
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-07-15 16:40",
+    "exit_t": "2024-07-15 20:07",
+    "net_r": -0.272,
+    "hold_min": 207.0,
+    "comment": "sl 157.960",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-07-16",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-07-16 15:30",
+    "entry": 158.46,
+    "exit": 158.389,
+    "exit_kind": "flat",
+    "net_r": -0.376,
+    "hold_min": 450.0,
+    "w": 0.21
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-07-16 15:30",
+    "exit_t": "2024-07-16 15:30",
+    "net_r": -1.046,
+    "hold_min": 0.0,
+    "comment": "sl 158.460",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-07-17",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-07-17 16:35",
+    "entry": 156.354,
+    "exit": 156.184,
+    "exit_kind": "flat",
+    "net_r": 0.369,
+    "hold_min": 385.0,
+    "w": 0.44
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-07-18",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-07-18 15:46",
+    "entry": 156.526,
+    "exit": 157.364,
+    "exit_kind": "flat",
+    "net_r": 3.972,
+    "hold_min": 434.0,
+    "w": 0.209
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-07-19",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-07-19 15:56",
+    "entry": 157.675,
+    "exit": 157.328,
+    "exit_kind": "stop",
+    "net_r": -1.023,
+    "hold_min": 94.0,
+    "w": 0.347
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-07-19 15:56",
+    "exit_t": "2024-07-19 17:30",
+    "net_r": -1.036,
+    "hold_min": 93.0,
+    "comment": "sl 157.328",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-07-22",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-07-22 15:30",
+    "entry": 156.953,
+    "exit": 157.08,
+    "exit_kind": "flat",
+    "net_r": 0.314,
+    "hold_min": 450.0,
+    "w": 0.38
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-07-22 15:30",
+    "exit_t": "2024-07-22 23:00",
+    "net_r": 0.312,
+    "hold_min": 450.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-07-23",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-07-23 15:46",
+    "entry": 156.015,
+    "exit": 155.636,
+    "exit_kind": "flat",
+    "net_r": 1.491,
+    "hold_min": 434.0,
+    "w": 0.249
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-07-23 15:46",
+    "exit_t": "2024-07-23 23:00",
+    "net_r": 1.467,
+    "hold_min": 433.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-07-24",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-07-24 15:36",
+    "entry": 153.902,
+    "exit": 153.591,
+    "exit_kind": "trail_stop",
+    "net_r": 0.395,
+    "hold_min": 271.0,
+    "w": 0.768
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-07-24 15:36",
+    "exit_t": "2024-07-24 20:06",
+    "net_r": 0.393,
+    "hold_min": 271.0,
+    "comment": "sl 153.591",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-07-25",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-07-25 15:30",
+    "entry": 152.874,
+    "exit": 153.913,
+    "exit_kind": "flat",
+    "net_r": 1.368,
+    "hold_min": 450.0,
+    "w": 0.754
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-07-26",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-07-26 15:40",
+    "entry": 154.213,
+    "exit": 153.728,
+    "exit_kind": "friday_close",
+    "net_r": 0.913,
+    "hold_min": 320.0,
+    "w": 0.523
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-07-26 15:40",
+    "exit_t": "2024-07-26 20:27",
+    "net_r": 0.627,
+    "hold_min": 287.0,
+    "comment": "sl 153.874",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-07-29",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-07-29 16:32",
+    "entry": 154.031,
+    "exit": 153.997,
+    "exit_kind": "flat",
+    "net_r": -0.095,
+    "hold_min": 388.0,
+    "w": 0.44
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-07-29 16:27",
+    "exit_t": "2024-07-29 23:00",
+    "net_r": -0.099,
+    "hold_min": 392.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-07-30",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-07-30 15:30",
+    "entry": 155.003,
+    "exit": 154.691,
+    "exit_kind": "stop",
+    "net_r": -1.025,
+    "hold_min": 35.0,
+    "w": 0.312
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-08-01",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-08-01 15:50",
+    "entry": 150.759,
+    "exit": 149.924,
+    "exit_kind": "stop",
+    "net_r": -1.009,
+    "hold_min": 113.0,
+    "w": 0.835
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-08-02",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-08-02 15:30",
+    "entry": 148.731,
+    "exit": 146.836,
+    "exit_kind": "friday_close",
+    "net_r": 4.84,
+    "hold_min": 330.0,
+    "w": 0.39
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-08-02 15:30",
+    "exit_t": "2024-08-02 15:30",
+    "net_r": -1.692,
+    "hold_min": 0.0,
+    "comment": "sl 148.731",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-08-05",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-08-05 15:32",
+    "entry": 141.971,
+    "exit": 142.961,
+    "exit_kind": "stop",
+    "net_r": -1.007,
+    "hold_min": 73.0,
+    "w": 0.99
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-08-06",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-08-06 15:30",
+    "entry": 144.692,
+    "exit": 144.731,
+    "exit_kind": "flat",
+    "net_r": -0.061,
+    "hold_min": 450.0,
+    "w": 0.764
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-08-06 15:30",
+    "exit_t": "2024-08-06 23:00",
+    "net_r": -0.073,
+    "hold_min": 449.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-08-07",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-08-07 15:43",
+    "entry": 146.906,
+    "exit": 147.504,
+    "exit_kind": "stop",
+    "net_r": -1.012,
+    "hold_min": 141.0,
+    "w": 0.598
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-08-07 15:43",
+    "exit_t": "2024-08-07 18:04",
+    "net_r": -1.026,
+    "hold_min": 141.0,
+    "comment": "sl 147.504",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-08-08",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-08-08 15:30",
+    "entry": 146.3,
+    "exit": 147.144,
+    "exit_kind": "trail_stop",
+    "net_r": 2.337,
+    "hold_min": 422.0,
+    "w": 0.358
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-08-08 15:30",
+    "exit_t": "2024-08-08 22:32",
+    "net_r": 2.286,
+    "hold_min": 422.0,
+    "comment": "sl 147.144",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-08-09",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-08-09 15:30",
+    "entry": 146.69,
+    "exit": 146.693,
+    "exit_kind": "friday_close",
+    "net_r": -0.02,
+    "hold_min": 330.0,
+    "w": 0.522
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-08-09 15:30",
+    "exit_t": "2024-08-09 21:00",
+    "net_r": -0.037,
+    "hold_min": 330.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-08-12",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-08-12 18:24",
+    "entry": 147.367,
+    "exit": 147.179,
+    "exit_kind": "flat",
+    "net_r": 0.604,
+    "hold_min": 276.0,
+    "w": 0.299
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-08-13",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-08-13 15:30",
+    "entry": 147.311,
+    "exit": 146.83,
+    "exit_kind": "flat",
+    "net_r": 1.26,
+    "hold_min": 450.0,
+    "w": 0.376
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-08-13 15:30",
+    "exit_t": "2024-08-13 23:00",
+    "net_r": 0.827,
+    "hold_min": 450.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-08-14",
+   "sim": {
+    "dir": 1,
+    "fill_t": null,
+    "entry": 147.042,
+    "exit": 146.828,
+    "exit_kind": "both_edges_same_bar",
+    "net_r": -1.034,
+    "hold_min": 0.0,
+    "w": 0.214
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-08-14 15:30",
+    "exit_t": "2024-08-14 15:30",
+    "net_r": -1.492,
+    "hold_min": 1.0,
+    "comment": "sl 147.042",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-08-19",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-08-19 16:07",
+    "entry": 146.518,
+    "exit": 146.633,
+    "exit_kind": "flat",
+    "net_r": 0.183,
+    "hold_min": 413.0,
+    "w": 0.589
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-08-19 16:07",
+    "exit_t": "2024-08-19 23:00",
+    "net_r": 0.18,
+    "hold_min": 412.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-08-20",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-08-20 15:50",
+    "entry": 146.253,
+    "exit": 145.335,
+    "exit_kind": "flat",
+    "net_r": 3.006,
+    "hold_min": 430.0,
+    "w": 0.303
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-08-20 15:50",
+    "exit_t": "2024-08-20 23:00",
+    "net_r": 3.0,
+    "hold_min": 430.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-08-21",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-08-21 15:30",
+    "entry": 145.905,
+    "exit": 146.174,
+    "exit_kind": "trail_stop",
+    "net_r": -0.866,
+    "hold_min": 90.0,
+    "w": 0.319
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-08-21 15:30",
+    "exit_t": "2024-08-21 17:00",
+    "net_r": -0.888,
+    "hold_min": 90.0,
+    "comment": "sl 146.174",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-08-22",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-08-22 15:30",
+    "entry": 146.211,
+    "exit": 146.295,
+    "exit_kind": "flat",
+    "net_r": 0.161,
+    "hold_min": 450.0,
+    "w": 0.477
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-08-26",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-08-26 15:32",
+    "entry": 144.227,
+    "exit": 143.962,
+    "exit_kind": "stop",
+    "net_r": -1.027,
+    "hold_min": 16.0,
+    "w": 0.265
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-08-26 15:30",
+    "exit_t": "2024-08-26 15:48",
+    "net_r": -1.03,
+    "hold_min": 18.0,
+    "comment": "sl 143.962",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-08-27",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-08-27 15:38",
+    "entry": 144.401,
+    "exit": 143.971,
+    "exit_kind": "flat",
+    "net_r": 0.883,
+    "hold_min": 442.0,
+    "w": 0.479
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-08-27 15:38",
+    "exit_t": "2024-08-27 23:00",
+    "net_r": 0.86,
+    "hold_min": 441.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-08-28",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-08-28 15:30",
+    "entry": 144.681,
+    "exit": 144.702,
+    "exit_kind": "flat",
+    "net_r": 0.033,
+    "hold_min": 450.0,
+    "w": 0.413
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-08-28 15:30",
+    "exit_t": "2024-08-28 23:00",
+    "net_r": 0.031,
+    "hold_min": 450.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-08-29",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-08-29 15:30",
+    "entry": 144.75,
+    "exit": 145.183,
+    "exit_kind": "trail_stop",
+    "net_r": 1.478,
+    "hold_min": 193.0,
+    "w": 0.288
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-08-29 15:30",
+    "exit_t": "2024-08-29 18:43",
+    "net_r": 1.379,
+    "hold_min": 193.0,
+    "comment": "sl 145.183",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-08-30",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-08-30 15:30",
+    "entry": 145.456,
+    "exit": 146.151,
+    "exit_kind": "friday_close",
+    "net_r": 2.204,
+    "hold_min": 330.0,
+    "w": 0.312
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-08-30 15:30",
+    "exit_t": "2024-08-30 21:00",
+    "net_r": 2.175,
+    "hold_min": 330.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-09-02",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-09-02 16:28",
+    "entry": 146.99,
+    "exit": 146.886,
+    "exit_kind": "flat",
+    "net_r": -0.396,
+    "hold_min": 392.0,
+    "w": 0.281
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-09-02 15:46",
+    "exit_t": "2024-09-02 23:00",
+    "net_r": -0.396,
+    "hold_min": 434.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-09-03",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-09-03 15:48",
+    "entry": 145.893,
+    "exit": 145.628,
+    "exit_kind": "flat",
+    "net_r": 0.657,
+    "hold_min": 432.0,
+    "w": 0.392
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-09-05",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-09-05 17:01",
+    "entry": 143.6,
+    "exit": 143.458,
+    "exit_kind": "flat",
+    "net_r": -0.198,
+    "hold_min": 359.0,
+    "w": 0.754
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-09-06",
+   "sim": {
+    "dir": 1,
+    "fill_t": null,
+    "entry": 143.281,
+    "exit": 142.801,
+    "exit_kind": "both_edges_same_bar",
+    "net_r": -1.015,
+    "hold_min": 0.0,
+    "w": 0.48
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-09-09",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-09-09 15:30",
+    "entry": 143.302,
+    "exit": 142.896,
+    "exit_kind": "trail_stop",
+    "net_r": 0.809,
+    "hold_min": 429.0,
+    "w": 0.493
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-09-09 15:30",
+    "exit_t": "2024-09-09 22:30",
+    "net_r": 0.812,
+    "hold_min": 420.0,
+    "comment": "sl 142.896",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-09-11",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-09-11 15:30",
+    "entry": 141.865,
+    "exit": 141.606,
+    "exit_kind": "trail_stop",
+    "net_r": -0.702,
+    "hold_min": 103.0,
+    "w": 0.379
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-09-12",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-09-12 15:30",
+    "entry": 142.274,
+    "exit": 141.876,
+    "exit_kind": "flat",
+    "net_r": 0.783,
+    "hold_min": 450.0,
+    "w": 0.499
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-09-12 15:30",
+    "exit_t": "2024-09-12 23:00",
+    "net_r": 0.613,
+    "hold_min": 450.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-09-13",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-09-13 16:25",
+    "entry": 140.363,
+    "exit": 140.908,
+    "exit_kind": "friday_close",
+    "net_r": -0.84,
+    "hold_min": 275.0,
+    "w": 0.657
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-09-13 16:25",
+    "exit_t": "2024-09-13 21:00",
+    "net_r": -0.854,
+    "hold_min": 275.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-09-16",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-09-16 15:36",
+    "entry": 140.187,
+    "exit": 140.699,
+    "exit_kind": "flat",
+    "net_r": 1.158,
+    "hold_min": 444.0,
+    "w": 0.436
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-09-16 15:36",
+    "exit_t": "2024-09-16 23:00",
+    "net_r": 1.148,
+    "hold_min": 444.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-09-17",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-09-17 15:30",
+    "entry": 140.786,
+    "exit": 142.221,
+    "exit_kind": "flat",
+    "net_r": 4.667,
+    "hold_min": 450.0,
+    "w": 0.306
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-09-17 15:30",
+    "exit_t": "2024-09-17 23:00",
+    "net_r": 4.599,
+    "hold_min": 450.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-09-18",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-09-18 17:52",
+    "entry": 142.057,
+    "exit": 141.549,
+    "exit_kind": "stop",
+    "net_r": -1.014,
+    "hold_min": 188.0,
+    "w": 0.508
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-09-18 17:52",
+    "exit_t": "2024-09-18 21:00",
+    "net_r": -1.396,
+    "hold_min": 188.0,
+    "comment": "sl 141.549",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-09-19",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-09-19 15:30",
+    "entry": 143.251,
+    "exit": 142.648,
+    "exit_kind": "stop",
+    "net_r": -1.012,
+    "hold_min": 346.0,
+    "w": 0.603
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-09-19 15:30",
+    "exit_t": "2024-09-19 21:16",
+    "net_r": -1.031,
+    "hold_min": 346.0,
+    "comment": "sl 142.648",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-09-20",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-09-20 15:45",
+    "entry": 143.771,
+    "exit": 144.43,
+    "exit_kind": "stop",
+    "net_r": -1.011,
+    "hold_min": 133.0,
+    "w": 0.659
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-09-20 15:45",
+    "exit_t": "2024-09-20 17:57",
+    "net_r": -1.01,
+    "hold_min": 133.0,
+    "comment": "sl 144.430",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-09-23",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-09-23 15:41",
+    "entry": 143.798,
+    "exit": 143.487,
+    "exit_kind": "flat",
+    "net_r": -0.501,
+    "hold_min": 439.0,
+    "w": 0.635
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-09-23 16:00",
+    "exit_t": "2024-09-23 23:00",
+    "net_r": -0.5,
+    "hold_min": 420.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-09-24",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-09-24 16:41",
+    "entry": 144.175,
+    "exit": 143.781,
+    "exit_kind": "stop",
+    "net_r": -1.018,
+    "hold_min": 19.0,
+    "w": 0.394
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-09-24 16:17",
+    "exit_t": "2024-09-24 17:00",
+    "net_r": -1.069,
+    "hold_min": 43.0,
+    "comment": "sl 143.781",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-09-25",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-09-25 16:04",
+    "entry": 144.099,
+    "exit": 144.442,
+    "exit_kind": "stop",
+    "net_r": -1.021,
+    "hold_min": 124.0,
+    "w": 0.343
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-09-25 16:04",
+    "exit_t": "2024-09-25 18:08",
+    "net_r": -1.021,
+    "hold_min": 124.0,
+    "comment": "sl 144.442",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-09-27",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-09-27 15:30",
+    "entry": 142.96,
+    "exit": 142.325,
+    "exit_kind": "friday_close",
+    "net_r": 1.55,
+    "hold_min": 330.0,
+    "w": 0.405
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-09-27 15:30",
+    "exit_t": "2024-09-27 21:00",
+    "net_r": 1.535,
+    "hold_min": 330.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-10-01",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-10-01 15:51",
+    "entry": 143.993,
+    "exit": 143.56,
+    "exit_kind": "stop",
+    "net_r": -1.017,
+    "hold_min": 42.0,
+    "w": 0.433
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-10-01 15:51",
+    "exit_t": "2024-10-01 16:33",
+    "net_r": -1.036,
+    "hold_min": 43.0,
+    "comment": "sl 143.560",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-10-03",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-10-03 16:11",
+    "entry": 146.582,
+    "exit": 146.991,
+    "exit_kind": "stop",
+    "net_r": -1.018,
+    "hold_min": 49.0,
+    "w": 0.409
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-10-07",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-10-07 16:06",
+    "entry": 148.025,
+    "exit": 148.072,
+    "exit_kind": "flat",
+    "net_r": -0.083,
+    "hold_min": 414.0,
+    "w": 0.658
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-10-07 16:06",
+    "exit_t": "2024-10-07 23:00",
+    "net_r": -0.104,
+    "hold_min": 413.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-10-08",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-10-08 16:12",
+    "entry": 148.126,
+    "exit": 148.281,
+    "exit_kind": "flat",
+    "net_r": 0.467,
+    "hold_min": 408.0,
+    "w": 0.316
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-10-11",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-10-11 15:30",
+    "entry": 148.922,
+    "exit": 149.14,
+    "exit_kind": "stop",
+    "net_r": -1.034,
+    "hold_min": 10.0,
+    "w": 0.218
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-10-11 15:30",
+    "exit_t": "2024-10-11 15:40",
+    "net_r": -1.575,
+    "hold_min": 10.0,
+    "comment": "sl 149.140",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-10-15",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-10-15 15:39",
+    "entry": 149.019,
+    "exit": 149.415,
+    "exit_kind": "stop",
+    "net_r": -1.019,
+    "hold_min": 236.0,
+    "w": 0.396
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-10-15 15:39",
+    "exit_t": "2024-10-15 19:34",
+    "net_r": -1.018,
+    "hold_min": 236.0,
+    "comment": "sl 149.415",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-10-16",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-10-16 15:46",
+    "entry": 149.421,
+    "exit": 149.731,
+    "exit_kind": "trail_stop",
+    "net_r": 1.084,
+    "hold_min": 432.0,
+    "w": 0.279
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-10-16 15:46",
+    "exit_t": "2024-10-16 22:58",
+    "net_r": 1.079,
+    "hold_min": 433.0,
+    "comment": "sl 149.731",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-10-17",
+   "sim": {
+    "dir": 1,
+    "fill_t": null,
+    "entry": 149.647,
+    "exit": 149.431,
+    "exit_kind": "both_edges_same_bar",
+    "net_r": -1.035,
+    "hold_min": 0.0,
+    "w": 0.216
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-10-17 15:30",
+    "exit_t": "2024-10-17 15:30",
+    "net_r": -4.963,
+    "hold_min": 0.0,
+    "comment": "",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-10-18",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-10-18 15:33",
+    "entry": 149.869,
+    "exit": 149.629,
+    "exit_kind": "trail_stop",
+    "net_r": 1.02,
+    "hold_min": 315.0,
+    "w": 0.228
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-10-18 15:33",
+    "exit_t": "2024-10-18 20:47",
+    "net_r": 1.023,
+    "hold_min": 314.0,
+    "comment": "sl 149.629",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-10-21",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-10-21 16:26",
+    "entry": 150.058,
+    "exit": 150.77,
+    "exit_kind": "flat",
+    "net_r": 3.159,
+    "hold_min": 394.0,
+    "w": 0.223
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-10-22",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-10-22 16:02",
+    "entry": 150.935,
+    "exit": 150.748,
+    "exit_kind": "stop",
+    "net_r": -1.04,
+    "hold_min": 19.0,
+    "w": 0.187
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-10-22 16:02",
+    "exit_t": "2024-10-22 16:21",
+    "net_r": -1.078,
+    "hold_min": 19.0,
+    "comment": "sl 150.748",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-10-23",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-10-23 21:08",
+    "entry": 152.627,
+    "exit": 152.586,
+    "exit_kind": "flat",
+    "net_r": 0.06,
+    "hold_min": 112.0,
+    "w": 0.557
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-10-23 15:33",
+    "exit_t": "2024-10-23 21:08",
+    "net_r": -1.028,
+    "hold_min": 335.0,
+    "comment": "sl 152.627",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-10-24",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-10-24 16:16",
+    "entry": 152.092,
+    "exit": 151.764,
+    "exit_kind": "stop",
+    "net_r": -1.023,
+    "hold_min": 172.0,
+    "w": 0.328
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-10-25",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-10-25 15:30",
+    "entry": 152.044,
+    "exit": 152.161,
+    "exit_kind": "friday_close",
+    "net_r": 0.313,
+    "hold_min": 330.0,
+    "w": 0.349
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-10-25 15:30",
+    "exit_t": "2024-10-25 21:00",
+    "net_r": 0.301,
+    "hold_min": 330.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-10-28",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-10-28 16:11",
+    "entry": 152.733,
+    "exit": 153.209,
+    "exit_kind": "trail_stop",
+    "net_r": 1.437,
+    "hold_min": 385.0,
+    "w": 0.326
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-10-28 16:11",
+    "exit_t": "2024-10-28 22:36",
+    "net_r": 1.415,
+    "hold_min": 386.0,
+    "comment": "sl 153.209",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-10-29",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-10-29 17:00",
+    "entry": 153.314,
+    "exit": 153.423,
+    "exit_kind": "flat",
+    "net_r": -0.231,
+    "hold_min": 360.0,
+    "w": 0.504
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-10-31",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-10-31 15:30",
+    "entry": 152.844,
+    "exit": 152.307,
+    "exit_kind": "stop",
+    "net_r": -1.014,
+    "hold_min": 180.0,
+    "w": 0.537
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-10-31 15:30",
+    "exit_t": "2024-10-31 18:30",
+    "net_r": -1.081,
+    "hold_min": 180.0,
+    "comment": "sl 152.307",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-11-01",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-11-01 17:19",
+    "entry": 152.826,
+    "exit": 152.908,
+    "exit_kind": "friday_close",
+    "net_r": 0.207,
+    "hold_min": 221.0,
+    "w": 0.359
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-11-05",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-11-05 15:36",
+    "entry": 152.082,
+    "exit": 151.527,
+    "exit_kind": "flat",
+    "net_r": 2.155,
+    "hold_min": 444.0,
+    "w": 0.254
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-11-05 15:36",
+    "exit_t": "2024-11-05 17:00",
+    "net_r": -1.146,
+    "hold_min": 83.0,
+    "comment": "sl 152.336",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-11-06",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-11-06 16:33",
+    "entry": 154.457,
+    "exit": 154.058,
+    "exit_kind": "stop",
+    "net_r": -1.019,
+    "hold_min": 34.0,
+    "w": 0.399
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-11-06 16:31",
+    "exit_t": "2024-11-06 17:07",
+    "net_r": -1.019,
+    "hold_min": 36.0,
+    "comment": "sl 154.058",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-11-08",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-11-08 15:34",
+    "entry": 152.712,
+    "exit": 152.69,
+    "exit_kind": "friday_close",
+    "net_r": -0.066,
+    "hold_min": 326.0,
+    "w": 0.452
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-11-08 15:34",
+    "exit_t": "2024-11-08 21:00",
+    "net_r": -0.078,
+    "hold_min": 325.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-11-11",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-11-11 15:32",
+    "entry": 153.943,
+    "exit": 153.688,
+    "exit_kind": "stop",
+    "net_r": -1.03,
+    "hold_min": 29.0,
+    "w": 0.255
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-11-11 15:32",
+    "exit_t": "2024-11-11 16:01",
+    "net_r": -1.037,
+    "hold_min": 29.0,
+    "comment": "sl 153.688",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-11-12",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-11-12 15:31",
+    "entry": 154.197,
+    "exit": 154.703,
+    "exit_kind": "trail_stop",
+    "net_r": 2.265,
+    "hold_min": 373.0,
+    "w": 0.22
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-11-12 15:30",
+    "exit_t": "2024-11-12 21:44",
+    "net_r": 2.247,
+    "hold_min": 374.0,
+    "comment": "sl 154.703",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-11-13",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-11-13 17:26",
+    "entry": 155.066,
+    "exit": 155.59,
+    "exit_kind": "flat",
+    "net_r": 1.618,
+    "hold_min": 334.0,
+    "w": 0.319
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-11-18",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-11-18 15:44",
+    "entry": 154.964,
+    "exit": 154.59,
+    "exit_kind": "flat",
+    "net_r": 0.937,
+    "hold_min": 436.0,
+    "w": 0.391
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-11-18 15:44",
+    "exit_t": "2024-11-18 23:00",
+    "net_r": 0.902,
+    "hold_min": 436.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-11-19",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-11-19 15:33",
+    "entry": 153.652,
+    "exit": 154.208,
+    "exit_kind": "stop",
+    "net_r": -1.014,
+    "hold_min": 98.0,
+    "w": 0.556
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-11-19 15:33",
+    "exit_t": "2024-11-19 17:11",
+    "net_r": -1.018,
+    "hold_min": 98.0,
+    "comment": "sl 154.208",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-11-20",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-11-20 16:20",
+    "entry": 155.627,
+    "exit": 155.434,
+    "exit_kind": "trail_stop",
+    "net_r": 0.726,
+    "hold_min": 344.0,
+    "w": 0.255
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-11-20 16:20",
+    "exit_t": "2024-11-20 22:04",
+    "net_r": 0.701,
+    "hold_min": 343.0,
+    "comment": "sl 155.434",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-11-21",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-11-21 16:33",
+    "entry": 154.297,
+    "exit": 154.501,
+    "exit_kind": "flat",
+    "net_r": -0.508,
+    "hold_min": 387.0,
+    "w": 0.417
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-11-22",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-11-22 15:30",
+    "entry": 154.246,
+    "exit": 154.563,
+    "exit_kind": "stop",
+    "net_r": -1.024,
+    "hold_min": 41.0,
+    "w": 0.317
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-11-22 15:30",
+    "exit_t": "2024-11-22 16:11",
+    "net_r": -1.042,
+    "hold_min": 42.0,
+    "comment": "sl 154.563",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-11-25",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-11-25 16:14",
+    "entry": 153.754,
+    "exit": 154.139,
+    "exit_kind": "flat",
+    "net_r": -0.487,
+    "hold_min": 406.0,
+    "w": 0.807
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-11-25 16:14",
+    "exit_t": "2024-11-25 23:00",
+    "net_r": -0.499,
+    "hold_min": 406.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-11-27",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-11-27 16:01",
+    "entry": 151.305,
+    "exit": 151.614,
+    "exit_kind": "stop",
+    "net_r": -1.024,
+    "hold_min": 64.0,
+    "w": 0.309
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-11-28",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-11-28 15:36",
+    "entry": 151.638,
+    "exit": 151.456,
+    "exit_kind": "flat",
+    "net_r": 0.676,
+    "hold_min": 444.0,
+    "w": 0.258
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-11-28 15:36",
+    "exit_t": "2024-11-28 23:00",
+    "net_r": 0.662,
+    "hold_min": 444.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-11-29",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-11-29 16:05",
+    "entry": 149.933,
+    "exit": 150.258,
+    "exit_kind": "stop",
+    "net_r": -1.023,
+    "hold_min": 104.0,
+    "w": 0.325
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-11-29 16:05",
+    "exit_t": "2024-11-29 17:49",
+    "net_r": -1.038,
+    "hold_min": 103.0,
+    "comment": "sl 150.258",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-12-02",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-12-02 15:30",
+    "entry": 150.203,
+    "exit": 149.916,
+    "exit_kind": "stop",
+    "net_r": -1.026,
+    "hold_min": 44.0,
+    "w": 0.287
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-12-02 15:30",
+    "exit_t": "2024-12-02 16:14",
+    "net_r": -1.029,
+    "hold_min": 44.0,
+    "comment": "sl 149.916",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-12-03",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-12-03 15:31",
+    "entry": 149.399,
+    "exit": 149.447,
+    "exit_kind": "trail_stop",
+    "net_r": -0.117,
+    "hold_min": 155.0,
+    "w": 0.475
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-12-03 15:31",
+    "exit_t": "2024-12-03 18:06",
+    "net_r": -0.119,
+    "hold_min": 156.0,
+    "comment": "sl 149.447",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-12-04",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-12-04 17:00",
+    "entry": 150.776,
+    "exit": 150.24,
+    "exit_kind": "trail_stop",
+    "net_r": 1.174,
+    "hold_min": 232.0,
+    "w": 0.45
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-12-05",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-12-05 15:35",
+    "entry": 150.505,
+    "exit": 150.041,
+    "exit_kind": "stop",
+    "net_r": -1.016,
+    "hold_min": 326.0,
+    "w": 0.464
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-12-05 15:35",
+    "exit_t": "2024-12-05 21:01",
+    "net_r": -1.032,
+    "hold_min": 326.0,
+    "comment": "sl 150.041",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-12-06",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-12-06 15:30",
+    "entry": 150.366,
+    "exit": 149.987,
+    "exit_kind": "friday_close",
+    "net_r": 1.281,
+    "hold_min": 330.0,
+    "w": 0.29
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-12-06 15:30",
+    "exit_t": "2024-12-06 21:00",
+    "net_r": 1.112,
+    "hold_min": 330.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-12-09",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-12-09 17:02",
+    "entry": 150.949,
+    "exit": 151.218,
+    "exit_kind": "flat",
+    "net_r": 0.466,
+    "hold_min": 358.0,
+    "w": 0.561
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-12-09 16:51",
+    "exit_t": "2024-12-09 23:00",
+    "net_r": 0.463,
+    "hold_min": 368.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-12-10",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-12-10 15:31",
+    "entry": 151.55,
+    "exit": 151.836,
+    "exit_kind": "stop",
+    "net_r": -1.026,
+    "hold_min": 91.0,
+    "w": 0.286
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-12-10 15:31",
+    "exit_t": "2024-12-10 17:02",
+    "net_r": -1.046,
+    "hold_min": 91.0,
+    "comment": "sl 151.836",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-12-11",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-12-11 21:00",
+    "entry": 152.703,
+    "exit": 152.59,
+    "exit_kind": "flat",
+    "net_r": -0.632,
+    "hold_min": 120.0,
+    "w": 0.191
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-12-12",
+   "sim": {
+    "dir": 1,
+    "fill_t": null,
+    "entry": 152.361,
+    "exit": 152.101,
+    "exit_kind": "both_edges_same_bar",
+    "net_r": -1.029,
+    "hold_min": 0.0,
+    "w": 0.26
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-12-12 15:30",
+    "exit_t": "2024-12-12 15:30",
+    "net_r": -1.106,
+    "hold_min": 0.0,
+    "comment": "sl 152.101",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-12-13",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-12-13 15:41",
+    "entry": 153.318,
+    "exit": 153.663,
+    "exit_kind": "stop",
+    "net_r": -1.022,
+    "hold_min": 135.0,
+    "w": 0.345
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-12-13 15:41",
+    "exit_t": "2024-12-13 17:55",
+    "net_r": -1.027,
+    "hold_min": 134.0,
+    "comment": "sl 153.663",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-12-16",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-12-16 16:18",
+    "entry": 154.1,
+    "exit": 154.125,
+    "exit_kind": "trail_stop",
+    "net_r": 0.051,
+    "hold_min": 154.0,
+    "w": 0.337
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-12-16 16:18",
+    "exit_t": "2024-12-16 18:52",
+    "net_r": 0.033,
+    "hold_min": 154.0,
+    "comment": "sl 154.125",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-12-17",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-12-17 15:30",
+    "entry": 153.787,
+    "exit": 153.971,
+    "exit_kind": "stop",
+    "net_r": -1.042,
+    "hold_min": 12.0,
+    "w": 0.184
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-12-17 15:30",
+    "exit_t": "2024-12-17 15:41",
+    "net_r": -1.068,
+    "hold_min": 12.0,
+    "comment": "sl 153.971",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-12-18",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-12-18 15:33",
+    "entry": 153.946,
+    "exit": 154.682,
+    "exit_kind": "flat",
+    "net_r": 1.927,
+    "hold_min": 447.0,
+    "w": 0.378
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-12-18 15:33",
+    "exit_t": "2024-12-18 23:00",
+    "net_r": 1.901,
+    "hold_min": 447.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-12-19",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-12-19 16:07",
+    "entry": 157.032,
+    "exit": 157.524,
+    "exit_kind": "trail_stop",
+    "net_r": 1.349,
+    "hold_min": 293.0,
+    "w": 0.359
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-12-20",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-12-20 15:30",
+    "entry": 156.591,
+    "exit": 156.084,
+    "exit_kind": "friday_close",
+    "net_r": 2.228,
+    "hold_min": 330.0,
+    "w": 0.224
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-12-20 15:30",
+    "exit_t": "2024-12-20 21:00",
+    "net_r": 2.068,
+    "hold_min": 330.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-12-23",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-12-23 15:39",
+    "entry": 157.218,
+    "exit": 157.139,
+    "exit_kind": "flat",
+    "net_r": -0.212,
+    "hold_min": 441.0,
+    "w": 0.41
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-12-23 15:38",
+    "exit_t": "2024-12-23 23:00",
+    "net_r": -0.211,
+    "hold_min": 441.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-12-24",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-12-24 15:42",
+    "entry": 157.167,
+    "exit": 157.262,
+    "exit_kind": "trail_stop",
+    "net_r": 0.917,
+    "hold_min": 262.0,
+    "w": 0.095
+   },
+   "tester": {
+    "dir": 1,
+    "fill_t": "2024-12-24 15:42",
+    "exit_t": "2024-12-24 20:04",
+    "net_r": 0.916,
+    "hold_min": 262.0,
+    "comment": "sl 157.262",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-12-27",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-12-27 16:55",
+    "entry": 157.867,
+    "exit": 157.583,
+    "exit_kind": "stop",
+    "net_r": -1.028,
+    "hold_min": 61.0,
+    "w": 0.284
+   },
+   "tester": null
+  },
+  {
+   "day": "2024-12-30",
+   "sim": {
+    "dir": -1,
+    "fill_t": "2024-12-30 15:51",
+    "entry": 157.484,
+    "exit": 156.823,
+    "exit_kind": "flat",
+    "net_r": 3.888,
+    "hold_min": 429.0,
+    "w": 0.168
+   },
+   "tester": {
+    "dir": -1,
+    "fill_t": "2024-12-30 15:51",
+    "exit_t": "2024-12-30 23:00",
+    "net_r": 3.859,
+    "hold_min": 429.0,
+    "comment": "qm_tm_close",
+    "n_trades_day": 1
+   }
+  },
+  {
+   "day": "2024-12-31",
+   "sim": {
+    "dir": 1,
+    "fill_t": "2024-12-31 15:40",
+    "entry": 156.951,
+    "exit": 157.345,
+    "exit_kind": "flat",
+    "net_r": 0.97,
+    "hold_min": 440.0,
+    "w": 0.398
+   },
+   "tester": null
+  }
+ ],
+ "cpi_spike_minutes_server": {
+  "2022": [
+   [
+    "01-12",
+    "15:40"
+   ],
+   [
+    "02-10",
+    "15:36"
+   ],
+   [
+    "03-10",
+    "14:46"
+   ],
+   [
+    "04-12",
+    "15:55"
+   ],
+   [
+    "05-11",
+    "15:30"
+   ],
+   [
+    "06-10",
+    "15:41"
+   ],
+   [
+    "07-13",
+    "15:33"
+   ],
+   [
+    "08-10",
+    "15:30"
+   ],
+   [
+    "09-13",
+    "15:36"
+   ],
+   [
+    "10-13",
+    "15:30"
+   ],
+   [
+    "11-10",
+    "15:30"
+   ],
+   [
+    "12-13",
+    "15:35"
+   ]
+  ],
+  "2023": [
+   [
+    "01-12",
+    "15:45"
+   ],
+   [
+    "02-14",
+    "15:33"
+   ],
+   [
+    "03-14",
+    "15:34"
+   ],
+   [
+    "04-12",
+    "15:33"
+   ],
+   [
+    "05-10",
+    "15:30"
+   ],
+   [
+    "06-13",
+    "15:30"
+   ],
+   [
+    "07-12",
+    "15:30"
+   ],
+   [
+    "08-10",
+    "15:30"
+   ],
+   [
+    "09-13",
+    "15:30"
+   ],
+   [
+    "10-12",
+    "15:30"
+   ],
+   [
+    "11-14",
+    "15:30"
+   ],
+   [
+    "12-12",
+    null
+   ]
+  ],
+  "2024": [
+   [
+    "01-11",
+    "15:30"
+   ],
+   [
+    "02-13",
+    "15:30"
+   ],
+   [
+    "03-12",
+    "15:30"
+   ],
+   [
+    "04-10",
+    "15:30"
+   ],
+   [
+    "05-15",
+    "15:30"
+   ],
+   [
+    "06-12",
+    "15:30"
+   ],
+   [
+    "07-11",
+    "15:43"
+   ],
+   [
+    "08-14",
+    "15:30"
+   ],
+   [
+    "09-11",
+    "15:30"
+   ],
+   [
+    "10-10",
+    "15:30"
+   ],
+   [
+    "11-13",
+    "15:30"
+   ],
+   [
+    "12-11",
+    "15:34"
+   ]
+  ],
+  "2025": [
+   [
+    "01-15",
+    "15:30"
+   ],
+   [
+    "02-12",
+    "15:30"
+   ],
+   [
+    "03-12",
+    "15:31"
+   ],
+   [
+    "04-10",
+    "15:30"
+   ],
+   [
+    "05-13",
+    "15:30"
+   ],
+   [
+    "06-11",
+    "15:30"
+   ],
+   [
+    "07-15",
+    "15:30"
+   ],
+   [
+    "08-12",
+    "15:30"
+   ]
+  ]
+ },
+ "harness_by_year": {
+  "2018": {
+   "n": 117,
+   "net_R": 25.13
+  },
+  "2019": {
+   "n": 234,
+   "net_R": 11.97
+  },
+  "2020": {
+   "n": 225,
+   "net_R": 13.71
+  },
+  "2021": {
+   "n": 202,
+   "net_R": 51.83
+  },
+  "2022": {
+   "n": 221,
+   "net_R": 38.77
+  },
+  "2023": {
+   "n": 206,
+   "net_R": 5.16
+  },
+  "2024": {
+   "n": 203,
+   "net_R": 59.24
+  },
+  "2025": {
+   "n": 223,
+   "net_R": 26.66
+  }
+ }
+}
