@@ -340,11 +340,26 @@ Hard rules for the kimi lane (research-only):
    returns an empty list. Ignore REVIEW/BLOCKED/PASSED tasks; they are not yours.
 4. If no task remains, run `python {canonical_farmctl} health` and check QM5_10260 queue state. Do not invent untracked work.
 5. Exit."""
+    # 2026-09-21 (Fable): the agy headless runner terminates the session ~5 s after the
+    # root agent goes idle. Two consecutive gemini cycles (19:00Z, 19:15Z) launched
+    # `farmctl health` as a BACKGROUND task, idled, and were killed at step 1 without
+    # ever reading their task list. The prompt therefore pins foreground execution for
+    # gemini; it is a prompt-level rule, no launcher behaviour changes.
+    execution_model = ""
+    if agent == "gemini":
+        execution_model = """
+EXECUTION MODEL (binding for this headless runner): run every shell command in the
+FOREGROUND and wait for its complete output before continuing. NEVER launch a command
+as a background task and NEVER end your turn while a background task is pending - this
+runner terminates the session about 5 seconds after the root agent goes idle, and on
+2026-09-21 two consecutive cycles died at step 1 exactly that way. If a command is
+slow (`farmctl health` can take a minute), still wait for it in the foreground.
+"""
     return f"""You are {agent} for QuantMechanica, launched by a headless scheduled task.
 
 Execute exactly one single-pass orchestration cycle, then exit. Do not start a
 15-minute sleep loop; the Windows scheduler provides cadence.
-
+{execution_model}
 Working directory: {cwd.as_posix()}
 
 Read first if needed:
