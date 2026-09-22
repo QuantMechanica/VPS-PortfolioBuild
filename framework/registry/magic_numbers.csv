@@ -18626,3 +18626,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41487,ft-binhv45-v2,3,XAUUSD.DWX,414870003,2026-09-21,Codex governed allocator,active
 41488,commodity-tsmom-12m-atr-symbolinput,0,XTIUSD.DWX,414880000,2026-09-22,Codex governed allocator,active
 41489,collins-66mom-symbolinput,0,XTIUSD.DWX,414890000,2026-09-22,Codex governed allocator,active
+41490,anchor-clock-range-breakout,0,USDJPY.DWX,414900000,2026-09-22,Codex governed allocator,active
+41490,anchor-clock-range-breakout,1,NZDJPY.DWX,414900001,2026-09-22,Codex governed allocator,active
+41490,anchor-clock-range-breakout,2,EURUSD.DWX,414900002,2026-09-22,Codex governed allocator,active
