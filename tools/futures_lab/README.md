@@ -15,6 +15,30 @@ D:/QM/venvs/futures_lab/Scripts/python.exe -m pip check
 python -B -m unittest discover -s tools/futures_lab -p test_prop_risk.py -v
 ```
 
+## Local credential and price quote
+
+After personal Databento registration, open `Set-DatabentoKey.ps1` through the
+prepared desktop shortcut under the same Windows user as the research worker
+(`qm-admin`). Its masked input stores only a CurrentUser-DPAPI encrypted blob in
+`D:/QM/futures_lab/private/databento.dpapi`, outside Git and Drive, with a private
+directory ACL. No key belongs in chat, command arguments, or persistent environment
+variables. Same-user processes and Windows administrators remain trusted.
+
+`quote_databento.py` is limited to free symbology and metadata methods on the fixed
+Databento historical host. It rejects redirects, partial resolution, unknown
+prices, malformed counts and breached cost/storage caps. A quote never downloads
+data or establishes purchase authorization, credit balance, licensing, or actual
+local decoded-data size.
+
+```powershell
+python -B tools/futures_lab/quote_databento.py --output D:/QM/reports/research/futures_pivot_20260922/databento_quote_new.json
+python -B -m unittest discover -s tools/futures_lab -p 'test_*.py' -v
+```
+
+At preparation, 28 checks passed: 10 risk diagnostics, 16 offline metadata-client
+tests, and 2 real Windows DPAPI tests using synthetic input. Authenticated requests
+remain dependent on the user completing local account/key setup.
+
 ## Risk-path diagnostic
 
 `prop_risk.py` processes NET USD balance and marked-to-market equity; closed daily profit alone is insufficient. Session labels must be supplied from the dated provider calendar; timestamps require UTC offsets, and each session must close flat. Invalid or incomplete inputs fail rather than silently inventing missing data.
@@ -40,6 +64,12 @@ Boolean fields are exactly `true` or `false`. Balance and equity must already in
 Official fixtures and a deliberate one-trade smoke test prove a code path, not an edge. Before a real strategy trial: acquire licensed single-contract MES/MNQ data, hash inputs, freeze contract mapping/rolls/session calendar and fills, bind actual fees, preregister a small candidate set, and simulate the complete evaluation-to-payout path. Verify final signals and order lifecycle on the chosen provider's permitted execution platform.
 
 First candidates should be few: one source-derived cash-session ORB, one deliberately distinct failed-breakout/reversion hypothesis, and matched no-signal controls. Day-flat versions of overnight systems are new hypotheses; do not relabel a Monday-to-Tuesday edge as an unchanged day-trading strategy.
+
+Track prior CFD research as part of selection history. Replaying futures over an
+already studied CFD market period is not automatically an untouched market
+holdout: the underlying index paths are related. Distinguish a newly held-out
+instrument dataset from genuinely unseen market periods and prospective paper
+observations.
 
 ## Storage
 
