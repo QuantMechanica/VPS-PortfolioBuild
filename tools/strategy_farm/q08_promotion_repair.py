@@ -372,7 +372,6 @@ def _install_refusal_hold(
           release_on_restart=0,updated_at=excluded.updated_at,
           released_at=NULL,release_note=NULL
         WHERE work_item_holds.active=0
-           OR work_item_holds.hold_code=excluded.hold_code
         """,
         (
             item["work_item_id"], REFUSAL_HOLD_CODE,
@@ -388,9 +387,14 @@ def _install_refusal_hold(
             """,
             (item["work_item_id"],),
         ).fetchone()
+        existing_code = existing["hold_code"] if existing else None
         return False, {
-            "reason": "active_hold_conflict",
-            "existing_hold_code": existing["hold_code"] if existing else None,
+            "reason": (
+                "refusal_hold_already_active"
+                if existing_code == REFUSAL_HOLD_CODE
+                else "active_hold_conflict"
+            ),
+            "existing_hold_code": existing_code,
         }
     return True, refusal
 
@@ -676,9 +680,21 @@ def _main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--task-id", required=True)
     parser.add_argument("--reason", required=True)
     parser.add_argument("--journal-path", type=Path)
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        help=(
+            "Canonical repository root used to authenticate EA paths when "
+            "the repair script itself is executed from an isolated worktree"
+        ),
+    )
     parser.add_argument("--work-item-id", action="append", default=[])
     parser.add_argument("--apply", action="store_true")
     args = parser.parse_args(argv)
+    if args.repo_root is not None:
+        canonical_repo_root = args.repo_root.resolve()
+        farmctl.REPO_ROOT = canonical_repo_root
+        farmctl.CANONICAL_REPO_ROOT = canonical_repo_root
     result = repair_pending_q08_promotions(
         args.root,
         task_id=args.task_id,
