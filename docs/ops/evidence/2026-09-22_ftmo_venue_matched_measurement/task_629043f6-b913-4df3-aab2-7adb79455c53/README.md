@@ -154,7 +154,8 @@ new_spread_rows=0 and new_slippage_rows=0.
 | book_sim_flags.json | 98f54e90a4d4f07a413a53681ca34b51832f029a74d6899b4b95fe4ebb9cfaae |
 | zero-additional-charge PAYOUT80 reference | fb25ec50555f5b94ce912b4c247ef14b57c371ac63d60c2bacd60d91a00aa708 |
 
-The operational append-only matched-spread ledger remains at
+At the 2026-09-22T04:15:00Z evidence freeze, the operational append-only
+matched-spread ledger was at
 D:/QM/reports/ftmo/venue_matched_measurement/task_629043f6-b913-4df3-aab2-7adb79455c53/v2_clock_normalized/spread_matched.jsonl;
 its SHA-256 is c7e8fdeb869a731ec4efcfce700c7e00e62efb4b9ee9bf4bdc2291cc959e4b23.
 The committed CSV contains the same 2,290 unique symbol-minute records.
@@ -193,7 +194,9 @@ request price, fill, server time, symbol, side, or volume.
 The exact Python 3.11 executable configured in QM_FTMO_TrialPulse independently
 resolved the pre-existing FTMO/DXZ PIDs as 11756/10168 and completed the fixed
 backfill with zero additions. This closes the optional-psutil warning exposed by
-the first final-health probe.
+the first final-health probe. One full pulse then completed without that warning
+and appended 226 post-freeze matched minutes to the operational ledger; the
+committed evidence and economics remain intentionally frozen at 04:15Z.
 
 ## Remaining measurement gaps
 
