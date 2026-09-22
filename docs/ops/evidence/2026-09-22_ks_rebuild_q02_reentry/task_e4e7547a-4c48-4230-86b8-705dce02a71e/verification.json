@@ -1,0 +1,60 @@
+{
+  "schema": "qm.ks-rebuild-q02-reentry-step3-verification/v1",
+  "task_id": "e4e7547a-4c48-4230-86b8-705dce02a71e",
+  "qm5_10403": {
+    "canonical_dry_run_eligible": true,
+    "append_only_successor": "5c12f7bb-a49f-4249-ba4e-3fa4d631d4fc",
+    "q02_verdict": "PASS",
+    "proof_verdict": "EQUIVALENT_EXACT",
+    "proof_sha256": "25d0ba875f0c3423033945fdbe06fbdaaabc947e93b833b1b223bfae36c5370a",
+    "proof_verify": {"ok": true, "failures": [], "warnings": []}
+  },
+  "qm5_10706": {
+    "selected_strategy_identity_verified": true,
+    "selected_strategy_identity_sha256": "8182d0ff0af37cc27bcc26b4750d2cfd294dc76d8641ad42a9b15e62d6e71dc5",
+    "fixed_risk_contract": {"RISK_FIXED": 1000, "RISK_PERCENT": 0},
+    "canonical_seed_enqueued": false,
+    "canonical_seed_refusal": "q02_pair_already_has_current_binary_terminal_result",
+    "regression_tests": {
+      "command": "python -m pytest tools/strategy_farm/tests/test_candidate_repair_enqueue.py -q",
+      "passed": 52,
+      "failed": 0
+    },
+    "py_compile": "PASS",
+    "q03_q10_chain": "NOT_STARTED"
+  },
+  "package": {
+    "json_parse": "PASS",
+    "json_files_parsed": 8,
+    "roster_hash_matches_manifest": true,
+    "collector_hashes_match_authority": true,
+    "candidate_set_hashes_match_manifest": true,
+    "candidate_ex5_hashes_match_manifest": true,
+    "live_set_risk_contracts": "PASS_RISK_FIXED_ZERO_RISK_PERCENT_POSITIVE",
+    "live_set_news_stale_ceiling": "PASS_ALL_EQUAL_336",
+    "governed_execution_mode": "QM_FTMO_EXECUTION_GOVERNED",
+    "anchor_mode": "MAX_BALANCE_EQUITY",
+    "book_tag": "FTMO_DEMO_BOOK_V3_D2G6_20260918",
+    "candidate_statuses": {
+      "13213": "EXACT",
+      "10706": "BLOCKED",
+      "10700": "EXACT",
+      "11422": "EXACT",
+      "10403": "EXACT",
+      "41219": "EXACT"
+    },
+    "install_authorized": false,
+    "status": "REVIEW_ONLY_BLOCKED_10706_OWN_CHAIN"
+  },
+  "repository": {
+    "diff_check": "PASS",
+    "canonical_checkout_files_written": false
+  },
+  "safety": {
+    "terminal_started_manually": false,
+    "autotrading_changed": false,
+    "t_live_changed": false,
+    "deploy_attempted": false,
+    "pipeline_verdict_asserted": false
+  }
+}

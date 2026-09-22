@@ -30518,6 +30518,9 @@ def enqueue_fresh_q02_seed(
                     }
                 logical_basket_siblings.append((row, sibling_payload))
 
+        # A terminal row is a duplicate only when the complete execution
+        # identity matches.  One binary can legitimately qualify distinct
+        # governed presets for the same EA/symbol pair.
         current_terminal = conn.execute(
             """
             SELECT id,status,verdict FROM work_items
@@ -30526,6 +30529,12 @@ def enqueue_fresh_q02_seed(
               AND lower(COALESCE(
                 json_extract(payload_json, '$.expected_ex5_sha256'), ''
               ))=?
+              AND lower(COALESCE(
+                json_extract(payload_json, '$.expected_mq5_sha256'), ''
+              ))=?
+              AND lower(COALESCE(
+                json_extract(payload_json, '$.expected_setfile_sha256'), ''
+              ))=?
             ORDER BY updated_at DESC LIMIT 1
             """,
             (
@@ -30533,6 +30542,8 @@ def enqueue_fresh_q02_seed(
                 source["symbol"],
                 source_id,
                 bindings["artifact_sha256"]["expected_ex5_sha256"],
+                bindings["artifact_sha256"]["expected_mq5_sha256"],
+                bindings["artifact_sha256"]["expected_setfile_sha256"],
             ),
         ).fetchone()
         if current_terminal:
