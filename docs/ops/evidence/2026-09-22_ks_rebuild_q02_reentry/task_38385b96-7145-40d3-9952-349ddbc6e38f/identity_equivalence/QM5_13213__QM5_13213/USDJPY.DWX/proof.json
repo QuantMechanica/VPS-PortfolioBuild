@@ -1,0 +1,137 @@
+{
+  "checks": {
+    "deals": {
+      "compared_rows": 1777,
+      "count_match": true,
+      "count_original": 1777,
+      "count_rebuilt": 1777,
+      "field_keys_checked": [
+        "time",
+        "symbol",
+        "type",
+        "direction",
+        "price",
+        "comment"
+      ],
+      "field_match": true,
+      "field_mismatch_count": 0,
+      "field_mismatches": [],
+      "field_mismatches_truncated": false,
+      "pnl": {
+        "exact": true,
+        "net_original": 46636.78,
+        "net_ratio": 1.0,
+        "net_rebuilt": 46636.78,
+        "rows_compared": 886,
+        "rows_over_tolerance": 0,
+        "within_tolerance": true,
+        "worst_per_lot_rel": 0.0
+      },
+      "volume": {
+        "exact": true,
+        "max_abs_step_lots": 0.0,
+        "ratio_max": 1.0,
+        "ratio_mean": 1.0,
+        "ratio_min": 1.0,
+        "rows_compared": 1776,
+        "sign_consistent": true,
+        "within_tolerance": true,
+        "worst_ratio_deviation": 0.0
+      }
+    },
+    "setfile": {
+      "ignored_id_bearing": [
+        {
+          "key": "qm_ea_id",
+          "original": "13213",
+          "rebuilt": "13213"
+        }
+      ],
+      "ignored_transport_inputs": [],
+      "match": true,
+      "mismatches": []
+    },
+    "tester_ini": {
+      "core": {
+        "FromDate": {
+          "match": true,
+          "original": "2018.07.02",
+          "rebuilt": "2018.07.02"
+        },
+        "Model": {
+          "match": true,
+          "original": "4",
+          "rebuilt": "4"
+        },
+        "Period": {
+          "match": true,
+          "original": "H1",
+          "rebuilt": "H1"
+        },
+        "Symbol": {
+          "match": true,
+          "original": "USDJPY.DWX",
+          "rebuilt": "USDJPY.DWX"
+        },
+        "ToDate": {
+          "match": true,
+          "original": "2022.12.31",
+          "rebuilt": "2022.12.31"
+        }
+      },
+      "match": true,
+      "mismatches": []
+    }
+  },
+  "generated_at": "2026-09-22T05:37:50.048904+00:00",
+  "inputs": {
+    "original": {
+      "ea_id": "QM5_13213",
+      "ea_label": "QM5_13213",
+      "ex5_sha256_compile": "351e969c43d4aabf79f9a24a26926f273de62de2912a2260670c613ac49ece0d",
+      "ex5_sha256_workitem": "8c99dea16fbf758a4b2da9f49a26db26bfe7fed3589f2066be5120314106a8f0",
+      "phase": "Q02",
+      "recorded_report_sha256": "21a0a14395f2eac164837c9c285aa5bf9ffac777df67016335a02f3c07f42ae4",
+      "report_path": "D:\\QM\\reports\\work_items\\d4196794-d342-475f-8a0e-4829c33663d7\\QM5_13213\\20260823_123908\\raw\\run_01\\report.htm",
+      "report_sha256": "21a0a14395f2eac164837c9c285aa5bf9ffac777df67016335a02f3c07f42ae4",
+      "report_sha256_matches_summary": true,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13213_balke-gmt3-range-breakout\\sets\\QM5_13213_balke-gmt3-range-breakout_USDJPY.DWX_H1_backtest.set",
+      "setfile_sha256": "6a4c7b9f7d473d1975dafeed513b08f8c3c02b1800c896ec52345498f8240bbf",
+      "summary_path": "D:\\QM\\reports\\work_items\\d4196794-d342-475f-8a0e-4829c33663d7\\QM5_13213\\20260823_123908\\summary.json",
+      "summary_sha256": "cb1c93f7a502c1e3bdf0012835fbb0e59cf2d3bd01665b1db857f5c6149c4909",
+      "symbol": "USDJPY.DWX",
+      "tester_ini_path": "D:\\QM\\reports\\work_items\\d4196794-d342-475f-8a0e-4829c33663d7\\QM5_13213\\20260823_123908\\raw\\run_01\\tester.ini",
+      "tester_ini_sha256": "8b050b3dd39d266f4e7c38bbe28f31df972c4d225df180b6cf20cb34b1e86a7c",
+      "work_item_id": "d4196794-d342-475f-8a0e-4829c33663d7"
+    },
+    "rebuilt": {
+      "ea_id": "QM5_13213",
+      "ea_label": "QM5_13213",
+      "ex5_sha256_compile": "351e969c43d4aabf79f9a24a26926f273de62de2912a2260670c613ac49ece0d",
+      "ex5_sha256_workitem": "351e969c43d4aabf79f9a24a26926f273de62de2912a2260670c613ac49ece0d",
+      "phase": "Q02",
+      "recorded_report_sha256": "7730a9a2e69ee4064b9ce8fc0a5b4757823fc290661ad79580528ecbbf352f98",
+      "report_path": "D:\\QM\\reports\\work_items\\80e6a407-0549-4c20-a1b4-f3b7c46d3c43\\QM5_13213\\20260922_052745\\raw\\run_01\\report.htm",
+      "report_sha256": "7730a9a2e69ee4064b9ce8fc0a5b4757823fc290661ad79580528ecbbf352f98",
+      "report_sha256_matches_summary": true,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13213_balke-gmt3-range-breakout\\sets\\QM5_13213_balke-gmt3-range-breakout_USDJPY.DWX_H1_backtest.set",
+      "setfile_sha256": "6a4c7b9f7d473d1975dafeed513b08f8c3c02b1800c896ec52345498f8240bbf",
+      "summary_path": "D:\\QM\\reports\\work_items\\80e6a407-0549-4c20-a1b4-f3b7c46d3c43\\QM5_13213\\20260922_052745\\summary.json",
+      "summary_sha256": "7c8aee5fd8384817d98d03e98740d67ab09b5605d3876c7a1cff5773eb62ac3c",
+      "symbol": "USDJPY.DWX",
+      "tester_ini_path": "D:\\QM\\reports\\work_items\\80e6a407-0549-4c20-a1b4-f3b7c46d3c43\\QM5_13213\\20260922_052745\\raw\\run_01\\tester.ini",
+      "tester_ini_sha256": "e5c280794f76e649180c3945d1e273ba6dde17c3ae869f639cbfacdabbe472ec",
+      "work_item_id": "80e6a407-0549-4c20-a1b4-f3b7c46d3c43"
+    }
+  },
+  "not_equivalent_reasons": [],
+  "proof_tolerances": {
+    "net_ratio_abs_tol": 0.05,
+    "pnl_per_lot_rel_tol": 0.005,
+    "volume_max_step_lots": 0.01,
+    "volume_ratio_abs_tol": 0.02
+  },
+  "schema": "qm.identity-equivalence-proof/v1",
+  "tool_sha256": "ba8a3a8888cebfffd72fab012963625930224948c3075fec33365de3965dd288",
+  "verdict": "EQUIVALENT_EXACT"
+}

@@ -1,0 +1,34 @@
+{
+  "schema": "qm.ftmo-kill-switch-runtime-proof-plan/v1",
+  "task_id": "38385b96-7145-40d3-9952-349ddbc6e38f",
+  "status": "NOT_RUN_BLOCKED",
+  "book_tag": "FTMO_DEMO_BOOK_V3_D2G6_20260918",
+  "execution_mode": "QM_FTMO_EXECUTION_GOVERNED",
+  "anchor_mode": "MAX_BALANCE_EQUITY",
+  "required_markers": [
+    "KS_BOOK_TAG_SET",
+    "KS_DAY_ANCHOR_SET",
+    "ks_state",
+    "KS_DAY_ROLLOVER"
+  ],
+  "acceptance": {
+    "per_sleeve": "KS_BOOK_TAG_SET and KS_DAY_ANCHOR_SET must precede INIT/INIT_OK and bind the exact book tag and governed anchor",
+    "state": "ks_state must be emitted for all six registered magic rows with no conflicting book tag",
+    "rollover": "KS_DAY_ROLLOVER must prove the Europe/Prague day boundary and be followed by a coherent ks_state",
+    "failure": "Any missing marker, INIT_FAILED, tag mismatch, magic mismatch, or anchor mismatch is STOP"
+  },
+  "magic_rows": [
+    {"ea_id": 13213, "slot": 0, "magic": 132130000},
+    {"ea_id": 10706, "slot": 1, "magic": 107060001},
+    {"ea_id": 10700, "slot": 3, "magic": 107000003},
+    {"ea_id": 11422, "slot": 4, "magic": 114220004},
+    {"ea_id": 10403, "slot": 2, "magic": 104030002},
+    {"ea_id": 41219, "slot": 0, "magic": 412190000}
+  ],
+  "blocked_by": [
+    "10706 identity divergence",
+    "10706 selected ablation-02 Q02 predecessor lacks source EX5 binding",
+    "10403 unauthenticated parameter-change provenance",
+    "canonical dry-run target reports AutoTrading enabled"
+  ]
+}

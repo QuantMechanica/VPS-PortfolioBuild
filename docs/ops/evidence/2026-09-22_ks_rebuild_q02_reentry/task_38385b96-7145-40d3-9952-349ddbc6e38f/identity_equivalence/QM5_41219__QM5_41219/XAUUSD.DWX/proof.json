@@ -1,0 +1,137 @@
+{
+  "checks": {
+    "deals": {
+      "compared_rows": 65,
+      "count_match": true,
+      "count_original": 65,
+      "count_rebuilt": 65,
+      "field_keys_checked": [
+        "time",
+        "symbol",
+        "type",
+        "direction",
+        "price",
+        "comment"
+      ],
+      "field_match": true,
+      "field_mismatch_count": 0,
+      "field_mismatches": [],
+      "field_mismatches_truncated": false,
+      "pnl": {
+        "exact": true,
+        "net_original": 157.00999999999476,
+        "net_ratio": 1.0,
+        "net_rebuilt": 157.00999999999476,
+        "rows_compared": 32,
+        "rows_over_tolerance": 0,
+        "within_tolerance": true,
+        "worst_per_lot_rel": 0.0
+      },
+      "volume": {
+        "exact": true,
+        "max_abs_step_lots": 0.0,
+        "ratio_max": 1.0,
+        "ratio_mean": 1.0,
+        "ratio_min": 1.0,
+        "rows_compared": 64,
+        "sign_consistent": true,
+        "within_tolerance": true,
+        "worst_ratio_deviation": 0.0
+      }
+    },
+    "setfile": {
+      "ignored_id_bearing": [
+        {
+          "key": "qm_ea_id",
+          "original": "41219",
+          "rebuilt": "41219"
+        }
+      ],
+      "ignored_transport_inputs": [],
+      "match": true,
+      "mismatches": []
+    },
+    "tester_ini": {
+      "core": {
+        "FromDate": {
+          "match": true,
+          "original": "2018.07.02",
+          "rebuilt": "2018.07.02"
+        },
+        "Model": {
+          "match": true,
+          "original": "4",
+          "rebuilt": "4"
+        },
+        "Period": {
+          "match": true,
+          "original": "D1",
+          "rebuilt": "D1"
+        },
+        "Symbol": {
+          "match": true,
+          "original": "XAUUSD.DWX",
+          "rebuilt": "XAUUSD.DWX"
+        },
+        "ToDate": {
+          "match": true,
+          "original": "2022.12.31",
+          "rebuilt": "2022.12.31"
+        }
+      },
+      "match": true,
+      "mismatches": []
+    }
+  },
+  "generated_at": "2026-09-22T05:46:47.228738+00:00",
+  "inputs": {
+    "original": {
+      "ea_id": "QM5_41219",
+      "ea_label": "QM5_41219",
+      "ex5_sha256_compile": "8e019fe281a63c3de8b5bf3fed752cd26306a38d8891d21d6e0a1fab3b85feaf",
+      "ex5_sha256_workitem": "e9670141e89249aff7df44a10a2402e2103aa4cecf8d0a35a8cd6d6babedf108",
+      "phase": "Q02",
+      "recorded_report_sha256": "e46d16ef3a5a6f8fc71ea1f6889ba4f57c0061223dd89934547e70fdb79d8105",
+      "report_path": "D:\\QM\\reports\\work_items\\f3391b2d-5f61-4548-ac51-c66781545ce4\\QM5_41219\\20260901_091225\\raw\\run_01\\report.htm",
+      "report_sha256": "e46d16ef3a5a6f8fc71ea1f6889ba4f57c0061223dd89934547e70fdb79d8105",
+      "report_sha256_matches_summary": true,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41219_cum-rsi2-commodity-requal8\\sets\\QM5_41219_cum-rsi2-commodity-requal8_XAUUSD.DWX_D1_backtest.set",
+      "setfile_sha256": "68dd5b09d72d098eb374b281dac7af609f27e16c9a627069eda5b92f5c4943ff",
+      "summary_path": "D:\\QM\\reports\\work_items\\f3391b2d-5f61-4548-ac51-c66781545ce4\\QM5_41219\\20260901_091225\\summary.json",
+      "summary_sha256": "31911af8631a147c01a9f25434d20454585f97559ef47081a7cf3a4c73fb42d0",
+      "symbol": "XAUUSD.DWX",
+      "tester_ini_path": "D:\\QM\\reports\\work_items\\f3391b2d-5f61-4548-ac51-c66781545ce4\\QM5_41219\\20260901_091225\\raw\\run_01\\tester.ini",
+      "tester_ini_sha256": "6c9a666972efd8b209be3108b25d670dc80db1249002ad910e313692cfc622ae",
+      "work_item_id": "f3391b2d-5f61-4548-ac51-c66781545ce4"
+    },
+    "rebuilt": {
+      "ea_id": "QM5_41219",
+      "ea_label": "QM5_41219",
+      "ex5_sha256_compile": "8e019fe281a63c3de8b5bf3fed752cd26306a38d8891d21d6e0a1fab3b85feaf",
+      "ex5_sha256_workitem": "8e019fe281a63c3de8b5bf3fed752cd26306a38d8891d21d6e0a1fab3b85feaf",
+      "phase": "Q02",
+      "recorded_report_sha256": "c34ed71c4653c6e14eb036151114b26e0c59729062e602b98dd6c45d3ebd08c4",
+      "report_path": "D:\\QM\\reports\\work_items\\9b764ccb-9f7d-40d3-96e6-571336958be5\\QM5_41219\\20260922_052821\\raw\\run_01\\report.htm",
+      "report_sha256": "c34ed71c4653c6e14eb036151114b26e0c59729062e602b98dd6c45d3ebd08c4",
+      "report_sha256_matches_summary": true,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41219_cum-rsi2-commodity-requal8\\sets\\QM5_41219_cum-rsi2-commodity-requal8_XAUUSD.DWX_D1_backtest.set",
+      "setfile_sha256": "68dd5b09d72d098eb374b281dac7af609f27e16c9a627069eda5b92f5c4943ff",
+      "summary_path": "D:\\QM\\reports\\work_items\\9b764ccb-9f7d-40d3-96e6-571336958be5\\QM5_41219\\20260922_052821\\summary.json",
+      "summary_sha256": "ccdc139d3af0e9ebed67b04b996b6720d84c398c96d5406d5a388126fed8db44",
+      "symbol": "XAUUSD.DWX",
+      "tester_ini_path": "D:\\QM\\reports\\work_items\\9b764ccb-9f7d-40d3-96e6-571336958be5\\QM5_41219\\20260922_052821\\raw\\run_01\\tester.ini",
+      "tester_ini_sha256": "00c659a6c940fdb0a13443c311442dd52e2f24ffa834f0df78a724cf86103fb9",
+      "work_item_id": "9b764ccb-9f7d-40d3-96e6-571336958be5"
+    }
+  },
+  "not_equivalent_reasons": [],
+  "proof_tolerances": {
+    "net_ratio_abs_tol": 0.05,
+    "pnl_per_lot_rel_tol": 0.005,
+    "volume_max_step_lots": 0.01,
+    "volume_ratio_abs_tol": 0.02
+  },
+  "schema": "qm.identity-equivalence-proof/v1",
+  "tool_sha256": "ba8a3a8888cebfffd72fab012963625930224948c3075fec33365de3965dd288",
+  "verdict": "EQUIVALENT_EXACT"
+}

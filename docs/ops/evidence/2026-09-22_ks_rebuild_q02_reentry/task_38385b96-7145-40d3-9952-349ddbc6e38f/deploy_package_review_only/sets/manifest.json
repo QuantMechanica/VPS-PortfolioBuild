@@ -1,0 +1,468 @@
+{
+  "ENV": "live",
+  "account_variant": "STANDARD_2STEP_100K_FREE_TRIAL",
+  "binding": {
+    "id": "FTMO_M13_STANDARD_DEMO_V1",
+    "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\ftmo_m13_standard_demo.v1.json"
+  },
+  "book_risk_percent": 1.71875,
+  "candidates": [
+    {
+      "changes": {
+        "RISK_FIXED": {
+          "after": "0",
+          "before": "1000"
+        },
+        "RISK_PERCENT": {
+          "after": "0.15625",
+          "before": "0"
+        },
+        "qm_friday_close_enabled": {
+          "after": "true",
+          "before": null
+        },
+        "qm_friday_close_hour_broker": {
+          "after": "21",
+          "before": null
+        },
+        "qm_news_compliance": {
+          "after": "2",
+          "before": null
+        },
+        "qm_news_stale_max_hours": {
+          "after": "336",
+          "before": null
+        },
+        "qm_news_temporal": {
+          "after": "3",
+          "before": null
+        }
+      },
+      "ea_id": 13213,
+      "ea_label": "QM5_13213_balke-gmt3-range-breakout",
+      "ex5_sha256": "351e969c43d4aabf79f9a24a26926f273de62de2912a2260670c613ac49ece0d",
+      "identity_equivalence": {
+        "status": "EQUIVALENT_EXACT",
+        "proof_sha256": "df7ac85c058c94c2bb98c748b2fdfbcfb01e58a237a99a18c469cb77ae0a1db0",
+        "carry_forward_q03_q10": true
+      },
+      "factory_symbol": "USDJPY.DWX",
+      "magic": 132130000,
+      "native_symbol": "USDJPY",
+      "original_selected_news_config": {
+        "compliance_mode": "DXZ",
+        "setfile_sha256s": [
+          "4464967eb07b6ee32db9bd6f5df0c424f9903f14da6603e87802e58975a97330"
+        ],
+        "temporal_mode": "SKIP_DAY",
+        "temporal_mode_id": 5
+      },
+      "output_path": "QM5_13213_USDJPY_H1_live_trial.set",
+      "output_sha256": "22dc1b02da2167289fb2fc1e983fe118f7a2787b545249dbe678bfaf9241fb91",
+      "qm_ea_id": "13213",
+      "qm_magic_slot_offset": "0",
+      "risk_percent": 0.15625,
+      "seal_path": "D:\\QM\\reports\\work_items\\177f73c4-f952-442a-ad4a-6805abe83155\\QM5_13213\\Q10_NEWS\\6771f953-a639-4073-984e-bbfdf2cdb3fb\\aggregate.json",
+      "seal_sha256": "70e2505e2fe61bc82f89740ca6342ca907ce0f94a35ad0d38573cce08d820eab",
+      "seal_work_item_id": "6771f953-a639-4073-984e-bbfdf2cdb3fb",
+      "slot": 0,
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13213_balke-gmt3-range-breakout\\sets\\QM5_13213_balke-gmt3-range-breakout_USDJPY.DWX_H1_backtest.set",
+      "source_role": "SEALED_BASELINE_STRATEGY_PARAMETERS",
+      "source_sha256": "0eba1def3309b7ff94fd86fdeb1f71e91bb5ee3c789156fc6df8a6dd8a009c79",
+      "strategy_identity_sha256": "7d91138b3bb265462811000b82e4501acc677613c173acba4c09e97873af7cd2",
+      "strategy_parameter_count": 11,
+      "symbol": "USDJPY",
+      "symbol_slot_changes": {},
+      "timeframe": "H1",
+      "venue_symbol": "USDJPY"
+    },
+    {
+      "changes": {
+        "RISK_FIXED": {
+          "after": "0",
+          "before": "1000"
+        },
+        "RISK_PERCENT": {
+          "after": "0.3125",
+          "before": "0"
+        },
+        "qm_friday_close_enabled": {
+          "after": "true",
+          "before": null
+        },
+        "qm_friday_close_hour_broker": {
+          "after": "21",
+          "before": null
+        },
+        "qm_news_compliance": {
+          "after": "2",
+          "before": null
+        },
+        "qm_news_stale_max_hours": {
+          "after": "336",
+          "before": null
+        },
+        "qm_news_temporal": {
+          "after": "3",
+          "before": null
+        }
+      },
+      "ea_id": 10706,
+      "ea_label": "QM5_10706_tv-mon-ls",
+      "ex5_sha256": "c9bf8e83963255eda114787892f8a4edba2584b2282d3c8297ea30b3332e8885",
+      "identity_equivalence": {
+        "status": "SELECTED_Q02_UNBOUND_AND_BASE_CONTROL_NOT_EQUIVALENT_STOP",
+        "proof_sha256": "54d4f59f1b759d74f63b0af10a00d411339089f90d0f07b91176b331bb33e297",
+        "carry_forward_q03_q10": false,
+        "field_mismatch_count": 1,
+        "proof_role": "BASE_PRESET_CONTROL",
+        "selected_predecessor_q02": "7cf004b7-f4cf-42cb-80cc-d5c98f119ce4",
+        "selected_reentry_stop_reason": "source_ex5_sha256_missing"
+      },
+      "factory_symbol": "GBPUSD.DWX",
+      "magic": 107060001,
+      "native_symbol": "GBPUSD",
+      "original_selected_news_config": {
+        "compliance_mode": "DXZ",
+        "setfile_sha256s": [
+          "f5a11e2d1830db46258586ea2828b1bda9bd985661afa975fcb1c954d9aae6c6"
+        ],
+        "temporal_mode": "OFF",
+        "temporal_mode_id": 0
+      },
+      "output_path": "QM5_10706_GBPUSD_H1_live_trial.set",
+      "output_sha256": "13445176173bf12359b0c61dd6f20b0b22bbbba5de2204bd0fcc433528ad7ca1",
+      "qm_ea_id": null,
+      "qm_magic_slot_offset": "1",
+      "risk_percent": 0.3125,
+      "seal_path": "D:\\QM\\reports\\work_items\\9c7db9b2-c594-4b50-8006-f891f7b5c44b\\QM5_10706\\Q10_NEWS\\GBPUSD_DWX\\aggregate.json",
+      "seal_sha256": "a619968d0608c1ed9bda70f263f95c12db5671c1cf96bd9939409559bcdf2bac",
+      "seal_work_item_id": "9c7db9b2-c594-4b50-8006-f891f7b5c44b",
+      "slot": 1,
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest_ablation_02.set",
+      "source_role": "SEALED_BASELINE_STRATEGY_PARAMETERS",
+      "source_sha256": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49",
+      "strategy_identity_sha256": "8182d0ff0af37cc27bcc26b4750d2cfd294dc76d8641ad42a9b15e62d6e71dc5",
+      "strategy_parameter_count": 26,
+      "symbol": "GBPUSD",
+      "symbol_slot_changes": {},
+      "timeframe": "H1",
+      "venue_symbol": "GBPUSD"
+    },
+    {
+      "changes": {
+        "RISK_FIXED": {
+          "after": "0",
+          "before": "1000"
+        },
+        "RISK_PERCENT": {
+          "after": "0.3125",
+          "before": "0"
+        },
+        "qm_friday_close_enabled": {
+          "after": "true",
+          "before": null
+        },
+        "qm_friday_close_hour_broker": {
+          "after": "21",
+          "before": null
+        },
+        "qm_news_compliance": {
+          "after": "2",
+          "before": null
+        },
+        "qm_news_stale_max_hours": {
+          "after": "336",
+          "before": null
+        },
+        "qm_news_temporal": {
+          "after": "3",
+          "before": null
+        }
+      },
+      "ea_id": 10700,
+      "ea_label": "QM5_10700_tv-liq-break",
+      "ex5_sha256": "480657468e8d06c688cae3070b05004ba42a3fe11170efea1b4dfab93f3c230a",
+      "identity_equivalence": {
+        "status": "EQUIVALENT_EXACT",
+        "proof_sha256": "3735a37d4bf87c60006e1e6de1e3429af1a813fed138b9fc64a63f091be8da34",
+        "carry_forward_q03_q10": true
+      },
+      "factory_symbol": "XAUUSD.DWX",
+      "magic": 107000003,
+      "native_symbol": "XAUUSD",
+      "original_selected_news_config": {
+        "compliance_mode": "DXZ",
+        "setfile_sha256s": [
+          "49231f1d319b11389f04132270235e16f252401b30e4ee7c4d59c0a263b17ebd"
+        ],
+        "temporal_mode": "OFF",
+        "temporal_mode_id": 0
+      },
+      "output_path": "QM5_10700_XAUUSD_H1_live_trial.set",
+      "output_sha256": "29e57ddca182b4e3597bfae8dcd449dffd5b586b9efde0da24747a13bd9bc9a3",
+      "qm_ea_id": "10700",
+      "qm_magic_slot_offset": "3",
+      "risk_percent": 0.3125,
+      "seal_path": "D:\\QM\\reports\\work_items\\fe33550e-2de4-4886-9b10-e7ea48a382d7\\QM5_10700\\Q10_NEWS\\4066a5fb-7dee-4664-ad92-176a349ab1f9\\aggregate.json",
+      "seal_sha256": "eadf43e46c7e211ece0d06934e36a92723640ab851be719be9ada40764cbe51e",
+      "seal_work_item_id": "4066a5fb-7dee-4664-ad92-176a349ab1f9",
+      "slot": 3,
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\sets\\QM5_10700_tv-liq-break_XAUUSD.DWX_H1_backtest.set",
+      "source_role": "SEALED_BASELINE_STRATEGY_PARAMETERS",
+      "source_sha256": "a684dad25b6c2f1597a0456c0c3fd89135826afa7f3a5be446af76b5ec68a997",
+      "strategy_identity_sha256": "db2003464da2a18fe88df0e50a1ea035b36d8c2a8bc298b9f906ceb3f66498b9",
+      "strategy_parameter_count": 13,
+      "symbol": "XAUUSD",
+      "symbol_slot_changes": {},
+      "timeframe": "H1",
+      "venue_symbol": "XAUUSD"
+    },
+    {
+      "changes": {
+        "RISK_FIXED": {
+          "after": "0",
+          "before": "1000"
+        },
+        "RISK_PERCENT": {
+          "after": "0.3125",
+          "before": "0"
+        },
+        "qm_friday_close_enabled": {
+          "after": "true",
+          "before": null
+        },
+        "qm_friday_close_hour_broker": {
+          "after": "21",
+          "before": null
+        },
+        "qm_news_compliance": {
+          "after": "2",
+          "before": null
+        },
+        "qm_news_stale_max_hours": {
+          "after": "336",
+          "before": null
+        },
+        "qm_news_temporal": {
+          "after": "3",
+          "before": null
+        }
+      },
+      "ea_id": 11422,
+      "ea_label": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+      "ex5_sha256": "6daa9923062996ef26a26ce537bf9e5ecc328c3480c4ca0c4791cf4c674a9560",
+      "identity_equivalence": {
+        "status": "EQUIVALENT_EXACT",
+        "proof_sha256": "9689e367c7660088d23e98f3bcba13280196a2166d7e2b659d982a5531d08e44",
+        "carry_forward_q03_q10": true
+      },
+      "factory_symbol": "USDCAD.DWX",
+      "magic": 114220004,
+      "native_symbol": "USDCAD",
+      "original_selected_news_config": {
+        "compliance_mode": "DXZ",
+        "setfile_sha256s": [
+          "13fb226e11e10f81279ce9e70a02dedfaba0f6dc35fef1a5efa14677385f47ea"
+        ],
+        "temporal_mode": "OFF",
+        "temporal_mode_id": 0
+      },
+      "output_path": "QM5_11422_USDCAD_D1_live_trial.set",
+      "output_sha256": "33c4eae9d65140cd96c3a9c7fe065b89046d478734e1a6dbe5b9cc9b085d8ae9",
+      "qm_ea_id": "11422",
+      "qm_magic_slot_offset": "4",
+      "risk_percent": 0.3125,
+      "seal_path": "D:\\QM\\reports\\work_items\\21eb42e1-5107-4033-b9f6-a97c1edc15d1\\QM5_11422\\Q10_NEWS\\74fec478-4823-4d84-a9a1-41319407197d\\aggregate.json",
+      "seal_sha256": "0ea766456a304004b92fa3da40524138db2765b4fec13c62128cb49b0aefee09",
+      "seal_work_item_id": "74fec478-4823-4d84-a9a1-41319407197d",
+      "slot": 4,
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\sets\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD.DWX_D1_backtest.set",
+      "source_role": "SEALED_BASELINE_STRATEGY_PARAMETERS",
+      "source_sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff",
+      "strategy_identity_sha256": "b797cd6f63fe9e6e43524a5a26f076fb5c4f755a1b41abda57daa96c80d6594e",
+      "strategy_parameter_count": 10,
+      "symbol": "USDCAD",
+      "symbol_slot_changes": {},
+      "timeframe": "D1",
+      "venue_symbol": "USDCAD"
+    },
+    {
+      "changes": {
+        "RISK_FIXED": {
+          "after": "0",
+          "before": "1000"
+        },
+        "RISK_PERCENT": {
+          "after": "0.3125",
+          "before": "0"
+        },
+        "qm_friday_close_enabled": {
+          "after": "true",
+          "before": null
+        },
+        "qm_friday_close_hour_broker": {
+          "after": "21",
+          "before": null
+        },
+        "qm_news_compliance": {
+          "after": "2",
+          "before": null
+        },
+        "qm_news_stale_max_hours": {
+          "after": "336",
+          "before": null
+        },
+        "qm_news_temporal": {
+          "after": "3",
+          "before": null
+        }
+      },
+      "ea_id": 10403,
+      "ea_label": "QM5_10403_et-turtle20x",
+      "ex5_sha256": "88ba0eabc37de54d717a86158e472fd7175878f0c61b0f19467fa9f914ee4d87",
+      "identity_equivalence": {
+        "status": "Q02_NOT_ENQUEUED_PROVENANCE_STOP",
+        "carry_forward_q03_q10": false,
+        "reason": "parameter_change_provenance_not_authenticated"
+      },
+      "factory_symbol": "XAUUSD.DWX",
+      "magic": 104030002,
+      "native_symbol": "XAUUSD",
+      "original_selected_news_config": {
+        "compliance_mode": "DXZ",
+        "setfile_sha256s": [
+          "036fa7ef8b88ca90a6a48d91e5c57e586ed70803f0a294e063338b887a44baee"
+        ],
+        "temporal_mode": "OFF",
+        "temporal_mode_id": 0
+      },
+      "output_path": "QM5_10403_XAUUSD_D1_live_trial.set",
+      "output_sha256": "e7ae1522a6cd104f3069389e531833e8933e34691ab5eefdda980fb55a1ac5be",
+      "qm_ea_id": null,
+      "qm_magic_slot_offset": "2",
+      "risk_percent": 0.3125,
+      "seal_path": "D:\\QM\\reports\\work_items\\cf18f426-1ba8-4479-92ee-b7e14b85d5de\\QM5_10403\\Q10_NEWS\\77482986-702b-46c6-acf4-35d84bf7de29\\aggregate.json",
+      "seal_sha256": "c10741f2c2a395e37acc252368cbaaa10196bbdfb7f570e0b9d0d34cab6ea336",
+      "seal_work_item_id": "77482986-702b-46c6-acf4-35d84bf7de29",
+      "slot": 2,
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10403_et-turtle20x\\sets\\QM5_10403_et-turtle20x_XAUUSD.DWX_D1_backtest.set",
+      "source_role": "SEALED_BASELINE_STRATEGY_PARAMETERS",
+      "source_sha256": "9a6fab053d3814077a015eb9f3a864a0c8a703fbe220ae03e74da195960f4c72",
+      "strategy_identity_sha256": "1d6cfd591e4d75038107bfbc26f343e49c409d1ddb7d0176ef4ba9ac23899ec6",
+      "strategy_parameter_count": 23,
+      "symbol": "XAUUSD",
+      "symbol_slot_changes": {},
+      "timeframe": "D1",
+      "venue_symbol": "XAUUSD"
+    },
+    {
+      "changes": {
+        "RISK_FIXED": {
+          "after": "0",
+          "before": "1000"
+        },
+        "RISK_PERCENT": {
+          "after": "0.3125",
+          "before": "0"
+        },
+        "qm_friday_close_enabled": {
+          "after": "true",
+          "before": null
+        },
+        "qm_friday_close_hour_broker": {
+          "after": "21",
+          "before": null
+        },
+        "qm_news_compliance": {
+          "after": "2",
+          "before": null
+        },
+        "qm_news_stale_max_hours": {
+          "after": "336",
+          "before": null
+        },
+        "qm_news_temporal": {
+          "after": "3",
+          "before": null
+        }
+      },
+      "ea_id": 41219,
+      "ea_label": "QM5_41219_cum-rsi2-commodity-requal8",
+      "ex5_sha256": "8e019fe281a63c3de8b5bf3fed752cd26306a38d8891d21d6e0a1fab3b85feaf",
+      "identity_equivalence": {
+        "status": "EQUIVALENT_EXACT",
+        "proof_sha256": "739d4f121267acf2d29fd68a19e279568d5b54e1ba12ced31a0727f32278c9a7",
+        "carry_forward_q03_q10": true
+      },
+      "factory_symbol": "XAUUSD.DWX",
+      "magic": 412190000,
+      "native_symbol": "XAUUSD",
+      "original_selected_news_config": {
+        "compliance_mode": "DXZ",
+        "setfile_sha256s": [
+          "aac374c67d83e2f260338c68d725a43b40824bb2362b2fea05d3e618e49ceba1"
+        ],
+        "temporal_mode": "PRE60_POST60",
+        "temporal_mode_id": 4
+      },
+      "output_path": "QM5_41219_XAUUSD_D1_live_trial.set",
+      "output_sha256": "e72547969256b29ba621e00e906f5a3a48212010d2f15fe3edc5766dc60af034",
+      "qm_ea_id": "41219",
+      "qm_magic_slot_offset": "0",
+      "risk_percent": 0.3125,
+      "seal_path": "D:\\QM\\reports\\work_items\\1da33661-ae52-442d-babd-8c73c3d9f9c6\\QM5_41219\\Q10_NEWS\\80107fb5-70fd-44d3-9caa-06a84101171c\\aggregate.json",
+      "seal_sha256": "2638f11d2f17823f0c0594691152a9bf6917d8679d4fc3f64f0db609d9ed12b6",
+      "seal_work_item_id": "80107fb5-70fd-44d3-9caa-06a84101171c",
+      "slot": 0,
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41219_cum-rsi2-commodity-requal8\\sets\\QM5_41219_cum-rsi2-commodity-requal8_XAUUSD.DWX_D1_backtest.set",
+      "source_role": "SEALED_BASELINE_STRATEGY_PARAMETERS",
+      "source_sha256": "297081b5b1e8aa70e76246b1cdaafdd38807305c5e8d05db59e5d63998fa180a",
+      "strategy_identity_sha256": "bb67a81d4bb04f21f3c078ebc010acd7a0bfbc05da7269b638a828eb26a99c87",
+      "strategy_parameter_count": 12,
+      "symbol": "XAUUSD",
+      "symbol_slot_changes": {},
+      "timeframe": "D1",
+      "venue_symbol": "XAUUSD"
+    }
+  ],
+  "constraints": {
+    "calendar_binding": "NATIVE_MT5_CALENDAR_LIVE; seed health and execution must be verified before attachment",
+    "governor_enforcement": "BOUND_TO_QM5_13206_PRESETS; ATTACHMENT_REQUIRES_OWNER_SIGNATURE",
+    "max_daily_loss_percent": 5.0,
+    "max_total_loss_percent": 10.0,
+    "observed_account_leverage": "1:100",
+    "provider_evaluation_news_restricted": false,
+    "provider_evaluation_weekend_restricted": false,
+    "qm_news_blackout": "PRE30_POST30_PLUS_FTMO_COMPLIANCE",
+    "qm_weekend_flat": "FRIDAY_CLOSE_21_BROKER_WITH_5_MINUTE_LEAD",
+    "timezone": "Europe/Prague"
+  },
+  "duration_cap_calendar_days": 14,
+  "installable": false,
+  "installed": false,
+  "mode": "DRY_RUN",
+  "risk_authority": "FABLE_DECISION_D2G_2026-09-18_DEPLOYABLE2",
+  "risk_percent": [
+    0.15625,
+    0.3125
+  ],
+  "roster_label": "D2g6",
+  "roster_schema": "qm.ftmo-demo-roster/v1",
+  "roster_sha256": "82d3d94881d3fd4e28765bb1920e2441321ef249edb429439d1fa1684ea88e8b",
+  "roster_source": "docs/ops/evidence/2026-09-22_ks_rebuild_q02_reentry/task_38385b96-7145-40d3-9952-349ddbc6e38f/deploy_package_review_only/roster.json",
+  "rulepack": {
+    "as_of": "2026-09-18",
+    "canonical_sha256": "9fe21a1d0b1d760d29fd8daed09bec03315289d078da83f232c5d86eff7bf8f9",
+    "id": "FTMO_2S_100K_STANDARD_V2",
+    "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\target_rulepacks\\FTMO_2S_100K_STANDARD_V2.json",
+    "profile_version": 2,
+    "sha256": "448e4b916afe80b412995fa7396636e60b8a4894dc965aa262328f165202e1a6"
+  },
+  "schema": "qm.ftmo-trial-setpath/v2",
+  "status": "REVIEW_ONLY_BLOCKED_IDENTITY",
+  "book_tag": "FTMO_DEMO_BOOK_V3_D2G6_20260918",
+  "ftmo_execution_mode": "QM_FTMO_EXECUTION_GOVERNED",
+  "ftmo_anchor_mode": "MAX_BALANCE_EQUITY",
+  "install_authorized": false
+}

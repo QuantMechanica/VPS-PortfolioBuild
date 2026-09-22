@@ -1,0 +1,137 @@
+{
+  "checks": {
+    "deals": {
+      "compared_rows": 403,
+      "count_match": true,
+      "count_original": 403,
+      "count_rebuilt": 403,
+      "field_keys_checked": [
+        "time",
+        "symbol",
+        "type",
+        "direction",
+        "price",
+        "comment"
+      ],
+      "field_match": true,
+      "field_mismatch_count": 0,
+      "field_mismatches": [],
+      "field_mismatches_truncated": false,
+      "pnl": {
+        "exact": true,
+        "net_original": 18521.14,
+        "net_ratio": 1.0,
+        "net_rebuilt": 18521.14,
+        "rows_compared": 201,
+        "rows_over_tolerance": 0,
+        "within_tolerance": true,
+        "worst_per_lot_rel": 0.0
+      },
+      "volume": {
+        "exact": true,
+        "max_abs_step_lots": 0.0,
+        "ratio_max": 1.0,
+        "ratio_mean": 1.0,
+        "ratio_min": 1.0,
+        "rows_compared": 402,
+        "sign_consistent": true,
+        "within_tolerance": true,
+        "worst_ratio_deviation": 0.0
+      }
+    },
+    "setfile": {
+      "ignored_id_bearing": [
+        {
+          "key": "qm_ea_id",
+          "original": "10700",
+          "rebuilt": "10700"
+        }
+      ],
+      "ignored_transport_inputs": [],
+      "match": true,
+      "mismatches": []
+    },
+    "tester_ini": {
+      "core": {
+        "FromDate": {
+          "match": true,
+          "original": "2018.07.02",
+          "rebuilt": "2018.07.02"
+        },
+        "Model": {
+          "match": true,
+          "original": "4",
+          "rebuilt": "4"
+        },
+        "Period": {
+          "match": true,
+          "original": "H1",
+          "rebuilt": "H1"
+        },
+        "Symbol": {
+          "match": true,
+          "original": "XAUUSD.DWX",
+          "rebuilt": "XAUUSD.DWX"
+        },
+        "ToDate": {
+          "match": true,
+          "original": "2022.12.31",
+          "rebuilt": "2022.12.31"
+        }
+      },
+      "match": true,
+      "mismatches": []
+    }
+  },
+  "generated_at": "2026-09-22T05:37:50.544681+00:00",
+  "inputs": {
+    "original": {
+      "ea_id": "QM5_10700",
+      "ea_label": "QM5_10700",
+      "ex5_sha256_compile": "480657468e8d06c688cae3070b05004ba42a3fe11170efea1b4dfab93f3c230a",
+      "ex5_sha256_workitem": "5fbf2ba0048250041296deda0008ff6757f56dce27e39efead69f45838e5e6be",
+      "phase": "Q02",
+      "recorded_report_sha256": "bb57b524840efdc5957928caccaf77a9a508fa6a2b658d17ddbfd14153482f32",
+      "report_path": "D:\\QM\\reports\\work_items\\71fddb4a-3e83-4590-92d6-809ddf88abc6\\QM5_10700\\20260903_044015\\raw\\run_01\\report.htm",
+      "report_sha256": "bb57b524840efdc5957928caccaf77a9a508fa6a2b658d17ddbfd14153482f32",
+      "report_sha256_matches_summary": true,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\sets\\QM5_10700_tv-liq-break_XAUUSD.DWX_H1_backtest.set",
+      "setfile_sha256": "e8ee58dfba807d937da21fa294dc9cbd6b4944fa49d1a5db560a82d98205114e",
+      "summary_path": "D:\\QM\\reports\\work_items\\71fddb4a-3e83-4590-92d6-809ddf88abc6\\QM5_10700\\20260903_044015\\summary.json",
+      "summary_sha256": "3bff0e4a46b4f1deb6caeb1819324edd0941eb0e2597fc942863576a8fc9a92b",
+      "symbol": "XAUUSD.DWX",
+      "tester_ini_path": "D:\\QM\\reports\\work_items\\71fddb4a-3e83-4590-92d6-809ddf88abc6\\QM5_10700\\20260903_044015\\raw\\run_01\\tester.ini",
+      "tester_ini_sha256": "d5b6b3c0410f66cd017c3527422e1c8c602eae7064cb27ed63449a72e9e31b8b",
+      "work_item_id": "71fddb4a-3e83-4590-92d6-809ddf88abc6"
+    },
+    "rebuilt": {
+      "ea_id": "QM5_10700",
+      "ea_label": "QM5_10700",
+      "ex5_sha256_compile": "480657468e8d06c688cae3070b05004ba42a3fe11170efea1b4dfab93f3c230a",
+      "ex5_sha256_workitem": "480657468e8d06c688cae3070b05004ba42a3fe11170efea1b4dfab93f3c230a",
+      "phase": "Q02",
+      "recorded_report_sha256": "18589f2694f2a3159819c0baa71af05bbf9f8ae253a5bb82e21fcbdc4d965561",
+      "report_path": "D:\\QM\\reports\\work_items\\126caeb4-825b-4604-8900-60c628424da4\\QM5_10700\\20260922_052802\\raw\\run_01\\report.htm",
+      "report_sha256": "18589f2694f2a3159819c0baa71af05bbf9f8ae253a5bb82e21fcbdc4d965561",
+      "report_sha256_matches_summary": true,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\sets\\QM5_10700_tv-liq-break_XAUUSD.DWX_H1_backtest.set",
+      "setfile_sha256": "e8ee58dfba807d937da21fa294dc9cbd6b4944fa49d1a5db560a82d98205114e",
+      "summary_path": "D:\\QM\\reports\\work_items\\126caeb4-825b-4604-8900-60c628424da4\\QM5_10700\\20260922_052802\\summary.json",
+      "summary_sha256": "4f8a2ebabad86db1a0bac8c4babc9782167f8f6c08bab16a85d2102aaf31704f",
+      "symbol": "XAUUSD.DWX",
+      "tester_ini_path": "D:\\QM\\reports\\work_items\\126caeb4-825b-4604-8900-60c628424da4\\QM5_10700\\20260922_052802\\raw\\run_01\\tester.ini",
+      "tester_ini_sha256": "0444fbabbf2e2de7725aa37aa9bf2d9809b58ce6b83c6b44613d746b60f00265",
+      "work_item_id": "126caeb4-825b-4604-8900-60c628424da4"
+    }
+  },
+  "not_equivalent_reasons": [],
+  "proof_tolerances": {
+    "net_ratio_abs_tol": 0.05,
+    "pnl_per_lot_rel_tol": 0.005,
+    "volume_max_step_lots": 0.01,
+    "volume_ratio_abs_tol": 0.02
+  },
+  "schema": "qm.identity-equivalence-proof/v1",
+  "tool_sha256": "ba8a3a8888cebfffd72fab012963625930224948c3075fec33365de3965dd288",
+  "verdict": "EQUIVALENT_EXACT"
+}

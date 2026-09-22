@@ -1,0 +1,14 @@
+{
+  "schema": "qm.magic-registry-check/v1",
+  "status": "PASS",
+  "ea_id_registry": "framework/registry/ea_id_registry.csv",
+  "magic_registry": "framework/registry/magic_numbers.csv",
+  "rows": [
+    {"ea_id": 13213, "ea_id_line": 4158, "slot": 0, "symbol": "USDJPY.DWX", "magic": 132130000, "magic_line": 14985, "status": "active"},
+    {"ea_id": 10706, "ea_id_line": 1594, "slot": 1, "symbol": "GBPUSD.DWX", "magic": 107060001, "magic_line": 5649, "status": "active"},
+    {"ea_id": 10700, "ea_id_line": 1588, "slot": 3, "symbol": "XAUUSD.DWX", "magic": 107000003, "magic_line": 5320, "status": "active"},
+    {"ea_id": 11422, "ea_id_line": 2310, "slot": 4, "symbol": "USDCAD.DWX", "magic": 114220004, "magic_line": 7733, "status": "active"},
+    {"ea_id": 10403, "ea_id_line": 1291, "slot": 2, "symbol": "XAUUSD.DWX", "magic": 104030002, "magic_line": 3670, "status": "active"},
+    {"ea_id": 41219, "ea_id_line": 4719, "slot": 0, "symbol": "XAUUSD.DWX", "magic": 412190000, "magic_line": 18084, "status": "active"}
+  ]
+}

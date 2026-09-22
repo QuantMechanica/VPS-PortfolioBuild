@@ -1,0 +1,21 @@
+{
+  "schema": "qm.ftmo-demo-install-authority/v1",
+  "decision_id": "OWNER-DEC-FTMO-FINAL-MEGA-20260921",
+  "receipt_path": "C:\\QM\\repo\\docs\\ftmo\\FTMO_ALT_ROSTER_CHAIN_2026-09-18.md",
+  "receipt_path_repo_relative": "docs/ftmo/FTMO_ALT_ROSTER_CHAIN_2026-09-18.md",
+  "cycle_id": "FTMO_DEMO_BOOK_V3_D2G6_KS_20260922",
+  "label": "D2g6-KS-review-only",
+  "task_id": "38385b96-7145-40d3-9952-349ddbc6e38f",
+  "assigned_agent": "codex",
+  "install_authorized": false,
+  "status": "REVIEW_ONLY_BLOCKED_IDENTITY",
+  "sets_manifest_schema": "qm.ftmo-trial-setpath/v2",
+  "collector": {
+    "binary_path": "bin/QM_FTMO_TrialTelemetry.ex5",
+    "preset_path": "collector/QM_FTMO_TrialTelemetry_1514536732.set",
+    "binary_sha256": "411638a1ae177326070c19b28c849fda36594592279303ce7d96f36bfa458258",
+    "preset_sha256": "e58b58118c414b1796669afae7b5cb641435f7db6b05de75e516ff748bb2f760",
+    "trial_id": "M13_D2G6_KS_20260922_1514536732",
+    "provenance": "Telemetry binary copied verbatim from the sealed D2g6 package. Preset is cycle-bound to this review-only package."
+  }
+}

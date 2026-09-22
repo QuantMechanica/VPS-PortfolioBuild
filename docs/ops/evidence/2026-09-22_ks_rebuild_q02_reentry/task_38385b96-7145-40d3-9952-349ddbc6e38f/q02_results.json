@@ -1,0 +1,89 @@
+{
+  "schema": "qm.ks-rebuild-q02-reentry/v1",
+  "task_id": "38385b96-7145-40d3-9952-349ddbc6e38f",
+  "overall_disposition": "STOP_REVIEW",
+  "proof_tool_sha256": "ba8a3a8888cebfffd72fab012963625930224948c3075fec33365de3965dd288",
+  "entries": [
+    {
+      "ea_id": 13213,
+      "predecessor_q02": "d4196794-d342-475f-8a0e-4829c33663d7",
+      "successor_q02": "80e6a407-0549-4c20-a1b4-f3b7c46d3c43",
+      "successor_ex5_sha256": "351e969c43d4aabf79f9a24a26926f273de62de2912a2260670c613ac49ece0d",
+      "receipt_sha256": "789b7a2eaec9d6a726203f3c18b63f6ee6d23b81b20dc96c4c2ea4c11e973dea",
+      "q02_verdict": "PASS",
+      "proof_verdict": "EQUIVALENT_EXACT",
+      "proof_sha256": "df7ac85c058c94c2bb98c748b2fdfbcfb01e58a237a99a18c469cb77ae0a1db0",
+      "original_deals": 1777,
+      "rebuilt_deals": 1777,
+      "field_mismatches": 0
+    },
+    {
+      "ea_id": 10706,
+      "predecessor_q02": "bb234ab2-499b-4cfe-8de1-d2ef52be6a27",
+      "predecessor_role": "BASE_PRESET_CONTROL",
+      "successor_q02": "972a6d85-d5d0-4a5b-92d6-2a138adbc08d",
+      "successor_ex5_sha256": "c9bf8e83963255eda114787892f8a4edba2584b2282d3c8297ea30b3332e8885",
+      "receipt_sha256": "541c0f614bd1b0ef48a0232eb57aa141a113c5902ce38145eaa52598b62e36b2",
+      "q02_verdict": "PASS",
+      "proof_verdict": "NOT_EQUIVALENT",
+      "proof_sha256": "54d4f59f1b759d74f63b0af10a00d411339089f90d0f07b91176b331bb33e297",
+      "original_deals": 303,
+      "rebuilt_deals": 303,
+      "field_mismatches": 1,
+      "selected_setfile_role": "D2G6_ABLATION_02",
+      "selected_predecessor_q02": "7cf004b7-f4cf-42cb-80cc-d5c98f119ce4",
+      "selected_reentry": "NOT_ENQUEUED",
+      "selected_reentry_stop_reason": "source_ex5_sha256_missing"
+    },
+    {
+      "ea_id": 10700,
+      "predecessor_q02": "71fddb4a-3e83-4590-92d6-809ddf88abc6",
+      "successor_q02": "126caeb4-825b-4604-8900-60c628424da4",
+      "successor_ex5_sha256": "480657468e8d06c688cae3070b05004ba42a3fe11170efea1b4dfab93f3c230a",
+      "receipt_sha256": "d4aa8117689f22b51d6210504e90dfb8bd2d6975847ee19ee23cd2ac40cbd04a",
+      "q02_verdict": "PASS",
+      "proof_verdict": "EQUIVALENT_EXACT",
+      "proof_sha256": "3735a37d4bf87c60006e1e6de1e3429af1a813fed138b9fc64a63f091be8da34",
+      "original_deals": 403,
+      "rebuilt_deals": 403,
+      "field_mismatches": 0
+    },
+    {
+      "ea_id": 11422,
+      "predecessor_q02": "7922733b-c27e-4829-9f21-2c8e1e16e03e",
+      "successor_q02": "87522e35-4451-4594-aaf8-167e0f414b3f",
+      "successor_ex5_sha256": "6daa9923062996ef26a26ce537bf9e5ecc328c3480c4ca0c4791cf4c674a9560",
+      "receipt_sha256": "007b225a5fd84101a2262f17bcbcf6c6bee548bca44940e30e249c99f7ff97cc",
+      "q02_verdict": "PASS",
+      "proof_verdict": "EQUIVALENT_EXACT",
+      "proof_sha256": "9689e367c7660088d23e98f3bcba13280196a2166d7e2b659d982a5531d08e44",
+      "original_deals": 223,
+      "rebuilt_deals": 223,
+      "field_mismatches": 0
+    },
+    {
+      "ea_id": 10403,
+      "predecessor_q02": "d02bec84-87fe-43a9-94d4-2795ec46cea7",
+      "successor_q02": null,
+      "successor_ex5_sha256": "88ba0eabc37de54d717a86158e472fd7175878f0c61b0f19467fa9f914ee4d87",
+      "q02_verdict": "NOT_ENQUEUED",
+      "proof_verdict": "NOT_RUN",
+      "stop_reason": "parameter_change_provenance_not_authenticated",
+      "source_setfile_sha256": "9a6fab053d3814077a015eb9f3a864a0c8a703fbe220ae03e74da195960f4c72",
+      "current_setfile_sha256": "61c7fe83c7c175b53e43e54901ce80636319cdb23ecb49ea345f6949177e1f3c"
+    },
+    {
+      "ea_id": 41219,
+      "predecessor_q02": "f3391b2d-5f61-4548-ac51-c66781545ce4",
+      "successor_q02": "9b764ccb-9f7d-40d3-96e6-571336958be5",
+      "successor_ex5_sha256": "8e019fe281a63c3de8b5bf3fed752cd26306a38d8891d21d6e0a1fab3b85feaf",
+      "receipt_sha256": "8e6704e9968d8373497cde48b242c36085d1a84d5795ae1e0ee56d88ebf0d1a5",
+      "q02_verdict": "PASS",
+      "proof_verdict": "EQUIVALENT_EXACT",
+      "proof_sha256": "739d4f121267acf2d29fd68a19e279568d5b54e1ba12ced31a0727f32278c9a7",
+      "original_deals": 65,
+      "rebuilt_deals": 65,
+      "field_mismatches": 0
+    }
+  ]
+}
