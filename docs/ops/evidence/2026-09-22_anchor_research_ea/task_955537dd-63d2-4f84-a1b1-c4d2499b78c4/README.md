@@ -3,7 +3,7 @@
 Task `955537dd-63d2-4f84-a1b1-c4d2499b78c4` produced a reviewable V5 research
 instrument for the three harness-v2 golden cells. The source, identity, magic
 rows, implementation, specification, exact presets, and focused contract test
-are committed on `agents/codex-orchestration-12`. Local strict compilation is
+are committed on `agents/codex-orchestration-12` at `7d28a5e53b`. Local strict compilation is
 PASS at 0 errors and 0 warnings. No governed Q02 row was invented, so all three
 economic-comparison labels remain `UNKNOWN`.
 
@@ -91,6 +91,15 @@ The compile/Q02 portion cannot safely be enqueued from this authoring branch:
 3. EURUSD is a future-instrument registry slot only; the approved three-cell
    batch intentionally contains no EURUSD preset or Q02 row. The control plane
    must not synthesize an undeclared cell to satisfy symbol-universe discovery.
+
+The canonical controller dry-run confirmed zero enqueue and refused the EA as
+`EA_DIRECTORY_MISSING`, with its source, identity row, and active magic rows
+also absent from the canonical checkout. The attempted router handoff made no
+update: build-task REVIEW is fail-closed on a committed, hash-bound
+`build_identity.json` and returned `D6_BUILD_IDENTITY_MISSING`. Creating that
+identity prematurely would also violate the EX5 commit guard, which requires a
+matching governed `COMPILE_EA` receipt. `compile_admission_dry_run.json` and
+`blocker_state.json` preserve the exact stable facts without inventing rows.
 
 After review integration, run the governed compile, preserve its receipt, and
 enqueue the three exact arms through an identity-preserving Q02 route. Only

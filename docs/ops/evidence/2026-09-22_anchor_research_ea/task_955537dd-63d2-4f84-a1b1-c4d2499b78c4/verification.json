@@ -84,6 +84,26 @@
       "detail": "sealed source and approved card resolve to QM-RESEARCH-2026-0013"
     }
   ],
+  "control_plane": {
+    "canonical_compile_dry_run": {
+      "result": "REFUSED",
+      "reason": "EA_DIRECTORY_MISSING",
+      "reasons": [
+        "EA_DIRECTORY_MISSING",
+        "MQ5_SOURCE_MISSING",
+        "EA_ID_REGISTRY_IDENTITY_INVALID",
+        "ACTIVE_MAGIC_ROWS_MISSING",
+        "ACTIVE_MAGIC_SYMBOLS_MISSING"
+      ],
+      "enqueued_count": 0,
+      "evidence": "compile_admission_dry_run.json"
+    },
+    "review_dispatch": {
+      "updated": false,
+      "gate_code": "D6_BUILD_IDENTITY_MISSING",
+      "reason": "build_identity_json_missing_review_dispatch_refused"
+    }
+  },
   "prohibited_state_changes": {
     "terminal64_started": false,
     "auto_trading_enabled": false,

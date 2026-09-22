@@ -1,0 +1,25 @@
+{
+  "schema": "qm.compile-admission-dry-run/v1",
+  "task_id": "955537dd-63d2-4f84-a1b1-c4d2499b78c4",
+  "ea_id": "QM5_41490",
+  "ea_label": "QM5_41490_anchor-clock-range-breakout",
+  "controller": "C:/QM/repo/tools/strategy_farm/farmctl.py",
+  "mode": "dry_run",
+  "requested_count": 1,
+  "eligible_count": 0,
+  "enqueued_count": 0,
+  "refused_count": 1,
+  "reason": "EA_DIRECTORY_MISSING",
+  "reasons": [
+    "EA_DIRECTORY_MISSING",
+    "MQ5_SOURCE_MISSING",
+    "EA_ID_REGISTRY_IDENTITY_INVALID",
+    "ACTIVE_MAGIC_ROWS_MISSING",
+    "ACTIVE_MAGIC_SYMBOLS_MISSING"
+  ],
+  "canonical_expected_ea_dir": "C:/QM/repo/framework/EAs/QM5_41490_anchor-clock-range-breakout",
+  "canonical_expected_mq5": "C:/QM/repo/framework/EAs/QM5_41490_anchor-clock-range-breakout/QM5_41490_anchor-clock-range-breakout.mq5",
+  "worktree_delivery_commit": "7d28a5e53b",
+  "input_file_sha256": "cec0a8d346a9f22d386c40ea59ea5dd5e51072faa7f9bfac212b94238b390e7a",
+  "no_state_change": true
+}
