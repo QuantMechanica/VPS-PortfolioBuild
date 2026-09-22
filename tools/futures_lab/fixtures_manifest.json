@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "source_release": "nautechsystems/nautilus_trader v1.221.0",
+  "retrieved_utc_date": "2026-09-22",
+  "aggregate_download_cap_bytes": 2000000,
+  "purpose": "TECHNICAL_SMOKE_ONLY; official regression fixtures, not a trading history sample",
+  "fixtures": [
+    {
+      "name": "definition-glbx-es-fut.dbn.zst",
+      "bytes": 548,
+      "sha256": "00d6ded5f1a507c1685ccb9c696821bb308993dd913888b7739426baf9ababad",
+      "url": "https://raw.githubusercontent.com/nautechsystems/nautilus_trader/v1.221.0/tests/test_data/databento/definition-glbx-es-fut.dbn.zst"
+    },
+    {
+      "name": "esh4-glbx-mdp3-20231224.mbo.dbn.zst",
+      "bytes": 53814,
+      "sha256": "f186e479ad0c381c40ef35384c4125d2088fb11f4ac31b0558da3fdaadb0317c",
+      "url": "https://raw.githubusercontent.com/nautechsystems/nautilus_trader/v1.221.0/tests/test_data/databento/esh4-glbx-mdp3-20231224.mbo.dbn.zst"
+    }
+  ]
+}

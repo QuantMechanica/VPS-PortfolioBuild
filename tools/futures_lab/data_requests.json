@@ -1,0 +1,50 @@
+{
+  "schema": "qm.futures-data-plan/v1",
+  "status": "PREPARED_NOT_SUBMITTED",
+  "currency": "USD",
+  "historical_only": true,
+  "purpose": "Small licensed import/fill/calendar proof before expanding to economic strategy tests",
+  "primary_provider": "Databento",
+  "dataset": "GLBX.MDP3",
+  "first_request": {
+    "symbol": "MESZ6",
+    "stype_in": "raw_symbol",
+    "start": "2026-09-15T22:00:00Z",
+    "end": "2026-09-16T21:00:00Z",
+    "schemas": ["definition", "mbp-1", "status"],
+    "symbol_status": "REQUEST_CANDIDATE_RESOLVE_AND_VERIFY_DEFINITION_BEFORE_PURCHASE",
+    "session": "Candidate Globex session of 2026-09-16; verify official holiday/session calendar before acceptance",
+    "max_initial_quote_usd": 25,
+    "max_total_local_raw_and_derived_bytes": 2147483648,
+    "observed_quote_usd": null,
+    "observed_billable_bytes": null,
+    "observed_record_count": null
+  },
+  "budget_proposal_not_an_executed_purchase": {
+    "initial_data_out_of_pocket_cap_usd": 50,
+    "signup_credit_if_eligible_usd": 125,
+    "software_recurring_for_installed_lab_usd": 0,
+    "minimum_factory_free_gib_on_D": 60,
+    "billing_rule": "Quote each request first. Credits and cash are tracked separately. A compressed transfer does not reduce billable uncompressed DBN bytes. No recurring subscription is needed for historical usage-based access."
+  },
+  "expansion_order": [
+    "Full normal session on a single actual MES contract; definitions, quotes, trades, gaps and event order verified",
+    "Separate samples across US DST, quarterly roll and an official early close; do not infer Globex calendar from a floor-trading table",
+    "Three-plus-year bar/definition screening on frozen MES/MNQ contract selection, budget permitting; bar results cannot certify intraday drawdown or fills",
+    "Quote-level validation for the preselected hypotheses, including untouched holdout and stress windows; record every screened hypothesis to expose selection bias"
+  ],
+  "required_before_any_purchase": [
+    "OWNER personally registers and accepts truthful account/data-use classification",
+    "Confirm actual credit eligibility, cash budget and payment conditions in account",
+    "Bind exact symbols and individual contract metadata; minis and micros remain distinct instruments",
+    "Record cost, records, billable bytes and supported dates for each schema",
+    "Refuse unknown costs or projected disk usage that breaches the Factory reserve"
+  ],
+  "sources": [
+    "https://databento.com/pricing",
+    "https://databento.com/docs/api-reference-historical/metadata/metadata-get-cost",
+    "https://databento.com/docs/api-reference-historical/metadata/metadata-get-billable-size",
+    "https://www.cmegroup.com/trading/equity-index/rolldates.html",
+    "https://www.cmegroup.com/trading-hours.html"
+  ]
+}
