@@ -1,0 +1,89 @@
+{
+  "schema": "qm.anchor-clock-golden-comparison/v1",
+  "task_id": "955537dd-63d2-4f84-a1b1-c4d2499b78c4",
+  "ea_id": 41490,
+  "ea_label": "QM5_41490_anchor-clock-range-breakout",
+  "source_id": "QM-RESEARCH-2026-0013",
+  "tester_window": "2018-07-02..2022-12-31",
+  "comparison_contract": {
+    "EQUIVALENT": "valid like-for-like Q02 row; trade count within 15 percent, absolute expectancy difference at most 0.03R, and absolute profit-factor difference at most 0.10",
+    "HARNESS_OVERSTATES": "valid row misses an equivalence bound and the harness is more favorable on the failed measure",
+    "UNKNOWN": "like-for-like governed Q02 row is absent or invalid, or execution facts are not bound"
+  },
+  "cells": [
+    {
+      "cell": "A2",
+      "symbol": "NZDJPY.DWX",
+      "magic_slot": 1,
+      "preset": "framework/EAs/QM5_41490_anchor-clock-range-breakout/sets/QM5_41490_anchor-clock-range-breakout_NZDJPY.DWX_M30_A2_backtest.set",
+      "preset_sha256": "7beffb591a88e319bcc38231fca9c62d5ed9b93d8fdcffc9e2e0b82c1ab6dc7c",
+      "inputs": {
+        "anchor_clock": "GMT3_EQUIVALENT",
+        "range_start": "04:00",
+        "range_end": "06:00",
+        "flat": "18:00",
+        "grid_offset_minutes": 0,
+        "range_bars": 2
+      },
+      "harness": {
+        "trades": 970,
+        "expectancy_r": 0.057,
+        "profit_factor": 1.122,
+        "worst_year_drawdown_r": 21.0
+      },
+      "mt5_q02": null,
+      "comparison": "UNKNOWN",
+      "reason": "No governed like-for-like Q02 evidence row exists."
+    },
+    {
+      "cell": "A3",
+      "symbol": "USDJPY.DWX",
+      "magic_slot": 0,
+      "preset": "framework/EAs/QM5_41490_anchor-clock-range-breakout/sets/QM5_41490_anchor-clock-range-breakout_USDJPY.DWX_M30_A3_backtest.set",
+      "preset_sha256": "1c2c7a73a2eb77eef115de3df2cb12df8851088322211e1cef9cc642e90a8ec7",
+      "inputs": {
+        "anchor_clock": "GMT3_EQUIVALENT",
+        "range_start": "03:00",
+        "range_end": "06:00",
+        "flat": "18:00",
+        "grid_offset_minutes": 0,
+        "range_bars": 3
+      },
+      "harness": {
+        "trades": 893,
+        "expectancy_r": 0.0675,
+        "profit_factor": 1.161,
+        "worst_year_drawdown_r": 21.87
+      },
+      "mt5_q02": null,
+      "comparison": "UNKNOWN",
+      "reason": "No governed like-for-like Q02 evidence row exists."
+    },
+    {
+      "cell": "A4",
+      "symbol": "USDJPY.DWX",
+      "magic_slot": 0,
+      "preset": "framework/EAs/QM5_41490_anchor-clock-range-breakout/sets/QM5_41490_anchor-clock-range-breakout_USDJPY.DWX_M30_A4_backtest.set",
+      "preset_sha256": "ae42defbe48c13ae57ebd3957df06afb138b8aee1fc3d76186c78c528d40c66a",
+      "inputs": {
+        "anchor_clock": "GMT3_EQUIVALENT",
+        "range_start": "02:00",
+        "range_end": "06:00",
+        "flat": "18:00",
+        "grid_offset_minutes": 0,
+        "range_bars": 4
+      },
+      "harness": {
+        "trades": 821,
+        "expectancy_r": 0.0753,
+        "profit_factor": 1.184,
+        "worst_year_drawdown_r": 18.56
+      },
+      "mt5_q02": null,
+      "comparison": "UNKNOWN",
+      "reason": "No governed like-for-like Q02 evidence row exists."
+    }
+  ],
+  "batch_disposition": "MECHANICS_BUILT_ECONOMIC_EQUIVALENCE_UNKNOWN",
+  "pipeline_verdict": null
+}

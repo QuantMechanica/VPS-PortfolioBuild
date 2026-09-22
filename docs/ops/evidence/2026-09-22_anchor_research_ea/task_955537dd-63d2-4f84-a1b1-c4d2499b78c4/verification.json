@@ -1,0 +1,94 @@
+{
+  "schema": "qm.anchor-clock-research-ea-verification/v1",
+  "task_id": "955537dd-63d2-4f84-a1b1-c4d2499b78c4",
+  "ea_label": "QM5_41490_anchor-clock-range-breakout",
+  "branch": "agents/codex-orchestration-12",
+  "identity_commit": "88c716a193",
+  "magic_allocation_commit": "f355e6b546",
+  "source": {
+    "research_id": "QM-RESEARCH-2026-0013",
+    "verification": "PASS",
+    "source_hash": "be46ba59baca625ee17711b44963a53ae9bc3de1bfccba4e118762e1ad897218",
+    "harness_cells_sha256": "5d23d62e567820df003e310bbcd14a4979f0d0ed5bad48e85ed86f73c8a535cf"
+  },
+  "approved_card": {
+    "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41490_anchor-clock-range-breakout.md",
+    "type": "research_instrument",
+    "g0_status": "APPROVED",
+    "r1_r4": "PASS/PASS/PASS/PASS",
+    "card_sha256_field": "a12e8ea0708329bdd045e9c14859acd4eb348ead033a1d3a50ee2c9a899a9469",
+    "file_sha256": "3edb95626c052612dda4ce5f1b788b535a16de959c9f49d3cf255f56949c256c"
+  },
+  "registry": {
+    "identity": {
+      "ea_id": 41490,
+      "slug": "anchor-clock-range-breakout",
+      "strategy_id": "QM-RESEARCH-2026-0013",
+      "status": "active"
+    },
+    "magic_rows": [
+      {"slot": 0, "symbol": "USDJPY.DWX", "magic": 414900000, "status": "active"},
+      {"slot": 1, "symbol": "NZDJPY.DWX", "magic": 414900001, "status": "active"},
+      {"slot": 2, "symbol": "EURUSD.DWX", "magic": 414900002, "status": "active"}
+    ],
+    "allocator_report": "allocator_report.json",
+    "allocator_report_sha256": "5577eac90f5c4cb14e6ad33d54c93e3059892c178df13bb9b6bd06063a2848bc",
+    "allocator_verification": "PASS"
+  },
+  "artifacts": {
+    "mq5": {
+      "path": "framework/EAs/QM5_41490_anchor-clock-range-breakout/QM5_41490_anchor-clock-range-breakout.mq5",
+      "sha256": "72014177d2f5c5d995bdddf395b2dcb9e8b28740a408cb75400de7e6a4d33795"
+    },
+    "spec": {
+      "path": "framework/EAs/QM5_41490_anchor-clock-range-breakout/SPEC.md",
+      "sha256": "653c676846412e15e7d8adac3c372012b2b360fa855c9f7a7ee0f7b070913c6f"
+    },
+    "working_tree_ex5": {
+      "path": "framework/EAs/QM5_41490_anchor-clock-range-breakout/QM5_41490_anchor-clock-range-breakout.ex5",
+      "sha256": "2b5c3f5631e56bea973d11afc86bc08641f9536fbf28874fe155cbeb9a5ab15e",
+      "bytes": 457286,
+      "committed": false,
+      "reason": "A new EX5 requires the governed compile receipt after reviewed canonical integration."
+    }
+  },
+  "local_strict_build": {
+    "status": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "compile_result": "Result: 0 errors, 0 warnings, 6697 ms elapsed, cpu='X64 Regular'",
+    "compile_log_sha256": "e55ab51f5005cac9ef3682c37dec292d5f0a24ed868f4c25f251c3d12c5c8338",
+    "strict_report": "build_check/build_check_20260922_075120.json",
+    "strict_report_sha256": "81d293e79f3638fbd3a7b48db809eec92f9cc6b80b81b96e3193e8b3ca6b4ab4",
+    "classification": "local build verification only; not pipeline evidence"
+  },
+  "focused_checks": [
+    {
+      "command": "python -m pytest -q framework/EAs/QM5_41490_anchor-clock-range-breakout/tests/test_contract.py tools/strategy_farm/tests/test_governed_magic_allocator.py tools/strategy_farm/tests/test_magic_allocation_precheck.py framework/scripts/tests/test_magic_resolver_strict_default.py",
+      "result": "PASS",
+      "detail": "27 passed"
+    },
+    {
+      "command": "python tools/strategy_farm/validate_build_guardrails.py framework/EAs/QM5_41490_anchor-clock-range-breakout",
+      "result": "PASS",
+      "detail": "4 files checked; zero findings; maximum news stale hours 336"
+    },
+    {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_41490_anchor-clock-range-breakout --json --fail-on-leak",
+      "result": "SINGLE_SYMBOL_OK",
+      "detail": "zero violations and zero foreign symbol references"
+    },
+    {
+      "command": "python tools/strategy_farm/research_source.py verify --card D:/QM/strategy_farm/artifacts/cards_approved/QM5_41490_anchor-clock-range-breakout.md",
+      "result": "PASS",
+      "detail": "sealed source and approved card resolve to QM-RESEARCH-2026-0013"
+    }
+  ],
+  "prohibited_state_changes": {
+    "terminal64_started": false,
+    "auto_trading_enabled": false,
+    "t_live_enabled": false,
+    "pipeline_phase_run": false,
+    "canonical_checkout_written": false
+  }
+}
