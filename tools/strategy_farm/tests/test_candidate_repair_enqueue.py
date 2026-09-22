@@ -2010,6 +2010,85 @@ def test_fresh_q02_seed_refuses_open_same_symbol_but_not_other_symbol(
     assert blocked["existing_work_item_id"] == allowed["created"][0]["id"]
 
 
+def test_fresh_q02_seed_distinguishes_current_binary_presets(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-selected-prebinding",
+        phase="Q02",
+        status="done",
+        verdict="PASS",
+        payload=_prebinding_payload(),
+    )
+    ea_dir = art["ea_dir"]
+    assert isinstance(ea_dir, Path)
+    base_setfile = ea_dir / "sets" / f"{ea_dir.name}_EURUSD.DWX_H1_base.set"
+    base_setfile.write_text(
+        "RISK_FIXED=1000\nRISK_PERCENT=0\nstrategy_variant=base\n",
+        encoding="utf-8",
+    )
+    base_payload = _payload(art, stale=False)
+    base_payload["expected_setfile_sha256"] = farmctl._sha256_file(base_setfile)
+    _insert_work_item(
+        art,
+        item_id="q02-current-base-control",
+        phase="Q02",
+        status="done",
+        verdict="PASS",
+        payload=base_payload,
+        setfile=base_setfile,
+    )
+
+    result = farmctl.enqueue_fresh_q02_seed(
+        art["root"],
+        art["ea_id"],
+        old_work_item_id="q02-selected-prebinding",
+        requal_reason="qualify the distinct selected preset",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert result["enqueued"]
+    assert result["created"][0]["expected_setfile_sha256"] == farmctl._sha256_file(
+        art["setfile"]
+    )
+
+
+def test_fresh_q02_seed_refuses_exact_current_execution_identity(
+    tmp_path: Path, monkeypatch
+) -> None:
+    art = _artifacts(tmp_path, monkeypatch)
+    _insert_work_item(
+        art,
+        item_id="q02-prebinding",
+        phase="Q02",
+        status="done",
+        verdict="PASS",
+        payload=_prebinding_payload(),
+    )
+    _insert_work_item(
+        art,
+        item_id="q02-current-exact",
+        phase="Q02",
+        status="done",
+        verdict="PASS",
+        payload=_payload(art, stale=False),
+    )
+
+    result = farmctl.enqueue_fresh_q02_seed(
+        art["root"],
+        art["ea_id"],
+        old_work_item_id="q02-prebinding",
+        requal_reason="must not duplicate an exact terminal identity",
+        expected_current_ex5_sha256=art["current_ex5"],
+    )
+
+    assert not result["enqueued"]
+    assert result["reason"] == "q02_pair_already_has_current_binary_terminal_result"
+    assert result["existing_work_item_id"] == "q02-current-exact"
+
+
 def test_fresh_q02_seed_ignores_canonically_superseded_prior_seed(
     tmp_path: Path, monkeypatch
 ) -> None:

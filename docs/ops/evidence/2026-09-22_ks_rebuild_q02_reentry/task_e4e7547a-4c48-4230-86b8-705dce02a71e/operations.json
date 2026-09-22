@@ -1,0 +1,99 @@
+{
+  "schema": "qm.ks-rebuild-q02-reentry-step3/v1",
+  "task_id": "e4e7547a-4c48-4230-86b8-705dce02a71e",
+  "repository_head_at_start": "863712017c8a88ca9b2a416fdd5cbdbe40907279",
+  "owner_authority": "OWNER-DEC-FTMO-FINAL-MEGA-20260921 section U priority 1; identity doctrine; OWNER-DEC-FTMO-FULL-THROTTLE-20260921",
+  "qm5_10403": {
+    "predecessor_q02": "d02bec84-87fe-43a9-94d4-2795ec46cea7",
+    "dry_run": {
+      "eligible": true,
+      "compile_work_item_id": "98873ebc-8231-4eb5-850a-e7f00d9b3598",
+      "compile_evidence_sha256": "b4803818dce63536b88a23d0e1d422f89c9d0f2f5e4cf4985fb4f13d72ec2ef1",
+      "source_ex5_sha256": "f927f07f46579bbb9a1bdcfdb7caa9b246e9d7555935fbb878f7fc01afbf7ab3",
+      "current_ex5_sha256": "88ba0eabc37de54d717a86158e472fd7175878f0c61b0f19467fa9f914ee4d87",
+      "current_mq5_sha256": "65d4c206ad9d6ad2c8230a309714d1a900a1bc707b54dc96bc4e7fb107b8bae5",
+      "source_setfile_sha256": "9a6fab053d3814077a015eb9f3a864a0c8a703fbe220ae03e74da195960f4c72",
+      "current_setfile_sha256": "61c7fe83c7c175b53e43e54901ce80636319cdb23ecb49ea345f6949177e1f3c",
+      "parameter_change_count": 12,
+      "parameter_authority_mode": "supplemental_exact_registration",
+      "supplemental_authority_sha256": "e706ef44605f226ace9a136d034bdbb89942879b5468c1da472a0e2aa797a677"
+    },
+    "append_only_apply": {
+      "successor_q02": "5c12f7bb-a49f-4249-ba4e-3fa4d631d4fc",
+      "receipt_path": "q02_receipts/d02bec84-87fe-43a9-94d4-2795ec46cea7_5c12f7bb-a49f-4249-ba4e-3fa4d631d4fc.json",
+      "receipt_sha256": "ebcfa0e62898254c32bcf6be60ced2b3c7dfd43a34c7d282fd34b1cde1868070",
+      "historical_predecessor_preserved": true
+    },
+    "q02_result": {
+      "status": "done",
+      "verdict": "PASS",
+      "terminal": "T8",
+      "evidence_path": "D:/QM/reports/work_items/5c12f7bb-a49f-4249-ba4e-3fa4d631d4fc/QM5_10403/20260922_085027/summary.json",
+      "evidence_sha256": "ff8479b47208c68f1a0ccc9da037f36e7d5efa07f71aaee63b5c1c307fa22d3e",
+      "report_sha256": "e22bdd07b4a90f2da2fbea3679400ff13d6f6abc79640389a3b35213de4ca22a",
+      "tester_ini_sha256": "885d4c8a7ddc59f2d1f2926f6da84fd2462bcd000e7dd54893b0b97f3b765c1a",
+      "news_calendar_status": "OK",
+      "news_calendar_age_hours": 5,
+      "news_stale_max_hours": 336
+    },
+    "identity_proof": {
+      "path": "identity_equivalence/QM5_10403__QM5_10403/XAUUSD.DWX/proof.json",
+      "sha256": "25d0ba875f0c3423033945fdbe06fbdaaabc947e93b833b1b223bfae36c5370a",
+      "verdict": "EQUIVALENT_EXACT",
+      "deals_original": 235,
+      "deals_rebuilt": 235,
+      "field_mismatch_count": 0,
+      "verify_ok": true
+    }
+  },
+  "qm5_10706": {
+    "selected_predecessor_q02": "7cf004b7-f4cf-42cb-80cc-d5c98f119ce4",
+    "selected_predecessor_verdict": "PASS",
+    "selected_setfile_role": "D2G6_ABLATION_02",
+    "selected_setfile_path": "framework/EAs/QM5_10706_tv-mon-ls/sets/QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest_ablation_02.set",
+    "selected_setfile_sha256_current": "8d0c40a3116b066826c3f59451a7b8a8115f7868c14cd2a3bd14e5f71c46d784",
+    "selected_strategy_identity_sha256": "8182d0ff0af37cc27bcc26b4750d2cfd294dc76d8641ad42a9b15e62d6e71dc5",
+    "selected_risk_fixed": 1000,
+    "selected_risk_percent": 0,
+    "current_ex5_sha256": "c9bf8e83963255eda114787892f8a4edba2584b2282d3c8297ea30b3332e8885",
+    "current_mq5_sha256": "c932fdd800548a7dae4c39d910c3726491e46b506c5ee60ba1abef523c78bf1e",
+    "canonical_seed_attempt": {
+      "enqueued": false,
+      "reason": "q02_pair_already_has_current_binary_terminal_result",
+      "blocking_work_item_id": "972a6d85-d5d0-4a5b-92d6-2a138adbc08d",
+      "blocking_row_role": "BASE_PRESET_CONTROL",
+      "blocking_setfile_sha256": "f87d38b3430663ed8d297f8b218c8c5f68ca70374b12c90bc4934c1f1faecfac"
+    },
+    "guard_fix": {
+      "scope": "fresh-Q02 terminal dedupe uses the complete EX5, MQ5, and setfile execution identity instead of EX5 alone",
+      "exact_terminal_identity_still_refused": true,
+      "focused_test_file_passed": 52,
+      "q03_q10_chain": "NOT_STARTED_PENDING_CANONICAL_INTEGRATION"
+    },
+    "base_control_identity_proof": {
+      "verdict": "NOT_EQUIVALENT",
+      "proof_sha256": "54d4f59f1b759d74f63b0af10a00d411339089f90d0f07b91176b331bb33e297",
+      "shifted_deal": 15,
+      "exit_shift_seconds": 3,
+      "entry_time_shifts": 0,
+      "non_time_field_mismatches": 0
+    }
+  },
+  "sleeves": [
+    {"ea_id": 13213, "status": "EXACT"},
+    {"ea_id": 10706, "status": "BLOCKED"},
+    {"ea_id": 10700, "status": "EXACT"},
+    {"ea_id": 11422, "status": "EXACT"},
+    {"ea_id": 10403, "status": "EXACT"},
+    {"ea_id": 41219, "status": "EXACT"}
+  ],
+  "safety": {
+    "install_authorized": false,
+    "terminal_started_manually": false,
+    "autotrading_changed": false,
+    "t_live_changed": false,
+    "pipeline_verdict_changed": false,
+    "historical_work_item_overwritten": false,
+    "canonical_checkout_files_written": false
+  }
+}

@@ -1,0 +1,270 @@
+{
+  "compile_gate_unbound_setfile": false,
+  "compile_provenance": {
+    "append_only_source_repair": true,
+    "build_id": null,
+    "completed_at": "2026-09-22T03:28:36+00:00",
+    "evidence_path": "D:\\QM\\reports\\work_items\\98873ebc-8231-4eb5-850a-e7f00d9b3598\\QM5_10403\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "b4803818dce63536b88a23d0e1d422f89c9d0f2f5e4cf4985fb4f13d72ec2ef1",
+    "include_closure_sha256": "7a3a71ea665415b7822c7f2995a0199b530dc3e2508b9180d2c0e6f47af23861",
+    "source_repair_authority": "router_ops_issue:d6189118-c2e7-4517-a914-049c89d19a75:QM5_10403",
+    "source_repair_authorized": true,
+    "source_repair_evidence_authority": "router_ops_issue:d6189118-c2e7-4517-a914-049c89d19a75:QM5_10403",
+    "work_item_id": "98873ebc-8231-4eb5-850a-e7f00d9b3598"
+  },
+  "current_parameters": {
+    "portfolio_weight": "1",
+    "qm_ea_id": "10403",
+    "qm_magic_slot_offset": "2",
+    "risk_fixed": "1000",
+    "risk_percent": "0",
+    "strategy_atr_period": "20",
+    "strategy_atr_regime_filter": "false",
+    "strategy_atr_regime_percentile": "50.0",
+    "strategy_atr_regime_window": "100",
+    "strategy_atr_stop_mult": "2.0",
+    "strategy_entry_channel": "20",
+    "strategy_exit_channel": "10",
+    "strategy_max_spread_points": "0.0",
+    "strategy_pending_expiry_bars": "1",
+    "strategy_tf": "16408"
+  },
+  "parameter_change_provenance": {
+    "authority_mode": "supplemental_exact_registration",
+    "compile_evidence_path": "D:\\QM\\reports\\work_items\\98873ebc-8231-4eb5-850a-e7f00d9b3598\\QM5_10403\\COMPILE_EA\\compile_evidence.json",
+    "compile_evidence_sha256": "b4803818dce63536b88a23d0e1d422f89c9d0f2f5e4cf4985fb4f13d72ec2ef1",
+    "frozen_authority_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-22_ftmo_kill_switch_governed_initializer\\2026-09-22_qm5_10403_et-turtle20x_ks_initializer_rebuild_authority.json",
+    "frozen_authority_sha256": "065a0cd3fc1ff399b84bff94738584891b612d271412f432a016e36a3015383f",
+    "registration": {
+      "current_setfile_path": "framework/EAs/QM5_10403_et-turtle20x/sets/QM5_10403_et-turtle20x_XAUUSD.DWX_D1_backtest.set",
+      "current_setfile_sha256": "61c7fe83c7c175b53e43e54901ce80636319cdb23ecb49ea345f6949177e1f3c",
+      "parameter_diff": [
+        {
+          "after": "10403",
+          "before": null,
+          "change": "added",
+          "key": "qm_ea_id"
+        },
+        {
+          "after": null,
+          "before": "1",
+          "change": "removed",
+          "key": "qm_filter_news_enabled"
+        },
+        {
+          "after": null,
+          "before": "3",
+          "change": "removed",
+          "key": "qm_filter_news_mode"
+        },
+        {
+          "after": null,
+          "before": "2.0",
+          "change": "removed",
+          "key": "qm_filter_regime_bear_return_pct"
+        },
+        {
+          "after": null,
+          "before": "2.0",
+          "change": "removed",
+          "key": "qm_filter_regime_bull_return_pct"
+        },
+        {
+          "after": null,
+          "before": "0",
+          "change": "removed",
+          "key": "qm_filter_regime_enabled"
+        },
+        {
+          "after": null,
+          "before": "100",
+          "change": "removed",
+          "key": "qm_filter_regime_lookback_bars"
+        },
+        {
+          "after": null,
+          "before": "14",
+          "change": "removed",
+          "key": "qm_filter_volatility_atr_period"
+        },
+        {
+          "after": null,
+          "before": "0.75",
+          "change": "removed",
+          "key": "qm_filter_volatility_compression_ratio"
+        },
+        {
+          "after": null,
+          "before": "0",
+          "change": "removed",
+          "key": "qm_filter_volatility_enabled"
+        },
+        {
+          "after": null,
+          "before": "1.25",
+          "change": "removed",
+          "key": "qm_filter_volatility_expansion_ratio"
+        },
+        {
+          "after": null,
+          "before": "50",
+          "change": "removed",
+          "key": "qm_filter_volatility_lookback_bars"
+        }
+      ],
+      "source_setfile_sha256": "9a6fab053d3814077a015eb9f3a864a0c8a703fbe220ae03e74da195960f4c72",
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "D1",
+      "work_item_id": "d02bec84-87fe-43a9-94d4-2795ec46cea7"
+    },
+    "schema": "qm.q02-parameter-change-authority/v2",
+    "source_repair_authority": "router_ops_issue:d6189118-c2e7-4517-a914-049c89d19a75:QM5_10403",
+    "supplemental_authority_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-22_ks_rebuild_q02_reentry\\task_c1fe430f-c9c1-4498-b6b6-12ff89e5c380\\qm5_10403_parameter_change_authority.json",
+    "supplemental_authority_sha256": "e706ef44605f226ace9a136d034bdbb89942879b5468c1da472a0e2aa797a677",
+    "supplemental_registration_id": "router_ops_issue:c1fe430f-c9c1-4498-b6b6-12ff89e5c380:QM5_10403"
+  },
+  "parameter_diff": [
+    {
+      "after": "10403",
+      "before": null,
+      "change": "added",
+      "key": "qm_ea_id"
+    },
+    {
+      "after": null,
+      "before": "1",
+      "change": "removed",
+      "key": "qm_filter_news_enabled"
+    },
+    {
+      "after": null,
+      "before": "3",
+      "change": "removed",
+      "key": "qm_filter_news_mode"
+    },
+    {
+      "after": null,
+      "before": "2.0",
+      "change": "removed",
+      "key": "qm_filter_regime_bear_return_pct"
+    },
+    {
+      "after": null,
+      "before": "2.0",
+      "change": "removed",
+      "key": "qm_filter_regime_bull_return_pct"
+    },
+    {
+      "after": null,
+      "before": "0",
+      "change": "removed",
+      "key": "qm_filter_regime_enabled"
+    },
+    {
+      "after": null,
+      "before": "100",
+      "change": "removed",
+      "key": "qm_filter_regime_lookback_bars"
+    },
+    {
+      "after": null,
+      "before": "14",
+      "change": "removed",
+      "key": "qm_filter_volatility_atr_period"
+    },
+    {
+      "after": null,
+      "before": "0.75",
+      "change": "removed",
+      "key": "qm_filter_volatility_compression_ratio"
+    },
+    {
+      "after": null,
+      "before": "0",
+      "change": "removed",
+      "key": "qm_filter_volatility_enabled"
+    },
+    {
+      "after": null,
+      "before": "1.25",
+      "change": "removed",
+      "key": "qm_filter_volatility_expansion_ratio"
+    },
+    {
+      "after": null,
+      "before": "50",
+      "change": "removed",
+      "key": "qm_filter_volatility_lookback_bars"
+    }
+  ],
+  "predecessor": {
+    "ex5_sha256": "f927f07f46579bbb9a1bdcfdb7caa9b246e9d7555935fbb878f7fc01afbf7ab3",
+    "preserved": true,
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10403_et-turtle20x\\sets\\QM5_10403_et-turtle20x_XAUUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "9a6fab053d3814077a015eb9f3a864a0c8a703fbe220ae03e74da195960f4c72",
+    "status": "done",
+    "verdict": "PASS",
+    "work_item_id": "d02bec84-87fe-43a9-94d4-2795ec46cea7"
+  },
+  "reason": "router task e4e7547a-4c48-4230-86b8-705dce02a71e: QM5_10403 governed KS rebuild Q02 re-entry under integrated supplemental authority 863712017c and OWNER-DEC-FTMO-FINAL-MEGA-20260921 section U priority 1",
+  "recorded_at": "2026-09-22T08:49:42+00:00",
+  "recorded_by": "farmctl.requalify-q02",
+  "schema": "qm.q02-post-binding-requalification-receipt/v1",
+  "setfile_recovery": {
+    "attempted_candidate_count": 10,
+    "base_git_commit": "196fda53bdb202930c906a31ab6ecbb4235179b8",
+    "base_source": "git_history",
+    "build_hash_value": null,
+    "exact_sha256": "9a6fab053d3814077a015eb9f3a864a0c8a703fbe220ae03e74da195960f4c72",
+    "line_endings": "crlf",
+    "ok": true,
+    "relative_path": "framework/EAs/QM5_10403_et-turtle20x/sets/QM5_10403_et-turtle20x_XAUUSD.DWX_D1_backtest.set",
+    "schema": "qm.q02-bound-setfile-byte-recovery/v1",
+    "semantic_parameter_count": 25,
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10403_et-turtle20x\\sets\\QM5_10403_et-turtle20x_XAUUSD.DWX_D1_backtest.set"
+  },
+  "source_parameters": {
+    "portfolio_weight": "1",
+    "qm_filter_news_enabled": "1",
+    "qm_filter_news_mode": "3",
+    "qm_filter_regime_bear_return_pct": "2.0",
+    "qm_filter_regime_bull_return_pct": "2.0",
+    "qm_filter_regime_enabled": "0",
+    "qm_filter_regime_lookback_bars": "100",
+    "qm_filter_volatility_atr_period": "14",
+    "qm_filter_volatility_compression_ratio": "0.75",
+    "qm_filter_volatility_enabled": "0",
+    "qm_filter_volatility_expansion_ratio": "1.25",
+    "qm_filter_volatility_lookback_bars": "50",
+    "qm_magic_slot_offset": "2",
+    "risk_fixed": "1000",
+    "risk_percent": "0",
+    "strategy_atr_period": "20",
+    "strategy_atr_regime_filter": "false",
+    "strategy_atr_regime_percentile": "50.0",
+    "strategy_atr_regime_window": "100",
+    "strategy_atr_stop_mult": "2.0",
+    "strategy_entry_channel": "20",
+    "strategy_exit_channel": "10",
+    "strategy_max_spread_points": "0.0",
+    "strategy_pending_expiry_bars": "1",
+    "strategy_tf": "16408"
+  },
+  "successor": {
+    "ea_id": "QM5_10403",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10403_et-turtle20x\\QM5_10403_et-turtle20x.ex5",
+    "ex5_sha256": "88ba0eabc37de54d717a86158e472fd7175878f0c61b0f19467fa9f914ee4d87",
+    "host_symbol": "XAUUSD.DWX",
+    "logical_symbol": null,
+    "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10403_et-turtle20x\\QM5_10403_et-turtle20x.mq5",
+    "mq5_sha256": "65d4c206ad9d6ad2c8230a309714d1a900a1bc707b54dc96bc4e7fb107b8bae5",
+    "phase": "Q02",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10403_et-turtle20x\\sets\\QM5_10403_et-turtle20x_XAUUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "61c7fe83c7c175b53e43e54901ce80636319cdb23ecb49ea345f6949177e1f3c",
+    "status": "pending",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "verdict": null,
+    "work_item_id": "5c12f7bb-a49f-4249-ba4e-3fa4d631d4fc"
+  }
+}

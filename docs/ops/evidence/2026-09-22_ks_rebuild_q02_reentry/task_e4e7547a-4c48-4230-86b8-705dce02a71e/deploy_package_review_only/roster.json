@@ -1,0 +1,88 @@
+{
+  "schema": "qm.ftmo-demo-roster/v1",
+  "label": "D2g6",
+  "cycle_id": "FTMO_DEMO_BOOK_V3_D2G6_KS_20260922",
+  "decision_id": "OWNER-DEC-FTMO-FINAL-MEGA-20260921",
+  "risk_authority": "OWNER-DEC-FTMO-FINAL-MEGA-20260921",
+  "task_id": "e4e7547a-4c48-4230-86b8-705dce02a71e",
+  "status": "REVIEW_ONLY_BLOCKED_10706_OWN_CHAIN",
+  "install_authorized": false,
+  "book_risk_percent": 1.71875,
+  "source": "docs/ftmo/FTMO_ALT_ROSTER_DEPLOYABLE2_2026-09-18.md",
+  "receipt_path": "docs/ftmo/FTMO_ALT_ROSTER_DEPLOYABLE2_2026-09-18.md",
+  "note": "Roster geometry is preserved from D2g6. QM5_10403 is now EQUIVALENT_EXACT. QM5_10706 remains blocked before its selected-preset Q02 because the canonical fresh-seed duplicate guard collapses the distinct ablation-02 setfile into the completed base-control row; the narrow hash-complete fix is pending review.",
+  "candidates": [
+    {
+      "ea_id": 13213,
+      "ea_label": "QM5_13213_balke-gmt3-range-breakout",
+      "dxz_symbol": "USDJPY",
+      "ftmo_symbol": "USDJPY",
+      "timeframe": "H1",
+      "slot": 0,
+      "magic": 132130000,
+      "risk_percent": 0.15625,
+      "identity_status": "EQUIVALENT_EXACT",
+      "sleeve_status": "EXACT"
+    },
+    {
+      "ea_id": 10706,
+      "ea_label": "QM5_10706_tv-mon-ls",
+      "dxz_symbol": "GBPUSD",
+      "ftmo_symbol": "GBPUSD",
+      "timeframe": "H1",
+      "slot": 1,
+      "magic": 107060001,
+      "risk_percent": 0.3125,
+      "identity_status": "SELECTED_Q02_SEED_BLOCKED_BY_PRESET_BLIND_DUPLICATE_GUARD",
+      "sleeve_status": "BLOCKED"
+    },
+    {
+      "ea_id": 10700,
+      "ea_label": "QM5_10700_tv-liq-break",
+      "dxz_symbol": "XAUUSD",
+      "ftmo_symbol": "XAUUSD",
+      "timeframe": "H1",
+      "slot": 3,
+      "magic": 107000003,
+      "risk_percent": 0.3125,
+      "identity_status": "EQUIVALENT_EXACT",
+      "sleeve_status": "EXACT"
+    },
+    {
+      "ea_id": 11422,
+      "ea_label": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+      "dxz_symbol": "USDCAD",
+      "ftmo_symbol": "USDCAD",
+      "timeframe": "D1",
+      "slot": 4,
+      "magic": 114220004,
+      "risk_percent": 0.3125,
+      "identity_status": "EQUIVALENT_EXACT",
+      "sleeve_status": "EXACT"
+    },
+    {
+      "ea_id": 10403,
+      "ea_label": "QM5_10403_et-turtle20x",
+      "dxz_symbol": "XAUUSD",
+      "ftmo_symbol": "XAUUSD",
+      "timeframe": "D1",
+      "slot": 2,
+      "magic": 104030002,
+      "risk_percent": 0.3125,
+      "identity_status": "EQUIVALENT_EXACT",
+      "sleeve_status": "EXACT"
+    },
+    {
+      "ea_id": 41219,
+      "ea_label": "QM5_41219_cum-rsi2-commodity-requal8",
+      "dxz_symbol": "XAUUSD",
+      "ftmo_symbol": "XAUUSD",
+      "timeframe": "D1",
+      "slot": 0,
+      "magic": 412190000,
+      "risk_percent": 0.3125,
+      "identity_status": "EQUIVALENT_EXACT",
+      "sleeve_status": "EXACT"
+    }
+  ]
+}
