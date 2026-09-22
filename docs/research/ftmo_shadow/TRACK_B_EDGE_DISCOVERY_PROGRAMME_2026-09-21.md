@@ -264,3 +264,19 @@ before any rule is written (Codex cross-symbol scanner 35bbe0bc, ML rule discove
 model (73434cab) so that index-cash cells are judged at the venue's actual friction. Antigravity's next set (if commissioned) must start from a
 measured conditional-edge table, not from a mechanism narrative.
 
+## 12. Scanner result (2026-09-22T00:28:46Z) — Codex deterministic cross-symbol/session scanner (35bbe0bc, APPROVED)
+
+`tools/strategy_farm/research/cross_symbol_scanner.py`, results `docs/research/ftmo_shadow/cross_symbol_scan_2026-09-22.json` (78 MB, every
+cell) and `.md`; evidence `docs/ops/evidence/2026-09-22_cross_symbol_scanner/README.md`. 39 symbols × 38 references × 6 session windows ×
+2 thresholds × 2 relations × 2 confirmation modes = 71,136 cross cells + 4,524 single-symbol controls (day-of-week × session, volatility
+state, overnight gap, prior-day extreme); F2 cost convention; selection 2018-07..2022, holdout 2023-25 never read for selection; one BH
+family at q = 0.10. **0 survivors** (65,230 CLEAR_REJECT, 10,430 UNKNOWN). The best cross cell (p 2.5e-4) reverses sign in validation.
+Reading: the cross-symbol lead/lag class is empty at FDR on this history — the same conclusion as family B4, now over the full universe.
+
+**Lead kept for a targeted replication (not a survivor):** `SINGLE|X=XNGUSD.DWX|TYPE=DOW|W=CASH_OPEN|D=3|DIR=SHORT` — natural gas, Thursday,
+09:30-10:30 America/New_York, short: SEL n = 222, +0.163 R net (gross ≈ +0.35 R; cost ≈ 0.19 R at the declared energy prior), VAL n = 148,
++0.170 R, one-sided p 2.36e-6 against a family boundary of 1.32e-6, q 0.18. The mirror long cell is −0.55 R; the adjacent Thursday windows
+are negative (pre-open short −0.04, NY cash short −0.24, i.e. the move reverses after 10:30, the EIA storage-report minute). Hypothesis for
+family B5 (pre-registered in section 13 before it runs): a Thursday pre-report drift in XNGUSD that is a genuine flow effect (or a .DWX CFD
+data artefact — the falsification is the same cell on the other weekdays and on the CFD's rollover days).
+
