@@ -1,0 +1,31 @@
+{
+  "classification": "ILLUSTRATIVE_CASHFLOW_NOT_EXPECTED_RETURN",
+  "currency": "USD",
+  "cases": {
+    "MFF_rapid_conservative_first_payout": {
+      "account_debit": "500",
+      "cash_to_trader_before_tax": "450.0",
+      "net_cash_after_entered_fees_before_tax": "325.0",
+      "room_after_payout": "2000",
+      "survives_unchanged_floor_and_requested_buffer": true,
+      "provider_payout_eligibility": "NOT_EVALUATED",
+      "note": "Gross account debit convention is explicit; bind exact firm policy separately. Floor never falls merely because money is withdrawn."
+    },
+    "Tradeify_flex_earliest_small_payout": {
+      "account_debit": "375",
+      "cash_to_trader_before_tax": "337.5",
+      "net_cash_after_entered_fees_before_tax": "172.5",
+      "room_after_payout": "275",
+      "survives_unchanged_floor_and_requested_buffer": false,
+      "provider_payout_eligibility": "NOT_EVALUATED",
+      "note": "Gross account debit convention is explicit; bind exact firm policy separately. Floor never falls merely because money is withdrawn."
+    }
+  },
+  "assumptions": [
+    "Current promotional first evaluation fee; one passed attempt only",
+    "No extra data/platform, tax, FX or withdrawal fee; these remain to be quoted",
+    "Tradeify configured desired safety room $2000 is our comparison, not a provider minimum",
+    "MFF first request above buffer is a conservative interpretation requiring contract confirmation",
+    "Eligibility, trade days, consistency and full phase transition are not computed by this payout diagnostic"
+  ]
+}

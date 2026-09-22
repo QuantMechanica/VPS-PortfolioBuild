@@ -1,0 +1,106 @@
+{
+  "schema": "qm.prop-plan-comparison/v1",
+  "as_of": "2026-09-22",
+  "status": "RESEARCH_SUPPLEMENT_NOT_PURCHASE_OR_DEPLOYMENT_APPROVAL",
+  "scope": "Builder 50k versus Rapid EOD 50k; public official sources; no account actions, contacts, trades or backtests",
+  "existing_prop_firm_reports_modified": false,
+  "existing_report_modeled_builder_as_candidate": false,
+  "user_residence": "AT",
+  "user_citizenship": null,
+  "recommendation": {
+    "provisional_first": "MFFU_RAPID_EOD_50K",
+    "add_research_comparator": "MFFU_BUILDER_DEFAULT_50K",
+    "not_claimed": ["Highest expected value", "Known probability of pass or cashout", "Known time to first payout", "Permission for Hetzner execution"],
+    "selection_binding": "BLOCKED_PENDING_HOSTING_AND_EXACT_CONTRACT_RULES",
+    "reason": "Builder lowers the attempt fee and removes evaluation consistency, but introduces SIM consistency, DLL, smaller split and finite SIM payout count. Compare identical preregistered strategy paths before a paid pilot."
+  },
+  "sources": {
+    "builder": "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+    "rapid_eod": "https://help.myfundedfutures.com/en/articles/16158363-rapid-eod-50k-a-comprehensive-look",
+    "prices": "https://myfundedfutures.com/",
+    "evaluation": "https://help.myfundedfutures.com/en/articles/11802636-traders-evaluation-simplified",
+    "payout": "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
+    "general_eod": "https://help.myfundedfutures.com/en/articles/8348565-end-of-day-eod-drawdown-explained",
+    "automation": "https://help.myfundedfutures.com/en/articles/8444599-fair-play-and-prohibited-trading-practices",
+    "rapid_live": "https://help.myfundedfutures.com/en/articles/13134718-understanding-rapid-live"
+  },
+  "prices_usd": {
+    "builder_default_2000_mll": {"list": 153, "published_30_percent": 107, "published_40_percent": 92, "forty_percent_max_uses": 2, "activation": 0},
+    "builder_addon_1500_mll": {"list": 125, "published_30_percent": 87, "published_40_percent": 75, "forty_percent_max_uses": 2, "activation": 0},
+    "rapid_eod_2000_mll": {"list": 209, "observed_promo": 125, "activation": 0},
+    "price_model": "New one-time purchase; promotional availability and exact checkout not guaranteed",
+    "unbound": ["VAT", "reset tariff", "extra platform/data fees", "live professional-data fees", "payout and FX charges"]
+  },
+  "evaluation": {
+    "builder_default": {"target": 3000, "eod_drawdown": 2000, "dll_soft_pause": 1000, "minimum_days": 1, "best_day_fraction": null, "news_allowed": true, "max_minis": 4, "max_micros": 40},
+    "rapid_eod": {"target": 3000, "eod_drawdown": 2000, "dll": null, "minimum_days": 4, "best_day_fraction": 0.3, "news_allowed": true, "max_minis": 3, "max_micros": 30},
+    "sources": ["evaluation"]
+  },
+  "builder_sim": {
+    "starting_profit_balance": 0,
+    "default_eod_drawdown": 2000,
+    "addon_eod_drawdown": 1500,
+    "dll_soft_pause": 1000,
+    "news_allowed": true,
+    "maximum_active_builder_accounts": 1,
+    "inactivity_calendar_days": 7,
+    "session_flat_required": true,
+    "payout_share": 0.8,
+    "minimum_trading_days_per_cycle": 2,
+    "earliest_first_request_hours_after_first_sim_trade": 48,
+    "best_day_fraction_per_cycle": 0.5,
+    "consistency_resets_after_approved_payout": true,
+    "default_buffer": 2100,
+    "addon_buffer": 1600,
+    "first_net_profit_above_buffer": 500,
+    "subsequent_new_net_profit": 500,
+    "request_minimum": 500,
+    "request_maximum": 2000,
+    "maximum_sim_requests": 5,
+    "floor_after_first_payout": 100,
+    "sources": ["builder", "payout"]
+  },
+  "cash_scenarios": {
+    "assumptions": "One passed attempt; all trade profits net of already-modelled trading costs; no additional data, platform, VAT, tax, FX or withdrawal charges; request is gross account debit; evaluation gain not withdrawable. Arithmetic only, not estimated return.",
+    "builder_default": {"eval_net_profit": 3000, "sim_net_profit": 2600, "two_phase_profit_sum": 5600, "request": 500, "cash": 400, "cash_less_promo_entry": 308, "cash_less_list_entry": 247, "remaining_sim_profit": 2100, "floor": 100, "remaining_headroom": 2000},
+    "rapid_eod_conservative": {"eval_net_profit": 3000, "sim_net_profit": 2600, "two_phase_profit_sum": 5600, "request": 500, "cash": 450, "cash_less_promo_entry": 325, "cash_less_list_entry": 241, "remaining_sim_profit": 2100, "floor": 100, "remaining_headroom": 2000, "first_buffer_semantics": "CONSERVATIVE_ASSUMPTION_NOT_FULLY_BOUND"},
+    "builder_addon": {"eval_net_profit": 3000, "sim_net_profit": 2100, "two_phase_profit_sum": 5100, "request": 500, "cash": 400, "cash_less_promo_entry": 325, "cash_less_list_entry": 275, "remaining_sim_profit": 1600, "floor": 100, "remaining_headroom": 1500},
+    "rapid_first_request_at_2100": {"status": "UNCONFIRMED_ALTERNATIVE_NOT_ASSUMED_ALLOWED", "remaining_headroom_if_500_debit_allowed": 1500},
+    "comparison": {"builder_default_promo_attempt_fee_saving": 33, "builder_default_cash_disadvantage_at_minimum_request": 50, "builder_default_first_net_cash_minus_rapid_promo": -17, "builder_default_first_net_cash_minus_rapid_list": 6}
+  },
+  "own_path_examples": {
+    "builder_sim_lumpy_day": {"best_day": 1800, "total_profit_initial": 2600, "minimum_total_for_half_rule": 3600, "additional_net_profit_required_if_best_day_unchanged": 1000},
+    "rapid_eval_lumpy_day": {"best_day": 1800, "minimum_total_for_thirty_percent_rule": 6000},
+    "interpretation": "Illustrates opposite-stage constraints; not a simulated path or pass forecast."
+  },
+  "rule_conflicts": [
+    {"topic": "EOD floor enforcement", "sources": ["builder", "general_eod"], "finding": "Builder mentions checking breach at the end of day; general EOD guidance says an open-position dip below the floor fails the evaluation.", "status": "EXACT_CONTRACT_CONFIRMATION_REQUIRED", "proposed_conservative_model": "Update the floor only at provider session close; fail on any intraday marked equity at or below the existing floor. Do not exploit the looser wording."},
+    {"topic": "Daily loss limit scope", "sources": ["builder", "evaluation", "general_eod"], "finding": "Generic EOD text says no daily drawdown, whereas Builder-specific tables explicitly prescribe a $1000 soft pause.", "proposed_model": "Use Builder-specific DLL; its precise measurement, reset and liquidation behaviour remain to bind."},
+    {"topic": "Builder live floor and profit carryover", "sources": ["builder"], "finding": "Live table says floor stops at zero; generic account paragraph says +100. SIM carryover/reserve and precise transfer timing are not sufficiently specified.", "status": "STAGE_SPECIFIC_BINDING_REQUIRED", "do_not_copy": "Rapid $5000 reserve mechanism"}
+  ],
+  "builder_live": {
+    "eligibility_after_approved_sim_payouts": 5,
+    "guaranteed_immediate_transition": false,
+    "default_eod_drawdown": 2000,
+    "addon_eod_drawdown": 1500,
+    "floor_in_live_table": 0,
+    "share": 0.8,
+    "request_minimum": 250,
+    "frequency": "daily",
+    "dll_soft_pause": 1000,
+    "consistency": null,
+    "live_accounts": 1,
+    "post_breach_cooldown_calendar_days": 21,
+    "sim_profit_transfer": null,
+    "arithmetic_max_sim_debits_at_five_full_caps": 10000,
+    "arithmetic_max_sim_cash_before_fees_at_five_full_caps": 8000,
+    "source": "builder"
+  },
+  "next_profile_work": [
+    "Keep Rapid EOD provisional; add Builder Default as a comparator, not a purchased plan.",
+    "Bind hosting, native NinjaTrader connector and rights in evaluation/SIM/live separately.",
+    "Bind strict intraday floor enforcement, equality, DLL and session clock before claiming compliance.",
+    "Apply identical preregistered signals to complete phase paths, including failures, fees, consistency, payout debit and mandatory live constraints.",
+    "Do not rank expected returns until observed strategy paths and unresolved rules are available."
+  ]
+}

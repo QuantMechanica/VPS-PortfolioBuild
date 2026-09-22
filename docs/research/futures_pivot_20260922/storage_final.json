@@ -1,0 +1,338 @@
+{
+  "status": "PASS",
+  "generated_utc": "2026-09-22T11:32:37.065453+00:00",
+  "summary_de": "C: hat 22.49 GiB frei; D: 91.50 GiB. 23.519 historische Dateien (33.26 GiB logisch) sind vollständig in zwei getesteten Archiven (2.76 GiB) erhalten; jede Datei wurde aus dem Archiv per SHA256 und vor Entfernung nochmals an Original und Rückhalteordner geprüft. Die Archivierung erhöhte den beobachteten freien C:-Platz um 17.95 GiB. Separat brachte ausschließlich regenerierbarer npm-Downloadcache 1.82 GiB. C:/QM/archive bleibt für neue Factory-Ausgaben nutzbar; historische Inhalte haben explizite Restore-Mappings. Keine CFD-Strategie oder Ergebnisdatei wurde ohne erhaltene, verifizierte Archivkopie entfernt. Auf D: wurden separat 18.74 GiB regenerierbare Tester-Caches entfernt; alle zehn Worker wurden wiederhergestellt. Der Rohbeleg dokumentiert korrigierte Zähl-/Relaunchprobleme und eine außerhalb des Löschumfangs verkürzte aktive T5-Logdatei; 75 von 76 alten Logpräfixen blieben gleich.",
+  "c_free_bytes": 24151937024,
+  "d_free_bytes": 98246131712,
+  "c_minimum_15gib_met": true,
+  "c_preferred_20gib_met": true,
+  "d_reserve_60gib_met": true,
+  "archive_file_count": 23519,
+  "archive_source_logical_bytes": 35712137754,
+  "compressed_container_bytes": 2966442581,
+  "archive_finalize_observed_c_delta_bytes": 19273932800,
+  "archive_prepare_minimum_d_free_observed": 96680992768,
+  "finalizer_receipt": "D:\\QM\\reports\\research\\futures_pivot_20260922\\storage_reclaim\\finalize_20260922T112734Z\\receipt.json",
+  "preparation_receipt": "D:\\QM\\reports\\research\\futures_pivot_20260922\\storage_reclaim\\container_20260922T110811Z\\receipt.json",
+  "groups": [
+    {
+      "archive": "D:\\QM\\archive\\c_drive_preservation_20260922\\farm_state_backups_20260828_20260922.7z",
+      "archive_bytes": 2118864240,
+      "archive_sha256": "626FDE3BE95EADD161500DF8781FAE981300AFF102DAA0A400D6C2F2BD9E1252",
+      "c_free_before": 4879175680,
+      "d_free_before": 98053357568,
+      "status": "RECLAIMED_ARCHIVE_PRESERVED",
+      "c_free_after": 15557066752,
+      "c_volume_free_delta": 10677891072,
+      "hold": "C:\\QM\\backups_relocated\\farm_state_backups_20260828.container_hold_20260922T112734Z",
+      "source_files": 233,
+      "d_free_after": 98053193728,
+      "manifest": "D:\\QM\\reports\\research\\futures_pivot_20260922\\storage_reclaim\\container_20260922T110811Z\\farm_state_backups_20260828_source_manifest.json",
+      "source": "C:\\QM\\backups_relocated\\farm_state_backups_20260828",
+      "source_logical_bytes": 27190009199,
+      "manifest_sha256": "6F7C8C6ED4927D147A43C8604584942610AA1F2B2BD820BD49D85D0C615B8C07",
+      "durable_manifest_copy": "D:\\QM\\archive\\c_drive_preservation_20260922\\farm_state_backups_20260828_source_manifest.json",
+      "verification": {
+        "status": "PASS",
+        "files": 233,
+        "directories": 0,
+        "archive_bytes": 2118864240,
+        "archive_sha256": "626FDE3BE95EADD161500DF8781FAE981300AFF102DAA0A400D6C2F2BD9E1252",
+        "full_7z_test": true,
+        "all_file_sha256": true,
+        "listing_bound": true
+      },
+      "restore_mapping": "C:\\QM\\backups_relocated\\farm_state_backups_20260828\\ARCHIVED_CONTENT_RESTORE.json"
+    },
+    {
+      "archive": "D:\\QM\\archive\\c_drive_preservation_20260922\\c_qm_archive_20260922.7z",
+      "archive_bytes": 847578341,
+      "archive_sha256": "B1653065DFB507366E81F7EE70E848ECF9F1B78DB27468837AA1065195B00259",
+      "c_free_before": 15553708032,
+      "d_free_before": 98048733184,
+      "status": "RECLAIMED_ARCHIVE_PRESERVED",
+      "c_free_after": 24153579520,
+      "c_volume_free_delta": 8599871488,
+      "hold": "C:\\QM\\archive.container_hold_20260922T112734Z",
+      "source_files": 23286,
+      "d_free_after": 98048421888,
+      "manifest": "D:\\QM\\reports\\research\\futures_pivot_20260922\\storage_reclaim\\container_20260922T110811Z\\c_qm_archive_source_manifest.json",
+      "source": "C:\\QM\\archive",
+      "source_logical_bytes": 8522128555,
+      "manifest_sha256": "EDECE959C9A6FBEAFA0438BF290D42F900B62A7C6A5139FCB3FDBC1E1F646382",
+      "durable_manifest_copy": "D:\\QM\\archive\\c_drive_preservation_20260922\\c_qm_archive_source_manifest.json",
+      "verification": {
+        "status": "PASS",
+        "files": 23286,
+        "directories": 14964,
+        "archive_bytes": 847578341,
+        "archive_sha256": "B1653065DFB507366E81F7EE70E848ECF9F1B78DB27468837AA1065195B00259",
+        "full_7z_test": true,
+        "all_file_sha256": true,
+        "listing_bound": true
+      },
+      "restore_mapping": "C:\\QM\\archive\\ARCHIVED_CONTENT_RESTORE.json"
+    }
+  ],
+  "npm_cache": {
+    "receipt": "D:\\QM\\reports\\research\\futures_pivot_20260922\\storage_reclaim\\npm_cache_reclaim.json",
+    "status": "PASS",
+    "time_utc": "2026-09-22T10:52:35.2376294Z",
+    "target": "C:\\Users\\Administrator\\AppData\\Local\\npm-cache\\_cacache",
+    "scope": "Regenerable npm content download cache only; installed packages, _npx and project files are outside scope",
+    "files": 1674,
+    "logical_bytes": 1954729616,
+    "free_c_before": 3085291520,
+    "no_reparse": true,
+    "active_npm_processes": 0,
+    "free_c_after": 5044051968,
+    "observed_free_delta_bytes": 1958760448,
+    "note": "Observed free-space delta can include unrelated concurrent writes; logical cache bytes are reported separately."
+  },
+  "ntfs_compression": {
+    "receipt": "D:\\QM\\reports\\research\\futures_pivot_20260922\\storage_reclaim\\20260922T102155Z\\receipt.json",
+    "raw_status": "HALTED_ERROR",
+    "files_compressed": 663,
+    "stored_bytes_reduction": 27408890,
+    "full_sha_checks": 36,
+    "content_checks_passed": true,
+    "observed_c_free_before": 3135565824,
+    "observed_c_free_after": 3124207616,
+    "interpretation": "Stopped after low measured benefit; no positive net volume reclaim claimed; Bases untouched."
+  },
+  "partial_copy": {
+    "cleanup_receipt": "D:\\QM\\reports\\research\\futures_pivot_20260922\\storage_reclaim\\seven_zip_pilot_20260922\\partial_copy_cleanup_receipt.json",
+    "originals_reverified": 233,
+    "c_sources_removed": false,
+    "interpretation": "Abandoned D copy removed after all original hashes passed. Win32 stored-byte totals understated volume allocation/reservation. Unrelated Factory growth was not established."
+  },
+  "restore_instructions": "D:\\QM\\reports\\research\\futures_pivot_20260922\\storage_reclaim\\RESTORE_COLD_ARCHIVES.md",
+  "durable_archive_bundle_receipt": "D:\\QM\\archive\\c_drive_preservation_20260922\\durable_bundle_receipt.json",
+  "durable_restore_instructions": "D:\\QM\\archive\\c_drive_preservation_20260922\\README_RESTORE.md",
+  "own_temporary_archive_cleanup": {
+    "d_free_after": 98246311936,
+    "logical_bytes": 210202914.0,
+    "files": 3,
+    "targets": [
+      {
+        "sha256": "E193D566861ACB282A99A2C5DB01751BB2016A25B01C78103873D287955E7301",
+        "classification": "Own redundant pilot or incomplete archive; canonical full archives and all evidence retained",
+        "bytes": 46611174,
+        "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\storage_reclaim\\seven_zip_pilot_20260922\\one_sqlite_pilot.7z"
+      },
+      {
+        "sha256": "8C79BF217316A34FB65123507D6D6E350B6CB43C901E0D9C76F513A56D91FF7D",
+        "classification": "Own redundant pilot or incomplete archive; canonical full archives and all evidence retained",
+        "bytes": 57308257,
+        "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\storage_reclaim\\fast_pilot\\sqlite_mx1.7z"
+      },
+      {
+        "sha256": "03829CFE6DC471181E7A47BCFA8863EB819BBC64A1B401AC64B41EE12EFAFEA0",
+        "classification": "Own redundant pilot or incomplete archive; canonical full archives and all evidence retained",
+        "bytes": 106283483,
+        "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\storage_reclaim\\container_20260922T110241Z\\incomplete_mx5.7z"
+      }
+    ],
+    "prior_user_files_removed": 0,
+    "recursive_removals": 0,
+    "canonical_archives_removed": 0,
+    "d_free_before": 98036105216,
+    "status": "PASS"
+  },
+  "caveats": [
+    "Volume deltas are observed during concurrent system activity; do not equate logical bytes or GetCompressedFileSizeW totals to volume allocation.",
+    "Preserves standard file content, file and directory membership, and metadata inventory; does not promise original NTFS ACLs or hardlink topology.",
+    "Historical C paths now contain restore mappings, not random-access historical files; C:/QM/archive remains available for future producer output.",
+    "Google DriveFS, Chrome, active terminals and CFD runtime evidence paths were outside mutation scope."
+  ],
+  "separate_d_cache_reclaim": {
+    "receipt": "D:\\QM\\reports\\research\\futures_pivot_20260922\\cache_reclaim\\apply_receipt.json",
+    "data": {
+      "at_utc": "2026-09-22T11:12:37.627402+00:00",
+      "status": "RECLAIM_COMPLETE_WORKERS_RECOVERED_WITH_DOCUMENTED_WARNINGS",
+      "apply_count": 1,
+      "apply_command": "& 'D:/QM/reports/research/futures_pivot_20260922/cache_reclaim/tester_bases_only_reclaim.ps1' -Mode IdleCaches -LowWaterGB 90",
+      "executed_copy_sha256": "892a343fa8abf686174773f858b187b092117f1bfdcf518020fcbea279d40f1d",
+      "production_script_unchanged": true,
+      "canonical_source_sha256": "0f6ae2a1e7bd1296b6f5a45d416ef27c0dcaa15beb0758c9c7dd07952052330f",
+      "apply_process_exit_code": 1,
+      "reclaimed_bytes_reconciled": 20119400412,
+      "reclaimed_GiB_reconciled": 18.73765179142356,
+      "during_apply_d_free_GiB": {
+        "before": 75.45,
+        "after": 94.16,
+        "observed_delta": 18.71
+      },
+      "final_d_free_bytes": 101805305856,
+      "final_d_free_GiB": 94.81357955932617,
+      "reconciled_canonical_telemetry": {
+        "schema": "qm.resource-headroom.v1",
+        "status": "OK",
+        "reason": "plausible_with_concurrent_io_tolerance",
+        "expected_deleted_bytes": 20119400412,
+        "expected_deleted_gb": 18.738,
+        "observed_free_delta_gb": 18.71,
+        "tolerance_gb": 4.684,
+        "plausible_min_gb": -4.684,
+        "plausible_max_gb": 23.422
+      },
+      "targets": [
+        {
+          "terminal": "T1",
+          "path": "D:\\QM\\mt5\\T1\\Tester\\bases\\Darwinex-Live",
+          "before_bytes": 1427580996,
+          "after_bytes": 0,
+          "reported_deleted_bytes_buggy": 1427580996,
+          "reconciled_deleted_bytes": 1427580996,
+          "path_absent_at_final_check": true
+        },
+        {
+          "terminal": "T2",
+          "path": "D:\\QM\\mt5\\T2\\Tester\\bases\\Darwinex-Live",
+          "before_bytes": 2163466433,
+          "after_bytes": 0,
+          "reported_deleted_bytes_buggy": 1427580996,
+          "reconciled_deleted_bytes": 2163466433,
+          "path_absent_at_final_check": true
+        },
+        {
+          "terminal": "T3",
+          "path": "D:\\QM\\mt5\\T3\\Tester\\bases\\Darwinex-Live",
+          "before_bytes": 1237839936,
+          "after_bytes": 0,
+          "reported_deleted_bytes_buggy": 1237839936,
+          "reconciled_deleted_bytes": 1237839936,
+          "path_absent_at_final_check": true
+        },
+        {
+          "terminal": "T4",
+          "path": "D:\\QM\\mt5\\T4\\Tester\\bases\\Darwinex-Live",
+          "before_bytes": 4023949909,
+          "after_bytes": 0,
+          "reported_deleted_bytes_buggy": 1237839936,
+          "reconciled_deleted_bytes": 4023949909,
+          "path_absent_at_final_check": true
+        },
+        {
+          "terminal": "T7",
+          "path": "D:\\QM\\mt5\\T7\\Tester\\bases\\Darwinex-Live",
+          "before_bytes": 1833327333,
+          "after_bytes": 0,
+          "reported_deleted_bytes_buggy": 1833327333,
+          "reconciled_deleted_bytes": 1833327333,
+          "path_absent_at_final_check": true
+        },
+        {
+          "terminal": "T8",
+          "path": "D:\\QM\\mt5\\T8\\Tester\\bases\\Darwinex-Live",
+          "before_bytes": 4017379549,
+          "after_bytes": 0,
+          "reported_deleted_bytes_buggy": 1833327333,
+          "reconciled_deleted_bytes": 4017379549,
+          "path_absent_at_final_check": true
+        },
+        {
+          "terminal": "T9",
+          "path": "D:\\QM\\mt5\\T9\\Tester\\bases\\Darwinex-Live",
+          "before_bytes": 1471479624,
+          "after_bytes": 0,
+          "reported_deleted_bytes_buggy": 1471479624,
+          "reconciled_deleted_bytes": 1471479624,
+          "path_absent_at_final_check": true
+        },
+        {
+          "terminal": "T10",
+          "path": "D:\\QM\\mt5\\T10\\Tester\\bases\\Darwinex-Live",
+          "before_bytes": 3944376632,
+          "after_bytes": 0,
+          "reported_deleted_bytes_buggy": 1471479624,
+          "reconciled_deleted_bytes": 3944376632,
+          "path_absent_at_final_check": true
+        }
+      ],
+      "worker_recovery": {
+        "before": [
+          "T1",
+          "T10",
+          "T2",
+          "T3",
+          "T4",
+          "T5",
+          "T6",
+          "T7",
+          "T8",
+          "T9"
+        ],
+        "after": [
+          "T1",
+          "T10",
+          "T2",
+          "T3",
+          "T4",
+          "T5",
+          "T6",
+          "T7",
+          "T8",
+          "T9"
+        ],
+        "exact_set_match": true,
+        "protected_worker_identity_unchanged": {
+          "T5": true,
+          "T6": true
+        },
+        "method": "Existing SYSTEM QM_StrategyFarm_WorkerDedupe task, two idempotent passes; each task rc0; canonical measured headroom admitted second pass",
+        "no_policy_override": true
+      },
+      "live_processes": [
+        {
+          "pid": 10168,
+          "command": "\"C:\\QM\\mt5\\T_Live\\MT5_Base\\terminal64.exe\" /portable ",
+          "same_process_survives": true
+        },
+        {
+          "pid": 11756,
+          "command": "\"C:\\Program Files\\FTMO Global Markets MT5 Terminal\\terminal64.exe\" ",
+          "same_process_survives": true
+        }
+      ],
+      "dispatch_enabled_before": {
+        "QM_StrategyFarm_Pump_5min": true,
+        "QM_StrategyFarm_Tick_5min": true
+      },
+      "dispatch_enabled_after": {
+        "QM_StrategyFarm_Pump_5min": true,
+        "QM_StrategyFarm_Tick_5min": true
+      },
+      "agent_directories_targeted": 0,
+      "log_verification": {
+        "total_preexisting_logs": 76,
+        "unchanged_original_content_prefixes": 75,
+        "active_log_exception": [
+          {
+            "path": "D:\\QM\\mt5\\T5\\Tester\\Agent-127.0.0.1-3000\\MQL5\\Files\\QM\\QM5_10706_ea-10706.log",
+            "error": "short file"
+          }
+        ],
+        "interpretation": "Only active T5 strategy log became shorter during the continuing multiseed runner; T5 never targeted, T5 worker process unchanged, next tester run started 11:07:23 UTC. Consistent with concurrent EA log recreation; do not claim 76/76 byte preservation."
+      },
+      "warnings": [
+        "Inherited PowerShell [math]::Max(0, Int64) selected Int32 overload for four >2GiB values. Deletion scope and before/after bytes correct; reported deleted-byte sum is wrong. Independently reconciled sum passes canonical telemetry validation. Executed script retained unchanged for provenance.",
+        "Direct canonical interactive relaunch lacked SYSTEM/SeTcb privilege. Existing SYSTEM task restored workers; first pass admitted six, second admitted remaining two under fresh OPEN headroom decision. Original apply alarm is retained.",
+        "Agent-log prefix verification detects one active T5 log truncation outside purge scope; 75 other original log contents preserved."
+      ],
+      "evidence": [
+        "canonical_to_bases_only.diff",
+        "preparation_manifest.json",
+        "dry_run_receipt.json",
+        "bases_only_reclaim.log",
+        "state_before.json",
+        "state_after.json",
+        "agent_log_inventory_before.json",
+        "agent_log_preservation_after.json",
+        "relaunch_recovery_started.json",
+        "relaunch_recovery_second.json",
+        "recovery_headroom.json"
+      ]
+    }
+  }
+}

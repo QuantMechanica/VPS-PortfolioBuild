@@ -1,0 +1,16 @@
+{
+  "campaign_id": "OWNER-DEC-FUTURES-PROP-PREPARATION-20260922",
+  "parent_task_id": "bd61bf70-892d-4ae4-bec4-214da12ed3f6",
+  "tasks": [
+    {
+      "key": "FUT-BUILDER-PROFILE",
+      "qm_todo_id": "QM-TODO-20260922-FUTURES-05",
+      "title": "Add MFFU Builder Default as a conservative cost and payout comparator",
+      "task_type": "ops_issue",
+      "state": "BLOCKED",
+      "priority": 91,
+      "blocker": "Requires delivered versioned profile schema from FUT-PROP-PROFILES; do not edit its in-flight implementation",
+      "action": "Extend the delivered profile schema with MFFU Builder 50k Default ($2000 MLL), using mff_builder_comparison.md/json and current primary terms. Do not confuse the cheaper $1500 add-on with Default. Bind the $1000 soft daily loss pause, 50% SIM cycle consistency, minimum days, gross payout debit, 80% share, payout cap and Live transition. Conflicting EOD breach wording must never loosen controls: raise the floor only at the EOD boundary but conservatively fail an intraday marked-equity touch/breach; preserve unresolved contract and hosting fields as UNKNOWN/nondeployable. Compare Builder, Rapid EOD and Tradeify on identical frozen trade paths and explicitly entered fees, without increasing the strategy hypothesis set. First-request arithmetic is not a payout probability or expected return. Preserve the earlier CFD selection history: a new futures dataset from an already studied index period is not automatically an untouched market holdout. No purchase, third-party contact, live connection, new strategy IDs or revised CFD verdicts."
+    }
+  ]
+}

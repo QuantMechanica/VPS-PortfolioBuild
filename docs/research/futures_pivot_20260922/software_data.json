@@ -1,0 +1,278 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-09-22",
+  "scope": "Official-source software/data research; no installation, purchase, account registration or trading performed by this report builder.",
+  "recommendation": {
+    "research": "NautilusTrader stable1.x + Databento GLBX.MDP3 individual-contract MBP-1 + definitions; raw DBN immutable, selected Parquet cache only after measurement.",
+    "execution": "NinjaTrader8 same explicit strategy contract, only after chosen prop accepts own algos/Windows server/connector; independent execution parity gate.",
+    "immediate": "Pinned1.221.0 on existingPython3.11, official tinyfixtures only; root separately prepares isolatedvenv.",
+    "why": "Python-only installpath and scriptable established engine match batchfactory; NT provides native platform execution path; separation requires deliberate semantics/parity work."
+  },
+  "platform_comparison": [
+    {
+      "id": "nautilus",
+      "name": "NautilusTrader/Python + Databento",
+      "role": "Empfohlener Batch-Researchkern und sofortiger Offline-Smoke",
+      "price": "Open-source Engine; Daten separat. Keine Registrierung fuer lokale DBN-Fixtures.",
+      "algo": "Eigene Python-Strategien; vorhandener BacktestEngine und DatabentoDataLoader. Batch ueber eigene deklarative Run-Manifeste, isolierte Prozesse und persistierte Ergebnisse.",
+      "data": "MBP-1 QuoteTick/TradeTick, TBBO, MBO, Instrumentdefinitionen; DBN lokal oder Parquet-Katalog. MBP-1 fuer vollstaendige Top-of-book-Ereignisse; TBBO nur Quote bei Trades.",
+      "limits": "Kein Databento-Executionclient. Kein hier verifizierter nativer Rithmic/Tradovate-Prop-Pfad; NinjaScript-Port und Paritaetstest bleiben eigene Arbeit. 1.x und 2.x APIs nicht mischen.",
+      "install": "Jetzt Python3.11 venv + Nautilus1.221.0 pinnen. Aktuell stabil1.231.0 verlangt Python>=3.12; latest-Doku beschreibt2.x-RC. Spaeter isoliertes Python3.12+stable1.231.0 pruefen.",
+      "sources": [
+        "naut_install",
+        "naut_stable",
+        "naut_311",
+        "naut_adapter",
+        "naut_example"
+      ]
+    },
+    {
+      "id": "ninjatrader",
+      "name": "NinjaTrader 8",
+      "role": "Schnellster nativer Windows-Ausfuehrungsprototyp, wenn Prop-Vertrag NinjaScript erlaubt",
+      "price": "Backtesting/Simulation laut Anbieter unbegrenzt kostenlos. Brokerageplaene $0/$99 monatlich/$1499 einmalig; diese Plaene sind keine Prop-Lizenzzusage.",
+      "algo": "Eigene NinjaScript/C#-Strategien; Strategy Analyzer fuer Backtests und Optimierung. Keine aktuelle, offiziell dokumentierte headless Batch-CLI in diesem Review nachgewiesen.",
+      "data": "Historische Last/Bid/Ask-Ticks importierbar, Zeitzone deklarieren. Market-Replay-Dateien sind separates Format und nicht aus CSV importierbar; oeffentliches Replayfenster laut Anbieter90Tage.",
+      "limits": "Tick Replay ist explizit kein genauer Orderfill-Backtest; fehlende Quotes koennen ersetzt werden. High-fill1Tick nicht mit TickReplay/Multiserien kombinierbar; bei Multiserien Orders an eigene Tickserie routen. Replay prueft Technik, nicht unbeobachtbare Queueposition.",
+      "install": "Windows-Desktop, Konto/Download und konkreter Prop-Connector erforderlich. Die Preisseite trennt kostenlose Analyse von finanziertem Brokeragezugang fuer bestimmte Daten/Tools; Prop-Rechte separat pruefen.",
+      "sources": [
+        "nt_price",
+        "nt_fill",
+        "nt_tick",
+        "nt_replay",
+        "nt_import"
+      ]
+    },
+    {
+      "id": "sierra",
+      "name": "Sierra Chart ACSIL/Replay",
+      "role": "Starke alternative Futures-Daten/Replayplattform; zweiter Platz fuer integriertes Research",
+      "price": "Paket3 $26/Monat inklusive Historie; externe Verbindung/Denali ab Paket10 $36; Paket11 $46; Paket12 $56. Echtzeit-Exchangegebuehren separat.",
+      "algo": "Eigene ACSIL/C++-Algos. Replay programmierbar mit sc.StartChartReplayNew; eigener Supervisor noetig, keine hier belegte separate headless CLI.",
+      "data": "CME-Tickhistorie ab2011 bzw.Instrumentstart; 1Tick-Speicherung konfigurieren. Historisches Bid/Ask-Tradevolumen ist nicht automatisch vollstaendige Quotehistorie. Replaydaten konkret pruefen.",
+      "limits": "AccurateReplay ruft Studie nicht bei jeder isolierten Quoteaenderung auf; CalculateAtEveryTick/Trade verfuegbar. Simulation kennt reale Queueposition nicht. Vollstaendige Events/Quotes erst im Daten-POC nachweisen.",
+      "install": "Konto, Windows-Software, ACSIL-Compilerweg. Niedrige Denali-CME-Gebuehren benoetigen verifiziertes finanziertes Brokeragekonto; Prop-Simkonto nicht ungeprueft gleichsetzen.",
+      "sources": [
+        "sc_price",
+        "sc_history",
+        "sc_replay",
+        "sc_acsil",
+        "sc_algo",
+        "sc_denali"
+      ]
+    },
+    {
+      "id": "lean",
+      "name": "QuantConnect LEAN",
+      "role": "Gute Batchalternative; fuer vorhandenen Windowsserver mehr Setup als Nautilus",
+      "price": "LEAN-Engine Apache2.0. Offizielle LEAN-CLI verlangt bezahlte Organisation; exakter aktueller Tarif-/Datenpreis in gelesener oeffentlicher Tabelle nicht verlaesslich gerendert: UNKNOWN.",
+      "algo": "Python/C#, CLI-backtest/optimize mit Parametern und Ergebnisverzeichnis. CLI Docker; nativer Sourcebuild moeglich und vom bezahlten CLI-Angebot zu trennen.",
+      "data": "AlgoSeekUSFutures:157Futures, Tick bis Daily, abMai2009 je nach Instrument; Trade- und QuoteTicks; ContinuousMapping braucht SecurityMaster. Eigene Datenformatkonvertierung ist Arbeit.",
+      "limits": "Kein hier verifizierter nativer Prop-Rithmic/Tradovate-Ausfuehrungspfad. Bar-/Kalender- und Fillmodelle selbst konfigurieren. Cloudzugang bedeutet keine kostenlose lokale Rohdatenlizenz.",
+      "install": "Konto/bezahlte Organisation+Docker fuer StandardCLI. NativeAlternative braucht .NET-Buildumgebung. Beides ist hier noch nicht eingerichtet; Docker-Imagegroesse nicht gemessen.",
+      "sources": [
+        "lean_code",
+        "lean_cli",
+        "lean_data",
+        "lean_quotes",
+        "lean_price"
+      ]
+    },
+    {
+      "id": "quantower",
+      "name": "Quantower Algo",
+      "role": "Moegliche C#-Executionalternative; kein Vorrang vor NT fuer diesen MVP",
+      "price": "All-in-One $70/Monat angezeigt; Marktdaten extra. Eingeschraenkte Free-Version ohne Registrierung;7TageVolltest mit Registrierung.",
+      "algo": "Eigene C#-Strategien/offeneAPI; Backtest/Optimize-Panel mit Hintergrundlaeufen, Symbolen,Sessions,Gebuehren.",
+      "data": "Historie vom Connector; keine universelle mehrjaehrige CME-Tickgarantie. Dokumentation beschreibt OHLC/Open/Close-Modellierung und Bid/AskOffsets.",
+      "limits": "Tick-by-tick-Modus kann auf gewaehltem Symbolzeitrahmen beruhen; echte Quoteereignisse/Fills nicht aus Label ableiten. Batch-CLI/Prop-Connectorrechte nicht nachgewiesen.",
+      "install": "Windows; Compiler/VisualStudio-Weg und konkreter Connector benoetigt. Datenzugang separat.",
+      "sources": [
+        "qt_price",
+        "qt_algo",
+        "qt_backtest"
+      ]
+    },
+    {
+      "id": "multicharts",
+      "name": "MultiCharts / MultiCharts.NET",
+      "role": "Reserve; aktuelle Kauf-/Connectorpruefung unvollstaendig",
+      "price": "UNKNOWN: offizielle Kaufseite lieferte HTTP520; keine alten Preise als aktuell uebernommen.",
+      "algo": "Offizielle .NET-Programmierdoku belegt eigene Signale, Backtest/Optimierung, IOG und BarMagnifier.",
+      "data": "BarMagnifier kannTick/Second/Minute/Daily-Unterdaten nutzen; Datenfeed extra und konkrete CME-Abdeckung nicht verifiziert.",
+      "limits": "OHLC-Reihenfolge wird ohne feinereDaten angenaehert. Aktueller Prop-Pfad/headlessBatch und Gesamtpreis offen.",
+      "install": "Windows-/.NET-Produkt; keine Installation/Kauf. Im MVP vertagt.",
+      "sources": [
+        "mc_code",
+        "mc_price"
+      ]
+    }
+  ],
+  "data_options": [
+    {
+      "id": "databento",
+      "dataset": "GLBX.MDP3",
+      "coverage": "AllCME-group futures/options fromJune2010; individual instruments beginatlisting. Before2017-05-21 noMBO; older ts_recv equals ts_event, before2015-11-20 timestampsmillisecond.",
+      "schema": "MBP-1 includes top-of-book changes and trades. TBBO samples BBO at trades, cannot establish quote-only events. MBO only where queue/depthhypothesis requires it.",
+      "pricing": "HistoricalPAYG no subscription; exact USDquery via get_cost. Standard$199/month includesL1 trailing12months; L2/L3 trailing1month; olderhistoryPAYG. Newteam$125credit expires6months; not an entitlement assumed for QM.",
+      "size": "Billing uses uncompressed DBN bytes independentofcompression. get_billable_size beforedownload; compressedfile,decodedRAM andParquet sizes must be measured. No credible multi-yearGBtotal asserted.",
+      "sources": [
+        "db_history",
+        "db_cme",
+        "db_mbp",
+        "db_price",
+        "db_cost",
+        "db_size"
+      ]
+    },
+    {
+      "id": "sierra",
+      "coverage": "Historical CME tickdata ab2011/instrumentstart; historicalservice included from$26package; realtime optional.",
+      "pricing": "DenaliCME L1$2/month,depth$13.50 with qualifyingfundednonprofessionalaccount. Withoutqualifyingaccount CMEdepth$145/month; E-mini limitedscope$78 requires eligibility/symbolcoveragecheck. Addplatformfee.",
+      "limits": "Cheap delayed/historical research doesnotrequirefundedbrokerage; exactbid/askevents and export/useconditions for externalPython requirecheck.",
+      "sources": [
+        "sc_history",
+        "sc_denali"
+      ]
+    },
+    {
+      "id": "ninjatrader",
+      "coverage": "Free supported-marketReplay advertised90days. Historicaltickretention is provider-dependent; do not equate replaywindowwithallhistoricalavailability.",
+      "pricing": "No verifieduniversalMES/MNQ multi-year bid/ask datasetprice. Free14daylivedatatrial isnotpermanentresearchdataset.",
+      "limits": "Historicalimport notMarketReplayimport; get actual Last/Bid/Askcoverage manifest.",
+      "sources": [
+        "nt_replay",
+        "nt_price",
+        "nt_import"
+      ]
+    }
+  ],
+  "contracts": [
+    {
+      "root": "ES",
+      "usd_per_point": 50,
+      "tick_points": 0.25,
+      "usd_per_tick": 12.5
+    },
+    {
+      "root": "MES",
+      "usd_per_point": 5,
+      "tick_points": 0.25,
+      "usd_per_tick": 1.25
+    },
+    {
+      "root": "NQ",
+      "usd_per_point": 20,
+      "tick_points": 0.25,
+      "usd_per_tick": 5.0
+    },
+    {
+      "root": "MNQ",
+      "usd_per_point": 2,
+      "tick_points": 0.25,
+      "usd_per_tick": 0.5
+    }
+  ],
+  "contract_notes": [
+    "MES/MNQ launched2019-05-06; cannotclaimrealmicrohistorybeforethen.",
+    "ES/NQsignals may be tested as an explicitly separate signal-vs-execution design, but MES/MNQ fills require their own quotes,fees,liquidity.",
+    "CME customaryequityroll is MondaybeforethirdFriday, not blindthirdThursday; 2026JuneexpiryJune18/rollJune15. Individualcontracts and point-in-time mapping avoid fabricated rolloverprofits."
+  ],
+  "minimal_data_poc": {
+    "phase0": "Noaccount officialversionedtestfixtures; decoder,contractmultipliers,eventordering,actualBacktestEngine oneintentionalroundtrip. TECHNICAL_SMOKE_ONLY; noedgeclaim.",
+    "phase1": "Afterdataaccessavailable, quoteoneMESfrontcontract anddefinitionsforonecompletenormal2026session,MBP-1. Persist get_cost/get_billable_size/recordcountconditions beforefetch. NoALL_SYMBOLS/MBOarchive.",
+    "phase2": "Boundedexpansion: MES/MNQ plusES/NQsignalcomparators; normalday,DSTboundary2026-03-06/09,rollboundary2026-03-13/16,andonehistoricalearlycloseconfirmedfromCMEcalendar. Quoteeachrequestfirst.",
+    "time_policy": "StoreUTC ts_event,ts_recv,sequence/flags. IANA America/New_York for09:30cashORB; America/Chicago forGlobextrade-date/calendar. Pin tzdata andcalendarreceipt; nofixedBerlin/serveroffset. Do nottakepitfloorhoursasGlobexhours.",
+    "fill_policy": "Decision only onavailableclosedevents,thenexecutablequotewithdeclaredlatency; side-correctbid/ask,contractticks,fees,slippage,sizenetting. Noimpliedpassivelimitfillontouchorunprovenqueueposition. Useengineandexplicitmodels,notnewnaivefillloop.",
+    "acceptance": [
+      "inputhashes andvendorrequestreceipt",
+      "sessioncounts/DSTopeningtimesmatch",
+      "rollmappingandrawpriceaudit",
+      "noNaNorinvalidcrossed/stalequoteswithoutdisposition",
+      "sameseed/configidenticalevent/fillhash",
+      "one-contractaccounting inclUSDmultipliers",
+      "twoenginesagree onsignals; discrepancies tracedbeforeperformanceclaim"
+    ],
+    "budget": "Initialdownloadcap proposed25USD and2GiBraw/deriveddisk combined; policy cap not actualcost/sizeestimate. Increaseonlyaftermeasuredrequestreceipt andavailabledisk. Smallfixture stage <2MB."
+  },
+  "storage_plan": {
+    "known_fixture_bytes": {
+      "definition-glbx-es-fut.dbn.zst": 548,
+      "esh4-glbx-mdp3-20231224.mbo.dbn.zst": 53814,
+      "esh4-glbx-mdp3-20231225.mbo.dbn.zst": 997238
+    },
+    "wheel311_bytes": 43131280,
+    "wheel311_sha256": "9e4e8c155dcc9098ed43bb3d19f76fcf94512f783dd16d07a2006c681e5b20cc",
+    "wheel312_currentstable_bytes": 112750098,
+    "warning": "Wheel size excludesdependencies,unpackedvenv,pipcache. Runtime/installpeakto be measuredbyroot. NofullhistoryGBguess. Keepdata,venv,TEMP,pipcacheonD,notconstrainedC. Streamdailycontractchunks; avoidduplicateCSV/fullParquetfullrawallatonce."
+  },
+  "critical_hurdles": [
+    "Selectedprop mustpermitownalgos,serverdeploymentandactualconnector; platformcapabilitydoesnotauthorizepropuse.",
+    "Realquotehistoryandfillsemantics must beverified; ticklabels/continuouschartsareinsufficient.",
+    "Versionpin1.221.0+matchingdocsforPython3.11; futureupgradechangesengineandmaychangedbncompatibility."
+  ],
+  "unknowns": [
+    "Authenticated Databento exactMES/MNQperiodcost andrecordcounts",
+    "Prop-specificlicense/commissions,connectorandmarketdataentitlements",
+    "Fullhistoricaldisk/RAMmeasurements",
+    "CurrentQuantConnectmonthlycost/retailCLIentitlementdetail beyondpaid-tierrequirement",
+    "MultiChartscurrentprice andcompatibleproproute"
+  ],
+  "source_urls": {
+    "nt_price": "https://ninjatrader.com/pricing/",
+    "nt_fill": "https://ninjatrader.com/support/helpGuides/nt8/understanding_historical_fill_.htm",
+    "nt_tick": "https://ninjatrader.com/support/helpGuides/nt8/developing_for__tick_replay.htm",
+    "nt_replay": "https://ninjatrader.com/trading-platform/trading-simulator/",
+    "nt_import": "https://ninjatrader-devel.ninjatrader.com/support/helpguides/nt8/importing.htm",
+    "nt_roll": "https://ninjatrader.com/support/helpGuides/nt8/merge_policy.htm",
+    "nt_session": "https://ninjatrader.com/support/helpguides/nt8/trading_hours.htm",
+    "sc_price": "https://www.sierrachart.com/index.php?file=doc/Packages.php",
+    "sc_history": "https://www.sierrachart.com/index.php?page=doc/SierraChartHistoricalData.php",
+    "sc_denali": "https://www.sierrachart.com/index.php?page=doc/DenaliExchangeDataFeed.php",
+    "sc_replay": "https://www.sierrachart.com/index.php?l=doc/ReplayChart.html",
+    "sc_acsil": "https://www.sierrachart.com/index.php?page=doc/ACSIL_Members_Functions.html",
+    "sc_algo": "https://www.sierrachart.com/index.php?l=doc/ACSILTrading.html",
+    "lean_code": "https://github.com/QuantConnect/Lean",
+    "lean_cli": "https://www.quantconnect.com/docs/v2/lean-cli/api-reference/lean-backtest",
+    "lean_data": "https://www.quantconnect.com/docs/v2/writing-algorithms/datasets/algoseek/us-futures",
+    "lean_quotes": "https://www.quantconnect.com/docs/v2/research-environment/datasets/futures/key-concepts",
+    "lean_price": "https://www.quantconnect.com/pricing/",
+    "naut_install": "https://nautilustrader.io/docs/latest/getting_started/installation/",
+    "naut_stable": "https://pypi.org/pypi/nautilus_trader/1.231.0/json",
+    "naut_311": "https://pypi.org/pypi/nautilus_trader/1.221.0/json",
+    "naut_adapter": "https://raw.githubusercontent.com/nautechsystems/nautilus_trader/v1.221.0/docs/integrations/databento.md",
+    "naut_example": "https://raw.githubusercontent.com/nautechsystems/nautilus_trader/v1.221.0/examples/backtest/databento_cme_quoter.py",
+    "naut_tests": "https://raw.githubusercontent.com/nautechsystems/nautilus_trader/v1.221.0/tests/integration_tests/adapters/databento/test_loaders.py",
+    "naut_fixtures": "https://api.github.com/repos/nautechsystems/nautilus_trader/contents/tests/test_data/databento?ref=v1.221.0",
+    "qt_price": "https://www.quantower.com/pricing",
+    "qt_algo": "https://help.quantower.com/quantower/quantower-algo/introduction",
+    "qt_backtest": "https://help.quantower.com/quantower/quantower-algo/backtest-and-optimize",
+    "mc_code": "https://download.multicharts.com/downloads/MultiCharts.NET-ProgrammingGuide-v1.1.pdf",
+    "mc_price": "https://www.multicharts.com/purchase/",
+    "db_price": "https://databento.com/pricing",
+    "db_history": "https://databento.com/docs/knowledge-base/datasets",
+    "db_cme": "https://databento.com/docs/venues-and-datasets/glbx-mdp3",
+    "db_mbp": "https://databento.com/docs/schemas-and-data-formats/mbp-1",
+    "db_cost": "https://databento.com/docs/api-reference-historical/metadata/metadata-get-cost",
+    "db_size": "https://databento.com/docs/api-reference-historical/metadata/metadata-get-billable-size",
+    "cme_micro": "https://www.cmegroup.com/articles/faqs/frequently-asked-questions-micro-e-mini-equity-index-futures.html",
+    "cme_calendar": "https://www.cmegroup.com/trading-hours.html",
+    "cme_roll": "https://www.cmegroup.com/trading/equity-index/rolldates.html"
+  },
+  "retrieval_notes": [
+    "web.run official vendor/exchange pages; primary GitHub/PyPI JSON via standard urllib for exact package/fixturemetadata.",
+    "Some MultiChartspages returnedHTTP520; nostaleorresellerprice substituted.",
+    "NinjaStrategyAnalyzer/installguide directpathsfailed; noexactinstallerbytesorcurrentheadlessAPIavailability invented.",
+    "Publicfixturesareregressiondata,notcompleteMES/MNQmarketsessions. ESM3definition andESH4MBO aredifferentcontracts."
+  ],
+  "technical_smoke": {
+    "status": "PASS",
+    "receipt": "D:\\QM\\reports\\research\\futures_pivot_20260922\\nautilus_smoke\\result.json",
+    "fixture_bytes": 54362,
+    "repeated_runs": 2,
+    "repeat_hash": "48693c4a2de7943c2356dc680cfdd79fe4ab127afde8e00b5feb929b68213efe",
+    "historical_snapshot_orders": 0,
+    "synthetic_roundtrip_is_not_performance": true,
+    "observed_test_helper_issue": "Pinned TestInstrumentProvider.es_future has multiplier=1. Smoke explicitly uses manual ESH4 metadata with multiplier=50 and separately validates loaded ESM3 definition."
+  }
+}

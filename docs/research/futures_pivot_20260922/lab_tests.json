@@ -1,0 +1,48 @@
+{
+  "as_of_utc": "2026-09-22T11:09:55.622323+00:00",
+  "command": [
+    "D:/QM/venvs/futures_lab/Scripts/python.exe",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/futures_lab",
+    "-p",
+    "test_*.py",
+    "-v"
+  ],
+  "exit_code": 0,
+  "tests": 28,
+  "network": "No authenticated requests; metadata tests use stub transport",
+  "code_files": [
+    {
+      "path": "D:/QM/worktrees/codex-futures-pivot-20260922/tools/futures_lab/credential_store.py",
+      "sha256": "95e7cc1e8fbed4591b872d1372c7af3f08c47ee371623291e1193c6f7a3a7840"
+    },
+    {
+      "path": "D:/QM/worktrees/codex-futures-pivot-20260922/tools/futures_lab/prop_risk.py",
+      "sha256": "6815fe6623713b7717687bbd54a5419308c6f2329b9334c8e698fc07de550b97"
+    },
+    {
+      "path": "D:/QM/worktrees/codex-futures-pivot-20260922/tools/futures_lab/quote_databento.py",
+      "sha256": "4b187e4768e655c1fead251856f75138f5312c1e133c710aedfa81da0dfac935"
+    },
+    {
+      "path": "D:/QM/worktrees/codex-futures-pivot-20260922/tools/futures_lab/smoke_nautilus.py",
+      "sha256": "ce2a6a47a617f68bba100365ea51c88a7abbeea41255fb7dabd027590a3963c9"
+    },
+    {
+      "path": "D:/QM/worktrees/codex-futures-pivot-20260922/tools/futures_lab/test_credential_store.py",
+      "sha256": "e702d560df26d8c19ece7297eb77e235a2e6fd81db9948446efa22753e2935e2"
+    },
+    {
+      "path": "D:/QM/worktrees/codex-futures-pivot-20260922/tools/futures_lab/test_prop_risk.py",
+      "sha256": "e90ec0b998502f471731dc9de57bc0210b4482261ff659854b7c5f263ca3aebe"
+    },
+    {
+      "path": "D:/QM/worktrees/codex-futures-pivot-20260922/tools/futures_lab/test_quote_databento.py",
+      "sha256": "ec1e7c68b4875706032845a47bf9741497eef89fa3712cfc36d5bd619fae954c"
+    }
+  ]
+}

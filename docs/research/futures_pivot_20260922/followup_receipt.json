@@ -1,0 +1,71 @@
+{
+  "campaign_id": "OWNER-DEC-FUTURES-PROP-PREPARATION-20260922",
+  "parent_task_id": "bd61bf70-892d-4ae4-bec4-214da12ed3f6",
+  "implementation_commit": "4aef1793e5c0939513b507d674e40fc2b95b659c",
+  "as_of_utc": "2026-09-22T10:37:16.942411+00:00",
+  "complete": true,
+  "tasks": [
+    {
+      "key": "FUT-DATA-PILOT",
+      "qm_todo_id": "QM-TODO-20260922-FUTURES-01",
+      "title": "Licensed MES data pilot and exact cost/size quote",
+      "task_type": "ops_issue",
+      "state": "BLOCKED",
+      "priority": 94,
+      "blocker": "OWNER personal Databento registration/licensing and protected local API credential are not available",
+      "action": "After real account/credential availability, obtain a metadata-only price/record/byte quote for tools/futures_lab/data_requests.json. Confirm available credit and authorized cash ceiling. No quote is a purchase. Resolve and validate the exact single-contract definition before any history request. Execute only the bounded pilot within credit/cash/disk limits, then validate tick/point values, UTC event sequence, gaps, real quotes and data provenance. Run against the existing pinned engine and publish immutable raw-data/config hashes and a technical quality report. Do not substitute CFD history or claim the official snapshot fixture is an economic sample.",
+      "enqueued": true,
+      "task_id": "5e8d7aff-54bd-42ca-b28b-6526afbaceb8"
+    },
+    {
+      "key": "FUT-PROP-PROFILES",
+      "qm_todo_id": "QM-TODO-20260922-FUTURES-02",
+      "title": "Versioned MFFU and Tradeify evaluation-to-payout research profiles",
+      "task_type": "ops_issue",
+      "state": "TODO",
+      "priority": 93,
+      "blocker": null,
+      "action": "From prop_firms.md/json create dated, source-bound research profiles for MFFU Rapid EOD 50k and Tradeify Select Flex 50k, including evaluation, sim-funded, payout debit/floor and live transition. Extend the isolated risk diagnostic with meaningful adversarial tests only where source semantics are unambiguous. Capture news windows, inactivity, consistency/reset, day-count, scalping/ownership/hosting and exact phase-specific costs. Preserve UNKNOWN for unresolved hosting/fees and first-request buffer wording. Profiles with an unresolved operational requirement remain nondeployable. No account purchase, contact to third parties, live connection or CFD verdict change.",
+      "enqueued": true,
+      "task_id": "fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2"
+    },
+    {
+      "key": "FUT-PREREG",
+      "qm_todo_id": "QM-TODO-20260922-FUTURES-03",
+      "title": "Small futures-only preregistration with source and no-signal controls",
+      "task_type": "research_strategy",
+      "state": "TODO",
+      "priority": 91,
+      "blocker": null,
+      "action": "Freeze a bounded preregistration before viewing economic results: no more than two distinct intraday hypotheses and six total initial symbol/variant arms. Start with the existing source-grounded index opening-range family; a distinct mean-reversion hypothesis must be labelled QM-authored and mechanically complete. Preserve source lineage, existing CFD negative evidence and every screened trial. Prioritize MES, then MNQ, with real raw futures contracts and distinct mini signal versus micro fill identities. Bind train/validation/untouched holdout periods, NY/Chicago calendar, roll mapping, stops, sizing, end-of-day flattening, commissions and slippage/latency scenarios. List data gaps explicitly. Do not create fictitious MT5 EA IDs or route futures tests through the CFD gate runner. Deliver runnable research configuration/specs for the separate futures lane, not an approval or profitability claim.",
+      "enqueued": true,
+      "task_id": "b86d2fbd-574d-4024-af9a-2e48ff84beb9"
+    },
+    {
+      "key": "FUT-OOS-PAYOUT",
+      "qm_todo_id": "QM-TODO-20260922-FUTURES-04",
+      "title": "Frozen futures backtests, holdout and cash-payout path evaluation",
+      "task_type": "ops_issue",
+      "state": "BLOCKED",
+      "priority": 90,
+      "blocker": "Requires FUT-DATA-PILOT, source-bound risk profiles and the frozen FUT-PREREG artifacts",
+      "action": "Only after dependencies pass: execute the frozen limited trial set on licensed actual futures data with complete input hashes. Model contract rolls, futures sessions/holidays/DST, side-correct fills, costs, adverse execution and intraday marked-to-market equity. Report net expectancy with uncertainty, robustness of the untouched holdout, dependence-aware resampling, failure probability, evaluation-to-first-cash distribution, external fees and remaining drawdown room after payout. Clearly separate SIM results, money actually paid and hypothetical cashflows. Positive bar screening alone does not qualify execution. Require native platform signal/order/fee parity and paper observation before any paid challenge recommendation. No purchase or live order is authorized by this research task.",
+      "enqueued": true,
+      "task_id": "3a008800-39c9-4bfa-82de-cfffadab84db"
+    },
+    {
+      "key": "FUT-BUILDER-PROFILE",
+      "qm_todo_id": "QM-TODO-20260922-FUTURES-05",
+      "title": "Add MFFU Builder Default as a conservative cost and payout comparator",
+      "task_type": "ops_issue",
+      "state": "BLOCKED",
+      "priority": 91,
+      "blocker": "Requires delivered versioned profile schema from FUT-PROP-PROFILES; do not edit its in-flight implementation",
+      "action": "Extend the delivered profile schema with MFFU Builder 50k Default ($2000 MLL), using mff_builder_comparison.md/json and current primary terms. Do not confuse the cheaper $1500 add-on with Default. Bind the $1000 soft daily loss pause, 50% SIM cycle consistency, minimum days, gross payout debit, 80% share, payout cap and Live transition. Conflicting EOD breach wording must never loosen controls: raise the floor only at the EOD boundary but conservatively fail an intraday marked-equity touch/breach; preserve unresolved contract and hosting fields as UNKNOWN/nondeployable. Compare Builder, Rapid EOD and Tradeify on identical frozen trade paths and explicitly entered fees, without increasing the strategy hypothesis set. First-request arithmetic is not a payout probability or expected return. Preserve the earlier CFD selection history: a new futures dataset from an already studied index period is not automatically an untouched market holdout. No purchase, third-party contact, live connection, new strategy IDs or revised CFD verdicts.",
+      "enqueued": true,
+      "task_id": "54a8768e-175a-4ef9-aa67-bbb3d84b3c15"
+    }
+  ],
+  "implementation_supplement_commit": "51496737ccf37b7874f46bdf66fcaaeb885cf4f0",
+  "implementation_supplement": "Masked local DPAPI entry and metadata-only quote client; 28 full-suite tests pass. Original queued base commit retained."
+}

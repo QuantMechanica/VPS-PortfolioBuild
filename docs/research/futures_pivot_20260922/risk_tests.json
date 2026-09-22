@@ -1,0 +1,19 @@
+{
+  "command": [
+    "C:/Python311/python.exe",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/futures_lab",
+    "-p",
+    "test_prop_risk.py",
+    "-v"
+  ],
+  "exit_code": 0,
+  "tests": 10,
+  "run_at_utc": "2026-09-22T10:29:04.388753+00:00",
+  "review_fix": "Reject truthy non-boolean Point fields to prevent inflated trading-day counts",
+  "output_path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\risk_tests.txt"
+}

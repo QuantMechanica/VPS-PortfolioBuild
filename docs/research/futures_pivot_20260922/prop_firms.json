@@ -1,0 +1,970 @@
+{
+  "as_of": "2026-09-22",
+  "prepared_at_utc": "2026-09-22T10:27:18.241676+00:00",
+  "scope": "Official public sources only; no accounts, registrations, payments, support messages, data subscriptions or trading actions.",
+  "user_residence": "AT",
+  "user_citizenship": null,
+  "infrastructure": "Parent verified Hetzner hosted server, 64 GiB RAM / 16 threads; not a personal home PC.",
+  "status": "RESEARCH_COMPARISON_NOT_PROVIDER_SELECTION_OR_LIVE_APPROVAL",
+  "sources": {
+    "TS_API": {
+      "title": "TopstepX API Access",
+      "url": "https://help.topstep.com/en/articles/11187768-topstepx-api-access",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "Updated this week; exact date not displayed",
+      "quote": "Custom automated strategies and bots are allowed via the TopstepX / ProjectX API"
+    },
+    "TS_PAY": {
+      "title": "Topstep Payout Policy",
+      "url": "https://help.topstep.com/en/articles/8284233-topstep-payout-policy",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "Updated over two weeks ago",
+      "quote": null
+    },
+    "TS_MLL": {
+      "title": "Topstep Maximum Loss Limit",
+      "url": "https://help.topstep.com/en/articles/8284204-what-is-the-maximum-loss-limit",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "Updated this week",
+      "quote": null
+    },
+    "TS_PRICE": {
+      "title": "Topstep Pricing and Payment Questions",
+      "url": "https://help.topstep.com/en/articles/14289835-topstep-pricing-and-payment-questions",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "2026-07-20",
+      "quote": null
+    },
+    "TS_COUNTRY": {
+      "title": "Topstep eligibility",
+      "url": "https://help.topstep.com/en/articles/8284116-am-i-eligible-to-trade-with-topstep",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "TS_CONS": {
+      "title": "Consistency at Topstep",
+      "url": "https://help.topstep.com/en/articles/8284208-consistency-at-topstep",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "Updated this week",
+      "quote": null
+    },
+    "TD_AUTO": {
+      "title": "TradeDay Automated, Algo and Bot Trading",
+      "url": "https://tradeday.freshdesk.com/en/support/solutions/articles/103000085101-automated-algo-and-bot-trading",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "2025-11-28",
+      "quote": "We do not make platform APIs available to traders."
+    },
+    "TD_VPS": {
+      "title": "TradeDay VPN/VPS policy",
+      "url": "https://tradeday.freshdesk.com/en/support/solutions/articles/103000295384-using-a-vpn-vps-or-ip-masking-add-on",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "31 May; displayed weekday consistent with 2026",
+      "quote": "TradeDay does not allow the use of virtual private servers (VPS)"
+    },
+    "TD_HOME": {
+      "title": "TradeDay current plan cards",
+      "url": "https://www.tradeday.com/",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "TD_QUICK": {
+      "title": "TradeDay Quick Pay payout policy",
+      "url": "https://tradeday.freshdesk.com/en/support/solutions/articles/103000335937-payout-policy",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "22 July; year not printed",
+      "quote": null
+    },
+    "TD_FAST": {
+      "title": "TradeDay Fast Pass",
+      "url": "https://tradeday.freshdesk.com/en/support/solutions/articles/103000405229-what-is-fast-pass-",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "9 September; year not printed",
+      "quote": null
+    },
+    "TD_COUNTRY": {
+      "title": "TradeDay prohibited countries",
+      "url": "https://tradeday.freshdesk.com/en/support/solutions/articles/103000123294-prohibited-countries",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "3 September per official directory",
+      "quote": null
+    },
+    "E2_CONDUCT": {
+      "title": "Earn2Trade prohibited conduct",
+      "url": "https://help.earn2trade.com/en/articles/9286647-prohibited-conduct-in-earn2trade-evaluations-and-in-the-livesim-live-trading-environment",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "2024-05-06",
+      "quote": null
+    },
+    "E2_COPY": {
+      "title": "Earn2Trade trade copier policy",
+      "url": "https://help.earn2trade.com/en/articles/12034590-am-i-allowed-to-copy-trades-across-multiple-accounts",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "2026-06-22",
+      "quote": "The use of trade copiers is not allowed on any of our programs."
+    },
+    "E2_RULES": {
+      "title": "Earn2Trade evaluation rules",
+      "url": "https://help.earn2trade.com/en/articles/5941958-what-are-the-evaluation-rules",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "2026-07-06",
+      "quote": null
+    },
+    "E2_PLAN": {
+      "title": "Earn2Trade Gauntlet Mini",
+      "url": "https://www.earn2trade.com/gauntlet-mini",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "E2_PAY": {
+      "title": "Earn2Trade withdrawal policy",
+      "url": "https://help.earn2trade.com/en/articles/5452472-what-is-the-withdrawal-policy",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "2026-07-09",
+      "quote": null
+    },
+    "E2_FEES": {
+      "title": "Earn2Trade funded fees",
+      "url": "https://help.earn2trade.com/en/articles/2280137-what-is-the-fee-structure-on-the-live-or-livesim-accounts",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "2026-07-06",
+      "quote": null
+    },
+    "E2_TRAIL": {
+      "title": "Earn2Trade trailing drawdown",
+      "url": "https://help.earn2trade.com/en/articles/3292356-what-is-a-trailing-drawdown",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "2023-10-30",
+      "quote": null
+    },
+    "E2_PLAT": {
+      "title": "Earn2Trade platform selector",
+      "url": "https://www.earn2trade.com/purchase",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "TPT_AUTO": {
+      "title": "TakeProfitTrader Universal Trading Policies",
+      "url": "https://takeprofittraderhelp.zendesk.com/hc/en-us/articles/34431153546397-TakeProfitTrader-Universal-Trading-Policies-UTP",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "2026-03-06",
+      "quote": "Automated trading systems, bots, or algorithmic execution tools are not permitted."
+    },
+    "TPT_PLAN": {
+      "title": "TakeProfitTrader current plan page",
+      "url": "https://takeprofittrader.com/es/control-center/pro",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "TPT_DAYS": {
+      "title": "TakeProfitTrader consistency",
+      "url": "https://takeprofittraderhelp.zendesk.com/hc/en-us/articles/15170316538013-Rule-5-Be-Consistent",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "2026-08-17",
+      "quote": null
+    },
+    "TPT_PRO": {
+      "title": "TakeProfitTrader PRO rules",
+      "url": "https://takeprofittraderhelp.zendesk.com/hc/en-us/articles/15171769361053-PRO-Account-Rules",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "2025-11-26",
+      "quote": null
+    },
+    "TPT_PAY": {
+      "title": "TakeProfitTrader PRO withdrawals",
+      "url": "https://takeprofittraderhelp.zendesk.com/hc/en-us/articles/15172219527581-PRO-Account-Profit-Split-Withdrawal-Rules",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "2026-09-16",
+      "quote": null
+    },
+    "TPT_FEES": {
+      "title": "TakeProfitTrader reset-price update",
+      "url": "https://takeprofittrader.com/blog/test-reset-pricing-update-our-biggest-flash-sale-ever-nofee-50",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "2026-05; promotion expired May17",
+      "quote": null
+    },
+    "AX_AUTO": {
+      "title": "Apex User Agreement",
+      "url": "https://dashboard.apextraderfunding.com/agreement/user-agreement",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": "all trading activity conducted within the scope of the Services"
+    },
+    "AX_BAN": {
+      "title": "Apex prohibited activities",
+      "url": "https://apextraderfunding.com/help-center/uncategorized/prohibited-activities/",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": "No Automation or Algorithm Usage allowed"
+    },
+    "AX_EOD": {
+      "title": "Apex EOD Performance Accounts",
+      "url": "https://apextraderfunding.com/help-center/eod-trailing-drawdown-accounts/eod-performance-accounts-pa/",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "AX_PAY": {
+      "title": "Apex EOD payouts",
+      "url": "https://apextraderfunding.com/help-center/eod-trailing-drawdown-accounts/eod-payouts/",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "AX_HOME": {
+      "title": "Apex current product homepage",
+      "url": "https://apextraderfunding.com/",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "MF_AUTO": {
+      "title": "MFFU Fair Play and Prohibited Trading Practices",
+      "url": "https://help.myfundedfutures.com/en/articles/8444599-fair-play-and-prohibited-trading-practices",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": "Traders may make use of automated trading strategies tailored to their own specific settings"
+    },
+    "MF_PLAT": {
+      "title": "MFFU Supported Platforms",
+      "url": "https://help.myfundedfutures.com/en/articles/8528335-overview-of-supported-platforms-at-mffu",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "MF_CONNECT": {
+      "title": "MFFU platform connections",
+      "url": "https://help.myfundedfutures.com/en/articles/8528337-connecting-to-different-platforms-at-mffu",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "MF_EOD": {
+      "title": "MFFU Rapid EOD50k",
+      "url": "https://help.myfundedfutures.com/en/articles/16158363-rapid-eod-50k-a-comprehensive-look",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "Updated over three weeks ago",
+      "quote": null
+    },
+    "MF_PAY": {
+      "title": "MFFU payout overview",
+      "url": "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "MF_DELIVERY": {
+      "title": "MFFU first payout process",
+      "url": "https://help.myfundedfutures.com/en/articles/11542406-guide-to-your-first-payout-quick-and-easy-process",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "MF_LIVE": {
+      "title": "MFFU Understanding Rapid Live",
+      "url": "https://help.myfundedfutures.com/en/articles/13134718-understanding-rapid-live",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "Updated over a week ago",
+      "quote": null
+    },
+    "MF_HOME": {
+      "title": "MFFU current pricing cards",
+      "url": "https://myfundedfutures.com/",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "MF_TERMS": {
+      "title": "MFFU Terms and Conditions",
+      "url": "https://myfundedfutures.com/terms",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "Legacy subscription cutoff explicitly 2026-08-20",
+      "quote": null
+    },
+    "MF_KYC": {
+      "title": "MFFU KYC/AML and restricted countries",
+      "url": "https://help.myfundedfutures.com/en/articles/9717961-kyc-aml-policies",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "TF_AUTO": {
+      "title": "Tradeify Guidelines for Traders",
+      "url": "https://help.tradeify.co/en/articles/10468318-guidelines-for-traders",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": "using it across multiple firms is against Tradeify's policy."
+    },
+    "TF_FAQ": {
+      "title": "Tradeify Futures common FAQs",
+      "url": "https://help.tradeify.co/en/articles/12268494-common-faqs",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": "You cannot log in with VPN/VPS. After logging in normally, you may use VPS for trading at your own risk."
+    },
+    "TF_PLAT": {
+      "title": "Tradeify Supported Platforms",
+      "url": "https://help.tradeify.co/en/articles/10468221-supported-platforms",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "2026-08-05",
+      "quote": null
+    },
+    "TF_BLOG": {
+      "title": "Tradeify platform article",
+      "url": "https://tradeify.co/post/futures-prop-trading-platforms-tradeify",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "TF_PRICE": {
+      "title": "Tradeify Pricing Reference",
+      "url": "https://help.tradeify.co/en/articles/14369021-tradeify-pricing-reference",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "TF_SELECT": {
+      "title": "Tradeify Select Evaluation Accounts",
+      "url": "https://help.tradeify.co/en/articles/12853921-select-evaluation-accounts",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "TF_PAY": {
+      "title": "Tradeify Select Flex and Daily payouts",
+      "url": "https://help.tradeify.co/en/articles/12853966-select-flex-and-select-daily-payout-policies",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "New payout caps effective for purchases after2026-09-01",
+      "quote": null
+    },
+    "TF_AGREE": {
+      "title": "Tradeify Funded Trader Agreement",
+      "url": "https://tradeify.co/funded-trader-agreement",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "TF_KYC": {
+      "title": "Tradeify KYC/AML",
+      "url": "https://help.tradeify.co/en/articles/11384149-kyc-and-aml-policy",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "MF_INSTR": {
+      "title": "MFFU futures instruments and round-trip costs",
+      "url": "https://help.myfundedfutures.com/en/articles/9735811-futures-instrument-list",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "MF_LIVE_COST": {
+      "title": "MFFU Live Funded costs",
+      "url": "https://help.myfundedfutures.com/en/articles/10101257-understanding-live-funded-account-at-myfunded-futures",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "TF_COUNTRY": {
+      "title": "Tradeify restricted countries",
+      "url": "https://help.tradeify.co/en/articles/10495888-rules-restricted-countries",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": null,
+      "quote": null
+    },
+    "TF_COMM": {
+      "title": "Tradeify trading commission fees",
+      "url": "https://help.tradeify.co/en/articles/10468315-trading-commission-fees",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "2026-04-28",
+      "quote": null
+    },
+    "TF_ELITE": {
+      "title": "Tradeify Elite Program",
+      "url": "https://help.tradeify.co/en/articles/12969284-tradeify-elite-program",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "Updated this week",
+      "quote": null
+    },
+    "TF_RISE": {
+      "title": "Tradeify Rise payout process",
+      "url": "https://help.tradeify.co/en/articles/12844518-rise-payouts-main-payout-method",
+      "official": true,
+      "observed_date": "2026-09-22",
+      "displayed_update_or_effective_date": "2026-05-11",
+      "quote": null
+    }
+  },
+  "firms": [
+    {
+      "firm": "MyFundedFutures",
+      "priority": "CONDITIONAL_PRIMARY_CANDIDATE",
+      "automation": "YES_OWN_SETTINGS_NO_HFT",
+      "hetzner_execution": "UNRESOLVED_NO_EXPLICIT_VPS_PERMISSION_FOUND",
+      "automation_note": "Explicit automation allowance, including live subject to CME rules; no sim-fill exploitation, cross-trader copying or hedging. Generic API/platform marketing is not proof of order-API entitlement.",
+      "platforms": "NinjaTrader, Tradovate, TradingView, Quantower, Volumetrica, DeepChart/DeepDom, ATAS. Tradovate credentials/data agreement described; raw API access and current Rithmic entitlement not established.",
+      "residency": "Austria is absent from the retrieved official restricted citizenship/residence list. Residence alone reveals no published exclusion; citizenship, sanctions, KYC, payout provider and live broker still matter.",
+      "plan": "Rapid EOD50k, new purchase",
+      "fee_usd": {
+        "one_time_list": 209,
+        "observed_promo": 125,
+        "activation": 0,
+        "monthly_renewal": 0,
+        "note": "Public selected50k card; promo/checkout not guaranteed. Legacy pre2026-08-20 subscriptions can still renew.",
+        "reset": null,
+        "vat_or_sales_tax": "UNBOUND_CHECKOUT_INCLUSION",
+        "optional_platform_fees": "UNBOUND",
+        "live_professional_data_monthly": null
+      },
+      "evaluation": {
+        "target": 3000,
+        "drawdown": 2000,
+        "trail": "EOD",
+        "daily_loss_limit": null,
+        "minimum_days": 4,
+        "best_day_share": 0.3,
+        "max_minis": 3,
+        "max_micros": 30
+      },
+      "funded": {
+        "environment": "SIM initially",
+        "drawdown": 2000,
+        "trail": "EOD",
+        "floor_lock_profit": 100,
+        "news": "Tier1 prohibited",
+        "inactivity_days": 7
+      },
+      "payout": {
+        "trader_share": 0.9,
+        "frequency": "daily; overview says first eligibility24h after firsttrade",
+        "first_buffer": 2100,
+        "minimum_request": 500,
+        "per_cycle_cap": null,
+        "best_day_share": null,
+        "subsequent_new_profit": 500,
+        "delivery": "Rise agreements/KYC, then bank/crypto; US ACH/Plaid. Approval is not bank settlement."
+      },
+      "live_transition": "Risk-team discretion or $10k net in one session; excess that day forfeited. Up to$5k SIM profit becomes reserve, remaining withdrawable under split. SIM trading/purchases suspend. Rapid50k live starts0, $2k EOD trail stopping0, 90/10 daily, no live buffer.",
+      "unresolved": [
+        "Written hosting/IP rule for sole-owner Hetzner server and live transition",
+        "Native NinjaScript route versus separately authorized raw API",
+        "Whether first $500 payout requires $2600 balance or can be drawn after reaching $2100; overview says after buffer, plan wording is less explicit. Model conservative $2600 until bound.",
+        "Actual live-platform/data fee schedule",
+        "Generic live article says static drawdown; newer Rapid-specific live page says EOD trailing until floor zero. Use product-specific terms, not generic static assumption."
+      ],
+      "sources": [
+        "MF_AUTO",
+        "MF_PLAT",
+        "MF_CONNECT",
+        "MF_EOD",
+        "MF_PAY",
+        "MF_DELIVERY",
+        "MF_LIVE",
+        "MF_HOME",
+        "MF_TERMS",
+        "MF_KYC",
+        "MF_INSTR",
+        "MF_LIVE_COST"
+      ],
+      "trading_costs": {
+        "currency": "USD",
+        "per_contract_round_trip": {
+          "MES": 1.9,
+          "MNQ": 1.9,
+          "ES": 4.68,
+          "NQ": 4.68
+        },
+        "slippage": "ADDITIONAL_NOT_MEASURED",
+        "live": "Professional CME data, platform subscriptions and commissions debited from Live balance; exact monthly amount not published in retrieved source. Bind live-specific schedule."
+      }
+    },
+    {
+      "firm": "Tradeify Futures",
+      "priority": "CONDITIONAL_ALTERNATIVE",
+      "automation": "YES_EXCLUSIVE_OWN_BOT_NO_HFT",
+      "hetzner_execution": "CONDITIONAL_VPS_AFTER_NORMAL_LOGIN",
+      "automation_note": "Sole ownership/exclusive access proof; same bot across other firms forbidden; live video enabling code on ownPC may be required. Funded payout eligibility requires >50% of trades AND profit from holdings longer than10s.",
+      "platforms": "Tradovate route: Tradovate/NinjaTrader/TradingView. Rithmic route: Tradesea/Quantower/SierraChart/RTrader. WealthCharts separate. L1 CME included; raw API entitlement not established. Help says NinjaTrader through Tradovate, not Rithmic.",
+      "residency": "Austria is absent from the current residence-restricted list. KYC, citizenship, Rise and live-broker approval remain separate. If live is denied, official country page says returning to SIM is not permitted.",
+      "plan": "Select50k default40% -> Select Flex",
+      "fee_usd": {
+        "one_time_list": 165,
+        "reset": 109,
+        "activation": 0,
+        "monthly_renewal": 0,
+        "vat_or_sales_tax": "UNBOUND_CHECKOUT_INCLUSION",
+        "nonprofessional_level1_data": 0,
+        "professional_data_warning_monthly": 300,
+        "professional_note": "Pricing page warns of possible $300/month if Non-Professional Agreement is not signed. This is not a bound universal Elite Live data tariff."
+      },
+      "evaluation": {
+        "target": 3000,
+        "drawdown": 2000,
+        "trail": "EOD",
+        "daily_loss_limit": null,
+        "minimum_days": 3,
+        "minimum_days_reason": "40% consistency mathematical floor",
+        "best_day_share": 0.4
+      },
+      "funded": {
+        "environment": "SIM initially",
+        "drawdown": 2000,
+        "trail": "EOD",
+        "floor_lock_above_initial": 100,
+        "daily_loss_limit": null,
+        "best_day_share": null
+      },
+      "payout": {
+        "trader_share": 0.9,
+        "winning_days": 5,
+        "winning_day_min_profit": 150,
+        "max_profit_fraction": 0.5,
+        "request_cap": 2500,
+        "applicability": "new purchases after2026-09-01",
+        "floor_reset": "first request can lock floor at initial+$100 immediately",
+        "subsequent": "positive new cycle PnL and five new winningdays",
+        "delivery": "24-48h plan guidance; contract review can extend beyond advertised time. Rise and region-dependent verification.",
+        "minimum_request": 250,
+        "minimum_request_evidence": "Withdrawal Eligibility comparison table explicitly lists $250 for both Flex and Daily."
+      },
+      "alternative_same_eval": "Select Daily: $2100 retained buffer, $1000 DLL, $250 minimum, $1250 requestcap for new50k, subsequent cap<=2x newprofit,90/10. Permanent choice after pass.",
+      "live_transition": "Current Elite page: consideration after 3 payouts on one account or 10 total since last transition; not automatic. Selection is mandatory. All evaluation/SIM accounts close; only funded accounts with at least one payout transition. No SIM profit carries over, including progress after last successful payout. New Elite starts $0; 50k has $2000 EOD drawdown locking at +$100 once EOD reaches $2100, no DLL, 80/20 daily payout. Pre-lock requests wait for EOD floor update, then reduce room. Zero balance after payout closes account. No simultaneous SIM/live, household-wide.",
+      "unresolved": [
+        "Clarify ordinary-login-then-VPS procedure without bypass",
+        "OwnPC video requirement versus hosted strategy deployment",
+        "Whether QM source-derived strategy can meet exclusive ownership/not shared rule; own code alone is not proof",
+        "Official NinjaTrader availability conflict: support page allows now; company blog says Elite Live only",
+        "Live commission/data/API entitlements"
+      ],
+      "sources": [
+        "TF_AUTO",
+        "TF_FAQ",
+        "TF_PLAT",
+        "TF_BLOG",
+        "TF_PRICE",
+        "TF_SELECT",
+        "TF_PAY",
+        "TF_AGREE",
+        "TF_KYC",
+        "TF_COUNTRY",
+        "TF_COMM",
+        "TF_ELITE",
+        "TF_RISE"
+      ],
+      "trading_costs": {
+        "currency": "USD",
+        "per_contract_round_trip": {
+          "MES": 1.82,
+          "MNQ": 1.82,
+          "ES": 5.76,
+          "NQ": 5.76
+        },
+        "included": "Exchange, NFA, clearing and commission",
+        "slippage": "ADDITIONAL_NOT_MEASURED",
+        "optional_addons": "Tradovate L2/EUREX paid; subscriptions separate. Actual live data/platform cost still to bind."
+      }
+    },
+    {
+      "firm": "Topstep",
+      "priority": "LOCAL_DEVICE_FALLBACK_ONLY",
+      "automation": "YES_API_SIM_ONLY",
+      "hetzner_execution": "PROHIBITED_ORDERFLOW",
+      "automation_note": "Own bots allowed through TopstepX/ProjectX REST and WebSocket. Personal device only; no VPS/VPN/remote-server orders, relay or automated order trigger. Server may store data/backtest/log read-only. ProjectX API unavailable in Live Funded.",
+      "platforms": "Verified route TopstepX API; do not assume legacy NinjaTrader/Rithmic/Tradovate signup access. API$29/mo, recurring Topstep discount$14.50.",
+      "residency": "Austria is absent from the retrieved restricted and XFA-only tables. Citizenship remains unknown and independently relevant. The Germany XFA-only restriction is not applied to Austrian residence.",
+      "plan": "50k Trading Combine -> XFA Standard or Consistency",
+      "fee_usd": {
+        "standard_monthly": 49,
+        "standard_activation": 149,
+        "no_activation_monthly": 95,
+        "no_activation_fee": 0,
+        "api_monthly_discounted": 14.5
+      },
+      "evaluation": {
+        "target": 3000,
+        "drawdown": 2000,
+        "trail": "EOD; realtime equity breach",
+        "minimum_days": 2,
+        "best_day_share": 0.55
+      },
+      "funded": {
+        "environment": "XFA SIM",
+        "starting_profit_balance": 0,
+        "drawdown": 2000,
+        "floor_lock_profit": 0,
+        "first_payout_floor_reset": 0
+      },
+      "payout": {
+        "trader_share": 0.9,
+        "minimum_request": 125,
+        "standard": "5 winningdays >=$150; <=50% balance,50k cap$2000",
+        "consistency": "3 tradingdays,40% bestday; <=50% balance,50k cap$3000",
+        "promo": "Optional DLL checkout promotion doublescaps; not assumed permanent",
+        "delivery": "International SWIFT$30,5-10businessdays after review; Wise limitedlistedregions,not general worldwide"
+      },
+      "live_transition": "Live account distinct; after30 livewinningdays >=$150 daily access up to100% unlockedbalance; before that5winningdays/cycle,up to50%. Fullwithdrawalclosesaccount. API route does not carry over.",
+      "unresolved": [
+        "Local personal-device capability if user chooses fallback",
+        "Country/citizenship and Pro API eligibility",
+        "Live automation alternative not confirmed"
+      ],
+      "sources": [
+        "TS_API",
+        "TS_PRICE",
+        "TS_CONS",
+        "TS_MLL",
+        "TS_PAY",
+        "TS_COUNTRY"
+      ]
+    },
+    {
+      "firm": "TradeDay",
+      "priority": "LOCAL_PLATFORM_FALLBACK_ONLY",
+      "automation": "OWN_SYSTEMS_SUPPORTED_PLATFORMS_CONDITIONAL",
+      "hetzner_execution": "VPS_PROHIBITED",
+      "automation_note": "Supported-platform ATS permitted; purchased thirdparty bots prohibited. No platform APIs exposed, specifically no direct Tradovate API. VPS prohibited and location masking must be disabled.",
+      "platforms": "NinjaTrader,Tradovate,TradingView,Jigsaw,Quantower in automation policy. Native platform strategy is the evidenced path; no standalone REST executor.",
+      "residency": "Austria is absent from the retrieved prohibited-country table. German citizenship, if applicable, would still exclude Funded Live despite Austrian residence; citizenship is unknown.",
+      "plan": "QuickPay50k (FastPass distinct)",
+      "fee_usd": {
+        "quickpay_intraday_monthly_list": 131,
+        "observed_promo": 59,
+        "reset_promo": 59,
+        "activation": 0,
+        "fastpass_price": null
+      },
+      "evaluation": {
+        "quickpay_target": 3000,
+        "quickpay_drawdown": 2000,
+        "quickpay_days": 5,
+        "quickpay_consistency": 0.3,
+        "fastpass_target": 3000,
+        "fastpass_drawdown": 2000,
+        "fastpass_days_math": 3,
+        "fastpass_consistency": 0.45
+      },
+      "funded": {
+        "environment": "SIM then live/eligiblecountry",
+        "quickpay_trail": "intraday even when evaluation EOD",
+        "fastpass_trail": "EOD"
+      },
+      "payout": {
+        "quickpay": "Day1 eligible,$250 minimum,no buffer;50/50 portion at/below$4k currentprofit,80/20 portion above$4k. Withdrawals reducebalance but grossprofit=currentprofit+payouts keepsdrawdowntracking.",
+        "fastpass": "5 days >=$150,45% grossprofitconsistency,newcycleprofit;<=50% profitbalance,max$1500,$250minimum,80/20. Firstwithdrawalresetsfloor tostartingbalance. Pause untilpayoutreceived; nextcyclebeginsnextsession."
+      },
+      "live_transition": "FastPass transitions on fifthrequest or earlier riskdecision;90/10live. Its source contradicts same-$2k-drawdown language with later50k liveexample using$1500TMD/$500slippagebuffer. Bind livecontract before modeling. QuickPay $10k grossprofit review.",
+      "unresolved": [
+        "Exact native ATS path and unique-strategy provenance",
+        "FastPass live $2000vs$1500TMD contradiction",
+        "VPS prohibition makes existing Hetzner unsuitable regardless of automationyes"
+      ],
+      "sources": [
+        "TD_AUTO",
+        "TD_VPS",
+        "TD_HOME",
+        "TD_QUICK",
+        "TD_FAST",
+        "TD_COUNTRY"
+      ]
+    },
+    {
+      "firm": "Earn2Trade",
+      "priority": "AUTOMATION_UNRESOLVED_NOT_GREENLIT",
+      "automation": "NO_EXPLICIT_OWN_EXECUTION_PERMISSION_FOUND",
+      "hetzner_execution": "UNKNOWN",
+      "automation_note": "Official conduct rule prohibits software/AI that manipulates or creates unfairadvantage; does not itself prove blanketbotban. Copytrading expressly banned in eval/LiveSim/live. Conflicting affiliateyes/no claims ignored.",
+      "platforms": "Official selector lists Rithmic/Finamark/RTraderPro,BlackArrow,NinjaTrader/Tradovate/TradingView. RawAPI and VPS permission unconfirmed.",
+      "residency": "User eligibility and partnerprop/livebroker/payoutprovider country must be bound; not established by platform availability.",
+      "plan": "GauntletMini50k",
+      "fee_usd": {
+        "monthly_list": 170,
+        "livesim_activation_deducted_first_payout": 139,
+        "live_monthly_per_exchange_rithmic": 140,
+        "live_monthly_per_exchange_ninjatrader": 156
+      },
+      "evaluation": {
+        "target": 3000,
+        "drawdown": 2000,
+        "trail": "EOD",
+        "daily_loss_limit": 1100,
+        "fixed_minimum_days": 0,
+        "minimum_effective_profitable_days": 4,
+        "best_day_share": 0.3
+      },
+      "funded": {
+        "environment": "Partner LiveSim or Live",
+        "livesim_trail": "EOD",
+        "live_trail": "intraday open+closed equity,locks startingbalance",
+        "daily_loss_limit": 1100
+      },
+      "payout": {
+        "minimum_net": 100,
+        "funded_minimum_days": 0,
+        "funded_consistency": null,
+        "buffer": null,
+        "split": "50% if individualrequest<$2250;80% at/above$2250 for50k",
+        "gm_livesim_withdrawal_max": 5000,
+        "frequency": "weeklyWednesday;submitpreviousFriday14:00CT",
+        "fees": "NonUS Rise$50/request;othersvary. Paymentproviderchosenbyprop."
+      },
+      "live_transition": "Separate partnerfundingoffer; live replacesEODwithintraday trailing and incursprofessionaldatafees. No automationassumption transfers.",
+      "unresolved": [
+        "Explicit own-bot executionpermission, APIrights and hosted-serverrules",
+        "Fundingpartner/currentlivecontract eligibility",
+        "Clarify whether LiveSimmaximum is grossrequest or tradernet before precise simulation"
+      ],
+      "sources": [
+        "E2_CONDUCT",
+        "E2_COPY",
+        "E2_RULES",
+        "E2_PLAN",
+        "E2_PAY",
+        "E2_FEES",
+        "E2_TRAIL",
+        "E2_PLAT"
+      ]
+    },
+    {
+      "firm": "Take Profit Trader",
+      "priority": "REJECT_AUTOMATION",
+      "automation": "PROHIBITED_TEST_PRO_PROPLUS",
+      "hetzner_execution": "IRRELEVANT_TO_CURRENT_AUTOMATED_PLAN",
+      "automation_note": "Universal policy expressly prohibits bots/algorithmicexecution; native riskorders/manualcopierclauses do not grant algorithmpermission.",
+      "platforms": "CQG:NinjaTrader/Tradovate/TradingView;Rithmic:RTrader/Quantower/etc. Platformcapabilitydoesnotoverrulebotban.",
+      "residency": "Notexhaustivelycheckedafterautomationknockout;noaccounteligibilityassumption.",
+      "plan": "50k Test -> PRO -> invited PRO+",
+      "fee_usd": {
+        "monthly_list": 170,
+        "reset": 99,
+        "current_activation": null,
+        "note": "May2026$0activationpromotionexpired;notappliedascurrentprice."
+      },
+      "evaluation": {
+        "target": 3000,
+        "drawdown": 2000,
+        "trail": "EOD",
+        "minimum_days": 3,
+        "best_day_share": "below50%;pagealsousesno-more-than50%wording"
+      },
+      "funded": {
+        "environment": "PROsimulated;PRO+liveinvite",
+        "pro_trail": "intradayincludingunrealized,locksstartingbalance"
+      },
+      "payout": {
+        "pro_share": 0.8,
+        "first_day": "possibleafterbuffer",
+        "50k_buffer": 2000,
+        "buffer_withdrawal": "Requiresaccountclosure;50%through60tradingdays,80%after60 accordingEnglishpage",
+        "proplus": "CompanyMaypostdescribes90%,EOD,nobuffer;currentcontractnotfullyaudited"
+      },
+      "unresolved": [
+        "Noautomatedpathunderpublishedpolicy",
+        "Currentactivation,payoutfeesandcountryrulesnotprioritizedafterknockout",
+        "Consistencyformulainofficialarticleinternallywrong:statesNetPnLx2insteadbestdayx2;donotencodeit"
+      ],
+      "sources": [
+        "TPT_AUTO",
+        "TPT_PLAN",
+        "TPT_DAYS",
+        "TPT_PRO",
+        "TPT_PAY",
+        "TPT_FEES"
+      ]
+    },
+    {
+      "firm": "Apex Trader Funding",
+      "priority": "REJECT_AUTOMATION",
+      "automation": "MANUAL_EACH_ORDER_REQUIRED",
+      "hetzner_execution": "IRRELEVANT_TO_CURRENT_AUTOMATED_PLAN",
+      "automation_note": "Agreementbarsbots/scripts/preprogrammedorderlogicandautomatedmodification. Own-accountcopyingonlyfromamanuallyoperatedorigin. Signal-onlyandmanuallyconfigurednativeSLTPexceptionsarenotfullautomation.",
+      "platforms": "Newproductsofferseparatevendors;legacyRithmic/Tradovate/WealthChartsclaimsnotassumedtoimplyAPIaccess.",
+      "residency": "Notexhaustivelycheckedafterautomationknockout.",
+      "plan": "NewEOD50kPA;donotmixlegacyrules",
+      "fee_usd": {
+        "model": "newproductsone-time,legacycanrenew",
+        "exact_current_50k_fee": null,
+        "note": "Dynamicpublicpickerfailedtoreturnselected50kprice;notguessed."
+      },
+      "evaluation": {
+        "minimum_days": 1,
+        "consistency": null,
+        "target_50k": null,
+        "note": "Selected50kevaluationparametersnotboundinthislimitedaudit."
+      },
+      "funded": {
+        "environment": "PAisSIM;liveinvitepossible",
+        "drawdown": 2000,
+        "trail": "EOD,enforcedintraday",
+        "daily_loss_limit": "tiered",
+        "max_minis": 4
+      },
+      "payout": {
+        "trader_share": 1.0,
+        "qualifying_days": 5,
+        "daily_min_profit": 250,
+        "best_day_share": "strictlybelow50%",
+        "retained_profit_safety_net": 2100,
+        "first_eligible_profit": 2600,
+        "minimum_request": 500,
+        "six_request_caps": [
+          1500,
+          1500,
+          2000,
+          2500,
+          2500,
+          3000
+        ],
+        "after_six": "PAcloses;newqualificationrequiredunlessseparatelivearrangement"
+      },
+      "unresolved": [
+        "Automationisalreadyanexplicitknockout",
+        "No-payout-denialmarketingdoesnotoverridepublishedeligibility/denialrules",
+        "Homepagecontradictslegacyretiredvsreturnedpromotion;useversion-specificcontract"
+      ],
+      "sources": [
+        "AX_AUTO",
+        "AX_BAN",
+        "AX_EOD",
+        "AX_PAY",
+        "AX_HOME"
+      ]
+    }
+  ],
+  "decision": "Prepare a platform-neutral MES/MNQ research executor and lifecycle risk model. MFFU RapidEOD50k and Tradeify Select50k are conditionalcandidates, pendinghosting/API/exclusivityfacts. Topstep/TradeDay only personal-devicefallbacks. Apex/TPT unsuitable. Earn2Trade unresolved.",
+  "illustrative_cash_math": [
+    {
+      "case": "MFFU RapidEOD50k conservative firstcash",
+      "assumptions": "Pass$3000evaluationthenreset;retain$2100SIMbuffer;earnanother$500request;90%share;payobserved$125one-timepromo;ignoretax,FXandanyextraexecution/datafees. No forecast.",
+      "total_two_stage_net_trading_profit": 5600,
+      "cash_received_before_fees": 450,
+      "cash_minus_observed_entry_fee": 325,
+      "remaining_sim_profit": 2100,
+      "locked_floor": 100,
+      "remaining_headroom": 2000,
+      "uncertainty": "First-bufferwithdrawabilitywordingnotfullybound;conservativeinterpretation.",
+      "net_profit_convention": "Trading commissions already deducted from assumed trading profit; do not deduct again. Extra program fees, FX, tax and slippage uncertainty remain.",
+      "cash_minus_list_entry_fee": 241
+    },
+    {
+      "case": "Tradeify SelectFlex50k earlywithdrawal",
+      "assumptions": "Aftereval,5winningdaysat$150andnolosses=>profit$750;request50%=$375;90%share;one-timefee$165;firstrequestlocksprofitfloor$100. No forecast.",
+      "cash_received_before_fees": 337.5,
+      "cash_minus_entry_fee": 172.5,
+      "remaining_sim_profit": 375,
+      "locked_floor": 100,
+      "remaining_headroom": 275,
+      "lesson": "Earlypayoutleavesonly$275riskroom,notadvertised$2000.",
+      "minimum_request": 250,
+      "minimum_request_satisfied": true,
+      "cash_minus_entry_and_one_reset": 63.5,
+      "net_profit_convention": "Five daily amounts are after commissions and any trading costs already modelled."
+    },
+    {
+      "case": "Topstep50kStandardlocal-only",
+      "assumptions": "Oneevaluationmonth$49+activation$149+oneAPIbillingmonth$14.50;fundedprofit$2000with5qualifyingdays;request$1000;90%less$30internationalwire. No forecast.",
+      "cash_received_after_wire": 870,
+      "cash_minus_assumed_program_costs": 657.5,
+      "remaining_profit_headroom": 1000,
+      "limitation": "NotexecutablefromHetzner;bankarrivalandeligibilityadditional."
+    }
+  ],
+  "open_questions_before_provider_binding": [
+    "Citizenship and individual/company contracting status; Austrian residence is confirmed and budget has no fixed cap. No payments or registrations performed.",
+    "MFFU explicit own-server/VPS/IP policy, exact nativeplatform/API entitlement, and same permissions afterlivetransfer.",
+    "Tradeify exact login/VPSprocedure and strategyexclusivity for source-inspiredQMfamilies; clarifyofficialNinjaTraderconflict.",
+    "Venuecostschedule MES/MNQ, marketdataentitlements and historicaldataquality; simulation must deductmeasuredorboundcosts.",
+    "Bindfirstpayoutandpostpayoutfloorsemanticsfromcontract;accountlabel50kispurchasingpower,notcashriskcapital."
+  ],
+  "user_context_provenance": {
+    "residence": "OWNER answered Austria; relayed by root during this research turn on 2026-09-22, not inferred from language.",
+    "budget": "No fixed cap; optimize suitability, cost and expected return. No purchases made.",
+    "citizenship": "Not supplied; do not infer Austrian citizenship from residence."
+  },
+  "total_cost_first_payout": {
+    "status": "PARTIALLY_BOUND_NOT_AN_ALL_IN_QUOTE",
+    "currency": "USD",
+    "MFFU_Rapid_EOD_50k": {
+      "one_attempt_program_fee_promo": 125,
+      "one_attempt_program_fee_list": 209,
+      "activation": 0,
+      "two_fresh_attempts_promo_assumed_unchanged": 250,
+      "two_fresh_attempts_list": 418,
+      "reset_price": null
+    },
+    "Tradeify_Select_50k": {
+      "one_attempt_program_fee": 165,
+      "one_attempt_plus_one_reset": 274,
+      "activation": 0,
+      "two_fresh_accounts": 330
+    },
+    "unbound_additions": [
+      "VAT/sales tax treatment at checkout for Austrian individual/business status",
+      "Optional platform/data subscriptions and actual professional classification",
+      "Trading commissions per contract, spread and slippage",
+      "Rise/bank/FX withdrawal charges for selected Austrian route",
+      "Elapsed months and extra data costs if mandatory live transfer occurs"
+    ],
+    "accounting": "Program cash fees separate from net trade PnL. Do not count commissions twice. First cash scenario assumes zero failed attempts and no extra subscriptions. Prices do not demonstrate positive expectancy."
+  }
+}

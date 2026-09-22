@@ -1,0 +1,42 @@
+{
+  "time_utc": "2026-09-22T10:25:20.712464+00:00",
+  "counts_at_read": {
+    "sources": 119,
+    "work_items": 153221,
+    "agent_tasks": 2456
+  },
+  "preserved_canonical_roots": [
+    {
+      "path": "C:/QM/repo/framework/EAs",
+      "exists": true,
+      "task_disposition": "UNTOUCHED_NO_DELETE_NO_RELOCATION"
+    },
+    {
+      "path": "C:/QM/repo/framework/registry",
+      "exists": true,
+      "task_disposition": "UNTOUCHED_NO_DELETE_NO_RELOCATION"
+    },
+    {
+      "path": "C:/QM/repo/strategy-seeds/cards",
+      "exists": true,
+      "task_disposition": "UNTOUCHED_NO_DELETE_NO_RELOCATION"
+    },
+    {
+      "path": "D:/QM/reports",
+      "exists": true,
+      "task_disposition": "UNTOUCHED_NO_DELETE_NO_RELOCATION"
+    },
+    {
+      "path": "D:/QM/strategy_farm/state",
+      "exists": true,
+      "task_disposition": "UNTOUCHED_NO_DELETE_NO_RELOCATION"
+    },
+    {
+      "path": "C:/QM/mt5/T_Live",
+      "exists": true,
+      "task_disposition": "UNTOUCHED_NO_DELETE_NO_RELOCATION"
+    }
+  ],
+  "scope_note": "Inventory references, not a new full backup. Only separately receipted cold storage cleanup is authorized. All existing strategy definitions, registries and report roots remain in place. Database counts may increase concurrently.",
+  "card_table_counts_at_read": {}
+}

@@ -1,0 +1,15 @@
+{
+  "as_of_utc": "2026-09-22T11:18:58.929913+00:00",
+  "user_statement": "OWNER is registering Databento now",
+  "residence": "AT",
+  "registration_complete_verified": false,
+  "credit_balance_verified": false,
+  "credential_file_exists": false,
+  "windows_operator": "qm-admin",
+  "desktop_shortcut": "C:/Users/Administrator/Desktop/Databento API-Key lokal speichern.lnk",
+  "secret_transport": "Masked local Windows Forms entry; CurrentUser DPAPI and private directory ACL; never chat/Git/Drive",
+  "metadata_quote_cli": "tools/futures_lab/quote_databento.py",
+  "implementation_commit": "51496737cc",
+  "authenticated_requests_performed": 0,
+  "new_purchase_or_subscription_fees_usd": 0
+}

@@ -1,0 +1,31 @@
+{
+  "as_of_utc": "2026-09-22T11:22:53.306141+00:00",
+  "command": [
+    "python",
+    "-B",
+    "G:/My Drive/QuantMechanica - Company Reference/00 Governance/lint_company_reference.py"
+  ],
+  "exit_code": 1,
+  "findings_count": 16,
+  "new_or_changed_page_findings": 0,
+  "findings": [
+    "old gate token in active page: 06 Infrastructure/Scheduled Automation.md",
+    "retired agent-system reference in active page: 06 Infrastructure/Scheduled Automation.md",
+    "old gate token in active page: 08 Current State/2026-09-08 FTMO Governance Nachqualifikation.md",
+    "old gate token in active page: 08 Current State/2026-09-08 T11 Warmterminal und Backtest-Beschleunigung.md",
+    "old gate token in active page: 08 Current State/2026-09-09_candidates_pattern_balke.md",
+    "old gate token in active page: 08 Current State/FTMO War Room.md",
+    "old gate token in active page: 12 ToDo/AI ToDos/Codex.md",
+    "old gate token in active page: 12 ToDo/AI ToDos/OWNER.md",
+    "old gate token in active page: 12 ToDo/AI ToDos/Archive/Entscheidungen 2026-09-05.md",
+    "old gate token in active page: 12 ToDo/AI ToDos/Archive/Entscheidungen 2026-09-06.md",
+    "old gate token in active page: 12 ToDo/AI ToDos/Archive/OWNER_2026-09-06_pre_todo_migration.md",
+    "old gate token in active page: 12 ToDo/AI ToDos/Archive/Entscheidungen 2026-09-08.md",
+    "broken wikilink: 08 Current State/Book Evolution/_index.md -> [[../Continuous Book Evolution]]",
+    "broken wikilink: 08 Current State/Book Evolution/2026-W38.md -> [[10700, \"XAUUSD.DWX\"]]",
+    "broken wikilink: 08 Current State/Book Evolution/2026-W38.md -> [[10700, \"XAUUSD.DWX\"]]",
+    "legacy/invalid symbol mention in 09 Strategy Wiki/Second-Chance Register.md: GER40.DWX"
+  ],
+  "scope": "Futures preparation page with five distinct tasks and its existing index link",
+  "previous_matching_findings_receipt": "D:/QM/reports/research/factory_source_intake_20260922/vault_lint_result.json"
+}

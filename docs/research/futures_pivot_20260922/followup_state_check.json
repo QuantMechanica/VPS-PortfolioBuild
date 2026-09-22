@@ -1,0 +1,60 @@
+{
+  "as_of_utc": "2026-09-22T11:35:08.546421+00:00",
+  "read_only": true,
+  "rows": [
+    {
+      "id": "bd61bf70-892d-4ae4-bec4-214da12ed3f6",
+      "task_type": "ops_issue",
+      "state": "REVIEW",
+      "assigned_agent": null,
+      "artifact_path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\README.md",
+      "verdict": "Futures preparation delivered for Austrian OWNER: isolated engine smoke and 28 lab tests PASS; 23519 archived files fully SHA-verified and retained, C/D headroom restored with all ten workers recovered; five concrete followups. No profitable-strategy or payout claim. Personal Databento registration in progress; key and credit not yet verified. Provider hosting/contract conditions remain explicit.",
+      "updated_at": "2026-09-22T11:33:39+00:00"
+    },
+    {
+      "id": "5e8d7aff-54bd-42ca-b28b-6526afbaceb8",
+      "task_type": "ops_issue",
+      "state": "BLOCKED",
+      "assigned_agent": null,
+      "artifact_path": null,
+      "verdict": null,
+      "updated_at": "2026-09-22T10:37:16+00:00"
+    },
+    {
+      "id": "fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2",
+      "task_type": "ops_issue",
+      "state": "IN_PROGRESS",
+      "assigned_agent": "codex",
+      "artifact_path": null,
+      "verdict": null,
+      "updated_at": "2026-09-22T10:47:34+00:00"
+    },
+    {
+      "id": "b86d2fbd-574d-4024-af9a-2e48ff84beb9",
+      "task_type": "research_strategy",
+      "state": "IN_PROGRESS",
+      "assigned_agent": "codex",
+      "artifact_path": null,
+      "verdict": null,
+      "updated_at": "2026-09-22T11:02:45+00:00"
+    },
+    {
+      "id": "3a008800-39c9-4bfa-82de-cfffadab84db",
+      "task_type": "ops_issue",
+      "state": "BLOCKED",
+      "assigned_agent": null,
+      "artifact_path": null,
+      "verdict": null,
+      "updated_at": "2026-09-22T10:37:16+00:00"
+    },
+    {
+      "id": "54a8768e-175a-4ef9-aa67-bbb3d84b3c15",
+      "task_type": "ops_issue",
+      "state": "BLOCKED",
+      "assigned_agent": null,
+      "artifact_path": null,
+      "verdict": null,
+      "updated_at": "2026-09-22T11:20:30+00:00"
+    }
+  ]
+}
