@@ -1527,7 +1527,17 @@ def run_agent_slot(
                     cmd,
                     purpose="orchestration",
                     cwd=cwd,
-                    dedupe_key="orchestration:codex",
+                    # Single-flight per LANE for the task-agnostic session
+                    # (unchanged), per TASK for pinned fan-out sessions: the
+                    # exec-lease already guarantees one session per task, and a
+                    # lane-wide key made slots 3/4 refuse with
+                    # ManagedCodexAlreadyRunning while slot 2 ran (observed
+                    # 2026-09-22T00:47Z, first --max-sessions 3 cycle).
+                    dedupe_key=(
+                        f"orchestration:codex:{assigned_task_id}"
+                        if assigned_task_id
+                        else "orchestration:codex"
+                    ),
                     # The wrapper owns the primary timeout.  Five minutes of
                     # lease headroom covers its result write/push cleanup while
                     # remaining below the Task Scheduler's four-hour limit for

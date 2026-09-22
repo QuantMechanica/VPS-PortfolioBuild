@@ -129,3 +129,18 @@ Observation plan (Fable hourly watch): the first two scheduler-started max-3 cyc
 `D:/QM/strategy_farm/logs/codex_orchestration_slot{2,3,4}_*.json` — leased task ids per slot, worktree commit, lease-conflict
 result, model-ledger attribution. **Rollback** on any duplicate lease, unpinned prompt, stale-code slot, ledger or lock anomaly:
 set the action back to `--max-sessions 1` (before-XML is the exact restore point).
+
+## Observation cycle 1 (2026-09-22T01:29:00Z) — first scheduler-started `--max-sessions 3` controller (2026-09-22T00:47:35Z)
+
+| Slot | Leased task | Result |
+|---|---|---|
+| 2 | `d6189118` (KS/Prague rollover) | running, productive (spawn lease `agent_task_exec:d6189118…` owner pid 18280, renewed 01:27Z) |
+| 3 | `7088da77`, then chained `08d62fa7` | both refused in < 0.1 s: `ManagedCodexAlreadyRunning('managed Codex launch already in progress for dedupe=2028d7c4ebae')`; leases released |
+| 4 | `a36a5983`, then chained `01806354` | same refusal; leases released |
+
+No duplicate lease, no unpinned prompt, no stale-code slot: the pinning worked, but the managed Codex launcher's single-flight
+`dedupe_key="orchestration:codex"` (constant for the whole lane, `run_agent_orchestration_task.py` spawn call) made every
+concurrent pinned session refuse, so the effective parallelism stayed at 1. **Fix (Fable, this commit):** the dedupe key is
+per task for pinned sessions (`orchestration:codex:<assigned_task_id>`) and unchanged for the task-agnostic single session;
+the exec-lease already guarantees one session per task. Tests: fan-out / lock / heartbeat suites green. Observation continues
+with cycle 2 (next controller start after the current one exits); rollback unchanged (`--max-sessions 1`).
