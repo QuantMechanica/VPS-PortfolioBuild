@@ -1,18 +1,18 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        11422
 ; ea_slug:      williams-18ma-outside-bar-entry-d1
 ; ea_version:   v5.0
-; set_version:  s20260703-001
+; set_version:  s20260922-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9eb5d2596d7ff3770ffe5568edd3dc22ff4f5d553f5803eb562b33b9a6cff9c4
+; build_hash:   66b44ab7f3840e9c28193b2bcf5262297f852b2ea939e1cd022624b6c055f615
 ; author:       Development
-; date:         2026-07-03
+; date:         2026-09-22
 ;==========================================================
 qm_ea_id=11422
 qm_magic_slot_offset=2

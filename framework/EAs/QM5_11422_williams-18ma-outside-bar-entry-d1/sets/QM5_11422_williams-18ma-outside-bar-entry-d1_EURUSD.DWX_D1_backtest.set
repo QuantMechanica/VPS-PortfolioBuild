@@ -1,18 +1,18 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        11422
 ; ea_slug:      williams-18ma-outside-bar-entry-d1
 ; ea_version:   v5.0
-; set_version:  s20260703-001
+; set_version:  s20260922-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   633e01e6c384aac270a51d2804817f64cf20fe45c331fe7515ff5501328a3130
+; build_hash:   6cf2e05bafcc42c3076f9ca14f69e33da206a710c5cce702c1a390ca25e45530
 ; author:       Development
-; date:         2026-07-03
+; date:         2026-09-22
 ;==========================================================
 qm_ea_id=11422
 qm_magic_slot_offset=0
