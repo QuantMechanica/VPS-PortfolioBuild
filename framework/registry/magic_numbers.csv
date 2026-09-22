@@ -18626,3 +18626,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41487,ft-binhv45-v2,3,XAUUSD.DWX,414870003,2026-09-21,Codex governed allocator,active
 41488,commodity-tsmom-12m-atr-symbolinput,0,XTIUSD.DWX,414880000,2026-09-22,Codex governed allocator,active
 41489,collins-66mom-symbolinput,0,XTIUSD.DWX,414890000,2026-09-22,Codex governed allocator,active
+9241,mql5-engulf-retest,0,EURUSD.DWX,92410000,2026-09-22,Codex governed allocator,active
+9241,mql5-engulf-retest,1,GBPUSD.DWX,92410001,2026-09-22,Codex governed allocator,active
+9241,mql5-engulf-retest,2,XAUUSD.DWX,92410002,2026-09-22,Codex governed allocator,active
+20078,volume-profile-poc-retest-intraday,0,EURUSD.DWX,200780000,2026-09-22,Codex governed allocator,active
+20078,volume-profile-poc-retest-intraday,1,GBPUSD.DWX,200780001,2026-09-22,Codex governed allocator,active
+20078,volume-profile-poc-retest-intraday,2,USDJPY.DWX,200780002,2026-09-22,Codex governed allocator,active
+20078,volume-profile-poc-retest-intraday,3,XAUUSD.DWX,200780003,2026-09-22,Codex governed allocator,active
+20078,volume-profile-poc-retest-intraday,4,NDX.DWX,200780004,2026-09-22,Codex governed allocator,active
+20078,volume-profile-poc-retest-intraday,5,WS30.DWX,200780005,2026-09-22,Codex governed allocator,active
+20078,volume-profile-poc-retest-intraday,6,GDAXI.DWX,200780006,2026-09-22,Codex governed allocator,active
