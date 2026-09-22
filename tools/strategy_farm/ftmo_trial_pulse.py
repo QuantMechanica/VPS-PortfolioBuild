@@ -31,8 +31,10 @@ from zoneinfo import ZoneInfo
 try:
     import health_contract
     import path_to_25
+    from ftmo import venue_matched_collector
 except ModuleNotFoundError:
     from tools.strategy_farm import health_contract, path_to_25
+    from tools.strategy_farm.ftmo import venue_matched_collector
 
 DATA_DIR = Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\81A933A9AFC5DE3C23B15CAB19C63850")
 TERMINAL_EXE = Path(r"C:\Program Files\FTMO Global Markets MT5 Terminal\terminal64.exe")
@@ -1086,6 +1088,25 @@ def publish_pulse(out: dict) -> int:
     return 1 if out.get("alarms") else 0
 
 
+def collect_venue_cost_sidecar(now: datetime) -> dict:
+    """Run the read-only matched-venue sidecar on this existing 30m cadence."""
+    try:
+        return venue_matched_collector.scheduled_collect(now=now)
+    except Exception as exc:  # Fail visible without changing money-control state.
+        return {
+            "schema": "qm.ftmo-venue-matched-collector-state/v2",
+            "status": "COLLECTION_ERROR",
+            "reason": f"{type(exc).__name__}:{exc}",
+            "authorization": {
+                "terminal_launch": False,
+                "terminal_control": False,
+                "trade_call": False,
+                "order_action": False,
+                "autotrading_toggle": False,
+            },
+        }
+
+
 def main() -> int:
     now = utc_now()
     alarms: list[str] = []
@@ -1334,6 +1355,17 @@ def main() -> int:
             "pulse_is_observer_only_governor_QM5_13206_is_sole_halt_authority"
         )
 
+    venue_cost_collection = (
+        collect_venue_cost_sidecar(utc_now())
+        if up
+        else {"status": "SKIPPED_FTMO_TERMINAL_NOT_RUNNING"}
+    )
+    if venue_cost_collection.get("status") == "COLLECTION_ERROR":
+        warns.append(
+            "venue_cost_collection_error:"
+            f"{venue_cost_collection.get('reason')}"
+        )
+
     verdict = "ALARM" if alarms else ("WARN" if warns else "OK")
     out = {
         "checked_at_utc": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -1393,6 +1425,22 @@ def main() -> int:
         "server_request_burst_window_end_utc": eas.get(
             "server_request_burst_window_end_utc"
         ),
+        "venue_cost_collection": {
+            key: venue_cost_collection.get(key)
+            for key in (
+                "schema",
+                "status",
+                "collected_at_utc",
+                "new_spread_rows",
+                "total_spread_rows",
+                "new_slippage_rows",
+                "total_slippage_rows",
+                "reason",
+                "outputs",
+                "authorization",
+            )
+            if venue_cost_collection.get(key) is not None
+        },
         "ea_errors_resolved": eas.get("ea_errors_resolved", []),
         "alarms": alarms,
         "warns": warns[-10:],

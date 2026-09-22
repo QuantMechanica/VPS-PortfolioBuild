@@ -1,0 +1,87 @@
+{
+  "schema": "qm.ftmo-venue-book-sim-flags/v1",
+  "task_id": "629043f6-b913-4df3-aab2-7adb79455c53",
+  "as_of_utc": "2026-09-22T04:15:00Z",
+  "status": "PARTIAL_MEASURED_CHARGES_NOT_FULL_VENUE_ADJUSTED",
+  "flags": {
+    "--spread-bps-rt-by-symbol": {
+      "path": "spread_bps_rt_by_symbol.json",
+      "sha256": "74c69c4f3835ca701ed627aa31da5f510c61a67220e592bfe3085547af62e5c4"
+    },
+    "--slippage-usd-per-lot-rt-by-symbol": {
+      "path": "slippage_usd_per_lot_rt_by_symbol.json",
+      "sha256": "72829bca21bb06bb247f41ab3a2a65f747e925e7c787a1c924381eddd54fa288"
+    }
+  },
+  "coverage": {
+    "USDJPY.DWX": {
+      "spread_status": "MEASURED",
+      "additional_spread_bps_rt": 0.12762833,
+      "slippage_status": "MEASURED_ROUND_TRIP",
+      "additional_slippage_usd_per_lot_rt": 0.0,
+      "slippage_deals": 2
+    },
+    "GBPUSD.DWX": {
+      "spread_status": "MEASURED",
+      "additional_spread_bps_rt": 0.14951706,
+      "slippage_status": "UNMEASURED_NO_NATURAL_D2G6_DEALS",
+      "additional_slippage_usd_per_lot_rt": null,
+      "slippage_deals": 0
+    },
+    "XAUUSD.DWX": {
+      "spread_status": "UNMEASURED_NO_21Z_MATCHED_MINUTES",
+      "additional_spread_bps_rt": null,
+      "slippage_status": "UNMEASURED_NO_NATURAL_D2G6_DEALS",
+      "additional_slippage_usd_per_lot_rt": null,
+      "slippage_deals": 0
+    },
+    "USDCAD.DWX": {
+      "spread_status": "MEASURED",
+      "additional_spread_bps_rt": 0.03563808,
+      "slippage_status": "MEASURED_ROUND_TRIP",
+      "additional_slippage_usd_per_lot_rt": 4.06396828,
+      "slippage_deals": 3
+    },
+    "EURUSD.DWX": {
+      "roster_status": "SHADOW_NOT_IN_D2G6",
+      "spread_status": "MEASURED",
+      "additional_spread_bps_rt": 0.14807585,
+      "slippage_status": "UNMEASURED_NO_NATURAL_D2G6_DEALS",
+      "additional_slippage_usd_per_lot_rt": null,
+      "slippage_deals": 0
+    }
+  },
+  "missing_value_contract": {
+    "numeric_zero_means": "MEASURED_ZERO_ONLY",
+    "absent_key_means": "UNMEASURED_AND_NOT_IMPUTED",
+    "simulator_behavior": "Only table members receive an incremental charge. Missing symbols receive no incremental charge in this partial sensitivity and therefore make the result ineligible as a full venue-adjusted headline."
+  },
+  "result": {
+    "path": "book_sim_measured_partial.json",
+    "sha256": "a81f65d56c0cc3cfaeaa05bd225fd6ca902d117a1705f4b92305741225b3999f",
+    "input_manifest_sha256": "008836074e85e97a99181d028c848b20fe4d13a1d18f2c7f5a198a662c25a16c",
+    "P_FIRST_NET_FTMO_PAYOUT": 0.8748,
+    "P_FIRST_NET_FTMO_PAYOUT_LCB": 0.8619,
+    "unconditional_t80_business_day": 998,
+    "unconditional_t80_calendar_day_5_over_7": 1397,
+    "additional_spread_drag_usd_fixed_window": 1982.993954,
+    "additional_slippage_drag_usd_fixed_window": 406.219029
+  },
+  "baseline": {
+    "path": "docs/research/ftmo_intake/2026-09-21_br_nnfx/results/PAYOUT80_diagnostic.json",
+    "sha256": "fb25ec50555f5b94ce912b4c247ef14b57c371ac63d60c2bacd60d91a00aa708",
+    "input_manifest_sha256": "9fa877faa41b21109b3bfc1ac46b3558801226453bb8c30c35d345e732f4f990",
+    "P_FIRST_NET_FTMO_PAYOUT_LCB": 0.8762,
+    "unconditional_t80_business_day": 929,
+    "unconditional_t80_calendar_day_5_over_7": 1300
+  },
+  "delta": {
+    "P_FIRST_NET_FTMO_PAYOUT_LCB": -0.0143,
+    "unconditional_t80_business_days": 69,
+    "unconditional_t80_calendar_days_5_over_7": 97
+  },
+  "publication": {
+    "current_state_mutated": false,
+    "reason": "Incomplete XAUUSD spread and GBPUSD/XAUUSD slippage coverage prohibit a full venue-adjusted headline."
+  }
+}

@@ -628,3 +628,28 @@ def test_load_expected_magics_falls_back_on_malformed_roster(tmp_path: Path) -> 
     assert magics == ftmo_trial_pulse.REPO_ROOT_EXPECTED_MAGICS_FALLBACK
     assert source == "hardcoded_fallback"
     assert error is not None and "invalid_roster_schema" in error
+
+
+def test_venue_cost_sidecar_uses_existing_pulse_cadence(monkeypatch) -> None:
+    now = datetime(2026, 9, 22, 4, 30, tzinfo=timezone.utc)
+    monkeypatch.setattr(
+        ftmo_trial_pulse.venue_matched_collector,
+        "scheduled_collect",
+        lambda *, now: {"status": "PARTIAL_UNMEASURED", "collected_at_utc": now.isoformat()},
+    )
+    result = ftmo_trial_pulse.collect_venue_cost_sidecar(now)
+    assert result["status"] == "PARTIAL_UNMEASURED"
+
+
+def test_venue_cost_sidecar_failure_is_observational(monkeypatch) -> None:
+    def fail(*, now):
+        raise RuntimeError("synthetic")
+
+    monkeypatch.setattr(
+        ftmo_trial_pulse.venue_matched_collector, "scheduled_collect", fail
+    )
+    result = ftmo_trial_pulse.collect_venue_cost_sidecar(
+        datetime(2026, 9, 22, tzinfo=timezone.utc)
+    )
+    assert result["status"] == "COLLECTION_ERROR"
+    assert result["authorization"]["trade_call"] is False

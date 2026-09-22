@@ -1,0 +1,202 @@
+{
+  "authorization": {
+    "autotrading_toggle": false,
+    "order_action": false,
+    "terminal_control": false,
+    "terminal_launch": false,
+    "trade_call": false
+  },
+  "collected_at_utc": "2026-09-22T04:15:00Z",
+  "dxz": {
+    "account_login_masked": "*******541",
+    "account_server": "Darwinex-Live",
+    "autotrading_touched": false,
+    "clock_normalization": {
+      "method": "nearest whole-hour from current broker tick to wall-clock UTC",
+      "normalized_tick_lag_msc": 6506,
+      "normalized_tick_time_utc": "2026-09-22T04:50:15Z",
+      "raw_server_tick_time_msc": 1790063415885,
+      "server_minus_utc_hours": 3,
+      "status": "PASS_LIVE_OFFSET_INFERENCE",
+      "symbol": "EURUSD"
+    },
+    "data_path": "C:\\QM\\mt5\\T_Live\\MT5_Base",
+    "executable": "C:\\QM\\mt5\\T_Live\\MT5_Base\\terminal64.exe",
+    "orders_sent": 0,
+    "process_ids": [
+      10168
+    ],
+    "symbols": {
+      "EURUSD": {
+        "digits": 5,
+        "minute_count": 476,
+        "point": 1e-05,
+        "query_errors": [],
+        "status": "MEASURED",
+        "symbol": "EURUSD"
+      },
+      "GBPUSD": {
+        "digits": 5,
+        "minute_count": 476,
+        "point": 1e-05,
+        "query_errors": [],
+        "status": "MEASURED",
+        "symbol": "GBPUSD"
+      },
+      "USDCAD": {
+        "digits": 5,
+        "minute_count": 476,
+        "point": 1e-05,
+        "query_errors": [],
+        "status": "MEASURED",
+        "symbol": "USDCAD"
+      },
+      "USDJPY": {
+        "digits": 3,
+        "minute_count": 473,
+        "point": 0.001,
+        "query_errors": [],
+        "status": "MEASURED",
+        "symbol": "USDJPY"
+      },
+      "XAUUSD": {
+        "digits": 2,
+        "minute_count": 420,
+        "point": 0.01,
+        "query_errors": [],
+        "status": "MEASURED",
+        "symbol": "XAUUSD"
+      }
+    },
+    "terminal_build": 6182,
+    "terminal_connected": true,
+    "terminal_control_actions": 0,
+    "terminal_trade_allowed_observed": true,
+    "venue": "DXZ"
+  },
+  "ftmo": {
+    "account_login_masked": "*******732",
+    "account_server": "FTMO-Demo",
+    "autotrading_touched": false,
+    "clock_normalization": {
+      "method": "nearest whole-hour from current broker tick to wall-clock UTC",
+      "normalized_tick_lag_msc": 2790,
+      "normalized_tick_time_utc": "2026-09-22T04:50:18Z",
+      "raw_server_tick_time_msc": 1790063418308,
+      "server_minus_utc_hours": 3,
+      "status": "PASS_LIVE_OFFSET_INFERENCE",
+      "symbol": "EURUSD"
+    },
+    "data_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850",
+    "executable": "C:\\Program Files\\FTMO Global Markets MT5 Terminal\\terminal64.exe",
+    "orders_sent": 0,
+    "process_ids": [
+      11756
+    ],
+    "symbols": {
+      "EURUSD": {
+        "digits": 5,
+        "minute_count": 474,
+        "point": 1e-05,
+        "query_errors": [],
+        "status": "MEASURED",
+        "symbol": "EURUSD"
+      },
+      "GBPUSD": {
+        "digits": 5,
+        "minute_count": 470,
+        "point": 1e-05,
+        "query_errors": [],
+        "status": "MEASURED",
+        "symbol": "GBPUSD"
+      },
+      "USDCAD": {
+        "digits": 5,
+        "minute_count": 456,
+        "point": 1e-05,
+        "query_errors": [],
+        "status": "MEASURED",
+        "symbol": "USDCAD"
+      },
+      "USDJPY": {
+        "digits": 3,
+        "minute_count": 472,
+        "point": 0.001,
+        "query_errors": [],
+        "status": "MEASURED",
+        "symbol": "USDJPY"
+      },
+      "XAUUSD": {
+        "digits": 2,
+        "minute_count": 420,
+        "point": 0.01,
+        "query_errors": [],
+        "status": "MEASURED",
+        "symbol": "XAUUSD"
+      }
+    },
+    "terminal_build": 6182,
+    "terminal_connected": true,
+    "terminal_control_actions": 0,
+    "terminal_trade_allowed_observed": true,
+    "venue": "FTMO"
+  },
+  "new_slippage_rows": 0,
+  "new_spread_rows": 0,
+  "outputs": {
+    "measurements.json": {
+      "path": "D:\\QM\\reports\\ftmo\\venue_matched_measurement\\task_629043f6-b913-4df3-aab2-7adb79455c53\\v2_clock_normalized\\measurements.json",
+      "sha256": "ee5f1f82500edb52533bf4b6e78234921f6051eef197e70d6bd71c83df3c82d2",
+      "size_bytes": 62168
+    },
+    "slippage_daily_summary.json": {
+      "path": "D:\\QM\\reports\\ftmo\\venue_matched_measurement\\task_629043f6-b913-4df3-aab2-7adb79455c53\\v2_clock_normalized\\slippage_daily_summary.json",
+      "sha256": "db676a3de25f5b5617c33c6fbe66f7e6a96121e2d6f4c438f96f0de3b1741929",
+      "size_bytes": 53125
+    },
+    "slippage_ledger.jsonl": {
+      "path": "D:\\QM\\reports\\ftmo\\venue_matched_measurement\\task_629043f6-b913-4df3-aab2-7adb79455c53\\v2_clock_normalized\\slippage_ledger.jsonl",
+      "sha256": "cf904963686a564984c73f3160de3f62c579c46a8f4ea84eb90ba5a98812e763",
+      "size_bytes": 4597
+    },
+    "slippage_usd_per_lot_rt_by_symbol.json": {
+      "path": "D:\\QM\\reports\\ftmo\\venue_matched_measurement\\task_629043f6-b913-4df3-aab2-7adb79455c53\\v2_clock_normalized\\slippage_usd_per_lot_rt_by_symbol.json",
+      "sha256": "72829bca21bb06bb247f41ab3a2a65f747e925e7c787a1c924381eddd54fa288",
+      "size_bytes": 56
+    },
+    "spread_bps_rt_by_symbol.json": {
+      "path": "D:\\QM\\reports\\ftmo\\venue_matched_measurement\\task_629043f6-b913-4df3-aab2-7adb79455c53\\v2_clock_normalized\\spread_bps_rt_by_symbol.json",
+      "sha256": "74c69c4f3835ca701ed627aa31da5f510c61a67220e592bfe3085547af62e5c4",
+      "size_bytes": 121
+    },
+    "spread_matched.csv": {
+      "path": "D:\\QM\\reports\\ftmo\\venue_matched_measurement\\task_629043f6-b913-4df3-aab2-7adb79455c53\\v2_clock_normalized\\spread_matched.csv",
+      "sha256": "449163150e0343f9addc2bdaca52fb49a25e1f4461f4a53f75c81be4ae8f4bbc",
+      "size_bytes": 424999
+    },
+    "spread_matched.jsonl": {
+      "path": "D:\\QM\\reports\\ftmo\\venue_matched_measurement\\task_629043f6-b913-4df3-aab2-7adb79455c53\\v2_clock_normalized\\spread_matched.jsonl",
+      "sha256": "c7e8fdeb869a731ec4efcfce700c7e00e62efb4b9ee9bf4bdc2291cc959e4b23",
+      "size_bytes": 1253739
+    }
+  },
+  "schema": "qm.ftmo-venue-matched-collector-state/v2",
+  "slippage_capture": {
+    "d2g6_trade_deal_count": 5,
+    "history_deal_count": 7,
+    "history_order_count": 13,
+    "measured_count": 5,
+    "status": "CAPTURED",
+    "unmeasured_count": 0
+  },
+  "status": "PARTIAL_UNMEASURED",
+  "task_id": "629043f6-b913-4df3-aab2-7adb79455c53",
+  "total_slippage_rows": 5,
+  "total_spread_rows": 2290,
+  "window": {
+    "end_utc": "2026-09-22T04:15:00Z",
+    "query_window_count": 9,
+    "session_only": true,
+    "start_utc": "2026-09-18T00:00:00Z"
+  }
+}

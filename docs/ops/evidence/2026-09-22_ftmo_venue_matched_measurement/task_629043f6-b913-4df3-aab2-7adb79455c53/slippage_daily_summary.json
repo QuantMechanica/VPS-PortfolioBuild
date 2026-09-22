@@ -1,0 +1,2292 @@
+{
+  "deal_count": 5,
+  "eligible_slippage_usd_per_lot_rt_by_symbol": {
+    "USDCAD.DWX": 4.06396828,
+    "USDJPY.DWX": 0.0
+  },
+  "generated_at_utc": "2026-09-22T04:15:00Z",
+  "measured_deal_count": 5,
+  "schema": "qm.ftmo-d2g6-slippage-summary/v1",
+  "symbols": {
+    "EURUSD": {
+      "additional_slippage_usd_per_lot_rt": null,
+      "all_deals": {
+        "n": 0,
+        "slippage_bps": {
+          "p50": null,
+          "p90": null
+        },
+        "slippage_usd_per_lot": {
+          "p50": null,
+          "p90": null
+        }
+      },
+      "by_utc_date": {},
+      "by_utc_hour": {
+        "00": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "01": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "02": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "03": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "04": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "05": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "06": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "07": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "08": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "09": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "10": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "11": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "12": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "13": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "14": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "15": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "16": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "17": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "18": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "19": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "20": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "21": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "22": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "23": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        }
+      },
+      "daily_by_utc_hour": {},
+      "deal_count": 0,
+      "entry_measured_count": 0,
+      "exit_measured_count": 0,
+      "measured_deal_count": 0,
+      "round_trip_rule": "max(0,p90(entry USD/lot))+max(0,p90(exit USD/lot)); requires at least one measured entry and exit",
+      "status": "UNMEASURED",
+      "unmeasured_deal_count": 0
+    },
+    "GBPUSD": {
+      "additional_slippage_usd_per_lot_rt": null,
+      "all_deals": {
+        "n": 0,
+        "slippage_bps": {
+          "p50": null,
+          "p90": null
+        },
+        "slippage_usd_per_lot": {
+          "p50": null,
+          "p90": null
+        }
+      },
+      "by_utc_date": {},
+      "by_utc_hour": {
+        "00": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "01": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "02": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "03": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "04": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "05": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "06": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "07": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "08": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "09": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "10": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "11": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "12": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "13": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "14": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "15": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "16": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "17": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "18": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "19": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "20": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "21": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "22": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "23": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        }
+      },
+      "daily_by_utc_hour": {},
+      "deal_count": 0,
+      "entry_measured_count": 0,
+      "exit_measured_count": 0,
+      "measured_deal_count": 0,
+      "round_trip_rule": "max(0,p90(entry USD/lot))+max(0,p90(exit USD/lot)); requires at least one measured entry and exit",
+      "status": "UNMEASURED",
+      "unmeasured_deal_count": 0
+    },
+    "USDCAD": {
+      "additional_slippage_usd_per_lot_rt": 4.06396828,
+      "all_deals": {
+        "n": 3,
+        "slippage_bps": {
+          "p50": 0.21425052,
+          "p90": 0.38533296
+        },
+        "slippage_usd_per_lot": {
+          "p50": 2.13893068,
+          "p90": 3.85007522
+        }
+      },
+      "by_utc_date": {
+        "2026-09-18": {
+          "n": 2,
+          "slippage_bps": {
+            "p50": 0.10712526,
+            "p90": 0.19282547
+          },
+          "slippage_usd_per_lot": {
+            "p50": 1.06946534,
+            "p90": 1.92503761
+          }
+        },
+        "2026-09-21": {
+          "n": 1,
+          "slippage_bps": {
+            "p50": 0.42810357,
+            "p90": 0.42810357
+          },
+          "slippage_usd_per_lot": {
+            "p50": 4.27786135,
+            "p90": 4.27786135
+          }
+        }
+      },
+      "by_utc_hour": {
+        "00": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "01": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "02": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "03": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "04": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "05": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "06": {
+          "n": 1,
+          "slippage_bps": {
+            "p50": 0.42810357,
+            "p90": 0.42810357
+          },
+          "slippage_usd_per_lot": {
+            "p50": 4.27786135,
+            "p90": 4.27786135
+          }
+        },
+        "07": {
+          "n": 1,
+          "slippage_bps": {
+            "p50": 0.21425052,
+            "p90": 0.21425052
+          },
+          "slippage_usd_per_lot": {
+            "p50": 2.13893068,
+            "p90": 2.13893068
+          }
+        },
+        "08": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "09": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "10": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "11": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "12": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "13": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "14": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "15": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "16": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "17": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "18": {
+          "n": 1,
+          "slippage_bps": {
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "slippage_usd_per_lot": {
+            "p50": 0.0,
+            "p90": 0.0
+          }
+        },
+        "19": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "20": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "21": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "22": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "23": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        }
+      },
+      "daily_by_utc_hour": {
+        "2026-09-18": {
+          "00": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "01": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "02": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "03": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "04": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "05": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "06": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "07": {
+            "n": 1,
+            "slippage_bps": {
+              "p50": 0.21425052,
+              "p90": 0.21425052
+            },
+            "slippage_usd_per_lot": {
+              "p50": 2.13893068,
+              "p90": 2.13893068
+            }
+          },
+          "08": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "09": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "10": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "11": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "12": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "13": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "14": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "15": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "16": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "17": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "18": {
+            "n": 1,
+            "slippage_bps": {
+              "p50": 0.0,
+              "p90": 0.0
+            },
+            "slippage_usd_per_lot": {
+              "p50": 0.0,
+              "p90": 0.0
+            }
+          },
+          "19": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "20": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "21": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "22": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "23": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          }
+        },
+        "2026-09-21": {
+          "00": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "01": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "02": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "03": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "04": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "05": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "06": {
+            "n": 1,
+            "slippage_bps": {
+              "p50": 0.42810357,
+              "p90": 0.42810357
+            },
+            "slippage_usd_per_lot": {
+              "p50": 4.27786135,
+              "p90": 4.27786135
+            }
+          },
+          "07": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "08": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "09": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "10": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "11": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "12": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "13": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "14": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "15": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "16": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "17": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "18": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "19": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "20": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "21": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "22": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "23": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          }
+        }
+      },
+      "deal_count": 3,
+      "entry_measured_count": 2,
+      "exit_measured_count": 1,
+      "measured_deal_count": 3,
+      "round_trip_rule": "max(0,p90(entry USD/lot))+max(0,p90(exit USD/lot)); requires at least one measured entry and exit",
+      "status": "MEASURED_ROUND_TRIP",
+      "unmeasured_deal_count": 0
+    },
+    "USDJPY": {
+      "additional_slippage_usd_per_lot_rt": 0.0,
+      "all_deals": {
+        "n": 2,
+        "slippage_bps": {
+          "p50": 0.0,
+          "p90": 0.0
+        },
+        "slippage_usd_per_lot": {
+          "p50": 0.0,
+          "p90": 0.0
+        }
+      },
+      "by_utc_date": {
+        "2026-09-21": {
+          "n": 2,
+          "slippage_bps": {
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "slippage_usd_per_lot": {
+            "p50": 0.0,
+            "p90": 0.0
+          }
+        }
+      },
+      "by_utc_hour": {
+        "00": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "01": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "02": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "03": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "04": {
+          "n": 1,
+          "slippage_bps": {
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "slippage_usd_per_lot": {
+            "p50": 0.0,
+            "p90": 0.0
+          }
+        },
+        "05": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "06": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "07": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "08": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "09": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "10": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "11": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "12": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "13": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "14": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "15": {
+          "n": 1,
+          "slippage_bps": {
+            "p50": 0.0,
+            "p90": 0.0
+          },
+          "slippage_usd_per_lot": {
+            "p50": 0.0,
+            "p90": 0.0
+          }
+        },
+        "16": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "17": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "18": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "19": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "20": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "21": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "22": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "23": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        }
+      },
+      "daily_by_utc_hour": {
+        "2026-09-21": {
+          "00": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "01": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "02": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "03": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "04": {
+            "n": 1,
+            "slippage_bps": {
+              "p50": 0.0,
+              "p90": 0.0
+            },
+            "slippage_usd_per_lot": {
+              "p50": 0.0,
+              "p90": 0.0
+            }
+          },
+          "05": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "06": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "07": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "08": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "09": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "10": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "11": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "12": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "13": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "14": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "15": {
+            "n": 1,
+            "slippage_bps": {
+              "p50": 0.0,
+              "p90": 0.0
+            },
+            "slippage_usd_per_lot": {
+              "p50": 0.0,
+              "p90": 0.0
+            }
+          },
+          "16": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "17": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "18": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "19": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "20": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "21": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "22": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          },
+          "23": {
+            "n": 0,
+            "slippage_bps": {
+              "p50": null,
+              "p90": null
+            },
+            "slippage_usd_per_lot": {
+              "p50": null,
+              "p90": null
+            }
+          }
+        }
+      },
+      "deal_count": 2,
+      "entry_measured_count": 1,
+      "exit_measured_count": 1,
+      "measured_deal_count": 2,
+      "round_trip_rule": "max(0,p90(entry USD/lot))+max(0,p90(exit USD/lot)); requires at least one measured entry and exit",
+      "status": "MEASURED_ROUND_TRIP",
+      "unmeasured_deal_count": 0
+    },
+    "XAUUSD": {
+      "additional_slippage_usd_per_lot_rt": null,
+      "all_deals": {
+        "n": 0,
+        "slippage_bps": {
+          "p50": null,
+          "p90": null
+        },
+        "slippage_usd_per_lot": {
+          "p50": null,
+          "p90": null
+        }
+      },
+      "by_utc_date": {},
+      "by_utc_hour": {
+        "00": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "01": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "02": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "03": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "04": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "05": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "06": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "07": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "08": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "09": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "10": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "11": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "12": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "13": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "14": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "15": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "16": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "17": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "18": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "19": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "20": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "21": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "22": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        },
+        "23": {
+          "n": 0,
+          "slippage_bps": {
+            "p50": null,
+            "p90": null
+          },
+          "slippage_usd_per_lot": {
+            "p50": null,
+            "p90": null
+          }
+        }
+      },
+      "daily_by_utc_hour": {},
+      "deal_count": 0,
+      "entry_measured_count": 0,
+      "exit_measured_count": 0,
+      "measured_deal_count": 0,
+      "round_trip_rule": "max(0,p90(entry USD/lot))+max(0,p90(exit USD/lot)); requires at least one measured entry and exit",
+      "status": "UNMEASURED",
+      "unmeasured_deal_count": 0
+    }
+  }
+}
