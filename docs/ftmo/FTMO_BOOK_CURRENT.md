@@ -37,6 +37,7 @@ Incumbent financed D2g6, first-passage engine 2.1.0, 40,000 pathwise Challenge�
 | Days to payout conditional on paying out, p10 / p50 / p90 | 352 / 682 / 1253 calendar (251 / 487 / 895 bd) |
 | Stress 1.5× costs + 2 USD/lot | LCB 0.8143; P80 1839 calendar days (1314 bd); conditional p50 / p90 748 / 1374 |
 | Failure mass | challenge max-loss 1.9 %, challenge unresolved 2.5 %, verification max-loss 1.8 %, funded unresolved 4.3 %, daily-loss breach 0 in all stages |
+| **Venue-adjusted (PARTIAL, Codex 629043f6, 2026-09-22)** | measured FTMO−Darwinex spread p90 deltas USDJPY 0.13 / USDCAD 0.04 / GBPUSD 0.15 bps RT and demo slippage USDCAD 4.06 USD/lot: **LCB 0.8619 (−1.43 pp), P80 1397 calendar days (+97)**; XAUUSD spread and GBPUSD/XAUUSD slippage still unmeasured (collector running) |
 
 Reading: the incumbent pays out with high probability but slowly — the 80 % crossing sits at about 3.6 years because the
 unconditional curve carries the failure and censoring mass; even the conditional median is 682 calendar days. Every Track B/C
