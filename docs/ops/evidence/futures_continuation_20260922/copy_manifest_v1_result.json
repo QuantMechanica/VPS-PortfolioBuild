@@ -1,0 +1,35 @@
+{
+  "status": "V1_RESULT_IMMUTABLY_RETAINED",
+  "files": [
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\independent_june2019_result_audit.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\independent_june2019_result_audit.json",
+      "sha256": "f7e13a1ffa337fac087103304a916068b7b3892ce0e10a5b76ffd01f55ba3286",
+      "bytes": 4892
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\june2019_reference_owner_month_v1\\plan.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\june2019_reference_owner_month_v1\\plan.json",
+      "sha256": "57d1c3eb69d3ceea8d4d30e0bf58866bee8de7ee44a219030f8f4006d768f771",
+      "bytes": 154572
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\june2019_reference_owner_month_v1\\attempt.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\june2019_reference_owner_month_v1\\attempt.json",
+      "sha256": "7a89b07610cdb582c5f455eca2e6300ffe998ae4fc778310f0022014c0033b43",
+      "bytes": 169
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\june2019_reference_owner_month_v1\\result.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\june2019_reference_owner_month_v1\\result.json",
+      "sha256": "832f7aae1d22062a0e290e54bb452645cb01ae61d438ef5173dbd78a11220fb0",
+      "bytes": 189591
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\june2019_reference_owner_month_v1\\completion.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\june2019_reference_owner_month_v1\\completion.json",
+      "sha256": "9c68aeace750b213204fa3b0dc218a717fbe44697bc3e0a18ce0cc85a028b410",
+      "bytes": 439
+    }
+  ]
+}

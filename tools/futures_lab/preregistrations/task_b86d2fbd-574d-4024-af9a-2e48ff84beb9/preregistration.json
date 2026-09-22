@@ -1,0 +1,634 @@
+{
+  "schema": "qm.futures-preregistration/v1",
+  "task_id": "b86d2fbd-574d-4024-af9a-2e48ff84beb9",
+  "campaign_id": "OWNER-DEC-FUTURES-PROP-PREPARATION-20260922",
+  "status": "FROZEN_PRE_ECONOMIC_RESULTS",
+  "frozen_on": "2026-09-22",
+  "lane": "FUTURES_ONLY_SEPARATE_FROM_CFD_FACTORY",
+  "economic_results_viewed": false,
+  "creates_mt5_ea_ids": false,
+  "uses_cfd_gate_runner": false,
+  "claim_boundary": "Research specification only; not a profitability, provider, challenge-purchase, payout, G0, pipeline, or live-trading approval.",
+  "authority": {
+    "owner_decision_path": "decisions/2026-09-22_owner_futures_prop_research_and_preparation.md",
+    "owner_decision_sha256": "316e47eaebe83aa2a2866485bf8058a9e4fa3cb4b08faf039acfe502bfebd3bf",
+    "source_plan_path": "D:/QM/reports/research/futures_pivot_20260922/followup_plan.json",
+    "source_plan_sha256": "d24cd2bccfc698bb48578c265eb4379e935d47bec69f64a00d39c38f538e40c9",
+    "implementation_commit": "4aef1793e5c0939513b507d674e40fc2b95b659c"
+  },
+  "arm_cap": 6,
+  "unused_capacity_is_not_authorization": true,
+  "hypotheses": [
+    {
+      "id": "H1_SOURCE_QQQ_5M_ORB",
+      "provenance": "SOURCE_GROUNDED",
+      "mechanical_spec_id": "SPEC_ORB_5M_CLOSE_BREAK_V1",
+      "statement": "After the New York cash open, the first confirmed one-minute close outside the first five-minute range may carry enough intraday continuation to exceed micro-futures costs before the mandatory cash-session flat.",
+      "source_lineage": [
+        {
+          "kind": "paper",
+          "authors": "Carlo Zarattini and Andrew Aziz",
+          "title": "Can Day Trading Really Be Profitable?",
+          "url": "https://ssrn.com/abstract=4416622",
+          "source_scope": "QQQ five-minute opening-range breakout; source does not establish an MES/MNQ futures port, mini-signal/micro-fill pairing, QM news exclusions, or the execution assumptions below."
+        },
+        {
+          "kind": "existing_strategy_card",
+          "source_id": "afab7a6f-c3c8-51ae-a609-f376744beb8e",
+          "ea_id_history_only": "QM5_1255",
+          "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1255_zarattini-qqq-orb.md",
+          "sha256": "4160ad8433df53acc56ae6f0bd2c6010bee60d66b74e435fabc3c07f68f4fa23",
+          "use": "Lineage and prior-selection disclosure only; no MT5 identity is carried into this futures lane."
+        }
+      ],
+      "qm_adaptations": [
+        "Use individual CME equity-index futures contracts rather than QQQ or a CFD proxy.",
+        "Keep signal and executable fill instruments separately identified when a mini contract drives a micro fill.",
+        "Use side-correct micro MBP-1 quotes, fixed latency, explicit costs, a fail-closed news calendar, and a 15:55 New York flatten decision.",
+        "MES is examined before the MNQ transfer; this ordering is operational and does not allow selection on MES economics."
+      ],
+      "falsification": [
+        "Primary MES/MES arm fails the locked validation rule under BASE or has non-positive net expectancy under ADVERSE.",
+        "The prospective untouched holdout is negative or inconclusive; an overlapping historical CFD period cannot substitute for it.",
+        "Results depend on a continuous/back-adjusted fill series, unverified roll, passive-touch fill, omitted no-signal sessions, or unbound costs.",
+        "Marked-equity loss breaches the preregistered daily or total research halt."
+      ]
+    },
+    {
+      "id": "H2_QM_FAILED_BREAK_REVERSION",
+      "provenance": "QM_AUTHORED",
+      "external_source_claim": "NONE_QM_AUTHORED",
+      "mechanical_spec_id": "SPEC_FAILED_BREAK_REVERSION_V1",
+      "statement": "A four-tick opening-range excursion that closes back inside the range within fifteen one-minute bars may mean-revert to the range midpoint before the cash-session flat.",
+      "structural_rationale": "The test isolates short-lived opening price discovery failure; this is a QuantMechanica-authored conjecture, not a rule attributed to the ORB paper.",
+      "falsification": [
+        "The single MES arm fails the locked validation rule under BASE or has non-positive net expectancy under ADVERSE.",
+        "Ambiguous two-sided excursions, data-invalid sessions, or no-signal sessions are dropped rather than reported.",
+        "The prospective untouched holdout is negative or has too few trades; insufficient observations are INCONCLUSIVE, never PASS."
+      ]
+    }
+  ],
+  "strategy_specs": {
+    "SPEC_ORB_5M_CLOSE_BREAK_V1": {
+      "range_window_new_york": {
+        "start": "09:30:00",
+        "end_exclusive": "09:35:00"
+      },
+      "signal_bar_seconds": 60,
+      "entry_window_new_york": {
+        "start_inclusive": "09:35:00",
+        "end_exclusive": "15:00:00"
+      },
+      "long_trigger": "First completed signal-instrument one-minute bar with close strictly above its own first-five-minute high.",
+      "short_trigger": "First completed signal-instrument one-minute bar with close strictly below its own first-five-minute low.",
+      "entry_order": "One marketable order on the fill micro at the first side-correct quote at or after signal-close timestamp plus scenario latency.",
+      "initial_stop": "Opposite boundary of the fill micro's own first-five-minute range; mini signal prices are never used as executable micro stop prices.",
+      "early_exit": "Exit when a completed fill-instrument one-minute close crosses the opposite opening-range boundary.",
+      "profit_target": null,
+      "attempts_per_session": 1,
+      "reentry": false,
+      "size_formula": "floor((risk_fixed_usd - projected_round_turn_commission - projected_round_turn_slippage_usd) / stop_loss_usd_per_contract), capped at max_micro_contracts; fewer than one contract produces RISK_SKIP.",
+      "forced_flat": "Submit a marketable flatten at 15:55:00 America/New_York; require flat confirmation by 15:59:30 or mark execution invalid."
+    },
+    "SPEC_FAILED_BREAK_REVERSION_V1": {
+      "range_window_new_york": {
+        "start": "09:30:00",
+        "end_exclusive": "09:35:00"
+      },
+      "signal_bar_seconds": 60,
+      "entry_window_new_york": {
+        "start_inclusive": "09:35:00",
+        "end_exclusive": "11:30:00"
+      },
+      "minimum_excursion_ticks": 4,
+      "maximum_reentry_wait_bars": 15,
+      "inside_confirmation_ticks": 1,
+      "long_trigger": "Fill-instrument low reaches at least four ticks below its opening-range low and, within fifteen completed one-minute bars, a close is at least one tick back inside above that range low.",
+      "short_trigger": "Fill-instrument high reaches at least four ticks above its opening-range high and, within fifteen completed one-minute bars, a close is at least one tick back inside below that range high.",
+      "ambiguous_both_sides": "NO_SIGNAL",
+      "entry_order": "One marketable order at the first side-correct quote at or after confirmation-close timestamp plus scenario latency.",
+      "initial_stop": "Two fill-instrument ticks beyond the excursion extreme observed through the confirming bar.",
+      "profit_target": "Fill-instrument opening-range midpoint.",
+      "attempts_per_session": 1,
+      "reentry": false,
+      "size_formula": "Same fixed-risk formula as SPEC_ORB_5M_CLOSE_BREAK_V1; fewer than one contract produces RISK_SKIP.",
+      "forced_flat": "Submit a marketable flatten at 15:55:00 America/New_York; require flat confirmation by 15:59:30 or mark execution invalid."
+    }
+  },
+  "arms": [
+    {
+      "id": "A1_ORB_MES_SIGNAL_MES_FILL",
+      "hypothesis_id": "H1_SOURCE_QQQ_5M_ORB",
+      "priority": 1,
+      "stage": 1,
+      "signal_instrument": {
+        "root": "MES",
+        "venue": "GLBX",
+        "stype_in": "raw_symbol",
+        "contract_resolution": "VERIFIED_ROLL_MAP"
+      },
+      "fill_instrument": {
+        "root": "MES",
+        "venue": "GLBX",
+        "stype_in": "raw_symbol",
+        "contract_resolution": "VERIFIED_ROLL_MAP"
+      },
+      "paired_session_ledger": true
+    },
+    {
+      "id": "A2_ORB_ES_SIGNAL_MES_FILL",
+      "hypothesis_id": "H1_SOURCE_QQQ_5M_ORB",
+      "priority": 2,
+      "stage": 1,
+      "signal_instrument": {
+        "root": "ES",
+        "venue": "GLBX",
+        "stype_in": "raw_symbol",
+        "contract_resolution": "VERIFIED_ROLL_MAP"
+      },
+      "fill_instrument": {
+        "root": "MES",
+        "venue": "GLBX",
+        "stype_in": "raw_symbol",
+        "contract_resolution": "VERIFIED_ROLL_MAP"
+      },
+      "paired_session_ledger": true
+    },
+    {
+      "id": "A3_QM_FAILED_BREAK_MES_SIGNAL_MES_FILL",
+      "hypothesis_id": "H2_QM_FAILED_BREAK_REVERSION",
+      "priority": 3,
+      "stage": 1,
+      "signal_instrument": {
+        "root": "MES",
+        "venue": "GLBX",
+        "stype_in": "raw_symbol",
+        "contract_resolution": "VERIFIED_ROLL_MAP"
+      },
+      "fill_instrument": {
+        "root": "MES",
+        "venue": "GLBX",
+        "stype_in": "raw_symbol",
+        "contract_resolution": "VERIFIED_ROLL_MAP"
+      },
+      "paired_session_ledger": true
+    },
+    {
+      "id": "A4_ORB_MNQ_SIGNAL_MNQ_FILL",
+      "hypothesis_id": "H1_SOURCE_QQQ_5M_ORB",
+      "priority": 4,
+      "stage": 2,
+      "signal_instrument": {
+        "root": "MNQ",
+        "venue": "GLBX",
+        "stype_in": "raw_symbol",
+        "contract_resolution": "VERIFIED_ROLL_MAP"
+      },
+      "fill_instrument": {
+        "root": "MNQ",
+        "venue": "GLBX",
+        "stype_in": "raw_symbol",
+        "contract_resolution": "VERIFIED_ROLL_MAP"
+      },
+      "paired_session_ledger": true
+    },
+    {
+      "id": "A5_ORB_NQ_SIGNAL_MNQ_FILL",
+      "hypothesis_id": "H1_SOURCE_QQQ_5M_ORB",
+      "priority": 5,
+      "stage": 2,
+      "signal_instrument": {
+        "root": "NQ",
+        "venue": "GLBX",
+        "stype_in": "raw_symbol",
+        "contract_resolution": "VERIFIED_ROLL_MAP"
+      },
+      "fill_instrument": {
+        "root": "MNQ",
+        "venue": "GLBX",
+        "stype_in": "raw_symbol",
+        "contract_resolution": "VERIFIED_ROLL_MAP"
+      },
+      "paired_session_ledger": true
+    }
+  ],
+  "stage_policy": {
+    "stage_1": "Complete MES/ES/MES data-definition, calendar, event-order, quote, and fill-path checks before any MNQ import.",
+    "stage_2_release": "Release MNQ/NQ imports only on technical data-quality PASS, never on MES economic performance.",
+    "economic_selection_between_stages": false,
+    "parameters_change_between_stages": false
+  },
+  "periods": [
+    {
+      "id": "development",
+      "start": "2019-06-03",
+      "end": "2022-12-30",
+      "classification": "SOURCE_AND_SELECTION_EXPOSED",
+      "allowed_use": "Implementation debugging and preregistered descriptive estimates only; no parameter search."
+    },
+    {
+      "id": "validation",
+      "start": "2023-01-03",
+      "end": "2024-12-31",
+      "classification": "LOCKED_VALIDATION_WITH_SOURCE_OVERLAP",
+      "allowed_use": "Apply fixed rules and fixed decision thresholds; disclose overlap with the source period through 2023."
+    },
+    {
+      "id": "historical_context_test",
+      "start": "2025-01-02",
+      "end": "2026-09-18",
+      "classification": "LOCKED_OOS_NOT_UNTOUCHED_DUE_PRIOR_CFD_VIEWING",
+      "allowed_use": "Historical futures out-of-sample context only; never label as untouched market evidence because related CFD folds were viewed."
+    },
+    {
+      "id": "untouched_holdout",
+      "start": "2026-09-23",
+      "end": "2027-03-31",
+      "classification": "PROSPECTIVE_UNTOUCHED",
+      "economic_access_not_before": "2027-04-01",
+      "allowed_use": "Single sealed evaluation after period completion; no peeking, interim statistics, parameter changes, or arm selection."
+    }
+  ],
+  "calendar": {
+    "event_timestamp_zone": "UTC",
+    "cash_session_zone": "America/New_York",
+    "trade_date_zone": "America/Chicago",
+    "tzdata_version": "2026.4",
+    "regular_cash_session_new_york": {
+      "open": "09:30:00",
+      "close": "16:00:00"
+    },
+    "exclude_weekends": true,
+    "exclude_full_cme_holidays": true,
+    "exclude_early_close_sessions": true,
+    "calendar_source_required": "Dated official CME equity-index futures holiday/trading-hours artifact with SHA256; a floor-hours table or fixed UTC offset is insufficient.",
+    "dst_policy": "Resolve each event through pinned IANA zones; never use Berlin time, broker time, or a fixed UTC offset."
+  },
+  "contract_mapping": {
+    "price_series": "INDIVIDUAL_RAW_CONTRACTS_ONLY",
+    "venue": "GLBX",
+    "roots": [
+      "MES",
+      "ES",
+      "MNQ",
+      "NQ"
+    ],
+    "candidate_contract_suffixes": [
+      "M9",
+      "U9",
+      "Z9",
+      "H0",
+      "M0",
+      "U0",
+      "Z0",
+      "H1",
+      "M1",
+      "U1",
+      "Z1",
+      "H2",
+      "M2",
+      "U2",
+      "Z2",
+      "H3",
+      "M3",
+      "U3",
+      "Z3",
+      "H4",
+      "M4",
+      "U4",
+      "Z4",
+      "H5",
+      "M5",
+      "U5",
+      "Z5",
+      "H6",
+      "M6",
+      "U6",
+      "Z6",
+      "H7",
+      "M7"
+    ],
+    "cutover_rule": "NY_CASH_OPEN_MONDAY_BEFORE_THIRD_FRIDAY",
+    "exclude_cutover_session": true,
+    "definition_verification_required": true,
+    "definition_conflict_action": "DATA_INVALID_AND_STOP",
+    "same_expiry_pair_required": true,
+    "back_adjustment_allowed_for_signals": false,
+    "back_adjustment_allowed_for_fills": false,
+    "volume_based_roll_switch": false,
+    "mapping_note": "The deterministic calendar rule creates candidates, not facts. Before a run, licensed definitions/status data must verify each raw symbol, expiry, tick size, multiplier, first/last availability, and matching mini/micro expiry."
+  },
+  "instrument_economics": {
+    "MES": {
+      "tick_size_points": 0.25,
+      "usd_per_point": 5.0,
+      "usd_per_tick": 1.25
+    },
+    "ES": {
+      "tick_size_points": 0.25,
+      "usd_per_point": 50.0,
+      "usd_per_tick": 12.5,
+      "signal_only": true
+    },
+    "MNQ": {
+      "tick_size_points": 0.25,
+      "usd_per_point": 2.0,
+      "usd_per_tick": 0.5
+    },
+    "NQ": {
+      "tick_size_points": 0.25,
+      "usd_per_point": 20.0,
+      "usd_per_tick": 5.0,
+      "signal_only": true
+    },
+    "verification": "Every value must match the licensed point-in-time instrument definition before execution; mismatch is DATA_INVALID, not an override."
+  },
+  "risk": {
+    "account_reference_usd": 50000,
+    "risk_fixed_usd": 100,
+    "risk_percent": 0,
+    "max_micro_contracts": 2,
+    "one_position_per_arm": true,
+    "max_concurrent_positions_across_arms": 1,
+    "pyramiding": false,
+    "averaging_down": false,
+    "martingale": false,
+    "grid": false,
+    "daily_loss_halt_pct": 2.0,
+    "total_loss_halt_pct": 5.0,
+    "halt_basis": "Intraday marked-to-market equity including commissions and adverse fills; breach remains a failure after recovery.",
+    "sizing_failure_action": "RISK_SKIP"
+  },
+  "execution": {
+    "engine": "NautilusTrader 1.221.0",
+    "fill_source": "MICRO_MBP1_SIDE_CORRECT",
+    "passive_touch_fill": false,
+    "signal_data": "Last-trade one-minute bars constructed from ordered raw events; retain exchange sequence and reject unresolved duplicate ordering.",
+    "marketable_buy_fill": "First executable micro ask at or after decision timestamp plus latency, then add adverse slippage ticks.",
+    "marketable_sell_fill": "First executable micro bid at or after decision timestamp plus latency, then subtract adverse slippage ticks.",
+    "stop_gap_policy": "Fill at the first executable side-correct micro quote after the stop trigger plus adverse slippage; never fill through missing data at the stop price.",
+    "fees_in_position_sizing": true,
+    "scenarios": [
+      {
+        "id": "BASE",
+        "commission_usd_round_turn_per_micro": 1.9,
+        "slippage_ticks_per_side": 1,
+        "latency_ms": 100,
+        "classification": "Frozen research assumption from the current MFFU comparison, not a provider contract."
+      },
+      {
+        "id": "ADVERSE",
+        "commission_usd_round_turn_per_micro": 2.5,
+        "slippage_ticks_per_side": 2,
+        "latency_ms": 250,
+        "classification": "Mandatory cost and execution stress."
+      },
+      {
+        "id": "SEVERE",
+        "commission_usd_round_turn_per_micro": 3.0,
+        "slippage_ticks_per_side": 4,
+        "latency_ms": 750,
+        "classification": "Mandatory severe stress; not a tunable arm."
+      }
+    ]
+  },
+  "news_blackout": {
+    "mandatory": true,
+    "impact": "HIGH",
+    "currency": "USD",
+    "before_minutes": 30,
+    "after_minutes": 30,
+    "session_policy": "Skip the entire trading session when any blackout interval intersects 09:30:00-15:59:30 America/New_York, so a planned entry or exit is never placed in the restricted window.",
+    "protective_exit_policy": "Protective exits are never disabled; whole-session exclusion prevents a planned exposure on known event days.",
+    "max_calendar_age_hours": 168,
+    "missing_calendar_action": "SKIP_SESSION",
+    "required_bundle": "Dated, hash-bound historical and prospective news-calendar bundle covering every tested Chicago trade date."
+  },
+  "no_signal_control": {
+    "mode": "PAIRED_SESSION_LEDGER",
+    "drop_zero_trade_sessions": false,
+    "one_row_per_arm_per_scheduled_session": true,
+    "session_outcomes": [
+      "TRADE",
+      "NO_SIGNAL",
+      "NEWS_BLACKOUT",
+      "DATA_INVALID",
+      "ROLL_EXCLUDED",
+      "RISK_SKIP"
+    ],
+    "required_fields": [
+      "arm_id",
+      "chicago_trade_date",
+      "signal_raw_symbol",
+      "fill_raw_symbol",
+      "period_id",
+      "scenario_id",
+      "outcome",
+      "reason_code",
+      "input_manifest_sha256",
+      "config_sha256"
+    ],
+    "control_interpretation": "NO_SIGNAL is zero exposure and zero P&L, retained in cadence and coverage denominators. It is not silently removed or converted to a counterfactual trade."
+  },
+  "trial_ledger": {
+    "schema": "qm.futures-screened-trial-ledger/v1",
+    "append_only": true,
+    "write_before_result_read": true,
+    "required_trial_key": "arm_id + period_id + scenario_id + input_manifest_sha256 + config_sha256",
+    "rerun_policy": "A rerun appends a new execution receipt linked to the same trial key and reason; it never overwrites, deletes, or silently replaces a screened result.",
+    "result_states": [
+      "NOT_RUN",
+      "DATA_BLOCKED",
+      "INVALID",
+      "COMPLETE"
+    ]
+  },
+  "evaluation": {
+    "primary_arm": "A1_ORB_MES_SIGNAL_MES_FILL",
+    "primary_metrics": [
+      "net_profit_usd_after_all_costs",
+      "mean_net_R_per_trade",
+      "profit_factor_net",
+      "trade_count",
+      "scheduled_session_count",
+      "no_signal_session_count",
+      "data_invalid_session_count",
+      "max_intraday_marked_equity_drawdown_pct",
+      "max_daily_loss_pct"
+    ],
+    "uncertainty": {
+      "method": "Stationary block bootstrap over Chicago trade dates",
+      "mean_block_sessions": 5,
+      "replicates": 10000,
+      "seed": 862574024,
+      "familywise_test": "Holm correction across the two hypotheses at alpha 0.05"
+    },
+    "validation_advance_rule": {
+      "minimum_trades_primary_orb": 100,
+      "minimum_trades_qm_reversion": 40,
+      "base_profit_factor_min": 1.2,
+      "base_lower_95pct_mean_net_R_strictly_positive": true,
+      "adverse_profit_factor_min": 1.0,
+      "daily_drawdown_pct_max": 2.0,
+      "total_drawdown_pct_max": 5.0,
+      "insufficient_sample_verdict": "INCONCLUSIVE"
+    },
+    "untouched_holdout_rule": {
+      "minimum_trades_primary_orb": 40,
+      "minimum_trades_qm_reversion": 20,
+      "base_profit_factor_min": 1.15,
+      "base_net_profit_strictly_positive": true,
+      "adverse_profit_factor_min": 1.0,
+      "daily_drawdown_pct_max": 2.0,
+      "total_drawdown_pct_max": 5.0,
+      "insufficient_sample_verdict": "INCONCLUSIVE"
+    },
+    "selection_constraints": [
+      "Report all five arms and all three execution scenarios; do not choose the best arm after results.",
+      "A mini-signal transfer cannot rescue a failed micro-signal primary arm; it is a separately reported fixed comparison.",
+      "MNQ results cannot rescue MES or authorize a parameter change.",
+      "Historical context is never relabelled as the untouched holdout.",
+      "No challenge-purchase, payout, provider, or live decision follows directly from a backtest pass."
+    ]
+  },
+  "prior_cfd_evidence": [
+    {
+      "relationship": "EXACT_SOURCE_CARD_HISTORY_NOT_FUTURES_EVIDENCE",
+      "ea_id": "QM5_1255",
+      "card_sha256": "4160ad8433df53acc56ae6f0bd2c6010bee60d66b74e435fabc3c07f68f4fa23",
+      "rows": [
+        {
+          "work_item_id": "91ca4166-ac69-4aa2-ab2a-35d7dc205f18",
+          "phase": "Q02",
+          "symbol": "NDX.DWX",
+          "verdict": "PASS"
+        },
+        {
+          "work_item_id": "6f7f908d-6cbe-422d-aba1-bf54fe282738",
+          "phase": "Q03",
+          "symbol": "NDX.DWX",
+          "verdict": "PASS"
+        },
+        {
+          "work_item_id": "c5f9899a-ccae-478f-a2c1-8dbb2f4d0b03",
+          "phase": "Q04",
+          "symbol": "NDX.DWX",
+          "verdict": "INFRA_FAIL"
+        },
+        {
+          "work_item_id": "1890918d-19c0-44a2-89f8-3ebf3c7d83b9",
+          "phase": "Q04",
+          "symbol": "NDX.DWX",
+          "verdict": "PENDING"
+        }
+      ],
+      "interpretation": "The source card has no completed positive Q04 verdict and confers no futures approval."
+    },
+    {
+      "relationship": "ADJACENT_NQ_ORB_CFD_NEGATIVE",
+      "ea_id": "QM5_10743",
+      "card_sha256": "a6a6b9d79c7f803f63a039d60d65aa4cefcf18244878fdf8fe98485414760735",
+      "rows": [
+        {
+          "work_item_id": "da999340-17a7-4cae-bf36-c65252aa8ebf",
+          "phase": "Q04",
+          "symbol": "NDX.DWX",
+          "verdict": "FAIL",
+          "fold_net_profit_factors": [
+            0.98,
+            1.28,
+            0.51
+          ],
+          "trades": 165,
+          "evidence_path": "D:/QM/reports/pipeline/QM5_10743/Q04/NDX.DWX__da999340-17a7-4cae-bf36-c65252aa8ebf/aggregate.json",
+          "evidence_sha256": "e5f12bb6ceafdcb86ec7917e72b9cc97d95d3a8cc4b3ace309ed71589aaf4b8d"
+        },
+        {
+          "work_item_id": "c2764390-1e0a-4918-ad8a-df475776f48b",
+          "phase": "Q04",
+          "symbol": "GDAXI.DWX",
+          "verdict": "FAIL",
+          "fold_net_profit_factors": [
+            0.95,
+            0.97,
+            1.34
+          ],
+          "trades": 528,
+          "evidence_path": "D:/QM/reports/pipeline/QM5_10743/Q04/GDAXI.DWX__c2764390-1e0a-4918-ad8a-df475776f48b/aggregate.json",
+          "evidence_sha256": "9e9ec204e0b207baaeca29b2fe6f1f52af3bc0005916071efb0768e18f8ea5ab"
+        }
+      ],
+      "interpretation": "This is adverse selection history for an adjacent NQ-origin ORB port. Different futures data and fills do not erase it."
+    },
+    {
+      "relationship": "RELATED_STOCKS_IN_PLAY_PORT_NEGATIVE",
+      "ea_id": "QM5_10334",
+      "card_sha256": "76a97154d1257626359162652ecb01b0fe24415d78beb5741cd979374ca39289",
+      "rows": [
+        {
+          "work_item_id": "83f9778b-0be3-4ea1-8288-48098b6ef774",
+          "phase": "Q02",
+          "symbol": "NDX.DWX",
+          "verdict": "FAIL"
+        },
+        {
+          "work_item_id": "9715d6ba-708b-4ba1-808f-d20e6052e86d",
+          "phase": "Q02",
+          "symbol": "SP500.DWX",
+          "verdict": "FAIL"
+        },
+        {
+          "work_item_id": "3eb4deef-924f-4595-87f5-d4489fdaf3fc",
+          "phase": "Q02",
+          "symbol": "WS30.DWX",
+          "verdict": "FAIL"
+        }
+      ],
+      "artifact_availability": "Referenced summaries are absent from the current report filesystem; stable database row IDs and card hash are retained without inventing metrics.",
+      "interpretation": "The individual-stock activity filter did not become established merely by porting it to index CFDs. It is not added as a sixth futures arm."
+    },
+    {
+      "relationship": "PUBLISHED_ADVERSE_PRIOR",
+      "citation": "arXiv:2605.04004",
+      "url": "https://doi.org/10.48550/arXiv.2605.04004",
+      "interpretation": "A 2026 MNQ falsification study reported that fourteen OHLCV signal families did not meet all cost-aware validation criteria; this lowers the prior and is not treated as support."
+    }
+  ],
+  "data_gaps": [
+    {
+      "id": "LICENSED_RAW_EVENTS",
+      "status": "BLOCKED",
+      "requirement": "Licensed GLBX.MDP3 definitions, status, trades and MBP-1 for every used raw contract and period; no CFD, continuous, or official fixture substitute."
+    },
+    {
+      "id": "RAW_CONTRACT_DEFINITION_ROSTER",
+      "status": "BLOCKED",
+      "requirement": "Verify the 132 candidate raw symbols against point-in-time definitions and materialize exact expiry/cutover mappings with hashes."
+    },
+    {
+      "id": "CME_SESSION_CALENDAR",
+      "status": "BLOCKED",
+      "requirement": "Dated official holiday and early-close calendar with a pinned content hash covering 2019-06-03 through 2027-03-31."
+    },
+    {
+      "id": "NEWS_CALENDAR_BUNDLE",
+      "status": "BLOCKED",
+      "requirement": "Complete hash-bound HIGH-impact USD event bundle for all tested dates, including the future prospective holdout."
+    },
+    {
+      "id": "PROVIDER_BOUND_COSTS",
+      "status": "UNKNOWN",
+      "requirement": "Actual phase- and platform-specific commissions, exchange/routing charges, data fees, and order semantics; frozen research scenarios remain stresses, not contract facts."
+    },
+    {
+      "id": "NATIVE_EXECUTION_PARITY",
+      "status": "BLOCKED",
+      "requirement": "Signal, order, stop, flatten, fee and timestamp parity on the later permitted native execution platform before any paid or live recommendation."
+    },
+    {
+      "id": "PROSPECTIVE_HOLDOUT_ELAPSED",
+      "status": "BLOCKED",
+      "requirement": "The untouched period must finish before 2027-04-01; interim economic access is prohibited."
+    }
+  ]
+}

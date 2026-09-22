@@ -1,0 +1,116 @@
+{
+  "schema": "qm.dbn-quality-flag-review/v1",
+  "recorded_at_utc": "2026-09-22T14:00:42.258949+00:00",
+  "status": "PINNED_SEMANTICS_AND_LOCAL_COUNTS_VERIFIED",
+  "nautilus_version": "1.221.0",
+  "dbn_dependency_version": "0.43.0",
+  "official_sources": [
+    "https://raw.githubusercontent.com/databento/dbn/v0.43.0/rust/dbn/src/flags.rs",
+    "https://raw.githubusercontent.com/nautechsystems/nautilus_trader/v1.221.0/Cargo.lock"
+  ],
+  "wire_bits": {
+    "LAST": 128,
+    "TOB": 64,
+    "SNAPSHOT": 32,
+    "MBP": 16,
+    "BAD_TS_RECV": 8,
+    "MAYBE_BAD_BOOK": 4,
+    "PUBLISHER_SPECIFIC": 2
+  },
+  "source_summary": "BAD_TS_RECV marks an unreliable receive timestamp; MAYBE_BAD_BOOK marks an unrecoverable channel gap; SNAPSHOT identifies replay-derived records. LAST is event termination, not a universal validity condition.",
+  "adapter_policy": "Reject flagged bad timestamps, book gaps and snapshot quotes for fresh execution or signal use; preserve raw rows. Book-gap quarantine persists for current gate. Unbound publisher/reserved flags fail closed. LAST is not required.",
+  "policy_classification": "Conservative QM execution policy; source does not assert every snapshot book is intrinsically false.",
+  "files": [
+    {
+      "symbol": "MESZ6",
+      "schema": "mbp-1",
+      "file_sha256": "458d88daff74f885b6fb157dcb3405da2bb4bfed74f8d3f8905f73d6f87dbb11",
+      "flag_byte_counts": {
+        "0": 354563,
+        "128": 10003093,
+        "168": 1
+      },
+      "source": "hash-bound full raw validation report",
+      "source_report_sha256": "ff82b55c661092cf6837885652f2b5b88b77b519fba1b14bee2c06f865a1edca",
+      "flags_with_execution_exclusion_counts": {
+        "168": {
+          "records": 1,
+          "reasons": [
+            "DBN_BAD_TS_RECV",
+            "DBN_SNAPSHOT_NOT_FRESH_EXECUTION"
+          ]
+        }
+      }
+    },
+    {
+      "symbol": "ESM9",
+      "schema": "trades",
+      "file_sha256": "303c84a7e096bd4fc3142a5a1833429bd92699f4360f2c43355cceda5c86eb40",
+      "record_count": 2300519,
+      "flag_byte_counts": {
+        "0": 2300519
+      },
+      "source": "independent bounded all-record flags scan with full SHA match",
+      "flags_with_execution_exclusion_counts": {}
+    },
+    {
+      "symbol": "ESU9",
+      "schema": "trades",
+      "file_sha256": "e356c7b235863fbf629eba8d3a8a873a1c28211eb85dc53d85837acf99d24a15",
+      "record_count": 1755915,
+      "flag_byte_counts": {
+        "0": 1755915
+      },
+      "source": "independent bounded all-record flags scan with full SHA match",
+      "flags_with_execution_exclusion_counts": {}
+    },
+    {
+      "symbol": "MESM9",
+      "schema": "mbp-1",
+      "file_sha256": "a56f1fdd4da64b68b4f1872fec71512f854e55e7fcfeb32edbe0a4a88cad86ee",
+      "flag_byte_counts": {
+        "0": 710439,
+        "128": 12401541,
+        "168": 10
+      },
+      "source": "hash-bound full raw validation report",
+      "source_report_sha256": "1186b54f4cd4c10d5126deb428d8f5c7940ab937083d0fddf8f467aa4c847129",
+      "flags_with_execution_exclusion_counts": {
+        "168": {
+          "records": 10,
+          "reasons": [
+            "DBN_BAD_TS_RECV",
+            "DBN_SNAPSHOT_NOT_FRESH_EXECUTION"
+          ]
+        }
+      }
+    },
+    {
+      "symbol": "MESU9",
+      "schema": "mbp-1",
+      "file_sha256": "32429b06d3286e9fae07fea81dba02f819bc29a0e70a3e9bb895deb1ba12d8d0",
+      "flag_byte_counts": {
+        "0": 548292,
+        "128": 8997090,
+        "168": 9
+      },
+      "source": "hash-bound full raw validation report",
+      "source_report_sha256": "1186b54f4cd4c10d5126deb428d8f5c7940ab937083d0fddf8f467aa4c847129",
+      "flags_with_execution_exclusion_counts": {
+        "168": {
+          "records": 9,
+          "reasons": [
+            "DBN_BAD_TS_RECV",
+            "DBN_SNAPSHOT_NOT_FRESH_EXECUTION"
+          ]
+        }
+      }
+    }
+  ],
+  "earlier_replays_superseded": [
+    "technical_replay_1.json",
+    "technical_replay_2.json"
+  ],
+  "network_market_data_requests": 0,
+  "orders_submitted": 0
+}

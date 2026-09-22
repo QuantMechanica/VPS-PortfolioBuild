@@ -1,0 +1,33 @@
+{
+  "profiles": [
+    {
+      "deployable": false,
+      "errors": [],
+      "path": "D:\\QM\\agent_worktrees\\codex-orchestration-13\\docs\\ops\\evidence\\task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2\\mffu_rapid_eod_50k_2026-09-22.json",
+      "profile_id": "MFFU_RAPID_EOD_50K_2026-09-22",
+      "sha256": "8aac27f805b69fec09d475de620283a1cbdf9f4cc6a77d1644ca6240d90d7c94",
+      "validation": "PASS"
+    },
+    {
+      "deployable": false,
+      "errors": [],
+      "path": "D:\\QM\\agent_worktrees\\codex-orchestration-13\\docs\\ops\\evidence\\task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2\\tradeify_select_flex_50k_2026-09-22.json",
+      "profile_id": "TRADEIFY_SELECT_FLEX_50K_2026-09-22",
+      "sha256": "2e096627586cc7b50d83034d1391d3778711f2c7b00febfa86e7ffb6e29d75d7",
+      "validation": "PASS"
+    }
+  ],
+  "safety": "Research validation only; no provider login, purchase, live connection or order action.",
+  "schema": "qm.futures-prop-profile-validation.v1",
+  "source_files": {
+    "json": {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\prop_firms.json",
+      "sha256": "a4116ec9f12a9d126c051f1fa7829829e051955eaef4a2d9a6b5164ac9179a0c"
+    },
+    "markdown": {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\prop_firms.md",
+      "sha256": "8d6c5fd9739ff261e08a540c4c0313d2a0213096107e94c33cb635c94535515b"
+    }
+  },
+  "status": "PASS"
+}

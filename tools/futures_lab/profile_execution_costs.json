@@ -1,0 +1,890 @@
+{
+  "schema": "qm.futures-provider-execution-cost-research.v1",
+  "as_of": "2026-09-22",
+  "generated_utc": "2026-09-22T13:44:16.499887+00:00",
+  "scope": "RESEARCH_AND_DEVELOPMENT_SCENARIOS_ONLY; NOT_CHECKOUT_QUOTE_OR_DEPLOYMENT_APPROVAL",
+  "currency": "USD",
+  "provider_profiles": {
+    "MFFU_RAPID_EOD_50K": {
+      "base_profile_id": "MFFU_RAPID_EOD_50K_2026-09-22",
+      "execution_costs": {
+        "currency": "USD",
+        "basis": "PER_CONTRACT_ROUND_TRIP_INCLUDING_ENTRY_AND_EXIT",
+        "scope": "PUBLISHED_PROGRAM_SCHEDULE_APPLIED_TO_EVALUATION_AND_SIM_SCENARIOS",
+        "MES": {
+          "commission_round_trip_usd": {
+            "status": "KNOWN",
+            "value": 1.9,
+            "source_ids": [
+              "MF_COMM"
+            ]
+          },
+          "commission_per_side_usd": {
+            "status": "DERIVED_SYMMETRIC_MODEL",
+            "value": 0.95,
+            "source_ids": [
+              "MF_COMM"
+            ]
+          },
+          "tick_value_usd": 1.25
+        },
+        "MNQ": {
+          "commission_round_trip_usd": {
+            "status": "KNOWN",
+            "value": 1.9,
+            "source_ids": [
+              "MF_COMM"
+            ]
+          },
+          "commission_per_side_usd": {
+            "status": "DERIVED_SYMMETRIC_MODEL",
+            "value": 0.95,
+            "source_ids": [
+              "MF_COMM"
+            ]
+          },
+          "tick_value_usd": 0.5
+        },
+        "live_round_trip_usd": "UNKNOWN",
+        "slippage_ticks_per_side_scenarios": [
+          0,
+          1,
+          2
+        ],
+        "slippage_status": "QM_STRESS_ASSUMPTIONS_NOT_MEASURED",
+        "spread_handling": "Use executable bid/ask in replay; do not add an extra spread charge if fills already cross it.",
+        "fee_handling": "Charge round trip once, or half on each fill; never both."
+      },
+      "acquisition": {
+        "list_usd": {
+          "status": "KNOWN",
+          "value": 209,
+          "source_ids": [
+            "MF_HOME"
+          ]
+        },
+        "promo_scenario_usd": {
+          "status": "OBSERVED_PROMO_NOT_CHECKOUT_QUOTE",
+          "value": 125,
+          "source_ids": [
+            "MF_HOME"
+          ]
+        },
+        "activation_usd": {
+          "status": "KNOWN",
+          "value": 0,
+          "source_ids": [
+            "MF_EOD"
+          ]
+        },
+        "monthly_renewal_usd": {
+          "status": "KNOWN",
+          "value": 0,
+          "source_ids": [
+            "MF_TERMS"
+          ]
+        },
+        "reset_usd": "UNKNOWN"
+      },
+      "evaluation": {
+        "inactivity_days": {
+          "status": "KNOWN",
+          "value": 7,
+          "source_ids": [
+            "MF_EOD"
+          ]
+        },
+        "inactivity_day_kind": "NOT_EXPLICITLY_CALENDAR_IN_THIS_ARTICLE",
+        "tier1_news_allowed": {
+          "status": "KNOWN",
+          "value": true,
+          "source_ids": [
+            "MF_NEWS",
+            "MF_EOD"
+          ]
+        }
+      },
+      "sim_funded": {
+        "initial_profit_ledger_usd": {
+          "status": "KNOWN",
+          "value": 0,
+          "source_ids": [
+            "MF_EOD"
+          ]
+        },
+        "news_blackout_seconds_before": {
+          "status": "KNOWN",
+          "value": 120,
+          "source_ids": [
+            "MF_NEWS"
+          ]
+        },
+        "news_blackout_seconds_after": {
+          "status": "KNOWN",
+          "value": 120,
+          "source_ids": [
+            "MF_NEWS"
+          ]
+        },
+        "pending_orders_also_prohibited": {
+          "status": "KNOWN",
+          "value": true,
+          "source_ids": [
+            "MF_NEWS"
+          ]
+        },
+        "reentry_boundary": "STRICTLY_AFTER_EVENT_PLUS_120_SECONDS",
+        "news_categories": [
+          "FOMC_MEETING",
+          "FOMC_MINUTES",
+          "EMPLOYMENT_REPORT",
+          "CPI"
+        ],
+        "non_T1_scope": "GENERAL_ALL_NEWS_LANGUAGE_CONFLICT_RETAINED"
+      },
+      "first_payout": {
+        "buffer_usd": {
+          "status": "KNOWN",
+          "value": 2100,
+          "source_ids": [
+            "MF_EOD"
+          ]
+        },
+        "request_minimum_usd": {
+          "status": "KNOWN",
+          "value": 500,
+          "source_ids": [
+            "MF_EOD"
+          ]
+        },
+        "share": {
+          "status": "KNOWN",
+          "value": 0.9,
+          "source_ids": [
+            "MF_PAY"
+          ]
+        },
+        "earliest_elapsed_hours": {
+          "status": "KNOWN",
+          "value": 24,
+          "source_ids": [
+            "MF_PAY"
+          ]
+        },
+        "exact_required_profit_usd": {
+          "status": "AMBIGUOUS",
+          "value": "UNKNOWN",
+          "source_ids": [
+            "MF_EOD",
+            "MF_PAY"
+          ]
+        },
+        "research_required_profit_scenarios_usd": [
+          2100,
+          2600
+        ],
+        "preferred_conservative_scenario_usd": 2600,
+        "eligibility_status": "SCENARIO_ONLY_NOT_PROVIDER_APPROVAL"
+      },
+      "execution_route": {
+        "native_ninjatrader_sim": {
+          "status": "KNOWN",
+          "value": "DOCUMENTED",
+          "source_ids": [
+            "MF_NT"
+          ]
+        },
+        "custom_automation": {
+          "status": "KNOWN",
+          "value": "PERMITTED_WITH_RESTRICTIONS",
+          "source_ids": [
+            "MF_AUTO"
+          ]
+        },
+        "hetzner_vps_ip_acceptance": "UNKNOWN_NOT_EXPLICITLY_PROHIBITED_IN_REVIEWED_SOURCES",
+        "raw_api_rights": "UNKNOWN_NOT_NEEDED_FOR_NATIVE_NINJASCRIPT_DEVELOPMENT",
+        "live_credentials_and_route": "UNKNOWN"
+      },
+      "live": {
+        "news_trading_allowed": {
+          "status": "KNOWN",
+          "value": true,
+          "source_ids": [
+            "MF_LIVE_FAQ"
+          ]
+        },
+        "numeric_platform_data_commission_costs": {
+          "status": "UNKNOWN",
+          "value": "UNKNOWN",
+          "source_ids": [
+            "MF_LIVE_COST"
+          ]
+        }
+      },
+      "cashflow_examples": [
+        {
+          "classification": "CONSERVATIVE_CONDITIONAL_FIRST_PAYOUT",
+          "sim_net_profit_before_request_usd": 2600,
+          "gross_request_account_debit_usd": 500,
+          "trader_cash_before_external_fees_tax_usd": 450,
+          "remaining_profit_ledger_usd": 2100,
+          "floor_profit_ledger_usd": 100,
+          "remaining_room_usd": 2000,
+          "one_list_purchase_usd": 209,
+          "cash_minus_one_list_purchase_usd": 241,
+          "one_promo_purchase_usd": 125,
+          "cash_minus_one_promo_purchase_usd": 325,
+          "unknown_external_costs_must_be_subtracted": true
+        }
+      ]
+    },
+    "MFFU_BUILDER_50K": {
+      "execution_costs": {
+        "currency": "USD",
+        "basis": "PER_CONTRACT_ROUND_TRIP_INCLUDING_ENTRY_AND_EXIT",
+        "scope": "PUBLISHED_PROGRAM_SCHEDULE_APPLIED_TO_EVALUATION_AND_SIM_SCENARIOS",
+        "MES": {
+          "commission_round_trip_usd": {
+            "status": "KNOWN",
+            "value": 1.9,
+            "source_ids": [
+              "MF_COMM"
+            ]
+          },
+          "commission_per_side_usd": {
+            "status": "DERIVED_SYMMETRIC_MODEL",
+            "value": 0.95,
+            "source_ids": [
+              "MF_COMM"
+            ]
+          },
+          "tick_value_usd": 1.25
+        },
+        "MNQ": {
+          "commission_round_trip_usd": {
+            "status": "KNOWN",
+            "value": 1.9,
+            "source_ids": [
+              "MF_COMM"
+            ]
+          },
+          "commission_per_side_usd": {
+            "status": "DERIVED_SYMMETRIC_MODEL",
+            "value": 0.95,
+            "source_ids": [
+              "MF_COMM"
+            ]
+          },
+          "tick_value_usd": 0.5
+        },
+        "live_round_trip_usd": "UNKNOWN",
+        "slippage_ticks_per_side_scenarios": [
+          0,
+          1,
+          2
+        ],
+        "slippage_status": "QM_STRESS_ASSUMPTIONS_NOT_MEASURED",
+        "spread_handling": "Use executable bid/ask in replay; do not add an extra spread charge if fills already cross it.",
+        "fee_handling": "Charge round trip once, or half on each fill; never both."
+      },
+      "variants": [
+        {
+          "variant_id": "DEFAULT_MLL2000",
+          "mll_usd": 2000,
+          "list_usd": 153,
+          "promo30_usd": 107,
+          "promo40_two_uses_usd": 92,
+          "first_buffer_usd": 2100,
+          "first_required_profit_usd": 2600
+        },
+        {
+          "variant_id": "ADDON_MLL1500",
+          "mll_usd": 1500,
+          "list_usd": 125,
+          "promo30_usd": 87,
+          "promo40_two_uses_usd": 75,
+          "first_buffer_usd": 1600,
+          "first_required_profit_usd": 2100
+        }
+      ],
+      "variant_source_ids": [
+        "MF_BUILDER"
+      ],
+      "price_binding": "HELP_ARTICLE_VARIANTS; GENERIC_HOME_FROM_PRICE125_DOES_NOT_OVERRIDE_DEFAULT153; CHECKOUT_RECONFIRM",
+      "evaluation": {
+        "target_usd": 3000,
+        "minimum_days": 1,
+        "best_day_fraction": "NONE_PUBLISHED",
+        "max_micros": 40,
+        "daily_loss_soft_pause_usd": 1000,
+        "drawdown_mode": "EOD_TRAILING",
+        "tier1_news_allowed": true,
+        "source_ids": [
+          "MF_BUILDER",
+          "MF_NEWS"
+        ]
+      },
+      "sim_funded": {
+        "initial_profit_ledger_usd": 0,
+        "maximum_active_accounts": 1,
+        "inactivity_calendar_days": 7,
+        "daily_loss_soft_pause_usd": 1000,
+        "tier1_news_allowed": true,
+        "source_ids": [
+          "MF_BUILDER"
+        ]
+      },
+      "payout": {
+        "earliest_elapsed_hours": 48,
+        "minimum_trading_days_per_cycle": 2,
+        "cycle_best_day_max_fraction": 0.5,
+        "consistency_resets_after_approved_payout": true,
+        "minimum_request_usd": 500,
+        "maximum_request_usd": 2000,
+        "maximum_sim_payout_count": 5,
+        "share": 0.8,
+        "next_cycle_new_net_profit_usd": 500,
+        "first_request_locks_floor_profit_ledger_usd": 100,
+        "source_ids": [
+          "MF_BUILDER",
+          "MF_PAY"
+        ]
+      },
+      "acquisition": {
+        "activation_usd": 0,
+        "monthly_renewal_usd": 0,
+        "reset_usd": "UNKNOWN",
+        "source_ids": [
+          "MF_BUILDER",
+          "MF_TERMS"
+        ]
+      },
+      "execution_route_same_as": "MFFU_RAPID_EOD_50K",
+      "cashflow_examples": [
+        {
+          "variant_id": "DEFAULT_MLL2000",
+          "sim_net_profit_before_request_usd": 2600,
+          "gross_request_account_debit_usd": 500,
+          "trader_cash_before_external_fees_tax_usd": 400,
+          "remaining_profit_ledger_usd": 2100,
+          "floor_profit_ledger_usd": 100,
+          "remaining_room_usd": 2000,
+          "one_list_purchase_usd": 153,
+          "cash_minus_one_list_purchase_usd": 247
+        },
+        {
+          "variant_id": "ADDON_MLL1500",
+          "sim_net_profit_before_request_usd": 2100,
+          "gross_request_account_debit_usd": 500,
+          "trader_cash_before_external_fees_tax_usd": 400,
+          "remaining_profit_ledger_usd": 1600,
+          "floor_profit_ledger_usd": 100,
+          "remaining_room_usd": 1500,
+          "one_list_purchase_usd": 125,
+          "cash_minus_one_list_purchase_usd": 275
+        }
+      ],
+      "live": {
+        "mll_same_as_chosen_variant": true,
+        "floor_lock_profit_ledger_usd": 0,
+        "daily_loss_limit_usd": 1000,
+        "share": 0.8,
+        "minimum_request_usd": 250,
+        "no_inactivity_rule_published": true,
+        "source_ids": [
+          "MF_BUILDER"
+        ],
+        "numeric_platform_data_commission_costs": "UNKNOWN"
+      }
+    },
+    "TRADEIFY_SELECT_FLEX_50K": {
+      "base_profile_id": "TRADEIFY_SELECT_FLEX_50K_2026-09-22",
+      "execution_costs": {
+        "currency": "USD",
+        "basis": "PER_CONTRACT_ROUND_TRIP_INCLUDING_ENTRY_AND_EXIT",
+        "scope": "PUBLISHED_PROGRAM_SCHEDULE_APPLIED_TO_EVALUATION_AND_SIM_SCENARIOS",
+        "MES": {
+          "commission_round_trip_usd": {
+            "status": "KNOWN",
+            "value": 1.82,
+            "source_ids": [
+              "TF_COMM"
+            ]
+          },
+          "commission_per_side_usd": {
+            "status": "DERIVED_SYMMETRIC_MODEL",
+            "value": 0.91,
+            "source_ids": [
+              "TF_COMM"
+            ]
+          },
+          "tick_value_usd": 1.25
+        },
+        "MNQ": {
+          "commission_round_trip_usd": {
+            "status": "KNOWN",
+            "value": 1.82,
+            "source_ids": [
+              "TF_COMM"
+            ]
+          },
+          "commission_per_side_usd": {
+            "status": "DERIVED_SYMMETRIC_MODEL",
+            "value": 0.91,
+            "source_ids": [
+              "TF_COMM"
+            ]
+          },
+          "tick_value_usd": 0.5
+        },
+        "live_round_trip_usd": "UNKNOWN",
+        "slippage_ticks_per_side_scenarios": [
+          0,
+          1,
+          2
+        ],
+        "slippage_status": "QM_STRESS_ASSUMPTIONS_NOT_MEASURED",
+        "spread_handling": "Use executable bid/ask in replay; do not add an extra spread charge if fills already cross it.",
+        "fee_handling": "Charge round trip once, or half on each fill; never both."
+      },
+      "acquisition": {
+        "list_usd": {
+          "status": "KNOWN",
+          "value": 165,
+          "source_ids": [
+            "TF_PRICE"
+          ]
+        },
+        "reset_usd": {
+          "status": "KNOWN",
+          "value": 109,
+          "source_ids": [
+            "TF_PRICE"
+          ]
+        },
+        "activation_usd": {
+          "status": "KNOWN",
+          "value": 0,
+          "source_ids": [
+            "TF_PRICE"
+          ]
+        },
+        "monthly_renewal_usd": {
+          "status": "KNOWN",
+          "value": 0,
+          "source_ids": [
+            "TF_PRICE"
+          ]
+        },
+        "nonprofessional_level1_monthly_usd": {
+          "status": "CONDITIONAL_NONPROFESSIONAL_AGREEMENT",
+          "value": 0,
+          "source_ids": [
+            "TF_PRICE",
+            "TF_PLAT"
+          ]
+        },
+        "platform_surcharge_usd": {
+          "status": "KNOWN",
+          "value": 0,
+          "source_ids": [
+            "TF_PLAT"
+          ]
+        },
+        "optional_data_upgrades": "EXCLUDED_FROM_BASELINE"
+      },
+      "evaluation_and_sim": {
+        "news_blackout_seconds": {
+          "status": "NO_PROVIDER_NEWS_RESTRICTION",
+          "value": 0,
+          "source_ids": [
+            "TF_AUTO"
+          ]
+        },
+        "minimum_weekly_activity": {
+          "status": "KNOWN",
+          "value": "ONE_TRADE_EACH_MONDAY_FRIDAY_WEEK",
+          "source_ids": [
+            "TF_AUTO"
+          ]
+        },
+        "session_flat_deadline_published": {
+          "status": "KNOWN",
+          "value": "BEFORE_16:45_EST",
+          "source_ids": [
+            "TF_FAQ"
+          ]
+        },
+        "dst_time_label": "ARTICLE_USES_EST_AND_EST_EDT; ENGINE_MUST_BIND_AMERICA_NEW_YORK_POLICY_EXPLICITLY"
+      },
+      "payout": {
+        "formal_buffer_required": {
+          "status": "KNOWN",
+          "value": false,
+          "source_ids": [
+            "TF_PAY"
+          ]
+        },
+        "formal_minimum_balance_required": {
+          "status": "KNOWN",
+          "value": false,
+          "source_ids": [
+            "TF_PAY"
+          ]
+        },
+        "winning_days": {
+          "status": "KNOWN",
+          "value": 5,
+          "source_ids": [
+            "TF_PAY"
+          ]
+        },
+        "winning_day_net_threshold_usd": {
+          "status": "KNOWN",
+          "value": 150,
+          "source_ids": [
+            "TF_PAY"
+          ]
+        },
+        "request_fraction_of_current_total_profit": {
+          "status": "KNOWN",
+          "value": 0.5,
+          "source_ids": [
+            "TF_PAY"
+          ]
+        },
+        "minimum_request_usd": {
+          "status": "KNOWN",
+          "value": 250,
+          "source_ids": [
+            "TF_PAY"
+          ]
+        },
+        "maximum_request_usd": {
+          "status": "KNOWN",
+          "value": 2500,
+          "source_ids": [
+            "TF_PAY"
+          ]
+        },
+        "share": {
+          "status": "KNOWN",
+          "value": 0.9,
+          "source_ids": [
+            "TF_PAY"
+          ]
+        },
+        "first_request_floor_profit_ledger_usd": {
+          "status": "KNOWN",
+          "value": 100,
+          "source_ids": [
+            "TF_PAY"
+          ]
+        },
+        "positive_new_cycle_profit_required_after_first": {
+          "status": "KNOWN",
+          "value": true,
+          "source_ids": [
+            "TF_PAY"
+          ]
+        },
+        "one_outstanding_request_only": {
+          "status": "KNOWN",
+          "value": true,
+          "source_ids": [
+            "TF_PAY"
+          ]
+        },
+        "duration_rule": {
+          "status": "KNOWN",
+          "value": "OVER_50_PERCENT_OF_TRADES_AND_PROFIT_FROM_HOLDS_OVER_10_SECONDS",
+          "source_ids": [
+            "TF_AUTO"
+          ]
+        }
+      },
+      "execution_route": {
+        "ninjatrader_via_tradovate": {
+          "status": "KNOWN",
+          "value": "DOCUMENTED_AFTER_NONPROFESSIONAL_AGREEMENT",
+          "source_ids": [
+            "TF_PLAT"
+          ]
+        },
+        "custom_bot_ownership": {
+          "status": "KNOWN",
+          "value": "SOLE_OWNERSHIP_EXCLUSIVE_ACCESS_NO_OTHER_PROP_FIRMS_OWN_PC_VIDEO",
+          "source_ids": [
+            "TF_AUTO"
+          ]
+        },
+        "vps_login": {
+          "status": "KNOWN",
+          "value": "PROHIBITED",
+          "source_ids": [
+            "TF_FAQ"
+          ]
+        },
+        "vps_trading_after_normal_login": {
+          "status": "KNOWN",
+          "value": "ALLOWED_AT_TRADER_RISK",
+          "source_ids": [
+            "TF_FAQ"
+          ]
+        },
+        "compliant_hosted_reconnect_procedure": "UNKNOWN",
+        "raw_api_rights": "UNKNOWN"
+      },
+      "live": {
+        "inactivity_days": {
+          "status": "KNOWN",
+          "value": 30,
+          "source_ids": [
+            "TF_ELITE"
+          ]
+        },
+        "filled_trade_required": {
+          "status": "KNOWN",
+          "value": true,
+          "source_ids": [
+            "TF_ELITE"
+          ]
+        },
+        "numeric_platform_data_commission_costs": "UNKNOWN"
+      },
+      "cashflow_examples": [
+        {
+          "classification": "FIVE_WINNING_DAYS_150_NO_LOSING_DAYS",
+          "sim_net_profit_before_request_usd": 750,
+          "gross_request_account_debit_usd": 375,
+          "trader_cash_before_external_fees_tax_usd": 337.5,
+          "remaining_profit_ledger_usd": 375,
+          "floor_profit_ledger_usd": 100,
+          "remaining_room_usd": 275,
+          "one_list_purchase_usd": 165,
+          "cash_minus_one_list_purchase_usd": 172.5,
+          "warning": "750 is an example, not a formal net-profit threshold; intervening losses must be included."
+        }
+      ]
+    }
+  },
+  "sources": {
+    "MF_COMM": {
+      "title": "Futures Instrument List",
+      "url": "https://help.myfundedfutures.com/en/articles/9735811-futures-instrument-list",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "MES and MNQ each cost USD 1.90 per contract round trip. MES tick USD 1.25; MNQ tick USD 0.50. Provider trading-hours note says 18:00 to 16:10 EST; do not substitute the later CME close.",
+      "summary_sha256": "eae77e080218b09e627da9c64ec5d7947e0026889d52e1c0e6ce52e5b67b11d0",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "MF_EOD": {
+      "title": "Rapid EOD 50k",
+      "url": "https://help.myfundedfutures.com/en/articles/16158363-rapid-eod-50k-a-comprehensive-look",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "Evaluation: target 3000, MLL 2000, 30% best-day consistency, four days, seven-day inactivity, T1 allowed. SIM starts at zero, EOD trail locks at +100, T1 prohibited, seven-day inactivity. First buffer 2100; later requests unlock after 500 new net profit; minimum request 500, split 90/10. First-request additional-profit wording is not explicit.",
+      "summary_sha256": "0e61224e85849c285b227ae0890836b0f3d7993e53eda5fd0b7226d2cf86eba5",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "MF_NEWS": {
+      "title": "News Trading Policy",
+      "url": "https://help.myfundedfutures.com/en/articles/8230009-news-trading-policy",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "Rapid and Pro SIM must have no open position or order from two minutes before until after two minutes following T1 releases. T1 includes FOMC meetings/minutes, Employment Report and CPI; EIA applies to energy and agricultural reports to agriculture. All evaluations and Builder are explicitly unrestricted for T1. General all-news language elsewhere is broader and internally awkward; exploitative news bursts remain prohibited.",
+      "summary_sha256": "0db0dfde885a00a88412c90a785246255b8c2f02e6f783da777465a69215d7d5",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "MF_BUILDER": {
+      "title": "Builder Plan 50k",
+      "url": "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "Default/add-on: price 153/125, MLL 2000/1500, buffer 2100/1600, first profit 2600/2100. Both: evaluation target 3000, minimum one day, no evaluation consistency; DLL 1000 soft pause, EOD trail, 40 micros. SIM starts at zero, one active account, seven calendar days inactivity, news allowed. Payout: 48h after first trade, two cycle days, 50% cycle consistency, minimum500, cap2000, split80/20, five SIM payouts. Live: same MLL, locks at zero, DLL1000, 80/20, no consistency or inactivity. Stated 30%-promo107/87, 40%-promo92/75 limited two uses. Checkout binding remains necessary.",
+      "summary_sha256": "12548fa28d5585e8d09c132a422b277a87f4d78646efa907b55b385c50467c5f",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "MF_HOME": {
+      "title": "Current pricing cards",
+      "url": "https://myfundedfutures.com/",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "Rapid EOD card lists one-time 209 and promotional125. Builder card lists one-time125 and promotional75 with MLL1.5k or2k. Generic Builder card does not bind the higher-cushion variant price.",
+      "summary_sha256": "dd4f76b721c74b44125eb183600a622e0a91b06be14d79ce7415aa7589c61324",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "MF_TERMS": {
+      "title": "Terms and Conditions",
+      "url": "https://myfundedfutures.com/terms",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "Current one-time purchases do not renew automatically. Legacy subscriptions purchased before2026-08-20 can recur. Checkout determines the purchased model.",
+      "summary_sha256": "77ca4f89e012aff9594ae5027d34685a74ad8796db509b9717cf722a248a16a0",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "MF_PAY": {
+      "title": "Payout Policy Overview",
+      "url": "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "Rapid EOD/intraday: first eligibility24h after first SIM trade, buffer2100 for50k, minimum withdrawal500 after buffer,90% trader share. Builder after first payout MLL resets to+100. The generic no-DLL marketing sentence conflicts with the specific Builder1000 soft-pause table; use the product table.",
+      "summary_sha256": "8d27dfbb71743c0015b2ddfb98e1f11eb263eba8aa3c5e3993fabdcec36bb98c",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "MF_AUTO": {
+      "title": "Fair Play and Prohibited Trading Practices",
+      "url": "https://help.myfundedfutures.com/en/articles/8444599-fair-play-and-prohibited-trading-practices",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "Trader-specific automated strategies are allowed, excluding HFT and simulated-fill exploitation. Live automation must follow CME rules. Sharing devices between traders, cross-trader copying and underlying-asset hedging are prohibited. No express Hetzner/IP permission or ban was found here.",
+      "summary_sha256": "d93a2f1af741db91b91724e113e84f3539905cc8aa6bc3aacfe0d964c198b2a6",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "MF_NT": {
+      "title": "NinjaTrader Login Instructions",
+      "url": "https://help.myfundedfutures.com/en/articles/10082979-ninjatrader-login-instructions",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "Provider credentials from MFFU dashboard are entered in NinjaTrader Desktop; add NinjaTrader connection and select Simulation account type. This documents a native platform route, not raw API entitlement or live-transition credentials.",
+      "summary_sha256": "aa2ae090c14aca3001fad0299e423fda820a01db4d036fd40d83f36e70312f93",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "MF_PLAT": {
+      "title": "Overview of Supported Platforms",
+      "url": "https://help.myfundedfutures.com/en/articles/8528335-overview-of-supported-platforms-at-mffu",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "NinjaTrader, Tradovate, TradingView, Quantower and other platforms are listed. Native platform support is explicit.",
+      "summary_sha256": "4b8212fcd905686f51abed26f2c3df5c6fe3a20d722efc00b274dbce35ee5044",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "MF_LIVE_COST": {
+      "title": "Live Funded Costs",
+      "url": "https://help.myfundedfutures.com/en/articles/10101257-understanding-live-funded-account-at-myfunded-futures",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "Live traders pay professional CME data, round-trip commissions and platform license/subscription from their live account. This page does not bind current numeric MES/MNQ live rates.",
+      "summary_sha256": "a351f682025098efe550a158cbfb3a46cb7d62f57d82651bb1671b0581de6e5d",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "MF_LIVE_FAQ": {
+      "title": "Live Accounts FAQ",
+      "url": "https://help.myfundedfutures.com/en/articles/12109396-comprehensive-faq-live-accounts-at-myfunded-futures",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "T1 news trading is allowed in live accounts, with warnings about volatility and execution. Do not carry the Rapid SIM blackout into live as a provider prohibition.",
+      "summary_sha256": "2e172bde3a367354b0530eecec0a69c0f1a6ee3447ad3336d634e2b9d9f64485",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "TF_COMM": {
+      "title": "Trading Commission Fees",
+      "url": "https://help.tradeify.co/en/articles/10468315-trading-commission-fees",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "MES and MNQ are each USD1.82 per contract round trip, covering both sides. Fees may change. This does not establish a separate Elite live brokerage rate.",
+      "summary_sha256": "db8b298f0328f29f2f48ab2150ecb6e5c716a292435aa133a1a04d316a291c50",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "TF_PAY": {
+      "title": "Select Flex and Daily Payouts",
+      "url": "https://help.tradeify.co/en/articles/12853966-select-flex-and-select-daily-payout-policies",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "Flex50k: five winning days at least150 each;90% share; request up to50% of current profit, minimum250, cap2500 for purchases after2026-09-01. No minimum-balance or buffer requirement. Floor locks at50100 at EOD52100 or first payout request, whichever earlier. Later cycles require positive net profit; only one outstanding request.",
+      "summary_sha256": "d4906def92754d47b131b152ac11a95dae5375395c48f54f0392bdc12003d5f8",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "TF_AUTO": {
+      "title": "Guidelines for Traders",
+      "url": "https://help.tradeify.co/en/articles/10468318-guidelines-for-traders",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "News unrestricted. Evaluation and funded accounts need one trade per Monday-Friday week. Bots require sole ownership, exclusive access, no multi-firm use, no HFT; provider says it will require own-PC enablement video. Funded payout requires over50% of trades and profits from trades held over10seconds.",
+      "summary_sha256": "7d88da7386f011626bdacda8d8a46ad1aabc5cdcfae9d3fe5414d113f2225268",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "TF_FAQ": {
+      "title": "Common FAQs",
+      "url": "https://help.tradeify.co/en/articles/12268494-common-faqs",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "VPN/VPS login is prohibited; VPS trading after ordinary login is permitted at trader risk, with reconnect mechanics unspecified. Positions must close before16:45EST; another line uses EST/EDT for trading hours. News allowed. Level1 included after nonprofessional agreement.",
+      "summary_sha256": "20040cf2e32ea70aee7a9df2569dc7cfec24a8d20687af007093819255b7cffd",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "TF_PLAT": {
+      "title": "Supported Platforms (dated2026-08-05)",
+      "url": "https://help.tradeify.co/en/articles/10468221-supported-platforms",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "Tradovate credentials support NinjaTrader Desktop. First sign nonprofessional agreement in Tradovate. Level1 CME data included. Broker choice has no surcharge; optional L2/Eurex may cost extra. This resolves the earlier generic NinjaTrader-availability conflict for the documented SIM route.",
+      "summary_sha256": "d511ca98d004f445719c6320fb219cd88140bea6e0c01e75a252accfe0ed31c4",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "TF_PRICE": {
+      "title": "Pricing Reference",
+      "url": "https://help.tradeify.co/en/articles/14369021-tradeify-pricing-reference",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "Select50k40% one-time165, reset109. Optional50% consistency variant205/reset135. No activation fee. Nonprofessional L1 included; unsigned professional treatment may cause300/month. Optional third-party upgrades excluded from the baseline.",
+      "summary_sha256": "5ba0808b525476382f84eea624703d7de1f89033c08bf7efe15518e6a06543fe",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "TF_ELITE": {
+      "title": "Elite Program",
+      "url": "https://help.tradeify.co/en/articles/12969284-tradeify-elite-program",
+      "observed_date": "2026-09-22",
+      "retrieval": "PUBLIC_WEB_PAGE_READ",
+      "evidence_summary": "Live inactivity: at least one filled trade in30days; login or unfilled order does not count. Live selection is discretionary but mandatory when selected; SIM/evaluation accounts close.",
+      "summary_sha256": "43d2183c98a3ee33ccc5a6e9645a8f0d8a553e25be5832619edf7b594cd2c04e",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "NT_OS": {
+      "title": "NinjaTrader8 Minimum Requirements",
+      "url": "https://ninjatrader.com/support/helpguides/nt8/minimum_system_requirements.htm",
+      "observed_date": "2026-09-22",
+      "retrieval": "OFFICIAL_SEARCH_INDEX_TEXT_DIRECT_OPEN_ERROR",
+      "evidence_summary": "Official indexed English help text lists Windows11 or WindowsServer2016+64bit, .NET Framework4.8,2GBRAM,1024x768 display; DirectX10 recommended. Direct open failed, so this is indexed primary text, not a captured current installer compatibility test.",
+      "summary_sha256": "1cdb10bcc7c735aeef228071621f2102ccd39dcad286cf4227358adb6fd0099c",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    },
+    "NT_INSTALL": {
+      "title": "NinjaTrader Installation Guide",
+      "url": "https://ninjatrader.com/support/helpguides/nt8/installation_guide.htm",
+      "observed_date": "2026-09-22",
+      "retrieval": "OFFICIAL_SEARCH_INDEX_TEXT_DIRECT_OPEN_REDIRECT",
+      "evidence_summary": "Official indexed guide requires .NET4.8, NinjaTrader-account login, installer download, then connection configuration. Direct page redirected to EU marketing. No download, login or installation performed.",
+      "summary_sha256": "84270285491d59cd8d76fcaef0990b58e500239311d171f936b725e6444298f5",
+      "hash_scope": "analyst summary, not provider page snapshot"
+    }
+  },
+  "input_profiles": [
+    {
+      "path": "D:/QM/agent_worktrees/codex-orchestration-13/docs/ops/evidence/task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2/mffu_rapid_eod_50k_2026-09-22.json",
+      "sha256": "8aac27f805b69fec09d475de620283a1cbdf9f4cc6a77d1644ca6240d90d7c94"
+    },
+    {
+      "path": "D:/QM/agent_worktrees/codex-orchestration-13/docs/ops/evidence/task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2/tradeify_select_flex_50k_2026-09-22.json",
+      "sha256": "2e096627586cc7b50d83034d1391d3778711f2c7b00febfa86e7ffb6e29d75d7"
+    }
+  ],
+  "model_contract": {
+    "account_balance_basis": "Use profit ledger with initial0 for SIM; add50000 only when interoperating with nominal-base diagnostics. Do not mix coordinate systems.",
+    "net_pnl": "Executable fills minus commissions minus separately modeled slippage; include all losing days.",
+    "cashflow": "Trader cash = gross payout request * trader share - external payout/FX/tax. Account debit = gross request, not trader cash.",
+    "external_costs": "Tax, FX, payout fees, extra data/platform charges and infrastructure cost remain UNKNOWN, never silently zero.",
+    "failed_attempts": "Subtract each actual evaluation/reset purchase from cashflow; the examples use one successful attempt only, not expected value.",
+    "unknowns_do_not_block": "Offline development, source-bound cost scenarios, payout-state-machine tests, NinjaScript preparation and replay remain useful.",
+    "prepaid_execution_checks": [
+      "Bind checkout variant and final price/tax/platform data charges",
+      "Bind actual hosting/login/IP and reconnect procedure; MFFU public silence is neither a ban nor affirmative permission",
+      "Verify selected account connection, account type, licenses and bot-rule eligibility",
+      "Resolve Rapid first-request wording before relying on an early payout; model both cases meanwhile",
+      "Test provider clock/session close, DLL and current news calendar behavior before order permission"
+    ],
+    "no_artificial_permission_claim": "Reviewed MFFU sources do not explicitly require written Hetzner permission. Checking hosting suitability is our unresolved implementation item, not a fabricated provider rule.",
+    "native_automation_architecture": "Research Python/replay -> implement equivalent NinjaScript C# -> NinjaTrader Desktop on WindowsServer2016+/.NET4.8 -> documented provider SIM connection. Native script runs inside NinjaTrader; ChatGPT desktop app is not a runtime dependency. No raw API claim.",
+    "installation_state": "NO_INSTALLATION_LOGIN_PURCHASE_CONTACT_OR_ORDERS_IN_THIS_TASK"
+  }
+}

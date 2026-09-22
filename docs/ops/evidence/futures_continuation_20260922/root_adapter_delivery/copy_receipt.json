@@ -1,0 +1,41 @@
+{
+  "at_utc": "2026-09-22T14:06:28.723801+00:00",
+  "purpose": "Preserve root-team evidence separately from concurrently active Factory worker outputs; originals retained.",
+  "files": [
+    {
+      "original": "D:\\QM\\reports\\research\\futures_pivot_20260922\\factory_outputs\\fut-data-adapter\\delivery.json",
+      "copy": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\root_adapter_delivery\\delivery.json",
+      "sha256": "78d959f139ccdb004a4c4e6fa9eda3bf624c29bcde3c267ce571571999a8a3c7"
+    },
+    {
+      "original": "D:\\QM\\reports\\research\\futures_pivot_20260922\\factory_outputs\\fut-data-adapter\\delivery.md",
+      "copy": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\root_adapter_delivery\\delivery.md",
+      "sha256": "2626f9b45fe1d1f1f5a50e44baaf8d1b51d9814a0a19655ef4eed143796e31cc"
+    },
+    {
+      "original": "D:\\QM\\reports\\research\\futures_pivot_20260922\\factory_outputs\\fut-data-adapter\\dbn_flag_review.json",
+      "copy": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\root_adapter_delivery\\dbn_flag_review.json",
+      "sha256": "c95b8c72dd44d4c10dfe61d21fbaefd8b53aac9137be287dda030ada923aa38f"
+    },
+    {
+      "original": "D:\\QM\\reports\\research\\futures_pivot_20260922\\factory_outputs\\fut-data-adapter\\technical_replay_1.json",
+      "copy": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\root_adapter_delivery\\technical_replay_1.json",
+      "sha256": "a82833ba4004467be952d807c09ee6281b2323cb746a5ea082014f211e67cad6"
+    },
+    {
+      "original": "D:\\QM\\reports\\research\\futures_pivot_20260922\\factory_outputs\\fut-data-adapter\\technical_replay_2.json",
+      "copy": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\root_adapter_delivery\\technical_replay_2.json",
+      "sha256": "a82833ba4004467be952d807c09ee6281b2323cb746a5ea082014f211e67cad6"
+    },
+    {
+      "original": "D:\\QM\\reports\\research\\futures_pivot_20260922\\factory_outputs\\fut-data-adapter\\technical_replay_flags_1.json",
+      "copy": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\root_adapter_delivery\\technical_replay_flags_1.json",
+      "sha256": "fc0cd684e5c7e40563910afa5a8b33b441ffdeee0683846da7ad1186f0a0f01c"
+    },
+    {
+      "original": "D:\\QM\\reports\\research\\futures_pivot_20260922\\factory_outputs\\fut-data-adapter\\technical_replay_flags_2.json",
+      "copy": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\root_adapter_delivery\\technical_replay_flags_2.json",
+      "sha256": "fc0cd684e5c7e40563910afa5a8b33b441ffdeee0683846da7ad1186f0a0f01c"
+    }
+  ]
+}

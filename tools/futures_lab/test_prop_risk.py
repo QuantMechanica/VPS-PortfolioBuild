@@ -2,7 +2,14 @@ import unittest
 from dataclasses import replace
 from decimal import Decimal as D
 
-from prop_risk import Point, Rules, contracts_for_risk, evaluate, payout_diagnostic
+from prop_risk import (
+    Point,
+    Rules,
+    contracts_for_risk,
+    evaluate,
+    payout_diagnostic,
+    winning_day_diagnostic,
+)
 
 
 class PropRiskTests(unittest.TestCase):
@@ -59,6 +66,52 @@ class PropRiskTests(unittest.TestCase):
         self.assertEqual(r['net_cash_after_entered_fees_before_tax'],'650.0')
         self.assertTrue(r['survives_unchanged_floor_and_requested_buffer'])
         self.assertFalse(payout_diagnostic(53200,50000,3200,1,0,0)['survives_unchanged_floor_and_requested_buffer'])
+
+    def test_tradeify_first_request_floor_lock_is_not_hidden(self):
+        result=payout_diagnostic(50750,48750,375,'0.9',165,275,post_payout_floor=50100)
+        self.assertEqual(result['cash_to_trader_before_tax'],'337.5')
+        self.assertEqual(result['net_cash_after_entered_fees_before_tax'],'172.5')
+        self.assertEqual(result['room_after_payout'],'275')
+        self.assertTrue(result['floor_changed_by_payout_rule'])
+        self.assertTrue(result['survives_effective_floor_and_requested_buffer'])
+        self.assertIsNone(result['survives_unchanged_floor_and_requested_buffer'])
+        self.assertFalse(payout_diagnostic(50750,48750,375,'0.9',165,276,post_payout_floor=50100)['survives_effective_floor_and_requested_buffer'])
+
+    def test_payout_rule_cannot_reduce_an_existing_floor(self):
+        with self.assertRaises(ValueError):
+            payout_diagnostic(52600,50100,500,'0.9',125,2000,post_payout_floor=50000)
+
+    def test_mffu_conservative_cashflow_does_not_claim_eligibility(self):
+        result=payout_diagnostic(52600,50100,500,'0.9',125,2000)
+        self.assertEqual(result['room_after_payout'],'2000')
+        self.assertEqual(result['net_cash_after_entered_fees_before_tax'],'325.0')
+        self.assertEqual(result['provider_payout_eligibility'],'NOT_EVALUATED')
+
+    def test_source_bound_consistency_boundaries(self):
+        mffu_rules=replace(Rules(),minimum_trading_days=4,best_day_fraction=D('0.30'))
+        balances=(50900,51600,52300,53000)
+        points=[self.point('16',balance,close=True,session=f'2026-09-0{index}')
+                for index,balance in enumerate(balances,start=1)]
+        self.assertEqual(evaluate(points,mffu_rules)['evaluation_status'],'CONDITIONS_MET')
+        points[0]=self.point('16','50900.01',close=True,session='2026-09-01')
+        self.assertEqual(evaluate(points,mffu_rules)['evaluation_status'],'TARGET_OR_DAYS_OR_CONSISTENCY_UNMET')
+
+        tradeify_rules=replace(Rules(),minimum_trading_days=3,best_day_fraction=D('0.40'))
+        points=[self.point('16',51200,close=True,session='2026-09-01'),
+                self.point('16',52100,close=True,session='2026-09-02'),
+                self.point('16',53000,close=True,session='2026-09-03')]
+        self.assertEqual(evaluate(points,tradeify_rules)['evaluation_status'],'CONDITIONS_MET')
+
+    def test_tradeify_winning_day_threshold_is_inclusive_and_session_bounded(self):
+        result=winning_day_diagnostic([150,'149.99',151,200,150,150],5,150)
+        self.assertTrue(result['conditions_met'])
+        self.assertEqual(result['qualifying_session_indexes'],[0,2,3,4,5])
+        result=winning_day_diagnostic([150,'149.99',151,200,150],5,150)
+        self.assertFalse(result['conditions_met'])
+        self.assertEqual(result['remaining_winning_days'],1)
+        self.assertEqual(result['provider_payout_eligibility'],'NOT_EVALUATED')
+        with self.assertRaises(ValueError):
+            winning_day_diagnostic('150,150,150,150,150',5,150)
 
     def test_micro_contract_sizing_counts_costs_and_can_skip(self):
         self.assertEqual(contracts_for_risk(10,10,'1.25','2.50'),0)

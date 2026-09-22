@@ -1,0 +1,90 @@
+{
+  "schema": "qm.futures-technical-replay/v1",
+  "status": "TECHNICAL_REPLAY_COMPLETE",
+  "symbol": "MESZ6",
+  "price_scale": 1000000000,
+  "counts": {
+    "status": 3,
+    "all_events": 10357660,
+    "mbp-1": 10357657,
+    "raw_trade_records": 354563,
+    "excluded_quote_events": 2,
+    "excluded_trade_signal_records": 1,
+    "eligible_quote_events": 10357655,
+    "eligible_trade_signal_records": 354562
+  },
+  "excluded_quote_reason_counts": {
+    "CROSSED_BBO": 1,
+    "NON_TRADING_STATUS": 1,
+    "DBN_BAD_TS_RECV": 1,
+    "DBN_SNAPSHOT_NOT_FRESH_EXECUTION": 1
+  },
+  "excluded_quote_examples": [
+    {
+      "replay_ordinal": 1,
+      "source_ordinal": 0,
+      "ts_recv_ns": 1789509600013889725,
+      "ts_exchange_ns": 1789509600000000000,
+      "bid_px_raw": 7699000000000,
+      "ask_px_raw": 7650000000000,
+      "action": 84,
+      "reasons": [
+        "CROSSED_BBO",
+        "NON_TRADING_STATUS"
+      ]
+    },
+    {
+      "replay_ordinal": 65871,
+      "source_ordinal": 65868,
+      "ts_recv_ns": 1789516800000000000,
+      "ts_exchange_ns": 1789516799944202605,
+      "bid_px_raw": 7665500000000,
+      "ask_px_raw": 7665750000000,
+      "action": 65,
+      "reasons": [
+        "DBN_BAD_TS_RECV",
+        "DBN_SNAPSHOT_NOT_FRESH_EXECUTION"
+      ]
+    }
+  ],
+  "raw_action_byte_counts": {
+    "84": 354563,
+    "67": 4805431,
+    "65": 4849960,
+    "77": 347703
+  },
+  "equal_receive_time_events_retained": 726728,
+  "raw_flag_byte_counts": {
+    "0": 354563,
+    "128": 10003093,
+    "168": 1
+  },
+  "ordered_event_and_eligibility_sha256": "f240e73bff07f82f1917489e37c7449e73a897932698c2a138150d70c8c6ded7",
+  "eligibility_policy": {
+    "max_quote_age_ns": 0,
+    "mode": "FRESH_EVENT_ONLY_TECHNICAL_DIAGNOSTIC",
+    "continuous_trading": "status action7 AND is_trading Y AND is_quoting Y",
+    "cross_schema_tie": "status first; enabling status cannot authorize a same-time quote",
+    "dbn_flags_source": "https://raw.githubusercontent.com/databento/dbn/v0.43.0/rust/dbn/src/flags.rs",
+    "native_dependency_lock_source": "https://raw.githubusercontent.com/nautechsystems/nautilus_trader/v1.221.0/Cargo.lock",
+    "flag_policy": "Reject BAD_TS_RECV, MAYBE_BAD_BOOK, SNAPSHOT, unbound publisher/reserved flags; MAYBE_BAD_BOOK quarantines this gate. LAST is not required."
+  },
+  "validation_report_sha256": "ff82b55c661092cf6837885652f2b5b88b77b519fba1b14bee2c06f865a1edca",
+  "quote_sha256": "24c9edcb056a2e0d856ba7c7832d4ae11263570957774920c940b52e735e2ef9",
+  "source_file_hashes": {
+    "definition": "abc6dbb767cf12f7ab5439bcc8ab9417356f3cf4a4987ff66261d6cb8cb1c39a",
+    "mbp-1": "458d88daff74f885b6fb157dcb3405da2bb4bfed74f8d3f8905f73d6f87dbb11",
+    "status": "cb1910ff2aa34797998e2d04f50d67a548924ea610ad2aef6a0a1640e0474fa4"
+  },
+  "source_files_unchanged_and_complete": true,
+  "economic_result": "NOT_RUN",
+  "orders_submitted": 0,
+  "network_requests": 0,
+  "limitations": [
+    "Eligibility does not manufacture fills, queue position, fees or tradable depth beyond displayed BBO.",
+    "No shared transport order exists across the separately requested status and MBP files; the conservative merge is explicit.",
+    "Definitions and exact-file status reconciliation are validated before replay; no general discrepancy tolerance is applied.",
+    "No strategy, calendar/news certification, profitability or provider qualification is claimed."
+  ],
+  "adapter_sha256": "5e407684ccaaf3546ea3d4ea95b9c3e7e4a64a08209504eabc0b6f114824f2c6"
+}

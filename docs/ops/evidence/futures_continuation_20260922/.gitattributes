@@ -1,0 +1,2 @@
+# Copy receipts bind exact source bytes, including original line endings.
+** -text

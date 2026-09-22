@@ -1,0 +1,97 @@
+{
+  "at_utc": "2026-09-22T13:38:02.465735+00:00",
+  "status": "COPIED_BYTE_IDENTICALLY",
+  "files": [
+    {
+      "source": "D:\\QM\\agent_worktrees\\codex-orchestration-14\\tools\\futures_lab\\preregister.py",
+      "destination": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\preregister.py",
+      "sha256": "4f1e8d1050930df736a82ca8ba55f2c3defa4423008fab177baa1b445a8c97ce",
+      "previous_sha256": null
+    },
+    {
+      "source": "D:\\QM\\agent_worktrees\\codex-orchestration-14\\tools\\futures_lab\\test_preregister.py",
+      "destination": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\test_preregister.py",
+      "sha256": "55159aeb97eabe28b482c772bd86a3759ccecb5cfb68fc221998640a4662885b",
+      "previous_sha256": null
+    },
+    {
+      "source": "D:\\QM\\agent_worktrees\\codex-orchestration-14\\tools\\futures_lab\\preregistrations\\task_b86d2fbd-574d-4024-af9a-2e48ff84beb9\\preregistration.json",
+      "destination": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\preregistrations\\task_b86d2fbd-574d-4024-af9a-2e48ff84beb9\\preregistration.json",
+      "sha256": "a91938e318e7ce5948a9b87949ae22b27af1ea3491f3d4723880385d123bea02",
+      "previous_sha256": null
+    },
+    {
+      "source": "D:\\QM\\agent_worktrees\\codex-orchestration-14\\tools\\futures_lab\\preregistrations\\task_b86d2fbd-574d-4024-af9a-2e48ff84beb9\\README.md",
+      "destination": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\preregistrations\\task_b86d2fbd-574d-4024-af9a-2e48ff84beb9\\README.md",
+      "sha256": "1b1985e6a9c6c6ff97f943acaad1237b8373bf9ff5cf4f363f4c12b1c3980448",
+      "previous_sha256": null
+    },
+    {
+      "source": "D:\\QM\\agent_worktrees\\codex-orchestration-14\\tools\\futures_lab\\preregistrations\\task_b86d2fbd-574d-4024-af9a-2e48ff84beb9\\trial_plan.json",
+      "destination": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\preregistrations\\task_b86d2fbd-574d-4024-af9a-2e48ff84beb9\\trial_plan.json",
+      "sha256": "4ffae4eea06f490e1a9762cfbe9ccd5e4ff21c80ffe98377ecf4758aafc80827",
+      "previous_sha256": null
+    },
+    {
+      "source": "D:\\QM\\agent_worktrees\\codex-orchestration-14\\tools\\futures_lab\\preregistrations\\task_b86d2fbd-574d-4024-af9a-2e48ff84beb9\\verification.json",
+      "destination": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\preregistrations\\task_b86d2fbd-574d-4024-af9a-2e48ff84beb9\\verification.json",
+      "sha256": "608803afa74959bebbb2b55b78143a84a1ee8dd242e6b1023589a83ecc1a8e6f",
+      "previous_sha256": null
+    },
+    {
+      "source": "D:\\QM\\agent_worktrees\\codex-orchestration-13\\tools\\futures_lab\\prop_profile.py",
+      "destination": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\prop_profile.py",
+      "sha256": "29108dd7d66334bf0f8ee1cb23f3b520d15435cc56861fb85e5e7534fdc969fb",
+      "previous_sha256": null
+    },
+    {
+      "source": "D:\\QM\\agent_worktrees\\codex-orchestration-13\\tools\\futures_lab\\test_prop_profile.py",
+      "destination": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\test_prop_profile.py",
+      "sha256": "80aa53bf083f721dcf57b255fdf8b724efa8fb94fbfdf5c3c9c3429f5e17ee1f",
+      "previous_sha256": null
+    },
+    {
+      "source": "D:\\QM\\agent_worktrees\\codex-orchestration-13\\tools\\futures_lab\\prop_risk.py",
+      "destination": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\prop_risk.py",
+      "sha256": "0855544845d6543b896dadd372175d59b38a6b8d12f32193a1ee577bf3aad2ed",
+      "previous_sha256": "6815fe6623713b7717687bbd54a5419308c6f2329b9334c8e698fc07de550b97"
+    },
+    {
+      "source": "D:\\QM\\agent_worktrees\\codex-orchestration-13\\tools\\futures_lab\\test_prop_risk.py",
+      "destination": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\test_prop_risk.py",
+      "sha256": "1fce011f3a4f35676cd3e227a962d1924643c21de9ac6d6612917bd57c493b6e",
+      "previous_sha256": "e90ec0b998502f471731dc9de57bc0210b4482261ff659854b7c5f263ca3aebe"
+    },
+    {
+      "source": "D:\\QM\\agent_worktrees\\codex-orchestration-13\\docs\\ops\\evidence\\task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2\\mffu_rapid_eod_50k_2026-09-22.json",
+      "destination": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\docs\\ops\\evidence\\task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2\\mffu_rapid_eod_50k_2026-09-22.json",
+      "sha256": "8aac27f805b69fec09d475de620283a1cbdf9f4cc6a77d1644ca6240d90d7c94",
+      "previous_sha256": null
+    },
+    {
+      "source": "D:\\QM\\agent_worktrees\\codex-orchestration-13\\docs\\ops\\evidence\\task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2\\profile_validation.json",
+      "destination": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\docs\\ops\\evidence\\task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2\\profile_validation.json",
+      "sha256": "e3bddc8b76eb21767e929fba71ffbda6ee4becfb951d05c6427cfa92b986729c",
+      "previous_sha256": null
+    },
+    {
+      "source": "D:\\QM\\agent_worktrees\\codex-orchestration-13\\docs\\ops\\evidence\\task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2\\README.md",
+      "destination": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\docs\\ops\\evidence\\task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2\\README.md",
+      "sha256": "3d853027b249b7e7f8e3f1bc9cef5be98763fe6d37bbb4cd1bc0db11d3a52d13",
+      "previous_sha256": null
+    },
+    {
+      "source": "D:\\QM\\agent_worktrees\\codex-orchestration-13\\docs\\ops\\evidence\\task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2\\tradeify_select_flex_50k_2026-09-22.json",
+      "destination": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\docs\\ops\\evidence\\task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2\\tradeify_select_flex_50k_2026-09-22.json",
+      "sha256": "2e096627586cc7b50d83034d1391d3778711f2c7b00febfa86e7ffb6e29d75d7",
+      "previous_sha256": null
+    },
+    {
+      "source": "D:\\QM\\agent_worktrees\\codex-orchestration-13\\docs\\ops\\evidence\\task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2\\verification.json",
+      "destination": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\docs\\ops\\evidence\\task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2\\verification.json",
+      "sha256": "cb6b5773fb8d0b2a86613dc4d20bda2030782854820706f4c93ae98bea5ba735",
+      "previous_sha256": null
+    }
+  ],
+  "source_worktrees_modified": false
+}

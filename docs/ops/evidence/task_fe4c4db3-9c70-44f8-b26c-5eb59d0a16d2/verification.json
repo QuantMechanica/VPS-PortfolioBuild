@@ -1,0 +1,48 @@
+{
+  "schema": "qm.futures-prop-profile-task-verification.v1",
+  "task_id": "fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2",
+  "as_of": "2026-09-22",
+  "verdict": "PASS_NONDEPLOYABLE_RESEARCH",
+  "dependency": {
+    "implementation_commit": "4aef1793e5c0939513b507d674e40fc2b95b659c",
+    "staged_on_agent_branch_as": "d4a3ae0580"
+  },
+  "checks": [
+    {
+      "name": "profile_structure_and_source_hashes",
+      "command": "python -B tools/futures_lab/prop_profile.py --profile docs/ops/evidence/task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2/mffu_rapid_eod_50k_2026-09-22.json --profile docs/ops/evidence/task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2/tradeify_select_flex_50k_2026-09-22.json --source-json D:/QM/reports/research/futures_pivot_20260922/prop_firms.json --source-markdown D:/QM/reports/research/futures_pivot_20260922/prop_firms.md --task-id fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2 --output docs/ops/evidence/task_fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2/profile_validation.json",
+      "result": "PASS",
+      "detail": "2 profiles; both deployable=false; zero validation errors; both source snapshot hashes matched."
+    },
+    {
+      "name": "focused_offline_unit_tests",
+      "command": "python -B -m unittest discover -s tools/futures_lab -p \"test_prop*.py\" -v",
+      "result": "PASS",
+      "detail": "19 tests passed, including 4 profile fail-closed tests and 15 risk/cashflow boundary tests."
+    },
+    {
+      "name": "patch_whitespace",
+      "command": "git diff --check",
+      "result": "PASS",
+      "detail": "No whitespace errors; Git emitted only the repository's expected Windows line-ending notices."
+    }
+  ],
+  "sha256": {
+    "tools/futures_lab/prop_risk.py": "0855544845d6543b896dadd372175d59b38a6b8d12f32193a1ee577bf3aad2ed",
+    "tools/futures_lab/prop_profile.py": "29108dd7d66334bf0f8ee1cb23f3b520d15435cc56861fb85e5e7534fdc969fb",
+    "tools/futures_lab/test_prop_risk.py": "1fce011f3a4f35676cd3e227a962d1924643c21de9ac6d6612917bd57c493b6e",
+    "tools/futures_lab/test_prop_profile.py": "80aa53bf083f721dcf57b255fdf8b724efa8fb94fbfdf5c3c9c3429f5e17ee1f",
+    "mffu_rapid_eod_50k_2026-09-22.json": "8aac27f805b69fec09d475de620283a1cbdf9f4cc6a77d1644ca6240d90d7c94",
+    "tradeify_select_flex_50k_2026-09-22.json": "2e096627586cc7b50d83034d1391d3778711f2c7b00febfa86e7ffb6e29d75d7",
+    "profile_validation.json": "e3bddc8b76eb21767e929fba71ffbda6ee4becfb951d05c6427cfa92b986729c"
+  },
+  "safety": {
+    "provider_contact": false,
+    "account_purchase_or_registration": false,
+    "credential_entry": false,
+    "live_connection_or_order": false,
+    "terminal_or_autotrading_change": false,
+    "cfd_verdict_change": false,
+    "profiles_deployable": false
+  }
+}

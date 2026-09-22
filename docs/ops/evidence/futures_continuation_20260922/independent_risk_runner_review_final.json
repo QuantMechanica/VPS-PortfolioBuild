@@ -1,0 +1,59 @@
+{
+  "schema": "qm.independent-risk-runner-review-final.v1",
+  "reviewer": "/root/revenue_options",
+  "verified_at_utc": "2026-09-22T14:12:04Z",
+  "status": "RESOLVED_FOCUSED_REGRESSIONS_PASS",
+  "initial_receipt": {
+    "path": "D:/QM/reports/research/futures_pivot_20260922/progress_20260922/independent_risk_runner_review.json",
+    "sha256": "f9593507bb1d644ef997c90535a75277002a89dc6c4f626dbf623457f8e83f25",
+    "preserved_unchanged": true
+  },
+  "reviewed_files_sha256": {
+    "tools/futures_lab/prop_risk.py": "8d25aa083b857cc5b6abe8562eb6cec3a18b5c0b158fdf6cd37de45232a8ef24",
+    "tools/futures_lab/strategy_runner.py": "ca62c7b46cca1f3037e5939a1d3a5c0c94f95a0e1ae042b95b0f9650148e8a9a",
+    "tools/futures_lab/run_june2019_reference.py": "6fcbb7b35a1c161c62c4bab76f006e54468b784d3517e3ddc51db5c2e5bbf6b9",
+    "tools/futures_lab/test_strategy_runner.py": "ae2cc408563997fc81fdd757ea6abdcf56bceb3c0e33f450d11a0022a446b17f"
+  },
+  "findings": [
+    {
+      "id": "R1_MISSING_FILL_STREAM_AS_CLEAN_ZERO",
+      "status": "RESOLVED",
+      "correction": "No-signal requires a stream horizon beyond 15:59:30. A surviving pending intent, unexecuted end-drain signal, or entry-window timeout is DATA_INVALID, not zero-PnL NO_SIGNAL.",
+      "followup_reproduction": "The first correction still admitted [status(),quote(1,'15:59:30.001')] and [status(),quote(1,'09:36:00.100',size=0),quote(2,'15:59:30.001')]. The second correction closes both by checking pending intent before the no-signal tail.",
+      "verified_code": "strategy_runner.py lines533-534 and559-579",
+      "regression": "test_strategy_runner.ExecutionTests.test_empty_status_only_and_truncated_fill_stream_invalid",
+      "subcases": 5,
+      "positive_control": "test_strategy_runner.ExecutionTests.test_no_signal_retained_and_missing_minutes_invalid keeps complete true-no-signal sessions at zero."
+    },
+    {
+      "id": "R2_UNRESOLVED_POSITION_FAKE_FLAT_CARRY",
+      "status": "RESOLVED",
+      "correction": "DATA_INVALID returns account_path_valid=false and ending_balance_usd=null. carry_forward permanently sets state.valid=false/state.balance=null and remembers invalid_at. execute handles later invalid-account rows before runner invocation, emits PRIOR_ACCOUNT_PATH_INVALID, and never restarts at50000. Full-path summary PnL remains null.",
+      "verified_code": "strategy_runner.py lines577-580; run_june2019_reference.py carry_forward plus invalid-state execute branch and summary complete check",
+      "regressions": ["test_strategy_runner.ExecutionTests.test_missing_flat_quote_invalid_not_zero_profit", "test_strategy_runner.HarnessTests.test_invalid_account_cannot_resume"],
+      "test_scope": "Core unresolved-entry return path and carry-forward refusal dynamically tested; execute branch precedence and full-path summary invalidation inspected read-only. No historical market run was performed by this reviewer."
+    }
+  ],
+  "focused_verification": [
+    {
+      "command": "D:/QM/venvs/futures_lab/Scripts/python.exe -B -m unittest -v test_strategy_runner.ExecutionTests.test_empty_status_only_and_truncated_fill_stream_invalid test_strategy_runner.ExecutionTests.test_missing_flat_quote_invalid_not_zero_profit test_strategy_runner.ExecutionTests.test_no_signal_retained_and_missing_minutes_invalid",
+      "tests_run": 3,
+      "exit_code": 0,
+      "result": "PASS",
+      "elapsed_seconds": 0.047,
+      "tool_output_chunk": "6de42c"
+    },
+    {
+      "command": "D:/QM/venvs/futures_lab/Scripts/python.exe -B -m unittest -v test_strategy_runner.HarnessTests.test_invalid_account_cannot_resume",
+      "tests_run": 1,
+      "exit_code": 0,
+      "result": "PASS",
+      "elapsed_seconds": 0.091,
+      "tool_output_chunk": "2ad550"
+    }
+  ],
+  "prop_risk_review_status": "PASS_BOUNDED_REVIEW_NO_ADDITIONAL_BLOCKER_FOUND",
+  "full_suite": "Not rerun by reviewer after corrections; root owns final full-suite integration run.",
+  "scope_count_note": "20 sessions x3 MES arms x3 scenarios =180 session rows. An incidental reviewer suggestion of90 was arithmetic error and explicitly withdrawn; no finding remains on the correct180 count.",
+  "limitations": "Closes these two reproduced defects only. Does not certify data completeness, provider eligibility, economic success, native execution parity, or live approval. All reviewer code inspections/tests were offline; only review receipts were written."
+}

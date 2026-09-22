@@ -1,0 +1,287 @@
+{
+  "schema": "qm.futures-prop-research-profile.v1",
+  "profile_id": "MFFU_RAPID_EOD_50K_2026-09-22",
+  "created_for_task": "fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2",
+  "as_of": "2026-09-22",
+  "firm": "MyFundedFutures",
+  "product": "Rapid EOD 50k",
+  "nominal_account_usd": 50000,
+  "scope": "Dated research contract assembled from the bound comparison snapshot; not a provider contract, purchase authorization, deployment approval or profitability claim.",
+  "source_snapshot": {
+    "json": {
+      "path": "D:/QM/reports/research/futures_pivot_20260922/prop_firms.json",
+      "sha256": "a4116ec9f12a9d126c051f1fa7829829e051955eaef4a2d9a6b5164ac9179a0c"
+    },
+    "markdown": {
+      "path": "D:/QM/reports/research/futures_pivot_20260922/prop_firms.md",
+      "sha256": "8d6c5fd9739ff261e08a540c4c0313d2a0213096107e94c33cb635c94535515b"
+    }
+  },
+  "sources": {
+    "MF_AUTO": {
+      "title": "MFFU Fair Play and Prohibited Trading Practices",
+      "url": "https://help.myfundedfutures.com/en/articles/8444599-fair-play-and-prohibited-trading-practices",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "MF_PLAT": {
+      "title": "MFFU Supported Platforms",
+      "url": "https://help.myfundedfutures.com/en/articles/8528335-overview-of-supported-platforms-at-mffu",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "MF_CONNECT": {
+      "title": "MFFU platform connections",
+      "url": "https://help.myfundedfutures.com/en/articles/8528337-connecting-to-different-platforms-at-mffu",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "MF_EOD": {
+      "title": "MFFU Rapid EOD 50k",
+      "url": "https://help.myfundedfutures.com/en/articles/16158363-rapid-eod-50k-a-comprehensive-look",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "MF_PAY": {
+      "title": "MFFU payout overview",
+      "url": "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "MF_DELIVERY": {
+      "title": "MFFU first payout process",
+      "url": "https://help.myfundedfutures.com/en/articles/11542406-guide-to-your-first-payout-quick-and-easy-process",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "MF_LIVE": {
+      "title": "MFFU Understanding Rapid Live",
+      "url": "https://help.myfundedfutures.com/en/articles/13134718-understanding-rapid-live",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "MF_HOME": {
+      "title": "MFFU current pricing cards",
+      "url": "https://myfundedfutures.com/",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "MF_TERMS": {
+      "title": "MFFU Terms and Conditions",
+      "url": "https://myfundedfutures.com/terms",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "MF_KYC": {
+      "title": "MFFU KYC/AML and restricted countries",
+      "url": "https://help.myfundedfutures.com/en/articles/9717961-kyc-aml-policies",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "MF_INSTR": {
+      "title": "MFFU futures instruments and round-trip costs",
+      "url": "https://help.myfundedfutures.com/en/articles/9735811-futures-instrument-list",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "MF_LIVE_COST": {
+      "title": "MFFU Live Funded costs",
+      "url": "https://help.myfundedfutures.com/en/articles/10101257-understanding-live-funded-account-at-myfunded-futures",
+      "official": true,
+      "observed_date": "2026-09-22"
+    }
+  },
+  "coverage": {
+    "news": {
+      "status": "CONDITIONAL",
+      "value": "Tier-1 event trading is prohibited in SIM; the event taxonomy and exact pre/post blackout window are UNKNOWN.",
+      "source_ids": ["MF_EOD"]
+    },
+    "inactivity": {
+      "status": "KNOWN",
+      "value": "SIM inactivity limit recorded as 7 days; evaluation/live scope remains phase-specific and is not inferred.",
+      "source_ids": ["MF_EOD"]
+    },
+    "consistency": {
+      "status": "KNOWN",
+      "value": "Evaluation best day must be no more than 30% of total net profit; no SIM payout consistency rule was recorded.",
+      "source_ids": ["MF_EOD", "MF_PAY"]
+    },
+    "reset": {
+      "status": "UNKNOWN",
+      "value": "UNKNOWN",
+      "source_ids": ["MF_HOME", "MF_TERMS"]
+    },
+    "day_count": {
+      "status": "KNOWN",
+      "value": "At least 4 evaluation trading days; payout overview records first eligibility 24 hours after the first SIM trade, subject to all other rules.",
+      "source_ids": ["MF_EOD", "MF_PAY"]
+    },
+    "scalping": {
+      "status": "CONDITIONAL",
+      "value": "HFT and simulation-fill exploitation are prohibited; no numeric universal minimum hold time was bound.",
+      "source_ids": ["MF_AUTO"]
+    },
+    "ownership": {
+      "status": "KNOWN",
+      "value": "Automated strategies tailored to the trader's own settings are allowed; cross-trader copying and prohibited hedging do not inherit permission.",
+      "source_ids": ["MF_AUTO"]
+    },
+    "hosting": {
+      "status": "UNKNOWN",
+      "value": "UNKNOWN",
+      "source_ids": ["MF_AUTO", "MF_PLAT", "MF_CONNECT", "MF_LIVE"]
+    }
+  },
+  "phase_order": ["evaluation", "sim_funded", "payout", "live_transition"],
+  "phases": {
+    "evaluation": {
+      "rules": {
+        "profit_target_usd": {"status": "KNOWN", "value": 3000, "source_ids": ["MF_EOD"]},
+        "maximum_loss_usd": {"status": "KNOWN", "value": 2000, "source_ids": ["MF_EOD"]},
+        "trailing_mode": {"status": "KNOWN", "value": "EOD_BALANCE_TRAIL_WITH_INTRADAY_FLOOR_ENFORCEMENT", "source_ids": ["MF_EOD"]},
+        "daily_loss_limit_usd": {"status": "NONE_PUBLISHED", "value": "NONE_PUBLISHED", "source_ids": ["MF_EOD"]},
+        "minimum_trading_days": {"status": "KNOWN", "value": 4, "source_ids": ["MF_EOD"]},
+        "best_day_max_fraction": {"status": "KNOWN", "value": 0.3, "source_ids": ["MF_EOD"]},
+        "maximum_minis": {"status": "KNOWN", "value": 3, "source_ids": ["MF_EOD"]},
+        "maximum_micros": {"status": "KNOWN", "value": 30, "source_ids": ["MF_EOD"]},
+        "news_blackout_window": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_EOD"]},
+        "inactivity_limit_days": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_EOD"]}
+      },
+      "costs": {
+        "program_fee_observed_promo_usd": {"status": "KNOWN", "value": 125, "source_ids": ["MF_HOME"]},
+        "program_fee_list_usd": {"status": "KNOWN", "value": 209, "source_ids": ["MF_HOME", "MF_TERMS"]},
+        "activation_fee_usd": {"status": "KNOWN", "value": 0, "source_ids": ["MF_HOME"]},
+        "monthly_renewal_usd": {"status": "KNOWN", "value": 0, "source_ids": ["MF_HOME", "MF_TERMS"]},
+        "reset_fee_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_HOME", "MF_TERMS"]},
+        "mes_mnq_round_trip_per_contract_usd": {"status": "KNOWN", "value": 1.9, "source_ids": ["MF_INSTR"]},
+        "slippage_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_INSTR"]},
+        "platform_or_data_subscription_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_PLAT", "MF_CONNECT"]},
+        "vat_or_sales_tax_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_HOME", "MF_TERMS"]}
+      }
+    },
+    "sim_funded": {
+      "rules": {
+        "environment": {"status": "KNOWN", "value": "SIMULATED_FUNDED", "source_ids": ["MF_EOD"]},
+        "maximum_loss_usd": {"status": "KNOWN", "value": 2000, "source_ids": ["MF_EOD"]},
+        "trailing_mode": {"status": "KNOWN", "value": "EOD_BALANCE_TRAIL_WITH_INTRADAY_FLOOR_ENFORCEMENT", "source_ids": ["MF_EOD"]},
+        "floor_lock_above_initial_usd": {"status": "KNOWN", "value": 100, "source_ids": ["MF_EOD"]},
+        "daily_loss_limit_usd": {"status": "NONE_PUBLISHED", "value": "NONE_PUBLISHED", "source_ids": ["MF_EOD"]},
+        "tier_1_news_trading": {"status": "KNOWN", "value": "PROHIBITED", "source_ids": ["MF_EOD"]},
+        "news_blackout_minutes_before": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_EOD"]},
+        "news_blackout_minutes_after": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_EOD"]},
+        "inactivity_limit_days": {"status": "KNOWN", "value": 7, "source_ids": ["MF_EOD"]},
+        "payout_consistency_rule": {"status": "NONE_PUBLISHED", "value": "NONE_PUBLISHED", "source_ids": ["MF_PAY"]},
+        "high_frequency_trading": {"status": "KNOWN", "value": "PROHIBITED", "source_ids": ["MF_AUTO"]},
+        "universal_minimum_hold_seconds": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_AUTO"]},
+        "automation_ownership": {"status": "CONDITIONAL", "value": "Trader-specific settings allowed; copying, prohibited hedging and simulation exploitation remain barred.", "source_ids": ["MF_AUTO"]},
+        "hosted_server_permission": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_AUTO", "MF_PLAT", "MF_CONNECT"]},
+        "native_platform_or_raw_api_route": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_PLAT", "MF_CONNECT"]}
+      },
+      "costs": {
+        "activation_fee_usd": {"status": "KNOWN", "value": 0, "source_ids": ["MF_HOME"]},
+        "monthly_program_fee_usd": {"status": "KNOWN", "value": 0, "source_ids": ["MF_HOME", "MF_TERMS"]},
+        "mes_mnq_round_trip_per_contract_usd": {"status": "KNOWN", "value": 1.9, "source_ids": ["MF_INSTR"]},
+        "slippage_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_INSTR"]},
+        "platform_or_data_subscription_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_PLAT", "MF_CONNECT"]}
+      }
+    },
+    "payout": {
+      "rules": {
+        "trader_share_fraction": {"status": "KNOWN", "value": 0.9, "source_ids": ["MF_PAY"]},
+        "request_frequency": {"status": "KNOWN", "value": "DAILY_AFTER_ELIGIBILITY", "source_ids": ["MF_PAY"]},
+        "first_buffer_usd": {"status": "KNOWN", "value": 2100, "source_ids": ["MF_EOD", "MF_PAY"]},
+        "minimum_request_usd": {"status": "KNOWN", "value": 500, "source_ids": ["MF_EOD", "MF_PAY"]},
+        "first_request_exact_required_profit_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_EOD", "MF_PAY"]},
+        "conservative_first_request_model_profit_usd": {"status": "DERIVED", "value": 2600, "source_ids": ["MF_EOD", "MF_PAY"]},
+        "subsequent_new_profit_usd": {"status": "KNOWN", "value": 500, "source_ids": ["MF_PAY"]},
+        "per_request_cap_usd": {"status": "NOT_APPLICABLE", "value": "NO_CAP_RECORDED", "source_ids": ["MF_PAY"]},
+        "account_debit_convention": {"status": "KNOWN", "value": "GROSS_REQUEST_REDUCES_ACCOUNT_BALANCE", "source_ids": ["MF_PAY"]},
+        "locked_floor_usd": {"status": "DERIVED", "value": 50100, "source_ids": ["MF_EOD", "MF_PAY"]},
+        "provider_eligibility_in_local_diagnostic": {"status": "KNOWN", "value": "NOT_EVALUATED", "source_ids": ["MF_EOD", "MF_PAY"]}
+      },
+      "costs": {
+        "firm_share_fraction": {"status": "KNOWN", "value": 0.1, "source_ids": ["MF_PAY"]},
+        "rise_or_bank_fee_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_DELIVERY"]},
+        "foreign_exchange_fee_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_DELIVERY"]},
+        "tax_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_DELIVERY", "MF_KYC"]}
+      }
+    },
+    "live_transition": {
+      "rules": {
+        "transition_trigger": {"status": "CONDITIONAL", "value": "Risk-team discretion or automatic trigger at USD 10000 net profit in one session.", "source_ids": ["MF_LIVE"]},
+        "single_session_trigger_usd": {"status": "KNOWN", "value": 10000, "source_ids": ["MF_LIVE"]},
+        "profit_above_trigger_forfeited": {"status": "KNOWN", "value": true, "source_ids": ["MF_LIVE"]},
+        "maximum_sim_reserve_usd": {"status": "KNOWN", "value": 5000, "source_ids": ["MF_LIVE"]},
+        "sim_accounts_suspended": {"status": "KNOWN", "value": true, "source_ids": ["MF_LIVE"]},
+        "starting_profit_balance_usd": {"status": "KNOWN", "value": 0, "source_ids": ["MF_LIVE"]},
+        "maximum_loss_usd": {"status": "KNOWN", "value": 2000, "source_ids": ["MF_LIVE"]},
+        "trailing_mode": {"status": "KNOWN", "value": "EOD_TRAIL_UNTIL_STATIC_ZERO_FLOOR", "source_ids": ["MF_LIVE"]},
+        "trader_share_fraction": {"status": "KNOWN", "value": 0.9, "source_ids": ["MF_LIVE"]},
+        "live_buffer_requirement_usd": {"status": "KNOWN", "value": 0, "source_ids": ["MF_LIVE"]},
+        "hosted_server_permission": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_AUTO", "MF_LIVE"]},
+        "native_platform_or_raw_api_route": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_PLAT", "MF_CONNECT", "MF_LIVE"]},
+        "news_blackout_window": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_LIVE"]},
+        "inactivity_limit_days": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_LIVE"]}
+      },
+      "costs": {
+        "professional_market_data_monthly_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_LIVE_COST"]},
+        "platform_subscription_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_LIVE_COST"]},
+        "commission_per_contract_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_LIVE_COST", "MF_INSTR"]},
+        "slippage_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_LIVE_COST", "MF_INSTR"]},
+        "payout_or_fx_fee_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["MF_DELIVERY", "MF_LIVE_COST"]}
+      }
+    }
+  },
+  "unresolved_operational_requirements": [
+    {
+      "id": "MFFU_HOSTING_IP_PERMISSION",
+      "detail": "Bind written permission for the sole-owner Hetzner host, IP/login behavior and the same route after live transition.",
+      "source_ids": ["MF_AUTO", "MF_PLAT", "MF_CONNECT", "MF_LIVE"],
+      "blocks_deployment": true
+    },
+    {
+      "id": "MFFU_EXECUTION_ROUTE",
+      "detail": "Bind native NinjaScript/platform execution versus separately authorized raw API entitlement in every phase.",
+      "source_ids": ["MF_PLAT", "MF_CONNECT", "MF_LIVE"],
+      "blocks_deployment": true
+    },
+    {
+      "id": "MFFU_NEWS_WINDOW",
+      "detail": "Tier-1 trading is prohibited in SIM, but exact event taxonomy and pre/post-event blackout minutes are UNKNOWN.",
+      "source_ids": ["MF_EOD"],
+      "blocks_deployment": true
+    },
+    {
+      "id": "MFFU_FIRST_REQUEST_BUFFER_WORDING",
+      "detail": "The exact first-request condition is UNKNOWN: reaching USD 2100 buffer versus retaining it plus the USD 500 request. Research diagnostics use USD 2600 conservatively but do not claim provider eligibility.",
+      "source_ids": ["MF_EOD", "MF_PAY"],
+      "blocks_deployment": true
+    },
+    {
+      "id": "MFFU_PHASE_FEES",
+      "detail": "Reset, VAT, payout/FX, live market-data, platform, commission and slippage amounts are not fully bound.",
+      "source_ids": ["MF_HOME", "MF_TERMS", "MF_DELIVERY", "MF_INSTR", "MF_LIVE_COST"],
+      "blocks_deployment": true
+    }
+  ],
+  "deployment": {
+    "status": "NONDEPLOYABLE_RESEARCH_ONLY",
+    "deployable": false,
+    "blocked_by": [
+      "MFFU_HOSTING_IP_PERMISSION",
+      "MFFU_EXECUTION_ROUTE",
+      "MFFU_NEWS_WINDOW",
+      "MFFU_FIRST_REQUEST_BUFFER_WORDING",
+      "MFFU_PHASE_FEES"
+    ],
+    "prohibited_actions": [
+      "ACCOUNT_PURCHASE",
+      "PROVIDER_CONTACT",
+      "CREDENTIAL_ENTRY",
+      "LIVE_CONNECTION",
+      "ORDER_SUBMISSION",
+      "CFD_VERDICT_CHANGE"
+    ]
+  }
+}

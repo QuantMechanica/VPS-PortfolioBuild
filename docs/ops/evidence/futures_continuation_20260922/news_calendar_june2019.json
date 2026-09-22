@@ -1,0 +1,724 @@
+{
+  "schema": "qm.named-vendor-historical-news-calendar.v1",
+  "calendar_id": "FF_USD_HIGH_JUNE2019_RETRIEVED_20260922",
+  "provider": "Forex Factory",
+  "status": "PARTIAL_VENDOR_COVERAGE",
+  "point_in_time": false,
+  "historical_revision_warning": "Historical archive retrieved in 2026. Event names, times and impact categories may have changed since 2019. This is not a vintage-2019 or omniscient news calendar.",
+  "fetched_at_utc": "2026-09-22T13:42:40.676586+00:00",
+  "fetched_at_utc_basis": "FILESYSTEM_MTIME_PROXY_NOT_NETWORK_RECEIPT",
+  "extracted_at_utc": "2026-09-22T13:55:12.931495+00:00",
+  "assembled_at_utc": "2026-09-22T13:55:12.931495+00:00",
+  "coverage_start_utc": "2019-06-01T21:00:00Z",
+  "coverage_end_utc": "2019-06-08T21:00:00Z",
+  "complete_for_named_vendor": false,
+  "complete_for_covered_sessions": true,
+  "completeness_scope": "Only Jun2-8: all 110 events embedded in the unfiltered snapshot, all currency/impact/event-type selections, seven explicit day containers including zero-event days. Complete USD HIGH classification for Jun3-7 RTH only. No coverage for Jun10-28.",
+  "requested_session_dates": [
+    "2019-06-03",
+    "2019-06-04",
+    "2019-06-05",
+    "2019-06-06",
+    "2019-06-07",
+    "2019-06-10",
+    "2019-06-11",
+    "2019-06-12",
+    "2019-06-13",
+    "2019-06-14",
+    "2019-06-17",
+    "2019-06-18",
+    "2019-06-19",
+    "2019-06-20",
+    "2019-06-21",
+    "2019-06-24",
+    "2019-06-25",
+    "2019-06-26",
+    "2019-06-27",
+    "2019-06-28"
+  ],
+  "covered_session_dates": [
+    "2019-06-03",
+    "2019-06-04",
+    "2019-06-05",
+    "2019-06-06",
+    "2019-06-07"
+  ],
+  "missing_session_dates": [
+    "2019-06-10",
+    "2019-06-11",
+    "2019-06-12",
+    "2019-06-13",
+    "2019-06-14",
+    "2019-06-17",
+    "2019-06-18",
+    "2019-06-19",
+    "2019-06-20",
+    "2019-06-21",
+    "2019-06-24",
+    "2019-06-25",
+    "2019-06-26",
+    "2019-06-27",
+    "2019-06-28"
+  ],
+  "source_timezone": [
+    "Europe/Helsinki"
+  ],
+  "events": [
+    {
+      "event_id": "102149",
+      "title": "ISM Manufacturing PMI",
+      "currency": "USD",
+      "impact": "HIGH",
+      "timestamp_utc": "2019-06-03T14:00:00Z",
+      "datetime_new_york": "2019-06-03T10:00:00-04:00",
+      "epoch_seconds": 1559570400,
+      "source_url": "https://www.forexfactory.com/calendar?day=jun3.2019#detail=102149",
+      "week_source_url": "https://www.forexfactory.com/calendar?week=jun2.2019",
+      "source_timezone": "Europe/Helsinki",
+      "source_time_label": "5:00pm",
+      "source_notice": "",
+      "time_status": "TIMED",
+      "impact_basis": "FOREX_FACTORY_HISTORICAL_PAGE_AT_RETRIEVAL"
+    },
+    {
+      "event_id": "110394",
+      "title": "FOMC Member Powell Speaks",
+      "currency": "USD",
+      "impact": "HIGH",
+      "timestamp_utc": "2019-06-04T13:55:00Z",
+      "datetime_new_york": "2019-06-04T09:55:00-04:00",
+      "epoch_seconds": 1559656500,
+      "source_url": "https://www.forexfactory.com/calendar?day=jun4.2019#detail=110394",
+      "week_source_url": "https://www.forexfactory.com/calendar?week=jun2.2019",
+      "source_timezone": "Europe/Helsinki",
+      "source_time_label": "4:55pm",
+      "source_notice": "",
+      "time_status": "TIMED",
+      "impact_basis": "FOREX_FACTORY_HISTORICAL_PAGE_AT_RETRIEVAL"
+    },
+    {
+      "event_id": "105773",
+      "title": "ISM Services PMI",
+      "currency": "USD",
+      "impact": "HIGH",
+      "timestamp_utc": "2019-06-05T14:00:00Z",
+      "datetime_new_york": "2019-06-05T10:00:00-04:00",
+      "epoch_seconds": 1559743200,
+      "source_url": "https://www.forexfactory.com/calendar?day=jun5.2019#detail=105773",
+      "week_source_url": "https://www.forexfactory.com/calendar?week=jun2.2019",
+      "source_timezone": "Europe/Helsinki",
+      "source_time_label": "5:00pm",
+      "source_notice": "",
+      "time_status": "TIMED",
+      "impact_basis": "FOREX_FACTORY_HISTORICAL_PAGE_AT_RETRIEVAL"
+    },
+    {
+      "event_id": "152853",
+      "title": "Fed Gov Nomination Hearings",
+      "currency": "USD",
+      "impact": "HIGH",
+      "timestamp_utc": "2019-06-05T14:00:00Z",
+      "datetime_new_york": "2019-06-05T10:00:00-04:00",
+      "epoch_seconds": 1559743200,
+      "source_url": "https://www.forexfactory.com/calendar?day=jun5.2019#detail=152853",
+      "week_source_url": "https://www.forexfactory.com/calendar?week=jun2.2019",
+      "source_timezone": "Europe/Helsinki",
+      "source_time_label": "5:00pm",
+      "source_notice": "",
+      "time_status": "TIMED",
+      "impact_basis": "FOREX_FACTORY_HISTORICAL_PAGE_AT_RETRIEVAL"
+    },
+    {
+      "event_id": "102293",
+      "title": "Non-Farm Employment Change",
+      "currency": "USD",
+      "impact": "HIGH",
+      "timestamp_utc": "2019-06-07T12:30:00Z",
+      "datetime_new_york": "2019-06-07T08:30:00-04:00",
+      "epoch_seconds": 1559910600,
+      "source_url": "https://www.forexfactory.com/calendar?day=jun7.2019#detail=102293",
+      "week_source_url": "https://www.forexfactory.com/calendar?week=jun2.2019",
+      "source_timezone": "Europe/Helsinki",
+      "source_time_label": "3:30pm",
+      "source_notice": "",
+      "time_status": "TIMED",
+      "impact_basis": "FOREX_FACTORY_HISTORICAL_PAGE_AT_RETRIEVAL"
+    },
+    {
+      "event_id": "102296",
+      "title": "Unemployment Rate",
+      "currency": "USD",
+      "impact": "HIGH",
+      "timestamp_utc": "2019-06-07T12:30:00Z",
+      "datetime_new_york": "2019-06-07T08:30:00-04:00",
+      "epoch_seconds": 1559910600,
+      "source_url": "https://www.forexfactory.com/calendar?day=jun7.2019#detail=102296",
+      "week_source_url": "https://www.forexfactory.com/calendar?week=jun2.2019",
+      "source_timezone": "Europe/Helsinki",
+      "source_time_label": "3:30pm",
+      "source_notice": "",
+      "time_status": "TIMED",
+      "impact_basis": "FOREX_FACTORY_HISTORICAL_PAGE_AT_RETRIEVAL"
+    },
+    {
+      "event_id": "102297",
+      "title": "Average Hourly Earnings m/m",
+      "currency": "USD",
+      "impact": "HIGH",
+      "timestamp_utc": "2019-06-07T12:30:00Z",
+      "datetime_new_york": "2019-06-07T08:30:00-04:00",
+      "epoch_seconds": 1559910600,
+      "source_url": "https://www.forexfactory.com/calendar?day=jun7.2019#detail=102297",
+      "week_source_url": "https://www.forexfactory.com/calendar?week=jun2.2019",
+      "source_timezone": "Europe/Helsinki",
+      "source_time_label": "3:30pm",
+      "source_notice": "",
+      "time_status": "TIMED",
+      "impact_basis": "FOREX_FACTORY_HISTORICAL_PAGE_AT_RETRIEVAL"
+    }
+  ],
+  "weeks": [
+    {
+      "source_url": "https://www.forexfactory.com/calendar?week=jun2.2019",
+      "expected_sunday": "2019-06-02",
+      "sha256": "598d240bdbb0277069c28d92558582b6adc2ae35421f60a081f06abd4aaaee89",
+      "bytes": 514911,
+      "source_timezone": "Europe/Helsinki",
+      "all_filters_selected": true,
+      "filter_settings": {
+        "begin_date": "June 2, 2019",
+        "end_date": "June 8, 2019",
+        "default_view": "this_week",
+        "impacts": [
+          3,
+          2,
+          1,
+          0
+        ],
+        "event_types": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "currencies": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "filter_value_universe": {
+        "begin_date": [],
+        "end_date": [],
+        "default_view": {
+          "today": "Today",
+          "tomorrow": "Tomorrow",
+          "today_and_tomorrow": "Today+Tomorrow",
+          "yesterday": "Yesterday",
+          "this_week": "This Week"
+        },
+        "impacts": {
+          "3": "high",
+          "2": "medium",
+          "1": "low",
+          "0": "holiday"
+        },
+        "event_types": {
+          "1": "Growth",
+          "2": "Inflation",
+          "3": "Employment",
+          "4": "Central Bank",
+          "5": "Bonds",
+          "7": "Housing",
+          "8": "Consumer Surveys",
+          "9": "Business Surveys",
+          "10": "Speeches",
+          "11": "Misc"
+        },
+        "currencies": {
+          "1": "AUD",
+          "2": "CAD",
+          "3": "CHF",
+          "4": "CNY",
+          "5": "EUR",
+          "6": "GBP",
+          "7": "JPY",
+          "8": "NZD",
+          "9": "USD"
+        }
+      },
+      "repeated_component_count": 2,
+      "all_event_count": 110,
+      "high_usd_event_count": 7,
+      "days": [
+        {
+          "source_date": "2019-06-02",
+          "source_day_start_utc": "2019-06-01T21:00:00Z",
+          "all_event_count": 0,
+          "usd_event_count": 0,
+          "high_usd_event_count": 0,
+          "empty_day_explicit": true,
+          "currencies_present": []
+        },
+        {
+          "source_date": "2019-06-03",
+          "source_day_start_utc": "2019-06-02T21:00:00Z",
+          "all_event_count": 25,
+          "usd_event_count": 7,
+          "high_usd_event_count": 1,
+          "empty_day_explicit": false,
+          "currencies_present": [
+            "AUD",
+            "CAD",
+            "CHF",
+            "CNY",
+            "EUR",
+            "GBP",
+            "JPY",
+            "NZD",
+            "USD"
+          ]
+        },
+        {
+          "source_date": "2019-06-04",
+          "source_day_start_utc": "2019-06-03T21:00:00Z",
+          "all_event_count": 21,
+          "usd_event_count": 4,
+          "high_usd_event_count": 1,
+          "empty_day_explicit": false,
+          "currencies_present": [
+            "AUD",
+            "EUR",
+            "GBP",
+            "JPY",
+            "NZD",
+            "USD"
+          ]
+        },
+        {
+          "source_date": "2019-06-05",
+          "source_day_start_utc": "2019-06-04T21:00:00Z",
+          "all_event_count": 21,
+          "usd_event_count": 8,
+          "high_usd_event_count": 2,
+          "empty_day_explicit": false,
+          "currencies_present": [
+            "AUD",
+            "CAD",
+            "CNY",
+            "EUR",
+            "GBP",
+            "USD"
+          ]
+        },
+        {
+          "source_date": "2019-06-06",
+          "source_day_start_utc": "2019-06-05T21:00:00Z",
+          "all_event_count": 20,
+          "usd_event_count": 7,
+          "high_usd_event_count": 0,
+          "empty_day_explicit": false,
+          "currencies_present": [
+            "AUD",
+            "CAD",
+            "EUR",
+            "GBP",
+            "JPY",
+            "NZD",
+            "USD"
+          ]
+        },
+        {
+          "source_date": "2019-06-07",
+          "source_day_start_utc": "2019-06-06T21:00:00Z",
+          "all_event_count": 23,
+          "usd_event_count": 5,
+          "high_usd_event_count": 3,
+          "empty_day_explicit": false,
+          "currencies_present": [
+            "AUD",
+            "CAD",
+            "CHF",
+            "CNY",
+            "EUR",
+            "GBP",
+            "JPY",
+            "USD"
+          ]
+        },
+        {
+          "source_date": "2019-06-08",
+          "source_day_start_utc": "2019-06-07T21:00:00Z",
+          "all_event_count": 0,
+          "usd_event_count": 0,
+          "high_usd_event_count": 0,
+          "empty_day_explicit": true,
+          "currencies_present": []
+        }
+      ],
+      "events": [
+        {
+          "event_id": "102149",
+          "title": "ISM Manufacturing PMI",
+          "currency": "USD",
+          "impact": "HIGH",
+          "timestamp_utc": "2019-06-03T14:00:00Z",
+          "datetime_new_york": "2019-06-03T10:00:00-04:00",
+          "epoch_seconds": 1559570400,
+          "source_url": "https://www.forexfactory.com/calendar?day=jun3.2019#detail=102149",
+          "week_source_url": "https://www.forexfactory.com/calendar?week=jun2.2019",
+          "source_timezone": "Europe/Helsinki",
+          "source_time_label": "5:00pm",
+          "source_notice": "",
+          "time_status": "TIMED",
+          "impact_basis": "FOREX_FACTORY_HISTORICAL_PAGE_AT_RETRIEVAL"
+        },
+        {
+          "event_id": "110394",
+          "title": "FOMC Member Powell Speaks",
+          "currency": "USD",
+          "impact": "HIGH",
+          "timestamp_utc": "2019-06-04T13:55:00Z",
+          "datetime_new_york": "2019-06-04T09:55:00-04:00",
+          "epoch_seconds": 1559656500,
+          "source_url": "https://www.forexfactory.com/calendar?day=jun4.2019#detail=110394",
+          "week_source_url": "https://www.forexfactory.com/calendar?week=jun2.2019",
+          "source_timezone": "Europe/Helsinki",
+          "source_time_label": "4:55pm",
+          "source_notice": "",
+          "time_status": "TIMED",
+          "impact_basis": "FOREX_FACTORY_HISTORICAL_PAGE_AT_RETRIEVAL"
+        },
+        {
+          "event_id": "152853",
+          "title": "Fed Gov Nomination Hearings",
+          "currency": "USD",
+          "impact": "HIGH",
+          "timestamp_utc": "2019-06-05T14:00:00Z",
+          "datetime_new_york": "2019-06-05T10:00:00-04:00",
+          "epoch_seconds": 1559743200,
+          "source_url": "https://www.forexfactory.com/calendar?day=jun5.2019#detail=152853",
+          "week_source_url": "https://www.forexfactory.com/calendar?week=jun2.2019",
+          "source_timezone": "Europe/Helsinki",
+          "source_time_label": "5:00pm",
+          "source_notice": "",
+          "time_status": "TIMED",
+          "impact_basis": "FOREX_FACTORY_HISTORICAL_PAGE_AT_RETRIEVAL"
+        },
+        {
+          "event_id": "105773",
+          "title": "ISM Services PMI",
+          "currency": "USD",
+          "impact": "HIGH",
+          "timestamp_utc": "2019-06-05T14:00:00Z",
+          "datetime_new_york": "2019-06-05T10:00:00-04:00",
+          "epoch_seconds": 1559743200,
+          "source_url": "https://www.forexfactory.com/calendar?day=jun5.2019#detail=105773",
+          "week_source_url": "https://www.forexfactory.com/calendar?week=jun2.2019",
+          "source_timezone": "Europe/Helsinki",
+          "source_time_label": "5:00pm",
+          "source_notice": "",
+          "time_status": "TIMED",
+          "impact_basis": "FOREX_FACTORY_HISTORICAL_PAGE_AT_RETRIEVAL"
+        },
+        {
+          "event_id": "102297",
+          "title": "Average Hourly Earnings m/m",
+          "currency": "USD",
+          "impact": "HIGH",
+          "timestamp_utc": "2019-06-07T12:30:00Z",
+          "datetime_new_york": "2019-06-07T08:30:00-04:00",
+          "epoch_seconds": 1559910600,
+          "source_url": "https://www.forexfactory.com/calendar?day=jun7.2019#detail=102297",
+          "week_source_url": "https://www.forexfactory.com/calendar?week=jun2.2019",
+          "source_timezone": "Europe/Helsinki",
+          "source_time_label": "3:30pm",
+          "source_notice": "",
+          "time_status": "TIMED",
+          "impact_basis": "FOREX_FACTORY_HISTORICAL_PAGE_AT_RETRIEVAL"
+        },
+        {
+          "event_id": "102293",
+          "title": "Non-Farm Employment Change",
+          "currency": "USD",
+          "impact": "HIGH",
+          "timestamp_utc": "2019-06-07T12:30:00Z",
+          "datetime_new_york": "2019-06-07T08:30:00-04:00",
+          "epoch_seconds": 1559910600,
+          "source_url": "https://www.forexfactory.com/calendar?day=jun7.2019#detail=102293",
+          "week_source_url": "https://www.forexfactory.com/calendar?week=jun2.2019",
+          "source_timezone": "Europe/Helsinki",
+          "source_time_label": "3:30pm",
+          "source_notice": "",
+          "time_status": "TIMED",
+          "impact_basis": "FOREX_FACTORY_HISTORICAL_PAGE_AT_RETRIEVAL"
+        },
+        {
+          "event_id": "102296",
+          "title": "Unemployment Rate",
+          "currency": "USD",
+          "impact": "HIGH",
+          "timestamp_utc": "2019-06-07T12:30:00Z",
+          "datetime_new_york": "2019-06-07T08:30:00-04:00",
+          "epoch_seconds": 1559910600,
+          "source_url": "https://www.forexfactory.com/calendar?day=jun7.2019#detail=102296",
+          "week_source_url": "https://www.forexfactory.com/calendar?week=jun2.2019",
+          "source_timezone": "Europe/Helsinki",
+          "source_time_label": "3:30pm",
+          "source_notice": "",
+          "time_status": "TIMED",
+          "impact_basis": "FOREX_FACTORY_HISTORICAL_PAGE_AT_RETRIEVAL"
+        }
+      ],
+      "coverage_start_utc": "2019-06-01T21:00:00Z",
+      "coverage_end_utc": "2019-06-08T21:00:00Z",
+      "snapshot_path": "D:/QM/reports/research/futures_pivot_20260922/progress_20260922/ff_jun2_2019.html",
+      "transport": {
+        "method": "REUSED_LOCAL_PUBLIC_SNAPSHOT_FETCHED_BY_PARENT_AGENT",
+        "source_url": "https://www.forexfactory.com/calendar?week=jun2.2019",
+        "retrieved_at_utc": null,
+        "file_mtime_utc": "2026-09-22T13:42:40.676586+00:00",
+        "timestamp_basis": "FILESYSTEM_MTIME_PROXY_NOT_NETWORK_RECEIPT",
+        "retrieval_date_reported_by_parent": "2026-09-22",
+        "bytes": 514911
+      }
+    }
+  ],
+  "unavailable_weeks": [
+    {
+      "expected_sunday": "2019-06-09",
+      "source_url": "https://www.forexfactory.com/calendar?week=jun9.2019",
+      "status": "HTTP_403_ACCESS_DENIED",
+      "attempt_date_utc": "2026-09-22",
+      "exact_attempt_time_utc": null,
+      "reader": "STANDARD_URLLIB_PUBLIC_HTTPS",
+      "no_retry": true,
+      "response_body_persisted": false,
+      "receipt_basis": "Observed tool traceback HTTP Error 403: Forbidden; recorded after the failed single request.",
+      "coverage_complete": false
+    },
+    {
+      "expected_sunday": "2019-06-16",
+      "source_url": "https://www.forexfactory.com/calendar?week=jun16.2019",
+      "status": "READABLE_IMPACT_COLUMN_LOST",
+      "reader": "web.run.open",
+      "read_date_utc": "2026-09-22",
+      "source_timezone": "Europe/Zurich",
+      "coverage_complete": false,
+      "reason": "Ordinary public rendered page exposed the requested seven-day calendar with Filters Off, but every Impact cell was blank. No HIGH classification or zero-HIGH completeness can be recovered from this representation.",
+      "raw_snapshot_path": null,
+      "raw_snapshot_sha256": null
+    },
+    {
+      "expected_sunday": "2019-06-23",
+      "source_url": "https://www.forexfactory.com/calendar?week=jun23.2019",
+      "status": "READABLE_IMPACT_COLUMN_LOST",
+      "reader": "web.run.open",
+      "read_date_utc": "2026-09-22",
+      "source_timezone": "Europe/Zurich",
+      "coverage_complete": false,
+      "reason": "Ordinary public rendered page exposed the requested seven-day calendar with Filters Off, but every Impact cell was blank. No HIGH classification or zero-HIGH completeness can be recovered from this representation.",
+      "raw_snapshot_path": null,
+      "raw_snapshot_sha256": null
+    }
+  ],
+  "session_exclusion": {
+    "2019-06-03": {
+      "excluded": true,
+      "event_ids": [
+        "102149"
+      ],
+      "coverage_complete": true,
+      "reason": "HIGH_USD_WINDOW",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-04": {
+      "excluded": true,
+      "event_ids": [
+        "110394"
+      ],
+      "coverage_complete": true,
+      "reason": "HIGH_USD_WINDOW",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-05": {
+      "excluded": true,
+      "event_ids": [
+        "105773",
+        "152853"
+      ],
+      "coverage_complete": true,
+      "reason": "HIGH_USD_WINDOW",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-06": {
+      "excluded": false,
+      "event_ids": [],
+      "coverage_complete": true,
+      "reason": "NO_OVERLAPPING_HIGH_USD_EVENT",
+      "action": "NEWS_FILTER_ELIGIBLE"
+    },
+    "2019-06-07": {
+      "excluded": false,
+      "event_ids": [],
+      "coverage_complete": true,
+      "reason": "NO_OVERLAPPING_HIGH_USD_EVENT",
+      "action": "NEWS_FILTER_ELIGIBLE"
+    },
+    "2019-06-10": {
+      "excluded": true,
+      "event_ids": [],
+      "coverage_complete": false,
+      "reason": "NEWS_COVERAGE_MISSING",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-11": {
+      "excluded": true,
+      "event_ids": [],
+      "coverage_complete": false,
+      "reason": "NEWS_COVERAGE_MISSING",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-12": {
+      "excluded": true,
+      "event_ids": [],
+      "coverage_complete": false,
+      "reason": "NEWS_COVERAGE_MISSING",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-13": {
+      "excluded": true,
+      "event_ids": [],
+      "coverage_complete": false,
+      "reason": "NEWS_COVERAGE_MISSING",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-14": {
+      "excluded": true,
+      "event_ids": [],
+      "coverage_complete": false,
+      "reason": "NEWS_COVERAGE_MISSING",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-17": {
+      "excluded": true,
+      "event_ids": [],
+      "coverage_complete": false,
+      "reason": "NEWS_COVERAGE_MISSING",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-18": {
+      "excluded": true,
+      "event_ids": [],
+      "coverage_complete": false,
+      "reason": "NEWS_COVERAGE_MISSING",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-19": {
+      "excluded": true,
+      "event_ids": [],
+      "coverage_complete": false,
+      "reason": "NEWS_COVERAGE_MISSING",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-20": {
+      "excluded": true,
+      "event_ids": [],
+      "coverage_complete": false,
+      "reason": "NEWS_COVERAGE_MISSING",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-21": {
+      "excluded": true,
+      "event_ids": [],
+      "coverage_complete": false,
+      "reason": "NEWS_COVERAGE_MISSING",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-24": {
+      "excluded": true,
+      "event_ids": [],
+      "coverage_complete": false,
+      "reason": "NEWS_COVERAGE_MISSING",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-25": {
+      "excluded": true,
+      "event_ids": [],
+      "coverage_complete": false,
+      "reason": "NEWS_COVERAGE_MISSING",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-26": {
+      "excluded": true,
+      "event_ids": [],
+      "coverage_complete": false,
+      "reason": "NEWS_COVERAGE_MISSING",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-27": {
+      "excluded": true,
+      "event_ids": [],
+      "coverage_complete": false,
+      "reason": "NEWS_COVERAGE_MISSING",
+      "action": "NEWS_BLACKOUT"
+    },
+    "2019-06-28": {
+      "excluded": true,
+      "event_ids": [],
+      "coverage_complete": false,
+      "reason": "NEWS_COVERAGE_MISSING",
+      "action": "NEWS_BLACKOUT"
+    }
+  },
+  "frozen_skip_rule": {
+    "currency": "USD",
+    "impact": "HIGH",
+    "buffer_minutes_before": 30,
+    "buffer_minutes_after": 30,
+    "timezone": "America/New_York",
+    "session_start": "09:30:00",
+    "session_end": "15:59:30",
+    "interval_overlap": "INCLUSIVE_ENDPOINTS",
+    "action": "SKIP_WHOLE_SESSION",
+    "missing_coverage_action": "NEWS_BLACKOUT"
+  },
+  "route_receipt": {
+    "status": "UNSUPPORTED",
+    "reason": "Bundled router supports individual threads/posts only; calendar not routed",
+    "adapter_state": "OFFLINE_PARSER_ONLY",
+    "separate_reader_authorization": "EXPLICIT_OWNER_BOUNDED_PUBLIC_READ",
+    "no_global_adapter_enablement": true
+  },
+  "counts": {
+    "complete_weeks": 1,
+    "incomplete_weeks": 3,
+    "source_days": 7,
+    "all_events": 110,
+    "usd_high_events": 7,
+    "requested_rth_sessions": 20,
+    "covered_rth_sessions": 5,
+    "missing_rth_sessions": 15,
+    "covered_rth_sessions_excluded_by_high_usd": 3,
+    "covered_rth_sessions_news_eligible": 2
+  },
+  "implementation_evidence": {
+    "parse_ff_calendar.py": "ce69403a29eb47bccd8f4ba1b7709cff05fb24c42a3b9ef5d68df554bfb58bda",
+    "test_parse_ff_calendar.py": "034adbb3284acf62d6494bd0f1c93bb25eaa3e11541b2d1f7dcc52642ff3e912",
+    "finalize_partial_news.py": "d12f6bcb74026482b904895ff0245f61329bc463140a3999a2aeb541600cac1d"
+  },
+  "limitations_receipt_path": "D:/QM/reports/research/futures_pivot_20260922/progress_20260922/ff_calendar_retrieval_limitations.json",
+  "limitations_receipt_sha256": "db9e521a9100f0988aef4c0826682e350a58787b69a934f4884ba3bbf79dec8d"
+}

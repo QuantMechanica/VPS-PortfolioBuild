@@ -1,0 +1,70 @@
+{
+  "schema": "qm.owner-saved-month-calendar-validation.v1",
+  "validated_at_utc": "2026-09-22T14:21:44Z",
+  "status": "PASS_WITH_EXPLICIT_UNTIMED_HIGH_EVENT_EXCLUSION",
+  "source": {
+    "path": "C:/Users/Administrator/Desktop/FF_Juni2019.html",
+    "owner_save_confirmed": true,
+    "bytes": 1180640,
+    "sha256": "b47504fdfbe92a92cd9a1e675b666c41b3739eb64480937a7ea6da6e1f6a485c",
+    "decoding": "Strict windows-1252 from first HTML meta charset; later retained UTF-8 meta did not override it. No ignore/replace decoding, JavaScript execution, browser/network requests or raw-page copying.",
+    "mtime_utc": "2026-09-22T14:11:26.343512+00:00",
+    "mtime_basis": "OWNER_SAVED_FILE_MTIME_PROXY_NOT_NETWORK_RECEIPT",
+    "raw_html_location": "Remains outside Git at OWNER Desktop path."
+  },
+  "artifact": {
+    "path": "D:/QM/reports/research/futures_pivot_20260922/progress_20260922/news_calendar_june2019_owner_month.json",
+    "sha256": "c8d78b5ec678d8e2fde0365fcd0762724670a3f7cf55913dde087d1c13821633",
+    "partial_calendar_preserved": true,
+    "point_in_time": false,
+    "raw_calendar_days": 30,
+    "all_events": 381,
+    "all_available_filters_selected": true,
+    "identical_embedded_components": 2,
+    "source_timezone": "Europe/Helsinki",
+    "timed_usd_relevant_high_events": 21,
+    "untimed_high_all_events": 2,
+    "scheduled_weekday_sessions": 20,
+    "timed_news_covered_sessions": 19,
+    "news_eligible_sessions": 14,
+    "after_independent_june17_roll_exclusion": 13
+  },
+  "untimed_event_policy": {
+    "bound_before_results_by_owner": true,
+    "all_applies_to_usd": true,
+    "june28_reason": "UNTIMED_HIGH_ALL_EVENT",
+    "june28_raw_html_day_present": true,
+    "june28_news_covered": false,
+    "june29_saturday_event_retained": true,
+    "fabricated_timestamps": false,
+    "note": "Missing executable timing is kept distinct from missing HTML-day evidence. Full source-month coverage does not imply every session is eligible."
+  },
+  "parser_used": {
+    "path": "D:/QM/reports/research/futures_pivot_20260922/progress_20260922/parse_ff_month_calendar.py",
+    "sha256": "77eb2c716644474f48308f28fe01e067a8af616ab8f48cb963a82dd059e026fd",
+    "helper_path": "D:/QM/reports/research/futures_pivot_20260922/progress_20260922/parse_ff_calendar.py",
+    "helper_sha256": "ce69403a29eb47bccd8f4ba1b7709cff05fb24c42a3b9ef5d68df554bfb58bda"
+  },
+  "canonical_self_contained_parser": {
+    "path": "D:/QM/worktrees/codex-futures-pivot-20260922/tools/futures_lab/parse_ff_calendar.py",
+    "sha256": "765d38227e30e2f07ace927694a5a9e00fdac8278579cb4063afaeedac8afd49",
+    "test_path": "D:/QM/worktrees/codex-futures-pivot-20260922/tools/futures_lab/test_parse_ff_calendar.py",
+    "test_sha256": "66d9021d3d5eb32ba5c75239f62a6c20f551705e1e93b9e975e31cb862be2d13",
+    "semantic_payload_parity_with_existing_artifact": "PASS",
+    "parity_exclusions": ["source_path", "fetched_at_utc", "fetched_at_utc_basis", "extracted_at_utc", "parser_sha256"],
+    "parity_note": "These are CLI provenance fields. Every parsed calendar/event/coverage/exclusion field matched exactly. Existing JSON was not overwritten.",
+    "parity_tool_output_chunk": "011ce8"
+  },
+  "targeted_tests": {
+    "command": "D:/QM/venvs/futures_lab/Scripts/python.exe -B -m unittest -v test_parse_ff_calendar",
+    "working_directory": "D:/QM/worktrees/codex-futures-pivot-20260922/tools/futures_lab",
+    "tests_run": 8,
+    "exit_code": 0,
+    "result": "PASS",
+    "elapsed_seconds": 0.018,
+    "tool_output_chunk": "9d9aed",
+    "coverage": ["explicit30-day completeness", "zero-event days", "UTC/NY epoch conversion", "filtered-calendar rejection", "wrong/missing/unordered month days", "component/event-ID duplicates", "bounded35-day and challenge rejection", "untimed All-HIGH whole-session exclusion", "strict Chrome windows-1252 handling", "synthetic private-field sentinel omitted"]
+  },
+  "data_minimization": "Only allowlisted calendar fields and source path/hash serialized. No profile objects, cookies, account strings or raw HTML copied to Git.",
+  "economic_boundary": "Separate superseding input manifest must be frozen before the expanded run. This receipt establishes calendar parsing and conservative exclusions, not profitability or point-in-time information availability."
+}

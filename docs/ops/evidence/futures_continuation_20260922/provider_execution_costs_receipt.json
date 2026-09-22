@@ -1,0 +1,23 @@
+{
+  "schema": "qm.research-artifact-validation.v1",
+  "result": "PASS",
+  "as_of": "2026-09-22",
+  "scope": "JSON_PARSE_AND_CASHFLOW_ARITHMETIC_ONLY",
+  "outputs": [
+    {
+      "path": "D:/QM/worktrees/codex-futures-pivot-20260922/tools/futures_lab/profile_execution_costs.json",
+      "sha256": "308d6b815a537838ebea219d0c0df3c115ce9722efeeaea631aaf3ac200fa04b",
+      "bytes": 36062
+    },
+    {
+      "path": "D:/QM/reports/research/futures_pivot_20260922/progress_20260922/provider_execution_costs_evidence.json",
+      "sha256": "308d6b815a537838ebea219d0c0df3c115ce9722efeeaea631aaf3ac200fa04b",
+      "bytes": 36062
+    },
+    {
+      "path": "D:/QM/reports/research/futures_pivot_20260922/progress_20260922/provider_execution_costs_report.md",
+      "sha256": "60802f441b99dea8676b6555a0c93fffa5ec2b1a9200cb4c722236bed87c1bfb",
+      "bytes": 5153
+    }
+  ]
+}

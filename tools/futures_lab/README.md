@@ -91,7 +91,7 @@ The observed status count discrepancy and its exact-file UTC-day reconciliation
 are documented in the [pilot report](D:/QM/reports/research/futures_pivot_20260922/databento_pilot_20260922.md).
 Other count mismatches remain errors. Raw data is never silently repaired or
 deduplicated. In particular, the crossed opening BBO must be excluded from
-executable quotes by a future explicit execution adapter; native decoding alone
+executable quotes by the explicit `replay_adapter.py` gates; native decoding alone
 does not sanitize it. Nautilus sample timestamps map to `ts_recv`, which must be
 kept distinct from the source exchange timestamp for latency analysis.
 
@@ -103,7 +103,7 @@ It tests two independent trail mechanisms, a capped loss floor, a sampled intrad
 
 The payout diagnostic distinguishes account debit, cash received after the entered split, external fees and remaining room to an unchanged loss floor. It **does not certify provider payout eligibility**, settlement, legal status, account transitions, commissions or a paid evaluation's rules. The built-in example is explicitly unbound; dated firm-specific contracts are still required.
 
-An evaluation input must end at the chosen evaluation boundary. The diagnostic continues inspecting every supplied point after the first conditions-met timestamp; a later breach yields FAILED for that whole supplied path. Funded-phase transitions require a separately bound profile. Equal timestamps are rejected: an event adapter must retain exchange sequence/equity extrema, never silently drop duplicate-time events.
+An evaluation input must end at the chosen evaluation boundary. The diagnostic continues inspecting every supplied point after the first conditions-met timestamp; a later breach yields FAILED for that whole supplied path. Funded-phase transitions require a separately bound profile. Nanosecond timestamps remain exact. Equal times require a strictly increasing `replay_ordinal` on every event; missing, mixed or regressing ordinals fail. No deduplication or artificial timestamp increments are allowed. `evaluate(..., retain_trace=False)` and CLI `--summary-only` stream marks without retaining the full event trace; session summaries and the first breach remain recorded.
 
 CSV columns:
 
@@ -114,6 +114,9 @@ timestamp,session,balance,equity,end_of_session,traded,flat
 ```
 
 Boolean fields are exactly `true` or `false`. Balance and equity must already include commissions and fees; do not subtract them a second time. Currency conversion and taxation are outside this USD diagnostic. No deposits, withdrawals or multi-currency cashflows are allowed inside the evaluation input; inspect proposed payouts separately.
+
+The optional final CSV column `replay_ordinal` retains equal-time events from the
+ordered replay. Older CSVs without this column retain strict timestamp ordering.
 
 ## Economic validation remains separate
 
@@ -126,6 +129,48 @@ already studied CFD market period is not automatically an untouched market
 holdout: the underlying index paths are related. Distinguish a newly held-out
 instrument dataset from genuinely unseen market periods and prospective paper
 observations.
+
+## Fixed June 2019 development slice
+
+The frozen preregistration contains two hypotheses, five arms and 60 period/cost
+cells. `strategy_runner.py` implements the mechanics as an offline reference;
+`strategy_run_plan.md` records the interpretations fixed before market results.
+MES ORB, ES-signal/MES-fill ORB and MES failed-break reversion remain separate
+accounts under all three frozen cost scenarios. No parameters are selected from
+the June outcome. `preregister.py` verifies the original byte-pinned artifacts.
+
+`quote_development.py` and `download_development.py` acquired the first fixed
+chronological month: MESM9/ESM9 before the June 17 cutover, MESU9/ESU9 after it,
+with June 17 excluded. Four raw-contract definitions were checked through pinned
+Nautilus before market data requests. Ten completed historical requests contain
+26,714,048 records; `validate_development.py` verifies every record, exact schema,
+hash, contract and receive-time boundary. Quality flags remain in the raw data.
+The quoted usage was USD 8.116084426642 against a USD 10 credit cap and zero
+additional cash. The post-download portal debit has not been observed.
+
+Receipts are under
+`D:/QM/reports/research/futures_pivot_20260922/progress_20260922/`.
+`june2019_data_validation_v2.json` is the strengthened final validation; the
+original receipt is retained. The raw DBN files remain outside Git under
+`D:/QM/futures_lab/development/june2019/`.
+
+`run_june2019_reference.py` prepares an exclusive plan binding source files,
+implementation, news revision and all 180 session rows (20 weekdays, three MES
+arms, three cost scenarios) before executing it. A data-invalid account remains
+invalid on every later date; it cannot restart from a fabricated flat balance.
+Excluded and no-signal rows stay in the result. These outputs remain descriptive
+development diagnostics: native full-strategy parity, complete historical holiday
+proof, point-in-time news and independent micro trade-schema equivalence are not
+certified. None of the 60 formal trial cells is promoted by this reference run.
+
+The OWNER-saved Forex Factory HTML is parsed offline. The original HTML can
+contain browser/account context and stays outside Git. Store only sanitized
+calendar fields and source path/hash in research evidence. Historical retrieval
+is explicitly a reconstruction, not a point-in-time news archive.
+
+An execution-mechanics probe in `native_execution_probe.py` compares synthetic
+native fills with the reference's fresh-quote, latency, fee and stop-gap contract.
+It does not run the complete frozen strategies or establish profitability.
 
 ## Storage
 

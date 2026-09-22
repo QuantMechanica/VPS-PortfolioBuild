@@ -1,0 +1,13 @@
+{
+  "at_utc": "2026-09-22T14:22:51.520009+00:00",
+  "command": "D:/QM/venvs/futures_lab/Scripts/python.exe -B -m unittest discover -s tools/futures_lab -p test_*.py -v",
+  "tests_run": 176,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "success": true,
+  "elapsed_seconds": 10.812,
+  "log": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\full_suite_20260922.log",
+  "log_sha256": "bc94635ecf556dd83cb09d95cf0a797ec644aee8e28a381a68b1b0cc998fe73d",
+  "scope": "Offline tests including actual locally licensed definitions and synthetic native execution; no economic certification"
+}

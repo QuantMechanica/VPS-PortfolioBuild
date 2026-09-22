@@ -1,0 +1,9 @@
+{
+  "status": "REFERENCE_COMPLETE",
+  "plan_sha256": "57d1c3eb69d3ceea8d4d30e0bf58866bee8de7ee44a219030f8f4006d768f771",
+  "result_sha256": "832f7aae1d22062a0e290e54bb452645cb01ae61d438ef5173dbd78a11220fb0",
+  "result": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\june2019_reference_owner_month_v1\\result.json",
+  "session_rows": 180,
+  "frozen_trial_status": "NOT_RUN",
+  "economic_success_certified": false
+}

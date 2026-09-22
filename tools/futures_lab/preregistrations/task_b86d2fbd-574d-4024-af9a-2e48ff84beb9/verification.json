@@ -1,0 +1,31 @@
+{
+  "schema": "qm.futures-preregistration-verification/v1",
+  "task_id": "b86d2fbd-574d-4024-af9a-2e48ff84beb9",
+  "verdict": "PASS_CONFIGURATION_ONLY_NO_ECONOMIC_RUN",
+  "config_sha256": "a91938e318e7ce5948a9b87949ae22b27af1ea3491f3d4723880385d123bea02",
+  "trial_plan_sha256": "4ffae4eea06f490e1a9762cfbe9ccd5e4ff21c80ffe98377ecf4758aafc80827",
+  "compiler_result": {
+    "status": "VALID_FROZEN_PREREGISTRATION",
+    "hypothesis_count": 2,
+    "arm_count": 5,
+    "trial_cell_count": 60,
+    "raw_contract_candidate_count": 132,
+    "economic_results_included": false
+  },
+  "checks": [
+    {
+      "command": "D:/QM/venvs/futures_lab/Scripts/python.exe -B tools/futures_lab/preregister.py --config tools/futures_lab/preregistrations/task_b86d2fbd-574d-4024-af9a-2e48ff84beb9/preregistration.json --emit-plan tools/futures_lab/preregistrations/task_b86d2fbd-574d-4024-af9a-2e48ff84beb9/trial_plan.json",
+      "result": "PASS"
+    },
+    {
+      "command": "python -B -m unittest discover -s tools/futures_lab -p test_*.py -v",
+      "result": "PASS_22_TESTS"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "economic_execution": "NOT_RUN",
+  "external_state_changes": "NONE_NO_PURCHASE_NO_ACCOUNT_NO_ORDER_NO_TERMINAL"
+}

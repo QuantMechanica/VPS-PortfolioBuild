@@ -1,0 +1,147 @@
+{
+  "schema": "qm.independent-june-reference-result-audit.v1",
+  "audited_at_utc": "2026-09-22T14:26:48.939051+00:00",
+  "status": "PASS_ACCOUNTING_AND_DISCLOSURE",
+  "errors": [],
+  "plan_path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\june2019_reference_owner_month_v1\\plan.json",
+  "plan_sha256": "57d1c3eb69d3ceea8d4d30e0bf58866bee8de7ee44a219030f8f4006d768f771",
+  "result_path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\june2019_reference_owner_month_v1\\result.json",
+  "result_sha256": "832f7aae1d22062a0e290e54bb452645cb01ae61d438ef5173dbd78a11220fb0",
+  "audit_script_sha256": "98af1bd3f056501bd6a5527d03f125eb2e550a4051f1aec9e49347956d3064ea",
+  "row_count": 180,
+  "eligible_session_count": 13,
+  "account_summaries": [
+    {
+      "arm_id": "A1_ORB_MES_SIGNAL_MES_FILL",
+      "scenario_id": "BASE",
+      "sessions": 20,
+      "outcomes": {
+        "NEWS_BLACKOUT": 3,
+        "TRADE": 3,
+        "DATA_INVALID": 14
+      },
+      "known_prefix_net_profit_usd": "-3.90",
+      "full_path_net_profit_usd": null,
+      "account_path_valid": false,
+      "first_invalid_session": "2019-06-11"
+    },
+    {
+      "arm_id": "A1_ORB_MES_SIGNAL_MES_FILL",
+      "scenario_id": "ADVERSE",
+      "sessions": 20,
+      "outcomes": {
+        "NEWS_BLACKOUT": 3,
+        "TRADE": 3,
+        "DATA_INVALID": 14
+      },
+      "known_prefix_net_profit_usd": "-20.0",
+      "full_path_net_profit_usd": null,
+      "account_path_valid": false,
+      "first_invalid_session": "2019-06-11"
+    },
+    {
+      "arm_id": "A1_ORB_MES_SIGNAL_MES_FILL",
+      "scenario_id": "SEVERE",
+      "sessions": 20,
+      "outcomes": {
+        "NEWS_BLACKOUT": 3,
+        "TRADE": 3,
+        "DATA_INVALID": 14
+      },
+      "known_prefix_net_profit_usd": "-58.00",
+      "full_path_net_profit_usd": null,
+      "account_path_valid": false,
+      "first_invalid_session": "2019-06-11"
+    },
+    {
+      "arm_id": "A2_ORB_ES_SIGNAL_MES_FILL",
+      "scenario_id": "BASE",
+      "sessions": 20,
+      "outcomes": {
+        "NEWS_BLACKOUT": 3,
+        "TRADE": 3,
+        "DATA_INVALID": 14
+      },
+      "known_prefix_net_profit_usd": "-3.90",
+      "full_path_net_profit_usd": null,
+      "account_path_valid": false,
+      "first_invalid_session": "2019-06-11"
+    },
+    {
+      "arm_id": "A2_ORB_ES_SIGNAL_MES_FILL",
+      "scenario_id": "ADVERSE",
+      "sessions": 20,
+      "outcomes": {
+        "NEWS_BLACKOUT": 3,
+        "TRADE": 3,
+        "DATA_INVALID": 14
+      },
+      "known_prefix_net_profit_usd": "-20.0",
+      "full_path_net_profit_usd": null,
+      "account_path_valid": false,
+      "first_invalid_session": "2019-06-11"
+    },
+    {
+      "arm_id": "A2_ORB_ES_SIGNAL_MES_FILL",
+      "scenario_id": "SEVERE",
+      "sessions": 20,
+      "outcomes": {
+        "NEWS_BLACKOUT": 3,
+        "TRADE": 3,
+        "DATA_INVALID": 14
+      },
+      "known_prefix_net_profit_usd": "-58.00",
+      "full_path_net_profit_usd": null,
+      "account_path_valid": false,
+      "first_invalid_session": "2019-06-11"
+    },
+    {
+      "arm_id": "A3_QM_FAILED_BREAK_MES_SIGNAL_MES_FILL",
+      "scenario_id": "BASE",
+      "sessions": 20,
+      "outcomes": {
+        "NEWS_BLACKOUT": 3,
+        "TRADE": 2,
+        "NO_SIGNAL": 1,
+        "DATA_INVALID": 14
+      },
+      "known_prefix_net_profit_usd": "27.4",
+      "full_path_net_profit_usd": null,
+      "account_path_valid": false,
+      "first_invalid_session": "2019-06-11"
+    },
+    {
+      "arm_id": "A3_QM_FAILED_BREAK_MES_SIGNAL_MES_FILL",
+      "scenario_id": "ADVERSE",
+      "sessions": 20,
+      "outcomes": {
+        "NEWS_BLACKOUT": 3,
+        "TRADE": 2,
+        "NO_SIGNAL": 1,
+        "DATA_INVALID": 14
+      },
+      "known_prefix_net_profit_usd": "17.50",
+      "full_path_net_profit_usd": null,
+      "account_path_valid": false,
+      "first_invalid_session": "2019-06-11"
+    },
+    {
+      "arm_id": "A3_QM_FAILED_BREAK_MES_SIGNAL_MES_FILL",
+      "scenario_id": "SEVERE",
+      "sessions": 20,
+      "outcomes": {
+        "NEWS_BLACKOUT": 3,
+        "TRADE": 2,
+        "NO_SIGNAL": 1,
+        "DATA_INVALID": 14
+      },
+      "known_prefix_net_profit_usd": "-2.00",
+      "full_path_net_profit_usd": null,
+      "account_path_valid": false,
+      "first_invalid_session": "2019-06-11"
+    }
+  ],
+  "sums_across_arms_or_cost_scenarios": null,
+  "interpretation": "Accounts are separate counterfactuals. No hypothetical portfolio sum is calculated. Null invalid paths remain null; known-prefix values are descriptive only.",
+  "limits": "Arithmetic, manifest, scope and disclosure audit only; no repeat market replay, no proof of full event coverage or native fills, no profitability/provider/live certification."
+}

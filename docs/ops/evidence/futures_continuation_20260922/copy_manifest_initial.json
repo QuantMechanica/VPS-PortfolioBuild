@@ -1,0 +1,162 @@
+{
+  "status": "BYTE_IDENTICAL_SANITIZED_EVIDENCE_COPY",
+  "raw_html_and_dbn_excluded": true,
+  "files": [
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\integration_receipt.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\integration_receipt.json",
+      "sha256": "0406cc582a3867cc28db9ca2a077ee5116c055ae57ea6a564e3659fcb5a34756",
+      "bytes": 6506
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\june2019_schema_quotes.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\june2019_schema_quotes.json",
+      "sha256": "9c7623910068da6940e296b91643a7f183cbb3e6cacbca1bb52e76aa044aafa9",
+      "bytes": 7389
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\june2019_acquisition_plan.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\june2019_acquisition_plan.json",
+      "sha256": "3cf25d62ae09a0aec0a39fafa1dddfddd0fcf7523e048c8adfe87261e4be3c80",
+      "bytes": 5262
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\june2019_data_validation.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\june2019_data_validation.json",
+      "sha256": "1186b54f4cd4c10d5126deb428d8f5c7940ab937083d0fddf8f467aa4c847129",
+      "bytes": 93126
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\june2019_data_validation_v2.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\june2019_data_validation_v2.json",
+      "sha256": "d24e832d204193c19ac79fa17a6ff4c3bd852c2496e2ea048eb1b35be8e4d68e",
+      "bytes": 93217
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\june2019_observed_calendar.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\june2019_observed_calendar.json",
+      "sha256": "6b8cfff68543cc2e2b1bcc554a0f5c6943d4420a0c7784e6a5ecd7e46fa168b6",
+      "bytes": 18770
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\cme_2019_session_sources_web.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\cme_2019_session_sources_web.json",
+      "sha256": "68e4ce1b747814233bf63cd1d2ce5419c5bfac3bbebb289a21181e7da3a5eaa0",
+      "bytes": 19059
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\news_calendar_june2019.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\news_calendar_june2019.json",
+      "sha256": "b0834e53563ab41a7bf5b4e712c43fdffc44d9c97c10e6d9052afb3c0d040536",
+      "bytes": 24752
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\news_calendar_june2019_owner_month.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\news_calendar_june2019_owner_month.json",
+      "sha256": "c8d78b5ec678d8e2fde0365fcd0762724670a3f7cf55913dde087d1c13821633",
+      "bytes": 30730
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\news_calendar_june2019_owner_month_receipt.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\news_calendar_june2019_owner_month_receipt.json",
+      "sha256": "9e5e5543285264b2e6133243b44dd508e9799279d3fb82a0d2b776180da15cb7",
+      "bytes": 4291
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\independent_risk_runner_review.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\independent_risk_runner_review.json",
+      "sha256": "f9593507bb1d644ef997c90535a75277002a89dc6c4f626dbf623457f8e83f25",
+      "bytes": 4341
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\independent_risk_runner_review_final.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\independent_risk_runner_review_final.json",
+      "sha256": "bbf3341a7e31571f333e1399057fd31f781b63e8b61000aedc231c9bea978b69",
+      "bytes": 4407
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\native_execution_probe.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\native_execution_probe.json",
+      "sha256": "06e735e1b109ced8e2e1d87512217e124343bb84887227e9c6a0360864d3768e",
+      "bytes": 284150
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\native_execution_probe.md",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\native_execution_probe.md",
+      "sha256": "1b2633633cf187d95996cf06dfa16237ddd09afa71c1226dc9dd4e1262e275b6",
+      "bytes": 2490
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\native_execution_probe_tests.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\native_execution_probe_tests.json",
+      "sha256": "0d11040a6f4e4efb06da686836bd864c0fb50ac9a14477f24df6c2c42854616d",
+      "bytes": 2628
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\provider_execution_costs_evidence.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\provider_execution_costs_evidence.json",
+      "sha256": "308d6b815a537838ebea219d0c0df3c115ce9722efeeaea631aaf3ac200fa04b",
+      "bytes": 36062
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\provider_execution_costs_report.md",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\provider_execution_costs_report.md",
+      "sha256": "60802f441b99dea8676b6555a0c93fffa5ec2b1a9200cb4c722236bed87c1bfb",
+      "bytes": 5153
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\provider_execution_costs_receipt.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\provider_execution_costs_receipt.json",
+      "sha256": "bc021136553cc7e3bdd5ef7faf3229d35c61b7206ec8e73e96cc659dc3929d3d",
+      "bytes": 890
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\full_suite_20260922.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\full_suite_20260922.json",
+      "sha256": "85ef86c9d4e9cd97aff156b1c02ff18520509d0f8701b103a0c14980cdc582cb",
+      "bytes": 622
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\full_suite_20260922.log",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\full_suite_20260922.log",
+      "sha256": "bc94635ecf556dd83cb09d95cf0a797ec644aee8e28a381a68b1b0cc998fe73d",
+      "bytes": 27995
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\root_adapter_delivery\\delivery.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\root_adapter_delivery\\delivery.json",
+      "sha256": "78d959f139ccdb004a4c4e6fa9eda3bf624c29bcde3c267ce571571999a8a3c7",
+      "bytes": 6238
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\root_adapter_delivery\\delivery.md",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\root_adapter_delivery\\delivery.md",
+      "sha256": "2626f9b45fe1d1f1f5a50e44baaf8d1b51d9814a0a19655ef4eed143796e31cc",
+      "bytes": 1986
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\root_adapter_delivery\\dbn_flag_review.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\root_adapter_delivery\\dbn_flag_review.json",
+      "sha256": "c95b8c72dd44d4c10dfe61d21fbaefd8b53aac9137be287dda030ada923aa38f",
+      "bytes": 4143
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\root_adapter_delivery\\technical_replay_flags_1.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\root_adapter_delivery\\technical_replay_flags_1.json",
+      "sha256": "fc0cd684e5c7e40563910afa5a8b33b441ffdeee0683846da7ad1186f0a0f01c",
+      "bytes": 3564
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\root_adapter_delivery\\technical_replay_flags_2.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\root_adapter_delivery\\technical_replay_flags_2.json",
+      "sha256": "fc0cd684e5c7e40563910afa5a8b33b441ffdeee0683846da7ad1186f0a0f01c",
+      "bytes": 3564
+    },
+    {
+      "source": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\root_adapter_delivery\\copy_receipt.json",
+      "destination": "docs\\ops\\evidence\\futures_continuation_20260922\\root_adapter_delivery\\copy_receipt.json",
+      "sha256": "b974b77dcfe7fd28d47727a77466f2b8acd6b0cdd0e559ccd8d664e51b53ba0e",
+      "bytes": 2734
+    }
+  ]
+}

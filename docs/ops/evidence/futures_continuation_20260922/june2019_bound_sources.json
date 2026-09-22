@@ -1,0 +1,43 @@
+{
+  "status": "EXACT_PLAN_BOUND_BYTES_RETAINED",
+  "purpose": "Portable reproduction even when Git core.autocrlf changes code checkout line endings. Does not change the frozen plan.",
+  "archive_path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\june2019_bound_sources.zip",
+  "archive_sha256": "a80de7573bbc7046fc80d765d8be4a64e1f30d3652bf09f7a298fbef7b2be095",
+  "members": [
+    {
+      "archive_member": "tools/futures_lab/strategy_runner.py",
+      "source_path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\strategy_runner.py",
+      "sha256": "2e15c5f01464c661f80da130a69fb0ea16ce95add927e16b43ff591b7c86d6cd"
+    },
+    {
+      "archive_member": "tools/futures_lab/run_june2019_reference.py",
+      "source_path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\run_june2019_reference.py",
+      "sha256": "401fb5b5639160dd2e9f71e5d97a15887562c179421afd3a5f114dd7c561309e"
+    },
+    {
+      "archive_member": "tools/futures_lab/replay_adapter.py",
+      "source_path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\replay_adapter.py",
+      "sha256": "5e407684ccaaf3546ea3d4ea95b9c3e7e4a64a08209504eabc0b6f114824f2c6"
+    },
+    {
+      "archive_member": "tools/futures_lab/preregister.py",
+      "source_path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\preregister.py",
+      "sha256": "4f1e8d1050930df736a82ca8ba55f2c3defa4423008fab177baa1b445a8c97ce"
+    },
+    {
+      "archive_member": "tools/futures_lab/validate_databento_pilot.py",
+      "source_path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\validate_databento_pilot.py",
+      "sha256": "7d5b2d76db1e351d059fcd792a5f509b3f45b424757aa97011328aa2bd1fe435"
+    },
+    {
+      "archive_member": "tools/futures_lab/strategy_run_plan.md",
+      "source_path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\strategy_run_plan.md",
+      "sha256": "7f6b909f0c07ce97f0026814f4b70c2f4cee074bd40bce6c870f1d7b2ac6ee76"
+    },
+    {
+      "archive_member": "tools/futures_lab/preregistrations/task_b86d2fbd-574d-4024-af9a-2e48ff84beb9/preregistration.json",
+      "source_path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\preregistrations\\task_b86d2fbd-574d-4024-af9a-2e48ff84beb9\\preregistration.json",
+      "sha256": "a91938e318e7ce5948a9b87949ae22b27af1ea3491f3d4723880385d123bea02"
+    }
+  ]
+}

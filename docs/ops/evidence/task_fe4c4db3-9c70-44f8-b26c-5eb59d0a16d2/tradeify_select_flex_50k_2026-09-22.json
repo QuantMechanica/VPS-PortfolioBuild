@@ -1,0 +1,305 @@
+{
+  "schema": "qm.futures-prop-research-profile.v1",
+  "profile_id": "TRADEIFY_SELECT_FLEX_50K_2026-09-22",
+  "created_for_task": "fe4c4db3-9c70-44f8-b26c-5eb59d0a16d2",
+  "as_of": "2026-09-22",
+  "firm": "Tradeify Futures",
+  "product": "Select 50k default 40% to Select Flex",
+  "nominal_account_usd": 50000,
+  "scope": "Dated research contract assembled from the bound comparison snapshot; not a provider contract, purchase authorization, deployment approval or profitability claim.",
+  "source_snapshot": {
+    "json": {
+      "path": "D:/QM/reports/research/futures_pivot_20260922/prop_firms.json",
+      "sha256": "a4116ec9f12a9d126c051f1fa7829829e051955eaef4a2d9a6b5164ac9179a0c"
+    },
+    "markdown": {
+      "path": "D:/QM/reports/research/futures_pivot_20260922/prop_firms.md",
+      "sha256": "8d6c5fd9739ff261e08a540c4c0313d2a0213096107e94c33cb635c94535515b"
+    }
+  },
+  "sources": {
+    "TF_AUTO": {
+      "title": "Tradeify Guidelines for Traders",
+      "url": "https://help.tradeify.co/en/articles/10468318-guidelines-for-traders",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "TF_FAQ": {
+      "title": "Tradeify Futures common FAQs",
+      "url": "https://help.tradeify.co/en/articles/12268494-common-faqs",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "TF_PLAT": {
+      "title": "Tradeify Supported Platforms",
+      "url": "https://help.tradeify.co/en/articles/10468221-supported-platforms",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "TF_BLOG": {
+      "title": "Tradeify platform article",
+      "url": "https://tradeify.co/post/futures-prop-trading-platforms-tradeify",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "TF_PRICE": {
+      "title": "Tradeify Pricing Reference",
+      "url": "https://help.tradeify.co/en/articles/14369021-tradeify-pricing-reference",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "TF_SELECT": {
+      "title": "Tradeify Select Evaluation Accounts",
+      "url": "https://help.tradeify.co/en/articles/12853921-select-evaluation-accounts",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "TF_PAY": {
+      "title": "Tradeify Select Flex and Daily payouts",
+      "url": "https://help.tradeify.co/en/articles/12853966-select-flex-and-select-daily-payout-policies",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "TF_AGREE": {
+      "title": "Tradeify Funded Trader Agreement",
+      "url": "https://tradeify.co/funded-trader-agreement",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "TF_KYC": {
+      "title": "Tradeify KYC/AML",
+      "url": "https://help.tradeify.co/en/articles/11384149-kyc-and-aml-policy",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "TF_COUNTRY": {
+      "title": "Tradeify restricted countries",
+      "url": "https://help.tradeify.co/en/articles/10495888-rules-restricted-countries",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "TF_COMM": {
+      "title": "Tradeify trading commission fees",
+      "url": "https://help.tradeify.co/en/articles/10468315-trading-commission-fees",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "TF_ELITE": {
+      "title": "Tradeify Elite Program",
+      "url": "https://help.tradeify.co/en/articles/12969284-tradeify-elite-program",
+      "official": true,
+      "observed_date": "2026-09-22"
+    },
+    "TF_RISE": {
+      "title": "Tradeify Rise payout process",
+      "url": "https://help.tradeify.co/en/articles/12844518-rise-payouts-main-payout-method",
+      "official": true,
+      "observed_date": "2026-09-22"
+    }
+  },
+  "coverage": {
+    "news": {
+      "status": "UNKNOWN",
+      "value": "UNKNOWN",
+      "source_ids": ["TF_SELECT", "TF_PAY", "TF_AGREE"]
+    },
+    "inactivity": {
+      "status": "UNKNOWN",
+      "value": "UNKNOWN",
+      "source_ids": ["TF_SELECT", "TF_PAY", "TF_AGREE"]
+    },
+    "consistency": {
+      "status": "KNOWN",
+      "value": "Evaluation best day must be no more than 40% of total net profit; Select Flex payout uses five qualifying winning days rather than a best-day percentage.",
+      "source_ids": ["TF_SELECT", "TF_PAY"]
+    },
+    "reset": {
+      "status": "KNOWN",
+      "value": "Evaluation reset is USD 109 in the dated pricing snapshot; live and funded reset semantics are not inferred.",
+      "source_ids": ["TF_PRICE"]
+    },
+    "day_count": {
+      "status": "KNOWN",
+      "value": "40% evaluation consistency imposes a three-day mathematical minimum; Flex payout requires five days each at or above USD 150.",
+      "source_ids": ["TF_SELECT", "TF_PAY"]
+    },
+    "scalping": {
+      "status": "CONDITIONAL",
+      "value": "For funded payout eligibility, more than 50% of trades and profit must come from holdings longer than 10 seconds; this is not rewritten as a blanket 10-second minimum for every trade.",
+      "source_ids": ["TF_AUTO", "TF_AGREE"]
+    },
+    "ownership": {
+      "status": "CONDITIONAL",
+      "value": "The bot must be solely owned and exclusively accessible, may not be used across other firms, and a video enabling it on the trader's own PC may be requested.",
+      "source_ids": ["TF_AUTO"]
+    },
+    "hosting": {
+      "status": "CONDITIONAL",
+      "value": "Login through VPN/VPS is prohibited; VPS trading after a normal login is described as possible at the trader's risk, but the exact hosted reconnect procedure remains UNKNOWN.",
+      "source_ids": ["TF_FAQ"]
+    }
+  },
+  "phase_order": ["evaluation", "sim_funded", "payout", "live_transition"],
+  "phases": {
+    "evaluation": {
+      "rules": {
+        "profit_target_usd": {"status": "KNOWN", "value": 3000, "source_ids": ["TF_SELECT"]},
+        "maximum_loss_usd": {"status": "KNOWN", "value": 2000, "source_ids": ["TF_SELECT"]},
+        "trailing_mode": {"status": "KNOWN", "value": "EOD_BALANCE_TRAIL_WITH_INTRADAY_FLOOR_ENFORCEMENT", "source_ids": ["TF_SELECT"]},
+        "daily_loss_limit_usd": {"status": "NONE_PUBLISHED", "value": "NONE_PUBLISHED", "source_ids": ["TF_SELECT"]},
+        "minimum_trading_days": {"status": "DERIVED", "value": 3, "source_ids": ["TF_SELECT"]},
+        "best_day_max_fraction": {"status": "KNOWN", "value": 0.4, "source_ids": ["TF_SELECT"]},
+        "news_blackout_window": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_SELECT", "TF_AGREE"]},
+        "inactivity_limit_days": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_SELECT", "TF_AGREE"]},
+        "hosted_login_procedure": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_FAQ"]}
+      },
+      "costs": {
+        "program_fee_usd": {"status": "KNOWN", "value": 165, "source_ids": ["TF_PRICE"]},
+        "reset_fee_usd": {"status": "KNOWN", "value": 109, "source_ids": ["TF_PRICE"]},
+        "activation_fee_usd": {"status": "KNOWN", "value": 0, "source_ids": ["TF_PRICE"]},
+        "monthly_renewal_usd": {"status": "KNOWN", "value": 0, "source_ids": ["TF_PRICE"]},
+        "mes_mnq_round_trip_per_contract_usd": {"status": "KNOWN", "value": 1.82, "source_ids": ["TF_COMM"]},
+        "slippage_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_COMM"]},
+        "optional_platform_or_data_subscription_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_PRICE", "TF_PLAT"]},
+        "vat_or_sales_tax_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_PRICE", "TF_AGREE"]}
+      }
+    },
+    "sim_funded": {
+      "rules": {
+        "environment": {"status": "KNOWN", "value": "SELECT_FLEX_SIMULATED_FUNDED", "source_ids": ["TF_PAY"]},
+        "maximum_loss_usd": {"status": "KNOWN", "value": 2000, "source_ids": ["TF_PAY"]},
+        "trailing_mode": {"status": "KNOWN", "value": "EOD_BALANCE_TRAIL_WITH_INTRADAY_FLOOR_ENFORCEMENT", "source_ids": ["TF_PAY"]},
+        "floor_lock_above_initial_usd": {"status": "KNOWN", "value": 100, "source_ids": ["TF_PAY"]},
+        "daily_loss_limit_usd": {"status": "NONE_PUBLISHED", "value": "NONE_PUBLISHED", "source_ids": ["TF_PAY"]},
+        "news_blackout_window": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_PAY", "TF_AGREE"]},
+        "inactivity_limit_days": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_PAY", "TF_AGREE"]},
+        "winning_days_required": {"status": "KNOWN", "value": 5, "source_ids": ["TF_PAY"]},
+        "winning_day_minimum_profit_usd": {"status": "KNOWN", "value": 150, "source_ids": ["TF_PAY"]},
+        "trade_duration_test": {"status": "KNOWN", "value": "MORE_THAN_50_PERCENT_OF_TRADES_AND_PROFIT_FROM_HOLDINGS_OVER_10_SECONDS", "source_ids": ["TF_AUTO", "TF_AGREE"]},
+        "blanket_minimum_hold_seconds": {"status": "NOT_APPLICABLE", "value": "NOT_A_BLANKET_PER_TRADE_RULE_IN_BOUND_SOURCE", "source_ids": ["TF_AUTO", "TF_AGREE"]},
+        "automation_ownership": {"status": "CONDITIONAL", "value": "Sole ownership and exclusive access; no use of the same bot across other firms; own-PC enablement video may be requested.", "source_ids": ["TF_AUTO"]},
+        "hosted_server_permission": {"status": "CONDITIONAL", "value": "VPS trading after normal login may be allowed at trader risk; login through VPN/VPS is prohibited and exact reconnect procedure is UNKNOWN.", "source_ids": ["TF_FAQ"]},
+        "native_platform_or_raw_api_route": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_PLAT", "TF_BLOG"]}
+      },
+      "costs": {
+        "activation_fee_usd": {"status": "KNOWN", "value": 0, "source_ids": ["TF_PRICE"]},
+        "monthly_program_fee_usd": {"status": "KNOWN", "value": 0, "source_ids": ["TF_PRICE"]},
+        "mes_mnq_round_trip_per_contract_usd": {"status": "KNOWN", "value": 1.82, "source_ids": ["TF_COMM"]},
+        "nonprofessional_level_1_data_usd": {"status": "CONDITIONAL", "value": 0, "source_ids": ["TF_PRICE"]},
+        "professional_data_warning_monthly_usd": {"status": "CONDITIONAL", "value": 300, "source_ids": ["TF_PRICE"]},
+        "slippage_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_COMM"]},
+        "optional_platform_or_level_2_data_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_PRICE", "TF_PLAT"]}
+      }
+    },
+    "payout": {
+      "rules": {
+        "trader_share_fraction": {"status": "KNOWN", "value": 0.9, "source_ids": ["TF_PAY"]},
+        "winning_days_required_per_cycle": {"status": "KNOWN", "value": 5, "source_ids": ["TF_PAY"]},
+        "winning_day_minimum_profit_usd": {"status": "KNOWN", "value": 150, "source_ids": ["TF_PAY"]},
+        "maximum_current_profit_fraction": {"status": "KNOWN", "value": 0.5, "source_ids": ["TF_PAY"]},
+        "minimum_request_usd": {"status": "KNOWN", "value": 250, "source_ids": ["TF_PAY"]},
+        "request_cap_usd": {"status": "KNOWN", "value": 2500, "source_ids": ["TF_PAY"]},
+        "request_cap_applies_to": {"status": "KNOWN", "value": "NEW_PURCHASES_ON_OR_AFTER_2026-09-01", "source_ids": ["TF_PAY"]},
+        "first_request_formal_buffer_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_PAY"]},
+        "first_request_floor_lock_usd": {"status": "KNOWN", "value": 50100, "source_ids": ["TF_PAY"]},
+        "account_debit_convention": {"status": "KNOWN", "value": "GROSS_REQUEST_REDUCES_ACCOUNT_BALANCE", "source_ids": ["TF_PAY"]},
+        "example_profit_before_request_usd": {"status": "DERIVED", "value": 750, "source_ids": ["TF_PAY"]},
+        "example_request_debit_usd": {"status": "DERIVED", "value": 375, "source_ids": ["TF_PAY"]},
+        "example_cash_before_tax_usd": {"status": "DERIVED", "value": 337.5, "source_ids": ["TF_PAY"]},
+        "example_room_after_floor_lock_usd": {"status": "DERIVED", "value": 275, "source_ids": ["TF_PAY"]},
+        "provider_eligibility_in_local_diagnostic": {"status": "KNOWN", "value": "NOT_EVALUATED", "source_ids": ["TF_PAY"]}
+      },
+      "costs": {
+        "firm_share_fraction": {"status": "KNOWN", "value": 0.1, "source_ids": ["TF_PAY"]},
+        "rise_or_bank_fee_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_RISE"]},
+        "foreign_exchange_fee_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_RISE"]},
+        "tax_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_KYC", "TF_RISE"]}
+      }
+    },
+    "live_transition": {
+      "rules": {
+        "earliest_consideration": {"status": "KNOWN", "value": "AFTER_3_PAYOUTS_ON_ONE_ACCOUNT_OR_10_TOTAL_SINCE_LAST_TRANSITION", "source_ids": ["TF_ELITE"]},
+        "selection_automatic": {"status": "KNOWN", "value": false, "source_ids": ["TF_ELITE"]},
+        "selection_mandatory_if_offered": {"status": "KNOWN", "value": true, "source_ids": ["TF_ELITE"]},
+        "evaluation_and_sim_accounts_close": {"status": "KNOWN", "value": true, "source_ids": ["TF_ELITE"]},
+        "unpaid_sim_profit_carries_to_live": {"status": "KNOWN", "value": false, "source_ids": ["TF_ELITE"]},
+        "starting_profit_balance_usd": {"status": "KNOWN", "value": 0, "source_ids": ["TF_ELITE"]},
+        "maximum_loss_usd": {"status": "KNOWN", "value": 2000, "source_ids": ["TF_ELITE"]},
+        "trailing_mode": {"status": "KNOWN", "value": "EOD_TRAIL_LOCKING_AT_PLUS_100", "source_ids": ["TF_ELITE"]},
+        "daily_loss_limit_usd": {"status": "NONE_PUBLISHED", "value": "NONE_PUBLISHED", "source_ids": ["TF_ELITE"]},
+        "trader_share_fraction": {"status": "KNOWN", "value": 0.8, "source_ids": ["TF_ELITE"]},
+        "zero_balance_after_payout_closes_account": {"status": "KNOWN", "value": true, "source_ids": ["TF_ELITE"]},
+        "hosted_server_permission": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_FAQ", "TF_ELITE"]},
+        "native_platform_or_raw_api_route": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_PLAT", "TF_BLOG", "TF_ELITE"]},
+        "news_blackout_window": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_AGREE", "TF_ELITE"]},
+        "inactivity_limit_days": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_AGREE", "TF_ELITE"]}
+      },
+      "costs": {
+        "firm_share_fraction": {"status": "KNOWN", "value": 0.2, "source_ids": ["TF_ELITE"]},
+        "professional_market_data_monthly_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_PRICE", "TF_ELITE"]},
+        "platform_subscription_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_PLAT", "TF_ELITE"]},
+        "commission_per_contract_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_COMM", "TF_ELITE"]},
+        "slippage_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_COMM", "TF_ELITE"]},
+        "payout_or_fx_fee_usd": {"status": "UNKNOWN", "value": "UNKNOWN", "source_ids": ["TF_RISE", "TF_ELITE"]}
+      }
+    }
+  },
+  "unresolved_operational_requirements": [
+    {
+      "id": "TRADEIFY_HOSTING_LOGIN_PROCEDURE",
+      "detail": "Bind a compliant ordinary-login, VPS reconnect and IP procedure for the Hetzner host without VPN/VPS login or location bypass.",
+      "source_ids": ["TF_FAQ"],
+      "blocks_deployment": true
+    },
+    {
+      "id": "TRADEIFY_OWNERSHIP_ELIGIBILITY",
+      "detail": "Bind whether the intended QM source-derived strategy satisfies sole ownership, exclusive access, cross-firm prohibition and any own-PC video requirement.",
+      "source_ids": ["TF_AUTO", "TF_AGREE"],
+      "blocks_deployment": true
+    },
+    {
+      "id": "TRADEIFY_EXECUTION_ROUTE",
+      "detail": "Resolve the official NinjaTrader availability conflict and bind the exact native platform or separately authorized API route in SIM and Elite.",
+      "source_ids": ["TF_PLAT", "TF_BLOG", "TF_ELITE"],
+      "blocks_deployment": true
+    },
+    {
+      "id": "TRADEIFY_NEWS_AND_INACTIVITY",
+      "detail": "Phase-specific news blackout windows and inactivity limits remain UNKNOWN in the bound comparison snapshot.",
+      "source_ids": ["TF_SELECT", "TF_PAY", "TF_AGREE", "TF_ELITE"],
+      "blocks_deployment": true
+    },
+    {
+      "id": "TRADEIFY_FIRST_REQUEST_BUFFER_WORDING",
+      "detail": "The formal first-request buffer amount remains UNKNOWN even though the 50% request cap and immediate USD 50100 floor lock permit a deterministic post-debit room calculation.",
+      "source_ids": ["TF_PAY"],
+      "blocks_deployment": true
+    },
+    {
+      "id": "TRADEIFY_PHASE_FEES",
+      "detail": "VAT, payout/FX, Elite market-data, platform, commission and slippage amounts are not fully bound; the USD 300 item is only a professional-data warning, not a universal Elite quote.",
+      "source_ids": ["TF_PRICE", "TF_COMM", "TF_RISE", "TF_ELITE"],
+      "blocks_deployment": true
+    }
+  ],
+  "deployment": {
+    "status": "NONDEPLOYABLE_RESEARCH_ONLY",
+    "deployable": false,
+    "blocked_by": [
+      "TRADEIFY_HOSTING_LOGIN_PROCEDURE",
+      "TRADEIFY_OWNERSHIP_ELIGIBILITY",
+      "TRADEIFY_EXECUTION_ROUTE",
+      "TRADEIFY_NEWS_AND_INACTIVITY",
+      "TRADEIFY_FIRST_REQUEST_BUFFER_WORDING",
+      "TRADEIFY_PHASE_FEES"
+    ],
+    "prohibited_actions": [
+      "ACCOUNT_PURCHASE",
+      "PROVIDER_CONTACT",
+      "CREDENTIAL_ENTRY",
+      "LIVE_CONNECTION",
+      "ORDER_SUBMISSION",
+      "CFD_VERDICT_CHANGE"
+    ]
+  }
+}

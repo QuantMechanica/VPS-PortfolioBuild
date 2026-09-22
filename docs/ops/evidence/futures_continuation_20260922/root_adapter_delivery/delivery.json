@@ -1,0 +1,112 @@
+{
+  "schema": "qm.futures-adapter-delivery/v1",
+  "task_id": "241d82df-e5bd-45eb-8bfc-f467feb882de",
+  "task_key": "FUT-DATA-ADAPTER",
+  "classification": "SUPPLEMENTAL_OWNER_AUTHORIZED_OFFLINE_IMPLEMENTATION",
+  "canonical_task_state_modified": false,
+  "recorded_at_utc": "2026-09-22T14:03:59.885809+00:00",
+  "status": "TECHNICAL_IMPLEMENTATION_AND_PILOT_REPLAY_COMPLETE",
+  "code_files": [
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\replay_adapter.py",
+      "sha256": "5e407684ccaaf3546ea3d4ea95b9c3e7e4a64a08209504eabc0b6f114824f2c6"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\test_replay_adapter.py",
+      "sha256": "89699a6c412aa921f6f1e0f5da3c2309264a9076c7604cd586338be9b225acd7"
+    }
+  ],
+  "risk_interface_dependency": {
+    "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\prop_risk.py",
+    "sha256": "8d25aa083b857cc5b6abe8562eb6cec3a18b5c0b158fdf6cd37de45232a8ef24",
+    "changed_by_adapter_worker": false
+  },
+  "tests": {
+    "command": "D:/QM/venvs/futures_lab/Scripts/python.exe -B -m unittest -v test_replay_adapter",
+    "exit_code": 0,
+    "passed": 15,
+    "test_names": [
+      "test_side_correct_prices_size_and_latency_do_not_manufacture_fills",
+      "test_invalid_bbo_clears_previous_valid_quote_for_signal_and_execution",
+      "test_invalid_trade_cannot_enter_signal_input_via_good_bbo",
+      "test_bad_time_snapshot_and_book_flags_block_even_good_looking_bbo",
+      "test_last_is_not_required_and_book_gap_has_no_silent_recovery",
+      "test_unknown_nontrading_and_reopen_require_new_quote",
+      "test_trading_flags_require_continuous_action_and_explicit_Y",
+      "test_staleness_and_no_future_or_outside_window_execution",
+      "test_bool_limits_identity_and_order_regressions_rejected",
+      "test_raw_source_equal_times_and_cross_chunk_order_are_retained",
+      "test_source_hash_truncation_and_receive_clock_regressions_fail",
+      "test_merge_tie_is_explicit_not_a_hidden_global_transport_order",
+      "test_equal_time_equity_peak_breach_recovery_is_forwarded_to_actual_risk",
+      "test_same_market_event_accounting_phases_keep_fee_extreme_without_jitter",
+      "test_raw_adapter_native_parity_for_bound_first_1000_pilot_records"
+    ],
+    "native_parity_raw_records": 1000,
+    "native_parity_quote_objects": 1000,
+    "native_parity_trade_objects": 182,
+    "equal_time_equity_breach_preserved": true,
+    "same_market_event_fee_phase_without_jitter": true
+  },
+  "full_replay_runs": [
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\factory_outputs\\fut-data-adapter\\technical_replay_flags_1.json",
+      "sha256": "fc0cd684e5c7e40563910afa5a8b33b441ffdeee0683846da7ad1186f0a0f01c"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\factory_outputs\\fut-data-adapter\\technical_replay_flags_2.json",
+      "sha256": "fc0cd684e5c7e40563910afa5a8b33b441ffdeee0683846da7ad1186f0a0f01c"
+    }
+  ],
+  "full_replay_reports_byte_identical": true,
+  "ordered_event_and_eligibility_sha256": "f240e73bff07f82f1917489e37c7449e73a897932698c2a138150d70c8c6ded7",
+  "counts": {
+    "status": 3,
+    "all_events": 10357660,
+    "mbp-1": 10357657,
+    "raw_trade_records": 354563,
+    "excluded_quote_events": 2,
+    "excluded_trade_signal_records": 1,
+    "eligible_quote_events": 10357655,
+    "eligible_trade_signal_records": 354562
+  },
+  "exclusion_reasons": {
+    "CROSSED_BBO": 1,
+    "NON_TRADING_STATUS": 1,
+    "DBN_BAD_TS_RECV": 1,
+    "DBN_SNAPSHOT_NOT_FRESH_EXECUTION": 1
+  },
+  "equal_receive_time_events_retained": 726728,
+  "flags_evidence": {
+    "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\factory_outputs\\fut-data-adapter\\dbn_flag_review.json",
+    "sha256": "c95b8c72dd44d4c10dfe61d21fbaefd8b53aac9137be287dda030ada923aa38f"
+  },
+  "superseded_artifacts": [
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\factory_outputs\\fut-data-adapter\\technical_replay_1.json",
+      "reason": "Earlier BBO/status-only eligibility before explicit DBN quality-flag policy; use technical_replay_flags_1/2.json instead."
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\factory_outputs\\fut-data-adapter\\technical_replay_2.json",
+      "reason": "Earlier BBO/status-only eligibility before explicit DBN quality-flag policy; use technical_replay_flags_1/2.json instead."
+    }
+  ],
+  "public_interfaces": [
+    "PilotReplay(...).events(): fixed MESZ6 raw pilot only, all records and exact-file status reconciliation hash checked before and during replay.",
+    "ReplayEvent: both ns timestamps, original source ordinal, deterministic merge ordinal, source sequence, raw bytes and raw1e9 prices.",
+    "QuoteGate(max_quote_age_ns, instrument_id=42001581, window_start_ns=None, window_end_ns=None).consume(event).",
+    "QuoteGate.execution_quote(now_ns, side, quantity, after_ordinal=..., eligible_at_ns=...) returns eligibility and side-correct quote evidence, never a fill.",
+    "data_quality_reasons(flags) and bbo_reasons(event) expose explicit source-quality rejection reasons.",
+    "RiskMarkBridge.point(event, session=..., balance=..., equity=..., phase=...) preserves exact receive ns and every accounting ordinal, including multiple phases of one market event."
+  ],
+  "scope_limitations": [
+    "Generic gate helpers accept explicitly bound June instrument IDs, but PilotReplay remains fixed to the delivered MESZ6 pilot. June session harness and bars are separate worker responsibilities.",
+    "Status and MBP files have no shared original transport ordinal; conservative receive-time merge does not invent exchange order.",
+    "Book-gap quarantine cannot silently recover from a new status or unflagged quote inside the same gate.",
+    "No strategies, fill simulation, fees, news/calendar certification, economic trial verdict, profitability or provider qualification were produced."
+  ],
+  "market_data_network_requests": 0,
+  "credential_reads": 0,
+  "orders_submitted": 0,
+  "git_commit_created": false
+}
