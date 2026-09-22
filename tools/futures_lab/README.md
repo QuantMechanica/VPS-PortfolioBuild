@@ -1,6 +1,6 @@
 # QuantMechanica Futures Lab
 
-Independent offline preparation lane. Existing MT5 strategy archives, identities and verdicts remain intact. This lab has no account credentials or order connection.
+Isolated futures research and metadata-quote preparation lane. Existing MT5 strategy archives, identities and verdicts remain intact. This source tree contains no account credentials or order connection; the local Databento credential is stored outside the repository.
 
 ## Installed technical baseline
 
@@ -17,8 +17,8 @@ python -B -m unittest discover -s tools/futures_lab -p test_prop_risk.py -v
 
 ## Local credential and price quote
 
-After personal Databento registration, open `Set-DatabentoKey.ps1` through the
-prepared desktop shortcut under the same Windows user as the research worker
+Account/key setup was completed on 2026-09-22. To enter or replace the credential,
+open `Set-DatabentoKey.ps1` through the prepared desktop shortcut under the same Windows user as the research worker
 (`qm-admin`). Its masked input stores only a CurrentUser-DPAPI encrypted blob in
 `D:/QM/futures_lab/private/databento.dpapi`, outside Git and Drive, with a private
 directory ACL. No key belongs in chat, command arguments, or persistent environment
@@ -30,14 +30,70 @@ prices, malformed counts and breached cost/storage caps. A quote never downloads
 data or establishes purchase authorization, credit balance, licensing, or actual
 local decoded-data size.
 
+Authenticated symbology and metadata calls succeeded on 2026-09-22: MESZ6 resolved
+to instrument ID `42001581`, and the definition-cost endpoint returned HTTP 200.
+The first complete quote correctly stopped on a warning about its non-midnight
+definition start. These access checks involved no data purchase or market-data
+download. Sanitized evidence is in
+`D:/QM/reports/research/futures_pivot_20260922/databento_quote_20260922T1238.json`
+and `databento_warning_diagnostic_20260922T1240.json` in the same directory.
+After the window correction, the complete authenticated quote passed with
+`WITHIN_QUOTE_LIMITS`: 10 metadata/symbology calls, USD `1.389073483645` quoted usage,
+10,357,671 records and 828,614,080 billable uncompressed bytes. Evidence:
+`databento_quote_20260922T1248.json` in that directory, whose authoritative
+`recorded_at_utc` is `2026-09-22T12:43:31.014478+00:00` (the filename suffix is only
+a label). The receipt still records no purchase authorization and no download.
+
+For `definition` only, the client starts at UTC midnight on the normalized UTC
+trading-start date, keeping the requested end unchanged. This includes the daily
+definition snapshot described in the [Databento snapshot documentation](https://databento.com/docs/schemas-and-data-formats/instrument-definitions#snapshots).
+`mbp-1` and `status` keep the exact trading window. For the initial plan, definition
+quotes cover `2026-09-15T00:00:00Z` to `2026-09-16T21:00:00Z`; trading-schema quotes
+still begin at `2026-09-15T22:00:00Z`. The seven-day cap applies to the trading
+window; definition context adds less than one UTC day. This does not verify that
+instrument definitions are complete, including on weekends.
+
+Each receipt records the actual per-schema windows in `request.schema_windows`
+and in each completed quote's `start`/`end`. The normalized request hash covers
+these windows, so an earlier narrower definition quote cannot be reused as the
+same request. Costs and sizes for the wider definition window count toward all
+existing caps. Every `X-Warning` still blocks completion and requires review.
+
 ```powershell
 python -B tools/futures_lab/quote_databento.py --output D:/QM/reports/research/futures_pivot_20260922/databento_quote_new.json
 python -B -m unittest discover -s tools/futures_lab -p 'test_*.py' -v
 ```
 
-At preparation, 28 checks passed: 10 risk diagnostics, 16 offline metadata-client
-tests, and 2 real Windows DPAPI tests using synthetic input. Authenticated requests
-remain dependent on the user completing local account/key setup.
+The UTC-midnight correction passes 24 offline metadata-client tests using stubbed
+transport and synthetic credentials. It does not perform an authenticated call.
+The initial preparation separately passed 10 risk diagnostics and 2 real Windows
+DPAPI tests using synthetic input.
+
+## Bounded historical pilot (2026-09-22)
+
+`download_databento_pilot.py` is a separate, single-attempt historical downloader.
+It binds the exact reviewed quote and account-credit evidence, restricts scope to
+the fixed MESZ6 pilot, reserves each full quoted charge before the network call,
+and refuses automatic retries. The cap is $2 of observed credits and $0 additional
+cash. Market schemas require the actual hash-bound definition proof. Redirects,
+warnings, truncated streams and excess bytes are rejected; the Factory disk
+reserve remains enforced. This does not change the quote-only client's scope.
+
+`validate_databento_pilot.py` scans every uncompressed record in bounded chunks,
+checks raw file hashes, framing, instrument identity, timestamps and BBO quality.
+It loads only the small definition through pinned Nautilus. That loader requires
+zstd, so bounded local metadata/definition copies are adapted under D: scratch;
+the downloaded originals remain unchanged. No full market-data object list or
+strategy replay is implied. A separately recorded 1,000-record native import
+checks quote/trade fields against the actual raw pilot sample.
+
+The observed status count discrepancy and its exact-file UTC-day reconciliation
+are documented in the [pilot report](D:/QM/reports/research/futures_pivot_20260922/databento_pilot_20260922.md).
+Other count mismatches remain errors. Raw data is never silently repaired or
+deduplicated. In particular, the crossed opening BBO must be excluded from
+executable quotes by a future explicit execution adapter; native decoding alone
+does not sanitize it. Nautilus sample timestamps map to `ts_recv`, which must be
+kept distinct from the source exchange timestamp for latency analysis.
 
 ## Risk-path diagnostic
 

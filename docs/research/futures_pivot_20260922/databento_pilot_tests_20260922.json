@@ -1,0 +1,56 @@
+{
+  "at_utc": "2026-09-22T13:22:31.864003+00:00",
+  "tests_run": 71,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "successful": true,
+  "source_unchanged_during_tests": true,
+  "code_files": [
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\credential_store.py",
+      "sha256": "95e7cc1e8fbed4591b872d1372c7af3f08c47ee371623291e1193c6f7a3a7840"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\download_databento_pilot.py",
+      "sha256": "2e8ed90695e82a3af2b79a56cd4298b96ade85bc39cc3a90c9f32a84fd15a16b"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\prop_risk.py",
+      "sha256": "6815fe6623713b7717687bbd54a5419308c6f2329b9334c8e698fc07de550b97"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\quote_databento.py",
+      "sha256": "2c0a1200c33e1598c7d3e77fae83245b6871ca4b5f21bb36510123e620f84174"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\smoke_nautilus.py",
+      "sha256": "ce2a6a47a617f68bba100365ea51c88a7abbeea41255fb7dabd027590a3963c9"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\test_credential_store.py",
+      "sha256": "e702d560df26d8c19ece7297eb77e235a2e6fd81db9948446efa22753e2935e2"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\test_download_databento_pilot.py",
+      "sha256": "41e7d38e1929e19478a2c17d09da512abda7812dc61ed80dc62bb519bc29223d"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\test_prop_risk.py",
+      "sha256": "e90ec0b998502f471731dc9de57bc0210b4482261ff659854b7c5f263ca3aebe"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\test_quote_databento.py",
+      "sha256": "ccc850e6c39711c4b141205b4f9692a4336812a4bfbd98e059931f3eeee31de5"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\test_validate_databento_pilot.py",
+      "sha256": "2c5dca58dc5df2967a498d6a5d5b6e421ad15bcaa1c3f2a9a80699e11df3cb01"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\validate_databento_pilot.py",
+      "sha256": "7d5b2d76db1e351d059fcd792a5f509b3f45b424757aa97011328aa2bd1fe435"
+    }
+  ],
+  "network": "Offline tests: fake HTTP transports; synthetic Windows DPAPI; no authenticated requests"
+}

@@ -1,0 +1,102 @@
+{
+  "schema": "qm.databento-status-utc-day-reconciliation/v1",
+  "status": "MATCHED_FOR_THESE_EXACT_FILES",
+  "at_utc": "2026-09-22T13:13:56.959797+00:00",
+  "original_quote_sha256": "24c9edcb056a2e0d856ba7c7832d4ae11263570957774920c940b52e735e2ef9",
+  "original_status_sha256": "cb1910ff2aa34797998e2d04f50d67a548924ea610ad2aef6a0a1640e0474fa4",
+  "original_quote_record_count": 12,
+  "original_actual_record_count": 3,
+  "original_metadata_bytes": 360,
+  "prior_reserved_credit_usd": "1.389073483645",
+  "diagnostic_reserved_credit_usd": "0.000001788140",
+  "total_reserved_credit_usd": "1.389075271785",
+  "actual_billing_debit_verified": false,
+  "days": [
+    {
+      "label": "20260915",
+      "params": {
+        "dataset": "GLBX.MDP3",
+        "symbols": "MESZ6",
+        "schema": "status",
+        "stype_in": "raw_symbol",
+        "stype_out": "instrument_id",
+        "start": "2026-09-15T00:00:00Z",
+        "end": "2026-09-16T00:00:00Z"
+      },
+      "quote_cost_usd": "8.94070E-7",
+      "quote_record_count": 6,
+      "quote_billable_bytes": 240,
+      "network_data_requests_attempted": 1,
+      "status": "COMPLETE",
+      "http_status": 200,
+      "path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\status_utc_day_diagnostic\\20260915.status.dbn",
+      "file_sha256": "a2bb4cd3474ba86f086fe37183bb6367a2bcace7c4121ec546b7c0fa4382f00a",
+      "file_bytes": 600,
+      "metadata_bytes": 360,
+      "actual_record_count": 6,
+      "record_bytes": 240
+    },
+    {
+      "label": "20260916",
+      "params": {
+        "dataset": "GLBX.MDP3",
+        "symbols": "MESZ6",
+        "schema": "status",
+        "stype_in": "raw_symbol",
+        "stype_out": "instrument_id",
+        "start": "2026-09-16T00:00:00Z",
+        "end": "2026-09-17T00:00:00Z"
+      },
+      "quote_cost_usd": "8.94070E-7",
+      "quote_record_count": 6,
+      "quote_billable_bytes": 240,
+      "network_data_requests_attempted": 1,
+      "status": "COMPLETE",
+      "http_status": 200,
+      "path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\status_utc_day_diagnostic\\20260916.status.dbn",
+      "file_sha256": "d5907e60df3fccde647dfd40f8a6f7f103eefab9a0a6a1ba26ba7183c0ec2bf5",
+      "file_bytes": 600,
+      "metadata_bytes": 360,
+      "actual_record_count": 6,
+      "record_bytes": 240
+    }
+  ],
+  "comparisons": [
+    {
+      "label": "known_two_open_events",
+      "start": "2026-09-15T22:00:00Z",
+      "end": "2026-09-15T22:10:00Z",
+      "record_count_quote": 6,
+      "billable_size_quote": 240,
+      "cost_usd_quote": "8.94070E-7",
+      "actual_reconstructed_record_count": 2
+    },
+    {
+      "label": "no_events_in_downloaded_full_window",
+      "start": "2026-09-15T23:00:00Z",
+      "end": "2026-09-15T23:10:00Z",
+      "record_count_quote": 6,
+      "billable_size_quote": 240,
+      "cost_usd_quote": "8.94070E-7",
+      "actual_reconstructed_record_count": 0
+    },
+    {
+      "label": "one_midnight_snapshot",
+      "start": "2026-09-16T00:00:00Z",
+      "end": "2026-09-16T00:10:00Z",
+      "record_count_quote": 6,
+      "billable_size_quote": 240,
+      "cost_usd_quote": "8.94070E-7",
+      "actual_reconstructed_record_count": 1
+    }
+  ],
+  "limitations": [
+    "Empirical reconciliation is restricted to these exact status files, instrument and dates.",
+    "Does not establish the vendor internal index design or general rounding semantics.",
+    "Does not independently verify CME feed completeness or authorize strategy deployment."
+  ],
+  "original_window_reconstructed_count": 3,
+  "original_record_bytes_equal_in_order_without_deduplication": true,
+  "finding": "For MESZ6/status on these UTC dates, metadata counts behave as full UTC-day counts; time-filtered raw data matches the original response byte-for-byte.",
+  "finished_at_utc": "2026-09-22T13:14:09.189880+00:00"
+}

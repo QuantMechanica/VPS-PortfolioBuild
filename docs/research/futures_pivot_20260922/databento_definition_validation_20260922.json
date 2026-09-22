@@ -1,0 +1,143 @@
+{
+  "schema": "qm.databento-pilot-validation/v1",
+  "classification": "DEFINITION_ONLY_TECHNICAL_VALIDATION",
+  "status": "PASS",
+  "structural_status": "PASS",
+  "data_quality_status": "REVIEW_REQUIRED",
+  "recorded_at_utc": "2026-09-22T13:00:48.026210+00:00",
+  "quote_sha256": "24c9edcb056a2e0d856ba7c7832d4ae11263570957774920c940b52e735e2ef9",
+  "quote_request_sha256": "a004c5adfff3366c02d4cc907160d0bb155a822575e4a8bc5fd9796e0b0af084",
+  "definition_sha256": "abc6dbb767cf12f7ab5439bcc8ab9417356f3cf4a4987ff66261d6cb8cb1c39a",
+  "symbol": "MESZ6",
+  "instrument_id": "42001581",
+  "nautilus_instrument_id": "MESZ6.GLBX",
+  "multiplier": "5",
+  "tick_size": "0.25",
+  "currency": "USD",
+  "nautilus_version": "1.221.0",
+  "validator_sha256": "9b432e6a97f7f538f67383e3cd50684afcfdcfbac584ad7f480a958aceb2a98e",
+  "definitions": [
+    {
+      "type": "FuturesContract",
+      "id": "MESZ6.GLBX",
+      "raw_symbol": "MESZ6",
+      "asset_class": "INDEX",
+      "currency": "USD",
+      "price_precision": 2,
+      "price_increment": "0.25",
+      "size_precision": 0,
+      "size_increment": "1",
+      "multiplier": "5",
+      "max_quantity": null,
+      "min_quantity": "1",
+      "max_price": null,
+      "min_price": null,
+      "lot_size": "1",
+      "underlying": "MES",
+      "activation_ns": 1758288600000000000,
+      "expiration_ns": 1797604200000000000,
+      "margin_init": "0",
+      "margin_maint": "0",
+      "maker_fee": "0",
+      "taker_fee": "0",
+      "ts_event": 1789430400000000000,
+      "ts_init": 1789430400000000000,
+      "exchange": "XCME",
+      "tick_scheme_name": null,
+      "info": {}
+    },
+    {
+      "type": "FuturesContract",
+      "id": "MESZ6.GLBX",
+      "raw_symbol": "MESZ6",
+      "asset_class": "INDEX",
+      "currency": "USD",
+      "price_precision": 2,
+      "price_increment": "0.25",
+      "size_precision": 0,
+      "size_increment": "1",
+      "multiplier": "5",
+      "max_quantity": null,
+      "min_quantity": "1",
+      "max_price": null,
+      "min_price": null,
+      "lot_size": "1",
+      "underlying": "MES",
+      "activation_ns": 1758288600000000000,
+      "expiration_ns": 1797604200000000000,
+      "margin_init": "0",
+      "margin_maint": "0",
+      "maker_fee": "0",
+      "taker_fee": "0",
+      "ts_event": 1789516800000000000,
+      "ts_init": 1789516800000000000,
+      "exchange": "XCME",
+      "tick_scheme_name": null,
+      "info": {}
+    }
+  ],
+  "files": [
+    {
+      "schema": "definition",
+      "path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\definition.dbn",
+      "dbn_version": 3,
+      "metadata_bytes": 360,
+      "dataset": "GLBX.MDP3",
+      "schema_code": 9,
+      "instrument_id": "42001581",
+      "file_sha256": "abc6dbb767cf12f7ab5439bcc8ab9417356f3cf4a4987ff66261d6cb8cb1c39a",
+      "actual_file_bytes": 1400,
+      "record_bytes": 1040,
+      "quoted_window": {
+        "start": "2026-09-15T00:00:00+00:00",
+        "end": "2026-09-16T21:00:00+00:00"
+      },
+      "all_records_scanned": true,
+      "max_chunk_records": 16384,
+      "record_count": 2,
+      "publisher_ids": [
+        1
+      ],
+      "timestamps": {
+        "ts_event": {
+          "min_ns": 1789299353360000000,
+          "max_ns": 1789299353360000000,
+          "backsteps": 0,
+          "equal_adjacent": 1,
+          "max_forward_gap_ns": 0,
+          "undefined_or_zero": 0,
+          "outside_query_window": 2
+        },
+        "ts_recv": {
+          "min_ns": 1789430400000000000,
+          "max_ns": 1789516800000000000,
+          "backsteps": 0,
+          "equal_adjacent": 0,
+          "max_forward_gap_ns": 86400000000000,
+          "undefined_or_zero": 0,
+          "outside_query_window": 0
+        }
+      },
+      "action_byte_counts": {},
+      "flag_byte_counts": {},
+      "quality_counts": {},
+      "download_receipt_sha256": "20a880db74458b640206f82a4bba906abdb2d89728396e4c72360aa6e2e720f5"
+    }
+  ],
+  "review_flags": [
+    "definition:ts_event:outside_query_window"
+  ],
+  "all_requested_schemas_validated": false,
+  "orders_submitted": 0,
+  "network_requests": 0,
+  "strategy_backtest_performed": false,
+  "limitations": [
+    "PASS in definition-only mode means contract identity/economics and its file binding, not market-data quality.",
+    "Full mode scans every raw record; Nautilus object decoding is checked only for the small definition file.",
+    "Pinned Nautilus expects zstd: only metadata or the bounded definition file is temporarily compressed locally; raw files remain unchanged.",
+    "Same timestamps are retained. Sequence gaps for a single contract do not prove missing exchange messages.",
+    "Definition snapshots may carry earlier event timestamps. Query-window metrics use both event and receive time without silently rejecting snapshots.",
+    "BBO anomalies and clock resets require review; no records were filtered, repaired or deduplicated.",
+    "No trading-calendar completeness, executable fill, queue-position, fee, slippage or profitability claim."
+  ]
+}

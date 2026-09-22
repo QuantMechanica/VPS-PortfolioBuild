@@ -1,0 +1,96 @@
+{
+  "schema": "qm.databento-single-schema-validation/v1",
+  "classification": "FULL_MBP1_RAW_SCAN_ONLY",
+  "status": "TECHNICAL_PASS_WITH_REVIEW_FLAGS",
+  "structural_status": "PASS",
+  "overall_pilot_status": "BLOCKED_PENDING_STATUS_COUNT_DISCREPANCY",
+  "recorded_at_utc": "2026-09-22T13:09:05.408320+00:00",
+  "quote_sha256": "24c9edcb056a2e0d856ba7c7832d4ae11263570957774920c940b52e735e2ef9",
+  "quote_request_sha256": "a004c5adfff3366c02d4cc907160d0bb155a822575e4a8bc5fd9796e0b0af084",
+  "download_receipt_sha256": "d39488609689d9406782285a0b626ed3089338659f1f87bbe3982cc95e8946b2",
+  "validator_sha256": "9b432e6a97f7f538f67383e3cd50684afcfdcfbac584ad7f480a958aceb2a98e",
+  "native_version": "1.221.0",
+  "elapsed_seconds": 3.203,
+  "file": {
+    "schema": "mbp-1",
+    "path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\mbp-1.dbn",
+    "dbn_version": 3,
+    "metadata_bytes": 360,
+    "dataset": "GLBX.MDP3",
+    "schema_code": 1,
+    "instrument_id": "42001581",
+    "file_sha256": "458d88daff74f885b6fb157dcb3405da2bb4bfed74f8d3f8905f73d6f87dbb11",
+    "actual_file_bytes": 828612920,
+    "record_bytes": 828612560,
+    "quoted_window": {
+      "start": "2026-09-15T22:00:00+00:00",
+      "end": "2026-09-16T21:00:00+00:00"
+    },
+    "all_records_scanned": true,
+    "max_chunk_records": 16384,
+    "record_count": 10357657,
+    "publisher_ids": [
+      1
+    ],
+    "timestamps": {
+      "ts_event": {
+        "min_ns": 1789509600000000000,
+        "max_ns": 1789592399993512641,
+        "backsteps": 0,
+        "equal_adjacent": 354547,
+        "max_forward_gap_ns": 9817682572,
+        "undefined_or_zero": 0,
+        "outside_query_window": 0
+      },
+      "ts_recv": {
+        "min_ns": 1789509600013889725,
+        "max_ns": 1789592399993788939,
+        "backsteps": 0,
+        "equal_adjacent": 726727,
+        "max_forward_gap_ns": 9817710336,
+        "undefined_or_zero": 0,
+        "outside_query_window": 0
+      }
+    },
+    "action_byte_counts": {
+      "65": 4849960,
+      "67": 4805431,
+      "77": 347703,
+      "84": 354563
+    },
+    "flag_byte_counts": {
+      "0": 354563,
+      "128": 10003093,
+      "168": 1
+    },
+    "quality_counts": {
+      "ask_off_tick": 0,
+      "bid_off_tick": 0,
+      "crossed_bbo": 1,
+      "event_price_off_tick": 0,
+      "locked_bbo": 0,
+      "missing_ask_price": 0,
+      "missing_bid_price": 0,
+      "nonpositive_ask": 0,
+      "nonpositive_bid": 0,
+      "sequence_backsteps_or_resets": 0,
+      "usable_two_sided_positive_unlocked_on_tick_bbo": 10357656,
+      "zero_ask_size": 0,
+      "zero_bid_size": 0
+    }
+  },
+  "review_flags": [
+    "mbp-1:crossed_bbo"
+  ],
+  "all_mbp1_records_scanned": true,
+  "native_full_object_list_loaded": false,
+  "network_requests": 0,
+  "orders_submitted": 0,
+  "strategy_backtest_performed": false,
+  "limitations": [
+    "Every raw MBP1 record and file byte was inspected; native decoding in this report checks only schema metadata.",
+    "Quoted record count and record-byte count match this MBP1 file; this does not resolve the separate status-file discrepancy.",
+    "Same timestamps and sequence resets are reported and retained; sequence gaps in single-contract data do not prove missing exchange records.",
+    "No completeness, execution, queue-position, slippage, fees or profitability claim."
+  ]
+}

@@ -1,4 +1,22 @@
-# Naechster persoenlicher Schritt
+# Databento-Zugang und Futures-Datenpilot
+
+Aktualisierung 2026-09-22: Der OWNER hat den API-Key lokal bereitgestellt. Er wurde
+mit CurrentUser-DPAPI gespeichert, mit dem produktiven Python-Lader nachgeprueft
+und die Klartextdatei danach entfernt. Authentifizierte Metadaten und echte
+historische Downloads funktionieren. Der bereitgestellte Billing-Screenshot
+bestaetigt $125 verbleibende Credits, $0 aktuellen Rechnungsbetrag und aktivierten
+Usage-based-Zugang. Es ist jetzt keine erneute Registrierung oder Chrome-/Desktop-
+App-Einrichtung erforderlich. Kontoklassifikation und Vertraege wurden nicht durch
+den Agenten geaendert.
+
+Der begrenzte MESZ6-Pilot einschliesslich der Statusdiagnose ist mit
+$1.389075271785 Datenverbrauch bepreist; die Abrechnung aus den Credits wird
+erwartet, der spaetere Billing-Saldo wurde nicht erneut ausgelesen. Keine neue
+Subscription oder Prop-Challenge wurde angelegt. Details und verbleibende
+Datenqualitaetsgrenzen stehen im
+[Pilotbericht](D:/QM/reports/research/futures_pivot_20260922/databento_pilot_20260922.md).
+
+## Anleitung fuer eine spaetere Neueinrichtung
 
 Der OWNER wohnt in Oesterreich. Recherche und technische Vorbereitung laufen ohne kostenpflichtiges Konto. Die notwendige erste Registrierung ist bei [Databento](https://databento.com/): Historical / Usage-based, vorerst ohne laufendes Datenabo.
 

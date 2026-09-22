@@ -1,0 +1,199 @@
+{
+  "schema": "qm.databento-pilot-delivery/v1",
+  "as_of_utc": "2026-09-22T13:23:00.928932+00:00",
+  "status": "TECHNICAL_PILOT_DELIVERED_WITH_EXPLICIT_REVIEW_FLAGS",
+  "credential_ready": true,
+  "plaintext_key_removed": true,
+  "historical_access_observed": true,
+  "user_action_required_now": false,
+  "chrome_or_desktop_app_required": false,
+  "credits_observed_before_download_usd": "125.00",
+  "quoted_usage_reserved_usd": "1.389075271785",
+  "remaining_credits_if_quoted_charges_apply_usd": "123.610924728215",
+  "post_download_billing_balance_verified": false,
+  "credit_budget_usd": "2.00",
+  "new_subscription_or_challenge_purchased": false,
+  "metadata_requests_in_this_operator_session": 31,
+  "historical_requests_in_this_operator_session": 5,
+  "symbol": "MESZ6",
+  "instrument_id": "42001581",
+  "session_start": "2026-09-15T22:00:00Z",
+  "session_end": "2026-09-16T21:00:00Z",
+  "multiplier_usd_per_index_point": "5",
+  "tick_size_index_points": "0.25",
+  "tick_value_usd": "1.25",
+  "primary_mbp1_records": 10357657,
+  "primary_definition_records": 2,
+  "primary_status_records": 3,
+  "status_reconciliation": "Two full UTC-day files have six records each; filtering their ordered raw records gives exactly the original three records.",
+  "native_sample_raw_records": 1000,
+  "native_sample_quotes": 1000,
+  "native_sample_trades": 182,
+  "native_sample_field_comparisons_pass": true,
+  "native_timestamps_map_to": "ts_recv",
+  "unusable_crossed_bbo_records": 1,
+  "raw_data_filtered_or_repaired": false,
+  "tests_passed": 71,
+  "all_primary_raw_records_scanned": true,
+  "raw_files": [
+    {
+      "role": "primary",
+      "schema": "definition",
+      "path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\definition.dbn",
+      "bytes": 1400,
+      "sha256": "abc6dbb767cf12f7ab5439bcc8ab9417356f3cf4a4987ff66261d6cb8cb1c39a",
+      "attempt_path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\definition.attempt.json",
+      "attempt_sha256": "20a880db74458b640206f82a4bba906abdb2d89728396e4c72360aa6e2e720f5"
+    },
+    {
+      "role": "primary",
+      "schema": "mbp-1",
+      "path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\mbp-1.dbn",
+      "bytes": 828612920,
+      "sha256": "458d88daff74f885b6fb157dcb3405da2bb4bfed74f8d3f8905f73d6f87dbb11",
+      "attempt_path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\mbp-1.attempt.json",
+      "attempt_sha256": "d39488609689d9406782285a0b626ed3089338659f1f87bbe3982cc95e8946b2"
+    },
+    {
+      "role": "primary",
+      "schema": "status",
+      "path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\status.dbn",
+      "bytes": 480,
+      "sha256": "cb1910ff2aa34797998e2d04f50d67a548924ea610ad2aef6a0a1640e0474fa4",
+      "attempt_path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\status.attempt.json",
+      "attempt_sha256": "a677c80cd07323b1b4ebf02927a09e4df67b90f02a61eabdad9b87de19bdb507"
+    },
+    {
+      "role": "status_diagnostic_only_not_additional_trading_events",
+      "schema": "status",
+      "path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\status_utc_day_diagnostic\\20260915.status.dbn",
+      "bytes": 600,
+      "sha256": "a2bb4cd3474ba86f086fe37183bb6367a2bcace7c4121ec546b7c0fa4382f00a"
+    },
+    {
+      "role": "status_diagnostic_only_not_additional_trading_events",
+      "schema": "status",
+      "path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\status_utc_day_diagnostic\\20260916.status.dbn",
+      "bytes": 600,
+      "sha256": "d5907e60df3fccde647dfd40f8a6f7f103eefab9a0a6a1ba26ba7183c0ec2bf5"
+    }
+  ],
+  "actual_raw_storage_bytes": 828616000,
+  "free_D_bytes": 88343707648,
+  "evidence": [
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\credential_import_20260922T1238.json",
+      "sha256": "d1d2dfe4f144ab7c3c1a9cfccb9798558d6f7040358f0c7a4ede26bc5aaf9705"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_account_evidence_20260922.json",
+      "sha256": "9583f30aee4d485dcca516f91dbb09b1d621481324ae4a7ac9b8ebd0b1ffd507"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_quote_20260922T1238.json",
+      "sha256": "ff97d1e3ae911a21cc875dc3646085e09e1466f2580abea9739e06c567046811"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_warning_diagnostic_20260922T1240.json",
+      "sha256": "fbf07f6f5315bda35862da22787f49b207e7ff32a5370ae8661229efeace01a6"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_quote_20260922T1248.json",
+      "sha256": "24c9edcb056a2e0d856ba7c7832d4ae11263570957774920c940b52e735e2ef9"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_definition_validation_20260922.json",
+      "sha256": "db5245cee645df9d17c8ff5a5a6faa018fc627667527deffbd1de0950521adcd"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_status_discrepancy_20260922.json",
+      "sha256": "c574e7f5d3eed81219350bfd2a9eccf978f5ac896f7de7175ed84a99e7fe1fbd"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_status_metadata_recheck_20260922.json",
+      "sha256": "fe704594cf916e45ee0f696b40fe8991743db8084eac57025fbadbac5b401c1c"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_status_window_quotes_20260922.json",
+      "sha256": "3e963a483106480af1dddfa1b1c1ff23efc763233f595ad9a369997c9ec9a310"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_status_utc_day_reconciliation_20260922.json",
+      "sha256": "aaa9f8b8d5250420817077633b94b8203ed83f26b476f80a6c07a2be734e010c"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_mbp1_validation_20260922.json",
+      "sha256": "2ebefd8a57e3068406312d8895316e7c513d573450b24ddecc23aee8baf803d4"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_native_sample_20260922.json",
+      "sha256": "3d77aed4a62bff27a43504c5973fa3ae67e70b0558ca8a4928634a60b1f56c77"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_pilot_validation_20260922.json",
+      "sha256": "ff82b55c661092cf6837885652f2b5b88b77b519fba1b14bee2c06f865a1edca"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_pilot_tests_20260922.json",
+      "sha256": "c24f207e1184f612a74b1301080a731e2d9c7273e9e75d66e6aa59a2112f7909"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\reconcile_status_utc_days.py",
+      "sha256": "113fa6c6be9af39dd6d820e7899c4b5615080f77f9ee0c89db72d293675ad6eb"
+    }
+  ],
+  "source_code": [
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\credential_store.py",
+      "sha256": "95e7cc1e8fbed4591b872d1372c7af3f08c47ee371623291e1193c6f7a3a7840"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\download_databento_pilot.py",
+      "sha256": "2e8ed90695e82a3af2b79a56cd4298b96ade85bc39cc3a90c9f32a84fd15a16b"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\prop_risk.py",
+      "sha256": "6815fe6623713b7717687bbd54a5419308c6f2329b9334c8e698fc07de550b97"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\quote_databento.py",
+      "sha256": "2c0a1200c33e1598c7d3e77fae83245b6871ca4b5f21bb36510123e620f84174"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\smoke_nautilus.py",
+      "sha256": "ce2a6a47a617f68bba100365ea51c88a7abbeea41255fb7dabd027590a3963c9"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\test_credential_store.py",
+      "sha256": "e702d560df26d8c19ece7297eb77e235a2e6fd81db9948446efa22753e2935e2"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\test_download_databento_pilot.py",
+      "sha256": "41e7d38e1929e19478a2c17d09da512abda7812dc61ed80dc62bb519bc29223d"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\test_prop_risk.py",
+      "sha256": "e90ec0b998502f471731dc9de57bc0210b4482261ff659854b7c5f263ca3aebe"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\test_quote_databento.py",
+      "sha256": "ccc850e6c39711c4b141205b4f9692a4336812a4bfbd98e059931f3eeee31de5"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\test_validate_databento_pilot.py",
+      "sha256": "2c5dca58dc5df2967a498d6a5d5b6e421ad15bcaa1c3f2a9a80699e11df3cb01"
+    },
+    {
+      "path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\validate_databento_pilot.py",
+      "sha256": "7d5b2d76db1e351d059fcd792a5f509b3f45b424757aa97011328aa2bd1fe435"
+    }
+  ],
+  "remaining_work": [
+    "Implement an explicit tradability filter and preserve exchange versus receive timestamps in the execution adapter.",
+    "Broaden calendar/roll/DST/early-close samples and acquire history for frozen strategy trials after exact quotes.",
+    "Complete strategy preregistration and provider evaluation-to-payout profiles; run economic out-of-sample tests."
+  ],
+  "orders_submitted": 0,
+  "economic_backtest_performed": false,
+  "profitable_futures_strategy_proven": false
+}

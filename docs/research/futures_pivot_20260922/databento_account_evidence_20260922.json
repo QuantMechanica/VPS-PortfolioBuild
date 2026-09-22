@@ -1,0 +1,24 @@
+{
+  "schema": "qm.databento-account-evidence/v1",
+  "observed_at_utc": "2026-09-22T12:49:55.500516+00:00",
+  "source": "OWNER_SUPPLIED_BILLING_SCREENSHOT_VISUALLY_REVIEWED",
+  "screenshot_path": "C:/Users/Administrator/Desktop/Capture.PNG",
+  "screenshot_sha256": "09499f4460c5bd0776215fd2139ef65f896fb27b5c017bb81af6c8ba9d9115b9",
+  "current_balance_usd": "0.00",
+  "credits_remaining_usd": "125.00",
+  "usage_based_access_enabled": true,
+  "portal_monthly_usage_limit": "No limit",
+  "subscription_plan_count": 0,
+  "subscription_license_count": 0,
+  "pilot_credit_cap_usd": "2.00",
+  "pilot_out_of_pocket_cap_usd": "0.00",
+  "authority": "OWNER authorized autonomous cost-optimized futures preparation and supplied working local API credential; bounded historical pilot within shown credits",
+  "license_handling": "Existing account permissions only; no agreement/classification accepted by agent. Stop on provider rejection requiring personal action.",
+  "limits": [
+    "Billing screenshot establishes the observed balance, not a later invoice or credit debit.",
+    "No recurring plan, live data, card setting or account classification is changed."
+  ],
+  "personal_address_and_payment_details_omitted": true,
+  "quote_sha256": "24c9edcb056a2e0d856ba7c7832d4ae11263570957774920c940b52e735e2ef9",
+  "quote_request_sha256": "a004c5adfff3366c02d4cc907160d0bb155a822575e4a8bc5fd9796e0b0af084"
+}

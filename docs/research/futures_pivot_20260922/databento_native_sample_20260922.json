@@ -1,0 +1,80 @@
+{
+  "schema": "qm.databento-native-prefix-validation/v1",
+  "classification": "BOUNDED_NATIVE_QUOTE_AND_TRADE_IMPORT_NO_REPLAY",
+  "status": "NATIVE_FIELD_MATCH_PASS_WITH_UNUSABLE_BBO",
+  "overall_pilot_status": "BLOCKED_PENDING_STATUS_COUNT_DISCREPANCY",
+  "recorded_at_utc": "2026-09-22T13:11:20.393065+00:00",
+  "quote_sha256": "24c9edcb056a2e0d856ba7c7832d4ae11263570957774920c940b52e735e2ef9",
+  "quote_request_sha256": "a004c5adfff3366c02d4cc907160d0bb155a822575e4a8bc5fd9796e0b0af084",
+  "download_receipt_sha256": "d39488609689d9406782285a0b626ed3089338659f1f87bbe3982cc95e8946b2",
+  "source_file_sha256_from_completed_full_scan": "458d88daff74f885b6fb157dcb3405da2bb4bfed74f8d3f8905f73d6f87dbb11",
+  "full_scan_report_sha256": "2ebefd8a57e3068406312d8895316e7c513d573450b24ddecc23aee8baf803d4",
+  "native_version": "1.221.0",
+  "loader": "DatabentoDataLoader.from_dbn_file(adapted, include_trades=True)",
+  "instrument_id_override_used": false,
+  "sample": {
+    "selection": "First 1000 physical MBP-1 records in original file order; no filtering",
+    "record_offset_bytes": 360,
+    "record_count": 1000,
+    "record_bytes": 80000,
+    "metadata_bytes": 360,
+    "raw_prefix_sha256": "9a28e06c98bac9fb484d9bf4efc24387ff454fb68bb71ebf8a2f9d53f280f0d0",
+    "compressed_adapter_sha256": "724f8867ab654004c7d041e50a1d80cd6df0355699419d15972cb6afd3338fc7",
+    "compressed_adapter_bytes": 19448,
+    "max_raw_record_count": 1000,
+    "action_counts": {
+      "T": 182,
+      "C": 333,
+      "A": 382,
+      "M": 103
+    },
+    "flag_byte_counts": {
+      "0": 182,
+      "128": 818
+    },
+    "first_raw_event_ns": 1789509600000000000,
+    "last_raw_event_ns": 1789509620185258513,
+    "first_raw_receive_ns": 1789509600013889725,
+    "last_raw_receive_ns": 1789509620185538445
+  },
+  "native_object_counts": {
+    "QuoteTick": 1000,
+    "TradeTick": 182
+  },
+  "native_objects_matching_all_compared_fields": {
+    "QuoteTick": 1000,
+    "TradeTick": 182
+  },
+  "failed_comparisons": [],
+  "unusable_bbo_records": [
+    {
+      "raw_record_index_zero_based": 0,
+      "action": "T",
+      "flags": 0,
+      "bid_px_raw_1e9": 7699000000000,
+      "ask_px_raw_1e9": 7650000000000,
+      "bid_size": 3,
+      "ask_size": 6,
+      "trade_price_raw_1e9": 7663750000000,
+      "trade_size": 25,
+      "ts_event_ns": 1789509600000000000,
+      "ts_recv_ns": 1789509600013889725,
+      "sequence": 254513177
+    }
+  ],
+  "unusable_native_quote_count": 1,
+  "raw_exchange_event_time_retained_by_native_quote_ts_event": false,
+  "native_timestamp_mapping_observed": "Both native ts_event and ts_init equal raw ts_recv for all compared QuoteTicks and TradeTicks. Raw exchange ts_event is separately retained in scan/sample evidence.",
+  "temporary_adapter_removed": true,
+  "network_requests": 0,
+  "orders_submitted": 0,
+  "strategy_backtest_performed": false,
+  "limitations": [
+    "Only the first 1000 physical raw records were imported natively; no full native object list or replay was run.",
+    "Original full-window DBN metadata was retained for symbology, but sample records cover only a short prefix.",
+    "The first raw/native quote has bid greater than ask and is unusable as an executable two-sided BBO; native import does not clean it.",
+    "Raw side-to-aggressor semantics were not independently certified; trade price, size, sequence-derived ID and timestamps were compared.",
+    "Field equality is technical decoding evidence, not a fill model, data-completeness or profitability claim.",
+    "Separate status-file record-count discrepancy remains unresolved; this does not certify the overall pilot."
+  ]
+}

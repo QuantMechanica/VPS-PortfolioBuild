@@ -5,12 +5,15 @@ https://databento.com/docs/api-reference-historical/symbology/symbology-resolve
 https://raw.githubusercontent.com/databento/databento-python/main/databento/historical/api/metadata.py
 https://raw.githubusercontent.com/databento/databento-python/main/databento/historical/api/symbology.py
 https://raw.githubusercontent.com/databento/databento-python/main/databento/common/http.py
+https://databento.com/docs/schemas-and-data-formats/instrument-definitions#snapshots
 
 Current SDK implementation uses POST form data despite older GET docstrings.
 Only main() loads the local DPAPI credential. Import and tests need no credential.
 Use --plan data_requests.json --output <new-receipt.json> after account setup.
 The disk check reserves the entire configured raw/derived budget; billable DBN
 bytes do not establish actual disk/RAM consumption. No quote authorizes download.
+Definition quotes include the UTC-midnight snapshot on the trading start date;
+only their start moves earlier (by less than one day), never the trading window.
 """
 from __future__ import annotations
 
@@ -105,8 +108,18 @@ def validate_plan(plan: dict) -> dict:
         raise QuoteError("INVALID_PLAN_STRUCTURE") from None
     # Symbology uses inclusive UTC date start and exclusive UTC date end.
     end_date = end.date() + (timedelta(days=1) if end.time() != time(0) else timedelta())
+    # Historical definitions can carry the day's active instruments in a UTC
+    # midnight snapshot. Preserve the trading window and exclusive end; include
+    # this bounded (<1 day) context only for definition. Hash these actual windows.
+    definition_start = start.replace(hour=0, minute=0, second=0, microsecond=0)
+    schema_windows = {
+        schema: {"start": (definition_start if schema == "definition" else start).isoformat(),
+                 "end": end.isoformat()}
+        for schema in schemas
+    }
     return {"dataset": "GLBX.MDP3", "symbol": symbol, "stype_in": "raw_symbol",
             "schemas": schemas, "start": start.isoformat(), "end": end.isoformat(),
+            "schema_windows": schema_windows,
             "start_date": start.date().isoformat(), "end_date": end_date.isoformat(),
             "quote_cap_usd": str(cost_cap), "cash_cap_usd": str(cash_cap),
             "local_storage_budget_bytes": disk_cap, "factory_reserve_bytes": reserve_gib * GIB}
@@ -249,8 +262,9 @@ def quote_plan(plan: dict, transport, *, free_disk_bytes: int) -> dict:
                         "start_date": req["start_date"], "end_date": req["end_date"]})
         receipt["resolution"] = validate_resolution(response, req)
         for schema in req["schemas"]:
+            window = req["schema_windows"][schema]
             params = {"dataset": req["dataset"], "symbols": req["symbol"], "schema": schema,
-                      "stype_in": "raw_symbol", "start": req["start"], "end": req["end"]}
+                      "stype_in": "raw_symbol", "start": window["start"], "end": window["end"]}
             # Retain only a fully validated triple; incomplete quotes never sum.
             cost = number(call("metadata.get_cost", {**params, "stype_out": "instrument_id"}))
             records = number(call("metadata.get_record_count", params), integer=True)
@@ -258,7 +272,8 @@ def quote_plan(plan: dict, transport, *, free_disk_bytes: int) -> dict:
             if (records == 0) != (size == 0):
                 raise QuoteError("INCONSISTENT_RECORD_AND_BYTE_COUNTS")
             receipt["quotes"].append({"schema": schema, "usage_cost_usd": str(cost),
-                                      "record_count": records, "billable_uncompressed_bytes": size})
+                                      "record_count": records, "billable_uncompressed_bytes": size,
+                                      "start": params["start"], "end": params["end"]})
         total_cost = sum((Decimal(q["usage_cost_usd"]) for q in receipt["quotes"]), Decimal(0))
         total_bytes = sum(q["billable_uncompressed_bytes"] for q in receipt["quotes"])
         receipt["totals"] = {"usage_cost_usd": str(total_cost),

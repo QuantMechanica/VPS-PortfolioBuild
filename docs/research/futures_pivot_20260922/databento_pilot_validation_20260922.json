@@ -1,0 +1,635 @@
+{
+  "schema": "qm.databento-pilot-validation/v1",
+  "classification": "FULL_RAW_DBN_TECHNICAL_VALIDATION",
+  "status": "TECHNICAL_PASS_WITH_REVIEW_FLAGS",
+  "structural_status": "PASS",
+  "data_quality_status": "REVIEW_REQUIRED",
+  "recorded_at_utc": "2026-09-22T13:21:30.518400+00:00",
+  "quote_sha256": "24c9edcb056a2e0d856ba7c7832d4ae11263570957774920c940b52e735e2ef9",
+  "quote_request_sha256": "a004c5adfff3366c02d4cc907160d0bb155a822575e4a8bc5fd9796e0b0af084",
+  "definition_sha256": "abc6dbb767cf12f7ab5439bcc8ab9417356f3cf4a4987ff66261d6cb8cb1c39a",
+  "symbol": "MESZ6",
+  "instrument_id": "42001581",
+  "nautilus_instrument_id": "MESZ6.GLBX",
+  "multiplier": "5",
+  "tick_size": "0.25",
+  "currency": "USD",
+  "nautilus_version": "1.221.0",
+  "validator_sha256": "7d5b2d76db1e351d059fcd792a5f509b3f45b424757aa97011328aa2bd1fe435",
+  "definitions": [
+    {
+      "type": "FuturesContract",
+      "id": "MESZ6.GLBX",
+      "raw_symbol": "MESZ6",
+      "asset_class": "INDEX",
+      "currency": "USD",
+      "price_precision": 2,
+      "price_increment": "0.25",
+      "size_precision": 0,
+      "size_increment": "1",
+      "multiplier": "5",
+      "max_quantity": null,
+      "min_quantity": "1",
+      "max_price": null,
+      "min_price": null,
+      "lot_size": "1",
+      "underlying": "MES",
+      "activation_ns": 1758288600000000000,
+      "expiration_ns": 1797604200000000000,
+      "margin_init": "0",
+      "margin_maint": "0",
+      "maker_fee": "0",
+      "taker_fee": "0",
+      "ts_event": 1789430400000000000,
+      "ts_init": 1789430400000000000,
+      "exchange": "XCME",
+      "tick_scheme_name": null,
+      "info": {}
+    },
+    {
+      "type": "FuturesContract",
+      "id": "MESZ6.GLBX",
+      "raw_symbol": "MESZ6",
+      "asset_class": "INDEX",
+      "currency": "USD",
+      "price_precision": 2,
+      "price_increment": "0.25",
+      "size_precision": 0,
+      "size_increment": "1",
+      "multiplier": "5",
+      "max_quantity": null,
+      "min_quantity": "1",
+      "max_price": null,
+      "min_price": null,
+      "lot_size": "1",
+      "underlying": "MES",
+      "activation_ns": 1758288600000000000,
+      "expiration_ns": 1797604200000000000,
+      "margin_init": "0",
+      "margin_maint": "0",
+      "maker_fee": "0",
+      "taker_fee": "0",
+      "ts_event": 1789516800000000000,
+      "ts_init": 1789516800000000000,
+      "exchange": "XCME",
+      "tick_scheme_name": null,
+      "info": {}
+    }
+  ],
+  "files": [
+    {
+      "schema": "definition",
+      "path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\definition.dbn",
+      "dbn_version": 3,
+      "metadata_bytes": 360,
+      "dataset": "GLBX.MDP3",
+      "schema_code": 9,
+      "instrument_id": "42001581",
+      "file_sha256": "abc6dbb767cf12f7ab5439bcc8ab9417356f3cf4a4987ff66261d6cb8cb1c39a",
+      "actual_file_bytes": 1400,
+      "record_bytes": 1040,
+      "quoted_window": {
+        "start": "2026-09-15T00:00:00+00:00",
+        "end": "2026-09-16T21:00:00+00:00"
+      },
+      "all_records_scanned": true,
+      "max_chunk_records": 16384,
+      "record_count": 2,
+      "publisher_ids": [
+        1
+      ],
+      "timestamps": {
+        "ts_event": {
+          "min_ns": 1789299353360000000,
+          "max_ns": 1789299353360000000,
+          "backsteps": 0,
+          "equal_adjacent": 1,
+          "max_forward_gap_ns": 0,
+          "undefined_or_zero": 0,
+          "outside_query_window": 2
+        },
+        "ts_recv": {
+          "min_ns": 1789430400000000000,
+          "max_ns": 1789516800000000000,
+          "backsteps": 0,
+          "equal_adjacent": 0,
+          "max_forward_gap_ns": 86400000000000,
+          "undefined_or_zero": 0,
+          "outside_query_window": 0
+        }
+      },
+      "action_byte_counts": {},
+      "flag_byte_counts": {},
+      "quality_counts": {},
+      "download_receipt_sha256": "20a880db74458b640206f82a4bba906abdb2d89728396e4c72360aa6e2e720f5"
+    },
+    {
+      "schema": "mbp-1",
+      "path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\mbp-1.dbn",
+      "dbn_version": 3,
+      "metadata_bytes": 360,
+      "dataset": "GLBX.MDP3",
+      "schema_code": 1,
+      "instrument_id": "42001581",
+      "file_sha256": "458d88daff74f885b6fb157dcb3405da2bb4bfed74f8d3f8905f73d6f87dbb11",
+      "actual_file_bytes": 828612920,
+      "record_bytes": 828612560,
+      "quoted_window": {
+        "start": "2026-09-15T22:00:00+00:00",
+        "end": "2026-09-16T21:00:00+00:00"
+      },
+      "all_records_scanned": true,
+      "max_chunk_records": 16384,
+      "record_count": 10357657,
+      "publisher_ids": [
+        1
+      ],
+      "timestamps": {
+        "ts_event": {
+          "min_ns": 1789509600000000000,
+          "max_ns": 1789592399993512641,
+          "backsteps": 0,
+          "equal_adjacent": 354547,
+          "max_forward_gap_ns": 9817682572,
+          "undefined_or_zero": 0,
+          "outside_query_window": 0
+        },
+        "ts_recv": {
+          "min_ns": 1789509600013889725,
+          "max_ns": 1789592399993788939,
+          "backsteps": 0,
+          "equal_adjacent": 726727,
+          "max_forward_gap_ns": 9817710336,
+          "undefined_or_zero": 0,
+          "outside_query_window": 0
+        }
+      },
+      "action_byte_counts": {
+        "65": 4849960,
+        "67": 4805431,
+        "77": 347703,
+        "84": 354563
+      },
+      "flag_byte_counts": {
+        "0": 354563,
+        "128": 10003093,
+        "168": 1
+      },
+      "quality_counts": {
+        "ask_off_tick": 0,
+        "bid_off_tick": 0,
+        "crossed_bbo": 1,
+        "event_price_off_tick": 0,
+        "locked_bbo": 0,
+        "missing_ask_price": 0,
+        "missing_bid_price": 0,
+        "nonpositive_ask": 0,
+        "nonpositive_bid": 0,
+        "sequence_backsteps_or_resets": 0,
+        "usable_two_sided_positive_unlocked_on_tick_bbo": 10357656,
+        "zero_ask_size": 0,
+        "zero_bid_size": 0
+      },
+      "download_receipt_sha256": "d39488609689d9406782285a0b626ed3089338659f1f87bbe3982cc95e8946b2"
+    },
+    {
+      "schema": "status",
+      "path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\status.dbn",
+      "dbn_version": 3,
+      "metadata_bytes": 360,
+      "dataset": "GLBX.MDP3",
+      "schema_code": 11,
+      "instrument_id": "42001581",
+      "file_sha256": "cb1910ff2aa34797998e2d04f50d67a548924ea610ad2aef6a0a1640e0474fa4",
+      "actual_file_bytes": 480,
+      "record_bytes": 120,
+      "quoted_window": {
+        "start": "2026-09-15T22:00:00+00:00",
+        "end": "2026-09-16T21:00:00+00:00"
+      },
+      "all_records_scanned": true,
+      "max_chunk_records": 16384,
+      "record_count": 3,
+      "publisher_ids": [
+        1
+      ],
+      "timestamps": {
+        "ts_event": {
+          "min_ns": 1789509600000000000,
+          "max_ns": 1789509600000000000,
+          "backsteps": 0,
+          "equal_adjacent": 2,
+          "max_forward_gap_ns": 0,
+          "undefined_or_zero": 0,
+          "outside_query_window": 0
+        },
+        "ts_recv": {
+          "min_ns": 1789509600013747595,
+          "max_ns": 1789516800000000000,
+          "backsteps": 0,
+          "equal_adjacent": 0,
+          "max_forward_gap_ns": 7199984714354,
+          "undefined_or_zero": 0,
+          "outside_query_window": 0
+        }
+      },
+      "action_byte_counts": {
+        "6": 1,
+        "7": 2
+      },
+      "flag_byte_counts": {},
+      "quality_counts": {},
+      "status_records": [
+        {
+          "length": 10,
+          "rtype": 18,
+          "publisher_id": 1,
+          "instrument_id": 42001581,
+          "ts_event": 1789509600000000000,
+          "ts_recv": 1789509600013747595,
+          "action": 6,
+          "reason": 1,
+          "trading_event": 0,
+          "is_trading": 89,
+          "is_quoting": 89,
+          "is_short_sell_restricted": 126
+        },
+        {
+          "length": 10,
+          "rtype": 18,
+          "publisher_id": 1,
+          "instrument_id": 42001581,
+          "ts_event": 1789509600000000000,
+          "ts_recv": 1789509600015285646,
+          "action": 7,
+          "reason": 1,
+          "trading_event": 0,
+          "is_trading": 89,
+          "is_quoting": 89,
+          "is_short_sell_restricted": 126
+        },
+        {
+          "length": 10,
+          "rtype": 18,
+          "publisher_id": 1,
+          "instrument_id": 42001581,
+          "ts_event": 1789509600000000000,
+          "ts_recv": 1789516800000000000,
+          "action": 7,
+          "reason": 1,
+          "trading_event": 0,
+          "is_trading": 89,
+          "is_quoting": 89,
+          "is_short_sell_restricted": 126
+        }
+      ],
+      "quoted_record_count": 12,
+      "quoted_billable_uncompressed_bytes": 480,
+      "direct_quote_count_match": false,
+      "count_comparison": "UTC_DAY_METADATA_DISCREPANCY_RECONCILED_FOR_EXACT_FILES",
+      "download_receipt_sha256": "a677c80cd07323b1b4ebf02927a09e4df67b90f02a61eabdad9b87de19bdb507"
+    }
+  ],
+  "review_flags": [
+    "definition:ts_event:outside_query_window",
+    "mbp-1:crossed_bbo"
+  ],
+  "status_reconciliation": {
+    "status": "MATCHED_FOR_THESE_EXACT_FILES",
+    "proof_sha256": "aaa9f8b8d5250420817077633b94b8203ed83f26b476f80a6c07a2be734e010c",
+    "proof_path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_status_utc_day_reconciliation_20260922.json",
+    "original_quote_sha256": "24c9edcb056a2e0d856ba7c7832d4ae11263570957774920c940b52e735e2ef9",
+    "original_file_sha256": "cb1910ff2aa34797998e2d04f50d67a548924ea610ad2aef6a0a1640e0474fa4",
+    "original_quote": {
+      "schema": "status",
+      "usage_cost_usd": "0.000001788139",
+      "record_count": 12,
+      "billable_uncompressed_bytes": 480,
+      "start": "2026-09-15T22:00:00+00:00",
+      "end": "2026-09-16T21:00:00+00:00"
+    },
+    "actual_record_count": 3,
+    "actual_record_bytes": 120,
+    "filter_field": "ts_recv",
+    "filter_interval": "[start,end)",
+    "raw_bytes_equal_in_order_without_deduplication": true,
+    "days": [
+      {
+        "schema": "status",
+        "path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\status_utc_day_diagnostic\\20260915.status.dbn",
+        "dbn_version": 3,
+        "metadata_bytes": 360,
+        "dataset": "GLBX.MDP3",
+        "schema_code": 11,
+        "instrument_id": "42001581",
+        "file_sha256": "a2bb4cd3474ba86f086fe37183bb6367a2bcace7c4121ec546b7c0fa4382f00a",
+        "actual_file_bytes": 600,
+        "record_bytes": 240,
+        "quoted_window": {
+          "start": "2026-09-15T00:00:00Z",
+          "end": "2026-09-16T00:00:00Z"
+        },
+        "all_records_scanned": true,
+        "max_chunk_records": 16384,
+        "record_count": 6,
+        "publisher_ids": [
+          1
+        ],
+        "timestamps": {
+          "ts_event": {
+            "min_ns": 1789423200000000000,
+            "max_ns": 1789509600000000000,
+            "backsteps": 0,
+            "equal_adjacent": 1,
+            "max_forward_gap_ns": 82800000000000,
+            "undefined_or_zero": 0,
+            "outside_query_window": 1
+          },
+          "ts_recv": {
+            "min_ns": 1789430400000000000,
+            "max_ns": 1789509600015285646,
+            "backsteps": 0,
+            "equal_adjacent": 0,
+            "max_forward_gap_ns": 75600012372707,
+            "undefined_or_zero": 0,
+            "outside_query_window": 0
+          }
+        },
+        "action_byte_counts": {
+          "1": 2,
+          "6": 1,
+          "7": 2,
+          "12": 1
+        },
+        "flag_byte_counts": {},
+        "quality_counts": {},
+        "status_records": [
+          {
+            "length": 10,
+            "rtype": 18,
+            "publisher_id": 1,
+            "instrument_id": 42001581,
+            "ts_event": 1789423200000000000,
+            "ts_recv": 1789430400000000000,
+            "action": 7,
+            "reason": 1,
+            "trading_event": 0,
+            "is_trading": 89,
+            "is_quoting": 89,
+            "is_short_sell_restricted": 126
+          },
+          {
+            "length": 10,
+            "rtype": 18,
+            "publisher_id": 1,
+            "instrument_id": 42001581,
+            "ts_event": 1789506000000000000,
+            "ts_recv": 1789506000012372707,
+            "action": 12,
+            "reason": 1,
+            "trading_event": 0,
+            "is_trading": 78,
+            "is_quoting": 78,
+            "is_short_sell_restricted": 126
+          },
+          {
+            "length": 10,
+            "rtype": 18,
+            "publisher_id": 1,
+            "instrument_id": 42001581,
+            "ts_event": 1789508700000000000,
+            "ts_recv": 1789508700093071886,
+            "action": 1,
+            "reason": 1,
+            "trading_event": 2,
+            "is_trading": 78,
+            "is_quoting": 89,
+            "is_short_sell_restricted": 126
+          },
+          {
+            "length": 10,
+            "rtype": 18,
+            "publisher_id": 1,
+            "instrument_id": 42001581,
+            "ts_event": 1789509570000000000,
+            "ts_recv": 1789509570024458164,
+            "action": 1,
+            "reason": 1,
+            "trading_event": 1,
+            "is_trading": 78,
+            "is_quoting": 89,
+            "is_short_sell_restricted": 126
+          },
+          {
+            "length": 10,
+            "rtype": 18,
+            "publisher_id": 1,
+            "instrument_id": 42001581,
+            "ts_event": 1789509600000000000,
+            "ts_recv": 1789509600013747595,
+            "action": 6,
+            "reason": 1,
+            "trading_event": 0,
+            "is_trading": 89,
+            "is_quoting": 89,
+            "is_short_sell_restricted": 126
+          },
+          {
+            "length": 10,
+            "rtype": 18,
+            "publisher_id": 1,
+            "instrument_id": 42001581,
+            "ts_event": 1789509600000000000,
+            "ts_recv": 1789509600015285646,
+            "action": 7,
+            "reason": 1,
+            "trading_event": 0,
+            "is_trading": 89,
+            "is_quoting": 89,
+            "is_short_sell_restricted": 126
+          }
+        ]
+      },
+      {
+        "schema": "status",
+        "path": "D:\\QM\\futures_lab\\pilots\\mesz6_20260916\\status_utc_day_diagnostic\\20260916.status.dbn",
+        "dbn_version": 3,
+        "metadata_bytes": 360,
+        "dataset": "GLBX.MDP3",
+        "schema_code": 11,
+        "instrument_id": "42001581",
+        "file_sha256": "d5907e60df3fccde647dfd40f8a6f7f103eefab9a0a6a1ba26ba7183c0ec2bf5",
+        "actual_file_bytes": 600,
+        "record_bytes": 240,
+        "quoted_window": {
+          "start": "2026-09-16T00:00:00Z",
+          "end": "2026-09-17T00:00:00Z"
+        },
+        "all_records_scanned": true,
+        "max_chunk_records": 16384,
+        "record_count": 6,
+        "publisher_ids": [
+          1
+        ],
+        "timestamps": {
+          "ts_event": {
+            "min_ns": 1789509600000000000,
+            "max_ns": 1789596000000000000,
+            "backsteps": 0,
+            "equal_adjacent": 1,
+            "max_forward_gap_ns": 82800000000000,
+            "undefined_or_zero": 0,
+            "outside_query_window": 1
+          },
+          "ts_recv": {
+            "min_ns": 1789516800000000000,
+            "max_ns": 1789596000013564248,
+            "backsteps": 0,
+            "equal_adjacent": 0,
+            "max_forward_gap_ns": 75600011697462,
+            "undefined_or_zero": 0,
+            "outside_query_window": 0
+          }
+        },
+        "action_byte_counts": {
+          "1": 2,
+          "6": 1,
+          "7": 2,
+          "12": 1
+        },
+        "flag_byte_counts": {},
+        "quality_counts": {},
+        "status_records": [
+          {
+            "length": 10,
+            "rtype": 18,
+            "publisher_id": 1,
+            "instrument_id": 42001581,
+            "ts_event": 1789509600000000000,
+            "ts_recv": 1789516800000000000,
+            "action": 7,
+            "reason": 1,
+            "trading_event": 0,
+            "is_trading": 89,
+            "is_quoting": 89,
+            "is_short_sell_restricted": 126
+          },
+          {
+            "length": 10,
+            "rtype": 18,
+            "publisher_id": 1,
+            "instrument_id": 42001581,
+            "ts_event": 1789592400000000000,
+            "ts_recv": 1789592400011697462,
+            "action": 12,
+            "reason": 1,
+            "trading_event": 0,
+            "is_trading": 78,
+            "is_quoting": 78,
+            "is_short_sell_restricted": 126
+          },
+          {
+            "length": 10,
+            "rtype": 18,
+            "publisher_id": 1,
+            "instrument_id": 42001581,
+            "ts_event": 1789595100000000000,
+            "ts_recv": 1789595100075811992,
+            "action": 1,
+            "reason": 1,
+            "trading_event": 2,
+            "is_trading": 78,
+            "is_quoting": 89,
+            "is_short_sell_restricted": 126
+          },
+          {
+            "length": 10,
+            "rtype": 18,
+            "publisher_id": 1,
+            "instrument_id": 42001581,
+            "ts_event": 1789595970000000000,
+            "ts_recv": 1789595970098744851,
+            "action": 1,
+            "reason": 1,
+            "trading_event": 1,
+            "is_trading": 78,
+            "is_quoting": 89,
+            "is_short_sell_restricted": 126
+          },
+          {
+            "length": 10,
+            "rtype": 18,
+            "publisher_id": 1,
+            "instrument_id": 42001581,
+            "ts_event": 1789596000000000000,
+            "ts_recv": 1789596000011756873,
+            "action": 6,
+            "reason": 1,
+            "trading_event": 0,
+            "is_trading": 89,
+            "is_quoting": 89,
+            "is_short_sell_restricted": 126
+          },
+          {
+            "length": 10,
+            "rtype": 18,
+            "publisher_id": 1,
+            "instrument_id": 42001581,
+            "ts_event": 1789596000000000000,
+            "ts_recv": 1789596000013564248,
+            "action": 7,
+            "reason": 1,
+            "trading_event": 0,
+            "is_trading": 89,
+            "is_quoting": 89,
+            "is_short_sell_restricted": 126
+          }
+        ]
+      }
+    ],
+    "micro_comparisons": [
+      {
+        "label": "known_two_open_events",
+        "start": "2026-09-15T22:00:00Z",
+        "end": "2026-09-15T22:10:00Z",
+        "record_count_quote": 6,
+        "billable_size_quote": 240,
+        "cost_usd_quote": "8.94070E-7",
+        "actual_reconstructed_record_count": 2
+      },
+      {
+        "label": "no_events_in_downloaded_full_window",
+        "start": "2026-09-15T23:00:00Z",
+        "end": "2026-09-15T23:10:00Z",
+        "record_count_quote": 6,
+        "billable_size_quote": 240,
+        "cost_usd_quote": "8.94070E-7",
+        "actual_reconstructed_record_count": 0
+      },
+      {
+        "label": "one_midnight_snapshot",
+        "start": "2026-09-16T00:00:00Z",
+        "end": "2026-09-16T00:10:00Z",
+        "record_count_quote": 6,
+        "billable_size_quote": 240,
+        "cost_usd_quote": "8.94070E-7",
+        "actual_reconstructed_record_count": 1
+      }
+    ],
+    "general_vendor_rounding_semantics_inferred": false
+  },
+  "all_requested_schemas_validated": true,
+  "orders_submitted": 0,
+  "network_requests": 0,
+  "strategy_backtest_performed": false,
+  "limitations": [
+    "PASS in definition-only mode means contract identity/economics and its file binding, not market-data quality.",
+    "Full mode scans every raw record; Nautilus object decoding is checked only for the small definition file.",
+    "Pinned Nautilus expects zstd: only metadata or the bounded definition file is temporarily compressed locally; raw files remain unchanged.",
+    "Same timestamps are retained. Sequence gaps for a single contract do not prove missing exchange messages.",
+    "Definition snapshots may carry earlier event timestamps. Query-window metrics use both event and receive time without silently rejecting snapshots.",
+    "BBO anomalies and clock resets require review; no records were filtered, repaired or deduplicated.",
+    "Optional status reconciliation proves only the pinned original/day files; it does not establish a general metadata-count tolerance.",
+    "No trading-calendar completeness, executable fill, queue-position, fee, slippage or profitability claim."
+  ]
+}

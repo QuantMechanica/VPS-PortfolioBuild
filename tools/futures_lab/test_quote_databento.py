@@ -1,5 +1,6 @@
 """Offline stub tests. No credentials, sockets, requests or real metadata API calls."""
 import copy
+import hashlib
 import io
 import json
 import os
@@ -99,6 +100,108 @@ class QuoteTests(unittest.TestCase):
         self.assertEqual(len(stub.calls), 10)
         self.assertTrue(all(method in METHODS for method, _ in stub.calls))
         self.assertEqual(stub.calls[0][1]["end_date"], "2026-09-17")
+
+    def test_definition_snapshot_window_matches_every_method_and_receipt(self):
+        stub = StubTransport()
+        plan = copy.deepcopy(PLAN)
+        result = self.run_quote(stub, plan)
+        self.assertEqual(plan, PLAN)
+        self.assertEqual(result["request"]["start"], "2026-09-15T22:00:00+00:00")
+        for schema in ("definition", "mbp-1", "status"):
+            expected = {"start": "2026-09-15T00:00:00+00:00" if schema == "definition"
+                        else "2026-09-15T22:00:00+00:00",
+                        "end": "2026-09-16T21:00:00+00:00"}
+            calls = [(m, p) for m, p in stub.calls if p.get("schema") == schema]
+            self.assertEqual({m for m, _ in calls},
+                             {"metadata.get_cost", "metadata.get_record_count", "metadata.get_billable_size"})
+            self.assertEqual(len(calls), 3)
+            for _, params in calls:
+                self.assertEqual({k: params[k] for k in expected}, expected)
+            quote = next(q for q in result["quotes"] if q["schema"] == schema)
+            self.assertEqual({k: quote[k] for k in expected}, expected)
+            self.assertEqual(result["request"]["schema_windows"][schema], expected)
+
+    def test_snapshot_floor_uses_utc_date_and_preserves_midnight_and_end(self):
+        for start, trading_start, snapshot in (
+                ("2026-09-16T00:30:00+02:00", "2026-09-15T22:30:00+00:00", "2026-09-15T00:00:00+00:00"),
+                ("2026-09-15T22:00:00-03:00", "2026-09-16T01:00:00+00:00", "2026-09-16T00:00:00+00:00"),
+                ("2026-09-15T00:00:00Z", "2026-09-15T00:00:00+00:00", "2026-09-15T00:00:00+00:00")):
+            with self.subTest(start=start):
+                plan = copy.deepcopy(PLAN)
+                plan["first_request"]["start"] = start
+                request = validate_plan(plan)
+                self.assertEqual(request["schema_windows"]["definition"]["start"], snapshot)
+                for schema in ("mbp-1", "status"):
+                    self.assertEqual(request["schema_windows"][schema]["start"], trading_start)
+                self.assertEqual({w["end"] for w in request["schema_windows"].values()},
+                                 {"2026-09-16T21:00:00+00:00"})
+
+    def test_request_hash_binds_schema_windows_including_blocked_quotes(self):
+        result = self.run_quote(StubTransport({"metadata.get_cost": QuoteError("REMOTE_WARNING_REQUIRES_REVIEW")}))
+        def request_hash(request):
+            return hashlib.sha256(json.dumps(request, sort_keys=True, separators=(",", ":"),
+                                              ensure_ascii=True, allow_nan=False).encode()).hexdigest()
+        self.assertEqual(result["request_sha256"], request_hash(result["request"]))
+        old_policy = copy.deepcopy(result["request"])
+        old_policy["schema_windows"]["definition"]["start"] = old_policy["start"]
+        self.assertNotEqual(result["request_sha256"], request_hash(old_policy))
+        del old_policy["schema_windows"]
+        self.assertNotEqual(result["request_sha256"], request_hash(old_policy))
+        self.assertEqual(result["status"], "BLOCKED")
+
+    def test_no_definition_schema_means_no_snapshot_request(self):
+        plan = copy.deepcopy(PLAN)
+        plan["first_request"]["schemas"] = ["mbp-1", "status"]
+        stub = StubTransport()
+        result = self.run_quote(stub, plan)
+        self.assertEqual(result["status"], "WITHIN_QUOTE_LIMITS")
+        self.assertEqual(set(result["request"]["schema_windows"]), {"mbp-1", "status"})
+        self.assertEqual(len(stub.calls), 7)
+        self.assertTrue(all(p["start"] == "2026-09-15T22:00:00+00:00"
+                            for _, p in stub.calls if "schema" in p))
+
+    def test_seven_day_trade_cap_allows_only_definition_snapshot_context(self):
+        plan = copy.deepcopy(PLAN)
+        plan["first_request"]["end"] = "2026-09-22T22:00:00Z"
+        request = validate_plan(plan)
+        self.assertEqual(request["schema_windows"]["definition"],
+                         {"start": "2026-09-15T00:00:00+00:00", "end": "2026-09-22T22:00:00+00:00"})
+        plan["first_request"]["end"] = "2026-09-22T22:00:01Z"
+        with self.assertRaisesRegex(QuoteError, "PILOT_RANGE_MUST_BE_WITHIN_SEVEN_DAYS"):
+            validate_plan(plan)
+
+    def test_wider_definition_quote_still_counts_against_cost_and_byte_caps(self):
+        class SnapshotPricedTransport(StubTransport):
+            def post_json(self, method, params):
+                value = super().post_json(method, params)
+                if params.get("schema") == "definition" and params["start"] == "2026-09-15T00:00:00+00:00":
+                    return {"metadata.get_cost": Decimal("26"), "metadata.get_record_count": 100,
+                            "metadata.get_billable_size": 3 * GIB}[method]
+                return value
+        result = self.run_quote(SnapshotPricedTransport())
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertEqual(result["totals"]["usage_cost_usd"], "28.50")
+        self.assertEqual(result["totals"]["billable_uncompressed_bytes"], 3 * GIB + 20000)
+        self.assertIn("WITHIN_REQUEST_COST_CAP", result["blockers"])
+        self.assertIn("BILLABLE_BYTES_WITHIN_LOCAL_BUDGET", result["blockers"])
+
+    def test_warnings_block_each_schema_and_incomplete_metadata_triple(self):
+        for schema in ("definition", "mbp-1", "status"):
+            for method in ("metadata.get_cost", "metadata.get_record_count", "metadata.get_billable_size"):
+                with self.subTest(schema=schema, method=method):
+                    class WarningTransport(StubTransport):
+                        def post_json(self, called_method, params):
+                            if called_method == method and params.get("schema") == schema:
+                                self.calls.append((called_method, params))
+                                raise QuoteError("REMOTE_WARNING_REQUIRES_REVIEW")
+                            return super().post_json(called_method, params)
+                    stub = WarningTransport()
+                    result = self.run_quote(stub)
+                    self.assertEqual(result["status"], "BLOCKED")
+                    self.assertIsNone(result["totals"])
+                    self.assertIn("REMOTE_WARNING_REQUIRES_REVIEW", result["blockers"])
+                    self.assertNotIn(schema, [q["schema"] for q in result["quotes"]])
+                    self.assertEqual((stub.calls[-1][0], stub.calls[-1][1]["schema"]), (method, schema))
 
     def test_unknown_negative_nonfinite_and_nonnumeric_quotes_block(self):
         for value in (None, -1, float("nan"), float("inf"), Decimal("NaN"),
@@ -238,6 +341,15 @@ class TransportTests(unittest.TestCase):
             with self.assertRaises(QuoteError) as caught:
                 client.post_json("metadata.get_cost", {})
             self.assertNotIn("PRIVATE", str(caught.exception))
+
+    def test_snapshot_warning_is_not_suppressed_even_for_definition(self):
+        response = FakeResponse()
+        response.warning = "The request time range does not start at UTC midnight, instrument definitions effective on this date may be missing."
+        client, connection, _ = self.client(response)
+        with self.assertRaisesRegex(QuoteError, "REMOTE_WARNING_REQUIRES_REVIEW"):
+            client.post_json("metadata.get_cost", {"schema": "definition", "start": "2026-09-15T00:00:00+00:00"})
+        self.assertEqual(response.read_count, 0)
+        self.assertTrue(connection.closed)
 
 
 @unittest.skipUnless(os.name == "nt" and Path("D:/QM/futures_lab").is_dir(), "CLI uses the existing Windows D: workspace")

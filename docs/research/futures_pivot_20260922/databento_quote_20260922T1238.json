@@ -1,0 +1,50 @@
+{
+  "schema": "qm.databento-quote/v1",
+  "classification": "QUOTE_ONLY",
+  "status": "BLOCKED",
+  "purchase_authorized": false,
+  "download_performed": false,
+  "recorded_at_utc": "2026-09-22T12:38:43.638237+00:00",
+  "request_sha256": "c4e85f86fb68efb45fb9c76552dccf6cb5b7ccbd898d005310807274253fa64f",
+  "request": {
+    "dataset": "GLBX.MDP3",
+    "symbol": "MESZ6",
+    "stype_in": "raw_symbol",
+    "schemas": [
+      "definition",
+      "mbp-1",
+      "status"
+    ],
+    "start": "2026-09-15T22:00:00+00:00",
+    "end": "2026-09-16T21:00:00+00:00",
+    "start_date": "2026-09-15",
+    "end_date": "2026-09-17",
+    "quote_cap_usd": "25",
+    "cash_cap_usd": "50",
+    "local_storage_budget_bytes": 2147483648,
+    "factory_reserve_bytes": 64424509440
+  },
+  "resolution": {
+    "status": "FULL_DATE_COVERAGE_ONE_ID",
+    "instrument_id": "42001581",
+    "start_date": "2026-09-15",
+    "end_date": "2026-09-17",
+    "instrument_definition_verified": false
+  },
+  "quotes": [],
+  "totals": null,
+  "checks": {},
+  "blockers": [
+    "REMOTE_WARNING_REQUIRES_REVIEW"
+  ],
+  "network_requests_attempted": 2,
+  "account_credit_applied_usd": null,
+  "limitations": [
+    "Symbology is not instrument-definition verification.",
+    "Quotes do not establish market-data completeness or entitlements to execution.",
+    "Billable DBN bytes are not actual decoded/derived disk or RAM size.",
+    "Credit, tax and cash charge are not inferred from quoted usage cost.",
+    "No result of this tool authorizes purchase or download."
+  ],
+  "plan_file_sha256": "8ae21d3e101adbe1104e8a9d30bc20b2c4c651abdb60cb8e2bff5b25ce099564"
+}

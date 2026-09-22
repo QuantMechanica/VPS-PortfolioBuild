@@ -1,0 +1,10 @@
+{
+  "at_utc": "2026-09-22T12:39:42.875515+00:00",
+  "method": "metadata.get_cost",
+  "schema": "definition",
+  "http_status": 200,
+  "x_warning_sanitized": "[\"Warning: The request time range does not start at UTC midnight, instrument definitions effective on this date may be missing. See: https://databento.com/docs/schemas-and-data-formats/instrument-definitions#snapshots\"]",
+  "download_performed": false,
+  "network_requests_attempted": 1,
+  "quoted_usage_usd": 1.646578e-06
+}

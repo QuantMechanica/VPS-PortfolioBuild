@@ -1,5 +1,12 @@
 # Futures-Prop-Vorbereitung für QuantMechanica
 
+**Aktueller Nachtrag vom 22.09.:** Databento-Zugang eingerichtet, echter MES-Pilot
+mit 10.357.657 Kursrecords und 71 bestandenen Tests geliefert. Angebotswert inklusive
+Diagnose rund $1,39 aus dem bestaetigten Startguthaben; Statuszaehlung fuer die
+konkreten Dateien geklaert, ein unbrauchbarer Eroeffnungsquote markiert.
+[Pilotbericht und naechste Schritte](D:/QM/reports/research/futures_pivot_20260922/databento_pilot_20260922.md).
+Die folgende urspruengliche Vorbereitung bleibt als zeitlich datierter Stand erhalten.
+
 Stand: 2026-09-22T11:35:09.081447+00:00. OWNER-Wohnland: Österreich. Ziel: ein wirtschaftlich tragfähiger Weg bis zur tatsächlichen Auszahlung; noch kein nachgewiesener Futures-Ertrag.
 
 **Entscheidung:** kostenloser NautilusTrader/Python-Kern für reproduzierbare Backtests, Databento-Historie nach Verbrauch, später NinjaTrader 8 als bevorzugter Ausführungsadapter, sofern der konkrete Prop-Vertrag diesen Weg erlaubt. Zunächst MES, danach MNQ. MyFundedFutures Rapid EOD ist der vorläufige erste Anbieter, Tradeify Select Flex die Alternative. Beide bleiben bis zur Klärung ihrer konkreten Betriebsbedingungen bedingte Kandidaten.

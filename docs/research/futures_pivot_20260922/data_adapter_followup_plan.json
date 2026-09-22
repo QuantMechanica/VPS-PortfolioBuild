@@ -1,0 +1,22 @@
+{
+  "campaign_id": "OWNER-DEC-FUTURES-PROP-PREPARATION-20260922",
+  "parent_task_id": "bd61bf70-892d-4ae4-bec4-214da12ed3f6",
+  "source_data_pilot_task_id": "5e8d7aff-54bd-42ca-b28b-6526afbaceb8",
+  "tasks": [
+    {
+      "key": "FUT-DATA-ADAPTER",
+      "title": "Bounded futures replay adapter preserving raw event order and explicit tradability",
+      "task_type": "ops_issue",
+      "state": "TODO",
+      "priority": 94,
+      "action": "Use the delivered MES pilot and hash-bound quality report to implement a bounded offline adapter for future frozen strategy trials. Preserve UTC receive and exchange timestamps separately, original transport order, source sequence and duplicate-time events. Pinned native Nautilus timestamps map to ts_recv; do not relabel them exchange time. Keep source files immutable. Track reasons for excluded execution quotes: nonpositive/missing/zero-size/locked/crossed BBO and non-trading status. In particular the one crossed opening BBO is retained in raw audit counts but must never be offered as an executable fill or signal input. Do not manufacture fills when a quote is absent or carried through a non-trading period. Preserve intraday equity extrema when equal-time events reach the risk evaluator; no silent timestamp deduplication or invented price history. Use bounded chunks rather than materializing ten million native objects. Apply the status UTC-day reconciliation only to its exact evidence-bound files; other discrepancies fail. Add meaningful adversarial and raw/native parity checks and deliver a deterministic technical replay with no strategy profitability claim. Do not add strategy arms, download data, read credentials, contact providers, install paid software, purchase challenges, submit orders or change CFD verdicts. Coordinate interface requirements with FUT-PREREG and provider profiles; a positive technical result alone does not release FUT-OOS-PAYOUT.",
+      "inputs": [
+        "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_pilot_result_20260922.json",
+        "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_pilot_validation_20260922.json",
+        "D:\\QM\\reports\\research\\futures_pivot_20260922\\databento_native_sample_20260922.json"
+      ],
+      "requires_live_or_purchase": false,
+      "output_dir": "D:\\QM\\reports\\research\\futures_pivot_20260922\\factory_outputs\\fut-data-adapter"
+    }
+  ]
+}
