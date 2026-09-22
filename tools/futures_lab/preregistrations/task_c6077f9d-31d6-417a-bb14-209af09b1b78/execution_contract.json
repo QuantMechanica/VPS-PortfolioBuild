@@ -1,0 +1,136 @@
+{
+  "schema": "qm.futures-native-execution-contract/v1",
+  "task_id": "c6077f9d-31d6-417a-bb14-209af09b1b78",
+  "task_key": "FUT-NATIVE-STRATEGY-PARITY",
+  "classification": "FROZEN_OFFLINE_DEVELOPMENT_PARITY_CONTRACT",
+  "implementation_base_commit": "4d84761d35774ff5c6bc1745edf4078091eb5672",
+  "frozen_strategy_config_sha256": "a91938e318e7ce5948a9b87949ae22b27af1ea3491f3d4723880385d123bea02",
+  "source_plan_sha256": "37c72f406ab6f706b992973801acea31a8607083f148388555e31eec452172b7",
+  "source_reference_result_sha256": "f94db22d244facf4638494b1076a383a8e7c35c280c5f258cb941df999448828",
+  "engine": {
+    "name": "NautilusTrader",
+    "version": "1.221.0",
+    "mode": "OFFLINE_BACKTEST_ORDER_FEE_POSITION_LIFECYCLE_ONLY",
+    "native_order_latency_ns": 0,
+    "reason": "Latency and freshness are enforced before submission; native timer latency can fill a stale BBO."
+  },
+  "scope": {
+    "period_id": "development",
+    "dates": [
+      "2019-06-03",
+      "2019-06-04",
+      "2019-06-05",
+      "2019-06-06",
+      "2019-06-07",
+      "2019-06-10",
+      "2019-06-11",
+      "2019-06-12",
+      "2019-06-13",
+      "2019-06-14",
+      "2019-06-17",
+      "2019-06-18",
+      "2019-06-19",
+      "2019-06-20",
+      "2019-06-21",
+      "2019-06-24",
+      "2019-06-25",
+      "2019-06-26",
+      "2019-06-27",
+      "2019-06-28"
+    ],
+    "arms": [
+      "A1_ORB_MES_SIGNAL_MES_FILL",
+      "A2_ORB_ES_SIGNAL_MES_FILL",
+      "A3_QM_FAILED_BREAK_MES_SIGNAL_MES_FILL"
+    ],
+    "scenarios": [
+      {
+        "id": "BASE",
+        "commission_usd_round_turn_per_micro": "1.90",
+        "slippage_ticks_per_side": 1,
+        "latency_ms": 100
+      },
+      {
+        "id": "ADVERSE",
+        "commission_usd_round_turn_per_micro": "2.50",
+        "slippage_ticks_per_side": 2,
+        "latency_ms": 250
+      },
+      {
+        "id": "SEVERE",
+        "commission_usd_round_turn_per_micro": "3.00",
+        "slippage_ticks_per_side": 4,
+        "latency_ms": 750
+      }
+    ],
+    "planned_session_rows": 180,
+    "formal_frozen_trial_cells": 60,
+    "formal_frozen_trial_status": "NOT_RUN",
+    "mnq_nq_arms": "UNCHANGED_AND_OUTSIDE_THE_LICENSED_JUNE2019_MES_ES_SLICE"
+  },
+  "causal_signal": {
+    "bar_clock": "EXCHANGE_MINUTE",
+    "availability_clock": "RECEIVE_NANOSECOND_OF_FIRST_LATER_EXCHANGE_MINUTE_TRADE",
+    "same_finalizing_event_execution": "FORBIDDEN",
+    "late_trade_after_finalization": "DATA_INVALID",
+    "missing_minute": "DATA_INVALID",
+    "price_repair": "FORBIDDEN",
+    "timestamp_jitter": "FORBIDDEN",
+    "source_order": "EXACT_REPLAY_ORDINAL_WITH_EQUAL_RECEIVE_TIMES_RETAINED"
+  },
+  "entry": {
+    "latency": "CLIENT_GATE_FROM_SIGNAL_DECISION",
+    "eligible_quote": "FIRST_LATER_RAW_QUOTE_AT_OR_AFTER_DECISION_PLUS_LATENCY_WITH_CONTINUOUS_TRADING_STATUS_CLEAN_DBN_FLAGS_VALID_BBO_AND_ZERO_AGE",
+    "quantity_policy": "FIRST_ELIGIBLE_SUBMISSION_QUOTE_FIXED_NO_RESIZE",
+    "quantity_rule": "FROZEN_USD100_RISK_USING_SUBMISSION_SIDE_BBO_TO_FROZEN_STOP_PLUS_FULL_ROUND_TURN_FEE_AND_TWO_SIDED_FIXED_SLIPPAGE_CAPPED_AT_TWO_MICROS",
+    "depth_rule": "FREEZE_QUANTITY_ON_FIRST_ELIGIBLE_QUOTE_THEN_WAIT_FOR_A_LATER_OR_SAME_FRESH_QUOTE_WITH_ACTUAL_DISPLAYED_SIDE_SIZE_AT_LEAST_FROZEN_QUANTITY",
+    "quantity_below_one": "RISK_SKIP",
+    "post_freeze_repricing_or_resizing": "FORBIDDEN",
+    "reference_divergence": "THE_REFERENCE_RECOMPUTES_QUANTITY_AT_AN_EXECUTABLE_FILL_QUOTE; THIS_CONTRACT_FREEZES_IT_BEFORE_NATIVE_SUBMIT_ORDER_AND_NEVER_RESIZES"
+  },
+  "exit": {
+    "standing_native_stop": "FORBIDDEN",
+    "stop_trigger": "CLIENT_OBSERVES_SIDE_CORRECT_FRESH_BBO_CROSSING_THE_FROZEN_STOP",
+    "stop_gap": "TRIGGER_PRICE_IS_NOT_A_FILL_PRICE; START_A_NEW_CLIENT_LATENCY_GATE_AND_USE_THE_FIRST_LATER_ELIGIBLE_RAW_QUOTE",
+    "target_trigger": "CLIENT_OBSERVES_SIDE_CORRECT_FRESH_BBO_CROSSING_THE_FROZEN_TARGET_THEN_STARTS_THE_SAME_LATENCY_GATE",
+    "forced_flat_decision": "15:55:00_AMERICA_NEW_YORK",
+    "flat_confirmation_deadline": "15:59:30_AMERICA_NEW_YORK",
+    "deadline_failure": "DATA_INVALID_OPEN_EXPOSURE_AND_POISONED_ACCOUNT_PATH",
+    "exit_quantity": "EXACT_OPEN_POSITION_QUANTITY_NO_RESIZE"
+  },
+  "fill_and_fee": {
+    "fill_source": "CURRENT_ACTUAL_RETAINED_RAW_BBO_ONLY",
+    "fill_price": "CURRENT_SIDE_BBO_PLUS_FIXED_ADVERSE_SCENARIO_TICKS",
+    "actual_visible_depth_required": true,
+    "synthetic_depth": "FORBIDDEN",
+    "partial_fill_model": "OUT_OF_SCOPE_SO_INSUFFICIENT_DISPLAYED_DEPTH_BLOCKS_SUBMISSION",
+    "fee_model": "HALF_FROZEN_ROUND_TURN_FEE_PER_CONTRACT_PER_NATIVE_FILL",
+    "native_default_market_or_stop_price": "FORBIDDEN",
+    "raw_record_binding": "SOURCE_ORDINAL_REPLAY_ORDINAL_BOTH_NANOSECOND_TIMESTAMPS_FIELDS_AND_RAW_RECORD_SHA256"
+  },
+  "marks_and_risk": {
+    "mark_source": "EVERY_ELIGIBLE_SIDE_CORRECT_RAW_BBO_WHILE_OPEN",
+    "liquidation_mark": "SIDE_BBO_PLUS_FIXED_ADVERSE_EXIT_TICKS_LESS_FULL_ROUND_TURN_COST",
+    "same_time_accounting": "SOURCE_REPLAY_ORDINAL_PLUS_ACCOUNTING_PHASE_WITHOUT_TIMESTAMP_JITTER",
+    "daily_loss_threshold_pct": "2",
+    "total_high_watermark_drawdown_threshold_pct": "5",
+    "breach": "STICKY_RESEARCH_HALT_AND_CLIENT_GATED_FLAT_REQUEST",
+    "unknown_path": "NEVER_RESET_OR_AGGREGATE; ALL_LATER_ROWS_FOR_THAT_ARM_SCENARIO_REMAIN_DATA_INVALID"
+  },
+  "evidence_layers": {
+    "reference": "UNCHANGED_DEVELOPMENT_REFERENCE_DIAGNOSTIC",
+    "native_simulation": "OFFLINE_NAUTILUS_ORDER_FEE_POSITION_LIFECYCLE_WITH_CUSTOM_ACTUAL_DEPTH_FIXED_TICK_FILL_MODEL",
+    "provider_platform": "NOT_TESTED",
+    "actual_paid_cash": "ZERO_AND_NOT_A_RESULT_METRIC"
+  },
+  "prohibitions": [
+    "NO_NETWORK_OR_CREDENTIAL_ACCESS",
+    "NO_PROVIDER_API_OR_ORDER",
+    "NO_DATA_PURCHASE_OR_INSTALL",
+    "NO_PARAMETER_SEARCH",
+    "NO_RESULT_DRIVEN_ARM_DATE_THRESHOLD_OR_COST_CHANGE",
+    "NO_ECONOMIC_PASS_FROM_PARITY",
+    "NO_NINJATRADER_OR_PROVIDER_PLATFORM_PARITY_CLAIM",
+    "NO_FUNDED_EVALUATION_OR_LIVE_AUTHORIZATION"
+  ]
+}
