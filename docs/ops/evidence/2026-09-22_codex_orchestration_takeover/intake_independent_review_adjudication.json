@@ -1,0 +1,336 @@
+{
+  "at_utc": "2026-09-22T10:07:17.623514+00:00",
+  "authority": "decisions/2026-09-22_owner_codex_orchestration_takeover.md",
+  "task_id": "c90f7bf8-9f18-4cba-bb4e-68c37cec1460",
+  "independent_critic_receipt": "D:\\QM\\strategy_farm\\state\\agent_chain\\critique_c90f7bf8_20260922T095620Z.json",
+  "critic": "agy",
+  "verified_files": [
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\queue_plan.json",
+      "sha256": "dd222a10eca01eb404f4d61955778ecff33b69ee96b0b57baa6d237aea93f95d"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\task_contract.json",
+      "sha256": "8c72df36efa0d221f631757dc0e03177eaa48d7d728d05bf9c6f6da2ea946127"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\queue_receipt.json",
+      "sha256": "47e37b00c7c0d4bdf67bfacb9e856805ba4f9d7a04c7fe1981d5ce42a9263e6d"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\queue_dry_run.json",
+      "sha256": "91becf36aca63c613714b528644f1bd1c65e4413741207f29b407fcb00972008"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\intake_manifest.json",
+      "sha256": "a3379eb69c186ec4e59b5f3b34cc9c301b1cd68a3677356b4f699ccd0e0d4506"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\README.md",
+      "sha256": "761f606396aa7fb990056844438f6bbb2cb869eab1de04ce840b6b6598099e79"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\enqueue_intake.py",
+      "sha256": "e3ef6ac711a908d1bf32a0d001f4617cc8ef6f7835c5c6082fe383a09e5233b9"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\finalize_intake.py",
+      "sha256": "94a87834e514e78806e1f81ab22f703232c1584a9d3f4c29adcf93037e5f7707"
+    },
+    {
+      "path": "C:\\QM\\repo\\decisions\\2026-09-22_owner_found_sources_factory_intake_variants.md",
+      "sha256": "e3d85c08f5d6b570bbc91f97b8512f58768798505fb2f2781a55bf215180d9f5"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\vault_lint_result.json",
+      "sha256": "c909a2f55fc4efbe8e84cfdc77ae107e34dd20a5e58c2697a5e59dc4f39d656e"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\balke_intake.json",
+      "sha256": "01102f4ac66255eafe31a9a097903b66bb748770141beb1a5c7f65170bd4c784"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\other_channels_intake.json",
+      "sha256": "6c6816cf8a54e73428a4fa7b843d68d450edc07480a201143d5e0061ead69fd8"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\mql_ff_capfree_intake.json",
+      "sha256": "ce608a7edd8b9e8f95576b7b119c273deb9da2676346d5370acb2f61997925e6"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\balke_turnaround_tuesday.json",
+      "sha256": "e113e90809f023dd0434f1279fd9575bcbe824b43e4e59415bc7ee8e3e8e3574"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\balke_go_long.json",
+      "sha256": "c93d3c5ea1a30de4703354c3deb9ca369d15e459dcf90e3da11bfeb3376ffe63"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\balke_range_breakout.json",
+      "sha256": "680b1d2c897927321677f8dab730a9231487692565a709d3476dbab7f21b9919"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\ct_38001.json",
+      "sha256": "c3872d6b6cdc44b42c87d2f3e4bba2b5241c49a1a60300dc207cd61304f42461"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\ct_38002.json",
+      "sha256": "e54fe674b399caf29377191d4e5757680b302e2b876d7be307bc485ebb1bbf77"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\ct_38003.json",
+      "sha256": "41610b4568627db58c9e78136b94620361a7c46caeac510985b7f8308d1678e8"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\ct_38004.json",
+      "sha256": "77009e671b15f1ad63bc1ff96e3729bee77d70431527baa0989cc8b7b7323acf"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\ct_38005.json",
+      "sha256": "0daedf8e1cedda3b97d4b7aaf5f7e0460fb06adb863ba2fe6204dfd1346a9778"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\ct_38006.json",
+      "sha256": "1c31c06d58efa9f6ee8a896dec4a2465499b99002ecf0274cc3690e01c4169d9"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\ct_38007.json",
+      "sha256": "d7440abde9d1c249992a92a658df9ab70641896cdca972f9d87e05f1fce783ed"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\ct_38008.json",
+      "sha256": "b7b76058a629fbddc0516fde75be69ac654a1730120f403a71c762676387303b"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\ct_reconcile.json",
+      "sha256": "c2a31ff73c3c66f42e2ab37628262fd31cbc572051988952cb8589fb1aec6d2e"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\ct_etf_trend.json",
+      "sha256": "cd01476d88bd4ea9b690454e3bdbb20a78ee2f32e5b70c197ab9ca6e3cea2a1b"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\ct_session_2h.json",
+      "sha256": "9b22f34440fa025e8be36fa16e0716a74e3f91c954a117b732b1b0875f6516f5"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\unger_nq_orb.json",
+      "sha256": "d59aa81e1fcc71802fcb8df37c24b452fdec792e16232838fcff4b540333b3aa"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\statoasis_weekly_mr.json",
+      "sha256": "ea2162d9b9f19e9443c54ff66766de6cd1f184ece016398392ec9d806213c643"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\statoasis_daily_breakout.json",
+      "sha256": "17d9a9965c1fcf0a99676574b3509906e56f5b839a15e04de8aad1afd20ba79e"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\statoasis_cum_rsi.json",
+      "sha256": "2cc7f95fdc1dd7dba8f5078a0e568097765b7d2f413aac783fb7835acc6e27fc"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\kevin_davey_source.json",
+      "sha256": "578e3d46392c70404985e80e4bf674ec67dfe2d02029bb203e4cc80a6842aa35"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf01.json",
+      "sha256": "2988f86d531184ed042f339deb717f072b4a0cd6357dc199dd5cac0f222a5d5e"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf02.json",
+      "sha256": "63fc345028a71b5bd3049409ea15f8a9627a80c92f588383e4e3105c757cf33d"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf03.json",
+      "sha256": "bf6789912f5de091f0e1be9fbce8adce1b64012763ce6650db5699abc7f377ad"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf04.json",
+      "sha256": "9545e3362a2b0a75d3f2c6acc5a22fee2a7c6dcbce7dc0fa2d0df1e91d2311aa"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf05.json",
+      "sha256": "af3f7587acd2ebb0244b3cbefd259fa97627c0f610be779d64b080c175e3a590"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf06.json",
+      "sha256": "e1a6caa4237f52200374ee5eb2015312fef393c678a7542685a027b57345e810"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf07.json",
+      "sha256": "c051e3fbb9818046116d252581986d2500067c722bf8a0f3ab0527f03cbab97a"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf08.json",
+      "sha256": "b611e8feebd3c38ef19aca49c133c8fad3bf45edef645cf46424e9ebf85e8b27"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf09.json",
+      "sha256": "55b11953191e98a7eef7d709de50e61e1de9c190040c4d8e90282efa50b28e71"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf10.json",
+      "sha256": "5f8fa467f7b49e72c2c5c0eeb44a7241d2113038bfb422f4361cca01b0e63cc7"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf11.json",
+      "sha256": "090c29351c968692533e48fda62e14e8ed974e62f8cd774d5adddfec2c478f13"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf12.json",
+      "sha256": "02e39c5adec6858e8379f49835be6fccb043716d60bea4497100d27477185912"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf13.json",
+      "sha256": "4cb76840c7ea88ac2bef2a3f10bfb6b8b07a58be2d6c5e02be7b7175826f8833"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf14.json",
+      "sha256": "a96d2e72b48f68445e64dd35135ceb37e0196a1a6dd06d5cd99503025da46831"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf15.json",
+      "sha256": "52d530573a80c8ad3b58b0236e7a913236247b83d78a6c61cb7f47c56f51eb73"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf16.json",
+      "sha256": "1e3ff5e52d797759b6316856a94c9e348dcf12ca13048e9b4522d51762556db9"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf17.json",
+      "sha256": "883a11973cfc2be2a2bca9c8ee17868c72b6b3e2fbed255ef64207c00ccf16d6"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf18.json",
+      "sha256": "490da28c9f8c24d4f895a5cf87ede66778b56756843b0d65dd8b6b0b5a932ac3"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf19.json",
+      "sha256": "7a2a5a091675c22d28845b7566f2e72aa22962c667c319c47322c24a4e433f88"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\packets\\mf20.json",
+      "sha256": "f24de5b9835d417f5636925e644d72e6360c2020b79a252ba3dd678db7240cfe"
+    }
+  ],
+  "verified_children": [
+    {
+      "id": "eb40fc2e-e4c4-428c-a7af-921f37737800",
+      "state": "IN_PROGRESS"
+    },
+    {
+      "id": "7a41e536-92ea-4ade-abf3-46acdb6f4db7",
+      "state": "IN_PROGRESS"
+    },
+    {
+      "id": "9505edc3-5855-4534-8d47-1cdd9a7bdee1",
+      "state": "TODO"
+    },
+    {
+      "id": "cf6b91f4-8db1-49fe-92ce-25d0b79b3760",
+      "state": "TODO"
+    },
+    {
+      "id": "c0cfbb9a-7955-4451-8785-b6f0b4b36cd0",
+      "state": "TODO"
+    },
+    {
+      "id": "087ee881-26e4-419f-b0a6-309001b36f56",
+      "state": "TODO"
+    },
+    {
+      "id": "d37197fc-d075-406b-bc45-cc48b45fdce7",
+      "state": "TODO"
+    },
+    {
+      "id": "6fccd71c-ac27-4ae2-891d-285372d2d320",
+      "state": "TODO"
+    },
+    {
+      "id": "1339d94d-0d7f-43b8-9b14-52ecb9472a54",
+      "state": "TODO"
+    },
+    {
+      "id": "59e89872-8dc5-4f40-892a-360ac3a71809",
+      "state": "TODO"
+    },
+    {
+      "id": "002c4ec3-9081-4cb8-a3a5-c966398a977d",
+      "state": "IN_PROGRESS"
+    },
+    {
+      "id": "1bc0e86c-3f96-4a63-a0df-69b60c455a54",
+      "state": "TODO"
+    },
+    {
+      "id": "2aab1147-6545-4096-b549-11fd80e25c3c",
+      "state": "TODO"
+    },
+    {
+      "id": "d9eeaeb2-8052-4a77-ad3b-74be66b5523e",
+      "state": "IN_PROGRESS"
+    },
+    {
+      "id": "b20139cd-04c7-48eb-8991-7d3f91ca8a05",
+      "state": "TODO"
+    },
+    {
+      "id": "0331d6ec-0ee5-42d2-b660-be0819183683",
+      "state": "TODO"
+    },
+    {
+      "id": "8373868f-b2dd-4d2a-8f92-20079ff58297",
+      "state": "TODO"
+    },
+    {
+      "id": "36bce230-9064-43f2-af15-06793228d88f",
+      "state": "TODO"
+    },
+    {
+      "id": "65d07967-0bea-42eb-a39a-aac5862f01d0",
+      "state": "TODO"
+    },
+    {
+      "id": "34d8567d-71c5-46f0-9db4-7d2d54250fb7",
+      "state": "TODO"
+    },
+    {
+      "id": "95447a48-3b0b-4cf2-9b8c-d3d2cb9991a2",
+      "state": "TODO"
+    },
+    {
+      "id": "768e9537-00bb-4344-8c68-f8123f7bac60",
+      "state": "TODO"
+    },
+    {
+      "id": "96140d50-089d-422d-80c2-207dbe923f96",
+      "state": "TODO"
+    },
+    {
+      "id": "c1827852-75e0-4d5d-a3b8-d57502a3adb4",
+      "state": "TODO"
+    },
+    {
+      "id": "08420de7-484e-455c-9e3a-7b274f13c7fa",
+      "state": "TODO"
+    },
+    {
+      "id": "3293f652-f04e-40b2-919f-25a3ad48ecf5",
+      "state": "TODO"
+    }
+  ],
+  "readme_identity": {
+    "current_raw_sha256": "761f606396aa7fb990056844438f6bbb2cb869eab1de04ce840b6b6598099e79",
+    "reviewed_raw_sha256": "79f106a8425ae86bf7a9f8afecda4b7cb0b74cf4843b0507ac764301196b5b44",
+    "text_equal_after_standard_CRLF_normalization": true
+  },
+  "scope": "Source intake/queue coverage only. No G0, build, gate or financial success approval.",
+  "close_result": {
+    "closed": true,
+    "task_id": "c90f7bf8-9f18-4cba-bb4e-68c37cec1460",
+    "state": "APPROVED",
+    "verdict": "APPROVED intake only: independent Antigravity cross-vendor critic PASS; orchestrator verified unchanged reviewed README text, all published file hashes and all 26 child IDs/types/parent links. 39 source families covered; downstream source/card/build/tests remain open. No strategy or economic approval.",
+    "artifact_path": "D:\\QM\\reports\\research\\factory_source_intake_20260922\\README.md"
+  }
+}

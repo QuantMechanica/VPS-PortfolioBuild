@@ -1,0 +1,44 @@
+[
+  {
+    "ProcessId": 1364,
+    "ParentProcessId": 11272,
+    "CreationDate": "2026-09-22T07:49:20.414382+02:00",
+    "Name": "codex.exe",
+    "CommandLine": "C:\\Users\\Administrator\\AppData\\Roaming\\npm\\node_modules\\@openai\\codex\\node_modules\\@openai\\codex-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe resume --last \"Die lokale Codex-CLI wurde nach einem unerwarteten Prozessabbruch automatisch mit demselben Thread fortgesetzt. Setze den zuletzt laufenden Arbeitsauftrag selbstständig fort. Prüfe zuerst den aktuellen Workspace-Zustand, übernimm bereits erledigte Arbeit und wiederhole keine abgeschlossenen Schritte.\""
+  },
+  {
+    "ProcessId": 17640,
+    "ParentProcessId": 18816,
+    "CreationDate": "2026-09-22T08:09:07.939036+02:00",
+    "Name": "codex.exe",
+    "CommandLine": "C:\\Users\\Administrator\\AppData\\Roaming\\npm\\node_modules\\@openai\\codex\\node_modules\\@openai\\codex-win32-x64\\vendor\\x86_64-pc-windows-msvc\\bin\\codex.exe"
+  },
+  {
+    "ProcessId": 20212,
+    "ParentProcessId": 2256,
+    "CreationDate": "2026-09-22T11:45:01.313528+02:00",
+    "Name": "pythonw.exe",
+    "CommandLine": "\"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" \"C:\\QM\\repo\\tools\\strategy_farm\\run_agent_orchestration_task.py\" --agent codex --max-sessions 3"
+  },
+  {
+    "ProcessId": 19776,
+    "ParentProcessId": 20212,
+    "CreationDate": "2026-09-22T11:48:44.909349+02:00",
+    "Name": "git.exe",
+    "CommandLine": "git worktree add -b agents/codex-orchestration-17 C:\\QM\\worktrees\\codex-orchestration-17 c9a147a71eeefc51e760107951cc5ba7604821a2"
+  },
+  {
+    "ProcessId": 4184,
+    "ParentProcessId": 19776,
+    "CreationDate": "2026-09-22T11:48:44.942008+02:00",
+    "Name": "git.exe",
+    "CommandLine": "git.exe worktree add -b agents/codex-orchestration-17 C:\\QM\\worktrees\\codex-orchestration-17 c9a147a71eeefc51e760107951cc5ba7604821a2"
+  },
+  {
+    "ProcessId": 18408,
+    "ParentProcessId": 1364,
+    "CreationDate": "2026-09-22T11:48:50.7589+02:00",
+    "Name": "pwsh.exe",
+    "CommandLine": "\"C:\\Program Files\\PowerShell\\7\\pwsh.exe\" -Command \"try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}\n$takeoverEvidence = 'C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-22_codex_orchestration_takeover'; Get-CimInstance Win32_Process | Where-Object { ($_.Name -eq 'codex.exe') -or ($_.CommandLine -match 'git.*worktree add.*codex-orchestration') -or ($_.CommandLine -match 'run_agent_orchestration_task.py.*--agent codex') } | Select-Object ProcessId,ParentProcessId,CreationDate,Name,CommandLine | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath (Join-Path $takeoverEvidence 'codex_spawn_loop_before_stop.json') -Encoding UTF8; Stop-ScheduledTask -TaskName QM_StrategyFarm_CodexOrchestration_15min; Disable-ScheduledTask -TaskName QM_StrategyFarm_CodexOrchestration_15min | Select-Object TaskName,State; rg -n 'WORKTREE_ROOT|worktree.*root|QM_.*WORKTREE' tools/strategy_farm/run_agent_orchestration_task.py; Get-ChildItem C:/QM/worktrees -Directory | Sort-Object LastWriteTime -Descending | Select-Object -First 18 Name,LastWriteTime | ConvertTo-Json; Get-CimInstance Win32_Process -Filter \\\"Name='git.exe'\\\" | Select-Object ProcessId,ParentProcessId,CommandLine | ConvertTo-Json\""
+  }
+]

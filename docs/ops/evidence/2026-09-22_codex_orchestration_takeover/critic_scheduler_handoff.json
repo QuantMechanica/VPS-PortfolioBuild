@@ -1,0 +1,5 @@
+{
+  "before": "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\run_in_console_session.ps1\" -Exe \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" -Arguments \"\"C:\\QM\\repo\\tools\\strategy_farm\\agent_chain.py\" critique-pending --apply --max 2\" -WorkDir \"C:\\QM\\repo\" -TargetUser \"qm-admin\" -WaitSeconds 3300",
+  "after": "-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File \"C:\\QM\\repo\\tools\\strategy_farm\\run_in_console_session.ps1\" -Exe \"C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python311\\pythonw.exe\" -Arguments \"\"C:\\QM\\repo\\tools\\strategy_farm\\agent_chain.py\" --config \"C:\\QM\\repo\\tools\\strategy_farm\\config\\agent_chain.codex_handoff_20260922.v1.json\" critique-pending --apply --max 2\" -WorkDir \"C:\\QM\\repo\" -TargetUser \"qm-admin\" -WaitSeconds 3300",
+  "authority": "decisions/2026-09-22_owner_codex_orchestration_takeover.md"
+}

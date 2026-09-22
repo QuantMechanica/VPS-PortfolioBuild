@@ -1,0 +1,5 @@
+AUTHORIZED_BY=OWNER
+authorized_at=2026-08-22T09:05:00+00:00
+expires_at=2026-08-25T00:00:00+00:00
+reason=OWNER 2026-08-22 (Chat): "fuer Codex haben wir 1 Usage Reset ueber, das heisst Du kannst Codex verbrennen und dann setzen wir es zurueck." Weekly pacing suspendiert bis Reset; Governor-Drossel fuer codex ausgesetzt.
+set_by=claude-orchestrator session_01MoktReGyqjZZAwjBDpV6aY

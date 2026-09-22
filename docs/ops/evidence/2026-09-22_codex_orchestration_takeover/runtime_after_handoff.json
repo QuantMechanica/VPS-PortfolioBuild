@@ -1,0 +1,164 @@
+{
+  "at_utc": "2026-09-22T09:59:59.545235+00:00",
+  "tasks_by_state": [
+    {
+      "state": "APPROVED",
+      "n": 72
+    },
+    {
+      "state": "BLOCKED",
+      "n": 338
+    },
+    {
+      "state": "FAILED",
+      "n": 261
+    },
+    {
+      "state": "IN_PROGRESS",
+      "n": 7
+    },
+    {
+      "state": "OPS_FIX_REQUIRED",
+      "n": 6
+    },
+    {
+      "state": "PASSED",
+      "n": 1468
+    },
+    {
+      "state": "PIPELINE",
+      "n": 210
+    },
+    {
+      "state": "RECYCLE",
+      "n": 2
+    },
+    {
+      "state": "REVIEW",
+      "n": 22
+    },
+    {
+      "state": "TODO",
+      "n": 68
+    }
+  ],
+  "work_items_by_state": [
+    {
+      "status": "active",
+      "n": 1
+    },
+    {
+      "status": "done",
+      "n": 99922
+    },
+    {
+      "status": "failed",
+      "n": 49462
+    },
+    {
+      "status": "pending",
+      "n": 3834
+    }
+  ],
+  "active_agents": [
+    {
+      "id": "4d655789-27a0-4491-a823-4b9fac9f82c8",
+      "state": "IN_PROGRESS",
+      "priority": 60,
+      "assigned_agent": "codex",
+      "title": "Cheap one-time taxonomy of the historical compile-fail pool: classify every COMPILE_FAIL / COMPILE_GATE_BROKEN_SOURCE row as REAL_EA_DEFECT / SHARED_FRAMEWORK_DEFECT / SETFILE_DEFECT / BUILD_BINDING_DEFECT / STALE_HISTORICAL / SUPERSEDED / INFRA / OTHER and flag trapped high-EV FTMO candidates (OWNER 2026-09-21 FINAL MEGA PROMPT section X)"
+    },
+    {
+      "id": "002c4ec3-9081-4cb8-a3a5-c966398a977d",
+      "state": "IN_PROGRESS",
+      "priority": 74,
+      "assigned_agent": "gemini",
+      "title": "OWNER intake: Kevin Davey: complete one missing primary index-rule contract"
+    },
+    {
+      "id": "d9eeaeb2-8052-4a77-ad3b-74be66b5523e",
+      "state": "IN_PROGRESS",
+      "priority": 74,
+      "assigned_agent": "gemini",
+      "title": "OWNER intake: Economically linked stock baskets and supply-chain lead/lag"
+    },
+    {
+      "id": "32d39ccd-7c78-4845-951c-5ac6678be580",
+      "state": "IN_PROGRESS",
+      "priority": 81,
+      "assigned_agent": "codex",
+      "title": "Unblock six real Q01 dispatches: pre-stamp setfile hash mismatch and authenticated admission handoff"
+    },
+    {
+      "id": "fa75b45e-01e2-4228-a186-15b3f979b84c",
+      "state": "IN_PROGRESS",
+      "priority": 85,
+      "assigned_agent": "codex",
+      "title": "KS re-entry, step 4: QM5_10706 fresh D2g6 ablation-02 preset Q02 seed under the integrated preset-identity dedupe fix (b32ea0b33d), then its own append-only Q03..Q10 chain (factory idle); BE-stop timing mechanism page; refresh the review-only deploy package - the sixth sleeve for the KS rehearsal deploy"
+    },
+    {
+      "id": "7a41e536-92ea-4ade-abf3-46acdb6f4db7",
+      "state": "IN_PROGRESS",
+      "priority": 93,
+      "assigned_agent": "codex",
+      "title": "OWNER intake: Balke Go Long \u2014 source clock control, hard-stop ablation and existing 13036 scheduler audit"
+    },
+    {
+      "id": "eb40fc2e-e4c4-428c-a7af-921f37737800",
+      "state": "IN_PROGRESS",
+      "priority": 94,
+      "assigned_agent": "codex",
+      "title": "OWNER intake: Prioritaet 1: Balke Monday-to-Tuesday reversal \u2014 original short-SMA rules and bounded QM controls"
+    }
+  ],
+  "exec_leases": [
+    {
+      "task_key": "agent_task_exec:fa75b45e-01e2-4228-a186-15b3f979b84c",
+      "agent_id": "codex",
+      "acquired_at": "2026-09-22T09:57:55+00:00",
+      "expires_at": "2026-09-22T10:27:55+00:00",
+      "owner_token": "251932ba92854b40af4850d2641b4b97",
+      "owner_pid": 17412,
+      "owner_host": "WIN-B95G5LPSJ1O",
+      "renewed_at": "2026-09-22T09:57:55+00:00"
+    },
+    {
+      "task_key": "agent_task_exec:32d39ccd-7c78-4845-951c-5ac6678be580",
+      "agent_id": "codex",
+      "acquired_at": "2026-09-22T09:57:55+00:00",
+      "expires_at": "2026-09-22T10:27:55+00:00",
+      "owner_token": "90997bf6c0f8467b9dc50acaa3df1a75",
+      "owner_pid": 17412,
+      "owner_host": "WIN-B95G5LPSJ1O",
+      "renewed_at": "2026-09-22T09:57:55+00:00"
+    },
+    {
+      "task_key": "agent_task_exec:6c1064c4-fa73-49d5-b89b-af69ee0ccc78",
+      "agent_id": "codex",
+      "acquired_at": "2026-09-22T09:57:55+00:00",
+      "expires_at": "2026-09-22T10:27:55+00:00",
+      "owner_token": "38b28bfbf3704418bdbb7efe6555155e",
+      "owner_pid": 17412,
+      "owner_host": "WIN-B95G5LPSJ1O",
+      "renewed_at": "2026-09-22T09:57:55+00:00"
+    }
+  ],
+  "flags": {
+    "CLAUDE_DISABLED.flag": {
+      "exists": true,
+      "text": "MANAGED_BY=owner_codex_takeover\nset_at=2026-09-22T09:38:24.402747+00:00\nreason=OWNER transferred orchestration to Codex; preserve Claude/Fable reported 90% weekly until Friday reset review\nreview_after=2026-09-25T00:00:00+02:00\nauthority=decisions/2026-09-22_owner_codex_orchestration_takeover.md\n"
+    },
+    "CODEX_LOW_TOKENS.flag": {
+      "exists": false,
+      "text": null
+    },
+    "CODEX_BURN_AUTHORIZED.flag": {
+      "exists": true,
+      "text": "AUTHORIZED_BY=OWNER\nauthorized_at=2026-09-22T09:38:24.402747+00:00\nexpires_at=2026-09-22T23:59:59+02:00\nreason=Same-session OWNER instruction to use useful Codex capacity before today reset; orchestration handover\nauthority=decisions/2026-09-22_owner_codex_orchestration_takeover.md\nscope=quota pacing only; provider hard exhaustion and all factory/risk gates unchanged\n"
+    },
+    "KIMI_LOW_QUOTA.flag": {
+      "exists": true,
+      "text": "{\n  \"schema\": \"qm.kimi-low-quota-flag/v1\",\n  \"state\": \"EXHAUSTED\",\n  \"managed_by\": \"kimi_governor\",\n  \"reason\": \"real quota fetch auth_error -> local ledger fallback; last status quota_exhausted (CLI reported a hard weekly/monthly usage-limit 403; independent of the quota-fetcher telemetry)\",\n  \"set_at_utc\": \"2026-09-18T00:45:16Z\",\n  \"counts\": {\n    \"day\": 96,\n    \"week\": 218\n  },\n  \"caps\": {\n    \"day\": 120,\n    \"week\": 600\n  }\n}"
+    }
+  }
+}

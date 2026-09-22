@@ -1,0 +1,10 @@
+{
+  "task_key": "headless_orchestration:codex",
+  "agent_id": "codex",
+  "acquired_at": "2026-09-22T09:45:01+00:00",
+  "expires_at": "2026-09-22T10:15:01+00:00",
+  "owner_token": "f594d613f8ba495296ee67fc4b59c191",
+  "owner_pid": 20212,
+  "owner_host": "WIN-B95G5LPSJ1O",
+  "renewed_at": "2026-09-22T09:45:01+00:00"
+}

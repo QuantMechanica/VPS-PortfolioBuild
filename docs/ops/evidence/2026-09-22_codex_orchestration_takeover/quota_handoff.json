@@ -1,0 +1,15 @@
+{
+  "at_utc": "2026-09-22T09:38:24.402747+00:00",
+  "actions": [
+    {
+      "path": "D:\\QM\\strategy_farm\\CLAUDE_DISABLED.flag",
+      "existed_before": false,
+      "after": "MANAGED_BY=owner_codex_takeover\nset_at=2026-09-22T09:38:24.402747+00:00\nreason=OWNER transferred orchestration to Codex; preserve Claude/Fable reported 90% weekly until Friday reset review\nreview_after=2026-09-25T00:00:00+02:00\nauthority=decisions/2026-09-22_owner_codex_orchestration_takeover.md\n"
+    },
+    {
+      "path": "D:\\QM\\strategy_farm\\CODEX_BURN_AUTHORIZED.flag",
+      "existed_before": true,
+      "after": "AUTHORIZED_BY=OWNER\nauthorized_at=2026-09-22T09:38:24.402747+00:00\nexpires_at=2026-09-22T23:59:59+02:00\nreason=Same-session OWNER instruction to use useful Codex capacity before today reset; orchestration handover\nauthority=decisions/2026-09-22_owner_codex_orchestration_takeover.md\nscope=quota pacing only; provider hard exhaustion and all factory/risk gates unchanged\n"
+    }
+  ]
+}

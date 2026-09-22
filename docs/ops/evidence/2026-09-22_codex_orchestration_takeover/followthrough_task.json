@@ -1,0 +1,40 @@
+{
+  "payload": {
+    "title": "Codex orchestration handover follow-through: actual executor health, independent reviews and six-candidate Q01 admission",
+    "handoff_key": "CODEX_ORCHESTRATION_HANDOFF_FOLLOWTHROUGH_20260922",
+    "decision_bound_agent": "codex",
+    "owner_decision": "decisions/2026-09-22_owner_codex_orchestration_takeover.md",
+    "context": [
+      "docs/ops/evidence/2026-09-22_codex_orchestration_takeover/README.md",
+      "docs/ops/evidence/2026-09-22_ftmo_recovery/LIVE_FACTORY_DISPATCH_STATUS.md"
+    ],
+    "instructions": [
+      "One bounded operational follow-through, not a new strategy programme. Inspect current canonical DB, process identities and fresh logs first; retain all completed work. Codex is acting orchestrator under the explicit OWNER transfer; Claude autonomous work stays paused until its Friday reset review.",
+      "Read current task 32d39ccd-7c78-4845-951c-5ac6678be580 and fa75b45e-01e2-4228-a186-15b3f979b84c. Do not duplicate an active creator. When a deliverable is REVIEW, use the governed agent_chain.py --config tools/strategy_farm/config/agent_chain.codex_handoff_20260922.v1.json critique path for independent cross-vendor findings, verify actual diff/tests/artifact identity, then integrate only independently accepted work. Never self-approve code authored in this session.",
+      "Critical completion is six existing recovered build tasks reaching actual worker-bound Q01, then the existing approved admission route if real smoke passes. No fabricated PASS, no historical hash rewrite, no redundant compile when identity already valid, preserve 36008 Q02 18865d7c. If creator still active, leave that dependency active and report exact next trigger instead of creating a duplicate.",
+      "Follow existing transferred builds 67c45a2f and 6ae8518a; preserve the exact card-loss-limit defect and original task IDs. Respect current priority and exec leases.",
+      "Verify Codex scheduled lane uses supported QM_AGENT_WORKTREE_ROOT=D:/QM/agent_worktrees and the three actual child processes, not merely IN_PROGRESS rows. C: low-disk recovery and owner-dead lease release evidence are in the handover directory. Keep canonical source access and all residual work intact.",
+      "Reconcile reviewer backlog with available existing independent receipts; rejection/dependency is not approval. FTMO trial pulse ALARM is real KS telemetry contract drift with the replacement build/re-entry work already active; do not hide it or change the live terminal.",
+      "Write a compact exact-state follow-through artifact and return REVIEW. Do not loop over already completed EDGE-2/4/5: their superseding duplicate rows were administratively closed against original PASSED Gemini deliveries."
+    ],
+    "constraints": [
+      "No T_Live, FTMO terminal, AutoTrading, trading orders or paid purchases.",
+      "Do not weaken RAM, history, source, review, quota hard-exhaustion or financial gates.",
+      "Use canonical governed CLI/API for runtime writes. Code in isolated worktree with exact pathspec commits.",
+      "No ad-hoc codex/agy CLI spawning. Use established scheduled lanes/agent_chain.",
+      "A blocked or failed older strategy is not automatically eligible for a rerun."
+    ],
+    "acceptance": [
+      "Fresh executor and queue evidence; counterpart quota conserved.",
+      "Exact disposition and next trigger for Q01 repair and original six build tasks.",
+      "Independent critic receipts for any integrated code; no self approval.",
+      "Canonical plus Vault handover status refreshed with concrete remaining blockers."
+    ]
+  },
+  "result": {
+    "enqueued": true,
+    "task_id": "4878dbfd-dc46-44f5-a6a3-6dd3c38557a5",
+    "task_type": "ops_issue",
+    "state": "TODO"
+  }
+}

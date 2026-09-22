@@ -1,0 +1,8 @@
+{
+  "source": "C:\\QM\\worktrees\\codex-orchestration-7",
+  "destination": "D:\\QM\\archived_worktrees\\codex-orchestration-7-20260922",
+  "source_is_junction": "Junction",
+  "residual_preserved": "C:\\QM\\worktrees\\codex-orchestration-7-move-residual-20260922",
+  "note": "Cross-volume move stopped on directory links; remaining files copied with links preserved; no files deleted; canonical old path restored by junction.",
+  "at": "2026-09-22T11:58:48.4743505+02:00"
+}
