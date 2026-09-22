@@ -163,6 +163,15 @@ development diagnostics: native full-strategy parity, complete historical holida
 proof, point-in-time news and independent micro trade-schema equivalence are not
 certified. None of the 60 formal trial cells is promoted by this reference run.
 
+The first run exposed premature bar finalization from receive time: two correctly
+ordered trades belonging to the same exchange minute could arrive after its wall
+clock boundary. The original run, source bytes and invalid account paths remain
+retained. The dated v2 amendment in `strategy_run_plan.md` closes a minute only
+when a later exchange-minute trade arrives; genuine minute reversals still fail.
+The rerun preserves every date, arm, risk threshold and cost scenario. Exact
+plan-bound source ZIPs accompany both versions so Git line-ending conversion
+cannot prevent byte-for-byte reproduction of their original implementations.
+
 The OWNER-saved Forex Factory HTML is parsed offline. The original HTML can
 contain browser/account context and stays outside Git. Store only sanitized
 calendar fields and source path/hash in research evidence. Historical retrieval

@@ -1,0 +1,43 @@
+{
+  "schema": "qm.independent-bar-watermark-review.v2",
+  "reviewer": "/root/revenue_options",
+  "verified_at_utc": "2026-09-22T14:33:25Z",
+  "status": "PASS_BOUNDED_CORRECTNESS_AMENDMENT",
+  "v1_preservation": {
+    "commit": "d3459e47eaf2ba61827d7c705bef29943e73c467",
+    "initial_review_path": "D:/QM/reports/research/futures_pivot_20260922/progress_20260922/independent_watermark_v1_review.json",
+    "initial_review_sha256": "409ac8182c3f5a5a9eaf77a1d40cc5340026a0ec7e48268fa7b032c52a329ac1",
+    "v1_plan_sha256": "57d1c3eb69d3ceea8d4d30e0bf58866bee8de7ee44a219030f8f4006d768f771",
+    "v1_results_not_relabelled": true
+  },
+  "source_hashes": {
+    "strategy_runner.py": "fbb7b8a0e1ac6a2fbe0caf6597eb122aa6ff40f9aa52d749ff8d3c2c25d7bd18",
+    "test_strategy_runner.py": "372c37cede2c546b9c76bbe41decb8b4aa5dd411f3b5bc9aa5e4d896a501329e",
+    "strategy_run_plan.md": "e9dc3edcb44e75c919e590ae492e0c8e8e245cca84618993758d6cbb4702edf4"
+  },
+  "diff_review": {
+    "result": "PASS",
+    "code_change": "Remove the five-line receive-clock bucket finalizer. Keep existing later-exchange-minute finalizer, actual receive availability, sequence validation, true late-minute rejection and explicit source-end handling.",
+    "other_changes": "Matching docstring, dated correctness amendment and targeted synthetic regressions only.",
+    "strategy_or_cost_parameters_changed": false,
+    "event_reordering_or_lateness_tolerance_added": false,
+    "tool_output_chunk": "34e5cc"
+  },
+  "focused_tests": {
+    "command": "D:/QM/venvs/futures_lab/Scripts/python.exe -B -m unittest -v test_strategy_runner.BarTests.test_delayed_monotonic_trades_finalize_only_on_later_exchange_minute test_strategy_runner.BarTests.test_quote_receive_boundary_cannot_finalize_exchange_trade_bar test_strategy_runner.BarTests.test_late_trade_is_not_repaired_using_future_knowledge",
+    "working_directory": "D:/QM/worktrees/codex-futures-pivot-20260922/tools/futures_lab",
+    "tests_run": 3,
+    "result": "PASS",
+    "exit_code": 0,
+    "elapsed_seconds": 0.007,
+    "tool_output_chunk": "6ade45"
+  },
+  "verified_semantics": [
+    "Two exchange-ordered trades received just after the minute boundary both contribute to the same prior-minute OHLC.",
+    "First-bar availability is the actual receive timestamp of the first trade in the later exchange minute.",
+    "An intervening nontrade quote crossing the receive boundary does not finalize that bar.",
+    "A subsequent trade whose exchange minute returns to the already finalized bucket still raises LATE_TRADE_AFTER_BAR_FINALIZATION."
+  ],
+  "next_step": "Bind corrected code in a new immutable v2 input plan before replaying the same180 rows; independent result accounting audit follows completion.",
+  "limits": "Software-mechanics peer review only. Reviewer changed no bound source and ran no market replay. No economic PASS, provider eligibility or live approval is conferred."
+}

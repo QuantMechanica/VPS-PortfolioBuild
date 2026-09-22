@@ -1,0 +1,43 @@
+{
+  "status": "EXACT_V2_PLAN_BOUND_BYTES_RETAINED",
+  "plan_sha256": "37c72f406ab6f706b992973801acea31a8607083f148388555e31eec452172b7",
+  "archive_path": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\june2019_bound_sources_v2.zip",
+  "archive_sha256": "6c8a9af14277a5b852c3585bd7ad677717412ce8d33fb119db9d98413d08b77f",
+  "members": [
+    {
+      "archive_member": "tools/futures_lab/strategy_runner.py",
+      "source_path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\strategy_runner.py",
+      "sha256": "fbb7b8a0e1ac6a2fbe0caf6597eb122aa6ff40f9aa52d749ff8d3c2c25d7bd18"
+    },
+    {
+      "archive_member": "tools/futures_lab/run_june2019_reference.py",
+      "source_path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\run_june2019_reference.py",
+      "sha256": "401fb5b5639160dd2e9f71e5d97a15887562c179421afd3a5f114dd7c561309e"
+    },
+    {
+      "archive_member": "tools/futures_lab/replay_adapter.py",
+      "source_path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\replay_adapter.py",
+      "sha256": "5e407684ccaaf3546ea3d4ea95b9c3e7e4a64a08209504eabc0b6f114824f2c6"
+    },
+    {
+      "archive_member": "tools/futures_lab/preregister.py",
+      "source_path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\preregister.py",
+      "sha256": "4f1e8d1050930df736a82ca8ba55f2c3defa4423008fab177baa1b445a8c97ce"
+    },
+    {
+      "archive_member": "tools/futures_lab/validate_databento_pilot.py",
+      "source_path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\validate_databento_pilot.py",
+      "sha256": "7d5b2d76db1e351d059fcd792a5f509b3f45b424757aa97011328aa2bd1fe435"
+    },
+    {
+      "archive_member": "tools/futures_lab/strategy_run_plan.md",
+      "source_path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\strategy_run_plan.md",
+      "sha256": "e9dc3edcb44e75c919e590ae492e0c8e8e245cca84618993758d6cbb4702edf4"
+    },
+    {
+      "archive_member": "tools/futures_lab/preregistrations/task_b86d2fbd-574d-4024-af9a-2e48ff84beb9/preregistration.json",
+      "source_path": "D:\\QM\\worktrees\\codex-futures-pivot-20260922\\tools\\futures_lab\\preregistrations\\task_b86d2fbd-574d-4024-af9a-2e48ff84beb9\\preregistration.json",
+      "sha256": "a91938e318e7ce5948a9b87949ae22b27af1ea3491f3d4723880385d123bea02"
+    }
+  ]
+}

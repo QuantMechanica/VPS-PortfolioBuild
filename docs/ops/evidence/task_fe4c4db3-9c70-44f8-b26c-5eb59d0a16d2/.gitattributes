@@ -1,2 +1,2 @@
 # Delivered provider profiles and source receipts are byte-hash contracts.
-** -text
+** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

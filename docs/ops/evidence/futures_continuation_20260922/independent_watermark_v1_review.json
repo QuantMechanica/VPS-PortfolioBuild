@@ -1,0 +1,34 @@
+{
+  "schema": "qm.independent-bar-watermark-review.v1",
+  "reviewer": "/root/revenue_options",
+  "observed_at_utc": "2026-09-22T14:30:17Z",
+  "status": "V1_SOFTWARE_DEFECT_REPRODUCED_V2_REVIEW_PENDING",
+  "source_file": "D:/QM/worktrees/codex-futures-pivot-20260922/tools/futures_lab/strategy_runner.py",
+  "source_sha256": "2e15c5f01464c661f80da130a69fb0ea16ce95add927e16b43ff591b7c86d6cd",
+  "matches_v1_frozen_plan_source": true,
+  "v1_plan_sha256": "57d1c3eb69d3ceea8d4d30e0bf58866bee8de7ee44a219030f8f4006d768f771",
+  "finding": {
+    "severity": "P1_RESEARCH_DATA_INVALIDATION",
+    "line": 202,
+    "condition": "bucket is not None and event.ts_recv_ns >= bucket + MINUTE",
+    "defect": "Receive-clock crossing is not proof that the prior exchange-minute trade bucket is complete. This emits an incomplete bar and wrongly rejects subsequent strictly ordered exchange trades from the same old minute as LATE.",
+    "synthetic_inputs": [
+      {"ordinal": 1, "source_sequence": 1, "ts_exchange_ns": 1559827859999998000, "ts_recv_ns": 1559827860000001000, "price_raw": 100000000000},
+      {"ordinal": 2, "source_sequence": 2, "ts_exchange_ns": 1559827859999999000, "ts_recv_ns": 1559827860000002000, "price_raw": 101000000000},
+      {"ordinal": 3, "source_sequence": 3, "ts_exchange_ns": 1559827860000001000, "ts_recv_ns": 1559827860000003000, "price_raw": 102000000000}
+    ],
+    "both_exchange_and_receive_clocks_strictly_increasing": true,
+    "actual_v1_first_bar": {"start_ns": 1559827800000000000, "available_ns": 1559827860000001000, "open_raw": 100000000000, "high_raw": 100000000000, "low_raw": 100000000000, "close_raw": 100000000000},
+    "actual_v1_error_at_second_trade": "LATE_TRADE_AFTER_BAR_FINALIZATION",
+    "expected_first_bar": {"start_ns": 1559827800000000000, "available_ns": 1559827860000003000, "open_raw": 100000000000, "high_raw": 101000000000, "low_raw": 100000000000, "close_raw": 101000000000},
+    "tool_output_chunk": "35bc53"
+  },
+  "bounded_v2_acceptance": [
+    "Finalize a live bucket only when a received trade has a strictly later exchange-minute bucket; preserve actual receive time as availability.",
+    "A nontrade quote whose receive clock crossed a minute cannot finalize the prior exchange-trade bucket.",
+    "A trade that returns to an already finalized exchange minute must still cause DATA_INVALID; no hindsight repair or late-event deletion.",
+    "Explicit terminal watermark handling remains separately bounded; no empty-bar forward filling.",
+    "Preserve v1 plan/results/source archive, strategy/cost/risk parameters and outcomes. Freeze distinct v2 inputs/code before any v2 economic run."
+  ],
+  "scope": "Synthetic mechanics reproduction only. No market records read by this reviewer in this step, no source modifications, no network and no economic rerun. Raw June11 causality is a separate author's evidence task."
+}

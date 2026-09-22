@@ -131,3 +131,33 @@ Tests:
 ```powershell
 & D:\QM\venvs\futures_lab\Scripts\python.exe -B -m unittest discover -s tools/futures_lab -p test_strategy_runner.py -v
 ```
+
+## 2026-09-22 v2 correction: exchange-minute completeness
+
+This amendment supersedes the receive-clock finalization used by v1. The v1
+implementation and results are retained in commit
+`d3459e47eaf2ba61827d7c705bef29943e73c467` and the exact source archive; its account
+paths remain invalid, not retroactively relabelled as completed economic tests.
+
+The byte-bound diagnostic `june2019_late_event_diagnostic.json`, SHA256
+`ff046ae977684dc7e3aef004f4b666eb5b4ba5ef35673d3e2ebd10d3190dd20b`, reproduces all
+six v1 failures from their original records. Both the finalizer and rejected trade
+belong to the same exchange minute and preserve exchange/receive ordering. Only
+the receive timestamps crossed the minute boundary. The rejected trades are still
+0.106103–8.267545 ms before that exchange-minute end. Thus these failures arise
+from a software watermark defect, not missing market data or proven feed disorder.
+
+In v2, **only a trade in a later exchange minute** finalizes the preceding trade
+bar. Its actual receive timestamp is the bar's availability. A quote crossing the
+receive-clock boundary does not finalize a trade bar. The explicit fully consumed
+source end watermark can still finish the final bar. A genuine exchange-minute
+reversal into a bar already finalized by a later-minute trade remains DATA_INVALID.
+No lateness tolerance, reordered record, discarded event, price adjustment, new
+arm, different threshold, different costs, or calendar change is introduced.
+
+This is an OWNER-authorized correctness rerun, not parameter selection. New
+synthetic regressions cover monotonically delayed trades and an intervening
+boundary quote; the genuine-late-event rejection remains tested. A new immutable
+v2 plan binds the corrected source before replaying every one of the same 180
+session rows. The interpretation remains DEVELOPMENT_REFERENCE_DIAGNOSTIC, with
+all 60 frozen economic trial cells NOT_RUN and the prospective holdout sealed.

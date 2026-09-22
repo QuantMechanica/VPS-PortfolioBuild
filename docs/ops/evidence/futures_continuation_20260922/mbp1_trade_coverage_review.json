@@ -1,0 +1,93 @@
+{
+  "schema": "qm.mbp1-trade-coverage-review/v1",
+  "recorded_at_utc": "2026-09-22T14:30:34.882322+00:00",
+  "dataset": "GLBX.MDP3",
+  "period_scope": "June 2019 MESM9/MESU9; current documentation as read 2026-09-22",
+  "conclusions": {
+    "schema_semantics": "SUPPORTED",
+    "exact_local_trade_equivalence": "NOT_TESTED",
+    "upstream_zero_loss": "NOT_PROVEN",
+    "extra_purchase_required_solely_for_schema_choice": false,
+    "counts_alone_sufficient_for_equivalence": false,
+    "existing_quality_rules_changed": false
+  },
+  "local_rows": [
+    {
+      "symbol": "MESM9",
+      "all_records": 13111990,
+      "action_T_records": 710439,
+      "action_F_records": 0,
+      "flag_168_records": 10,
+      "file_sha256": "a56f1fdd4da64b68b4f1872fec71512f854e55e7fcfeb32edbe0a4a88cad86ee",
+      "same_contract_trades_present": false,
+      "action_flag_joint_distribution_verified_by_this_review": false
+    },
+    {
+      "symbol": "MESU9",
+      "all_records": 9545391,
+      "action_T_records": 548292,
+      "action_F_records": 0,
+      "flag_168_records": 9,
+      "file_sha256": "32429b06d3286e9fae07fea81dba02f819bc29a0e70a3e9bb895deb1ba12d8d0",
+      "same_contract_trades_present": false,
+      "action_flag_joint_distribution_verified_by_this_review": false
+    }
+  ],
+  "local_evidence": {
+    "report": "D:\\QM\\reports\\research\\futures_pivot_20260922\\progress_20260922\\june2019_data_validation.json",
+    "report_sha256": "1186b54f4cd4c10d5126deb428d8f5c7940ab937083d0fddf8f467aa4c847129",
+    "sdk_version": "1.221.0",
+    "sdk_loader_path": "D:/QM/venvs/futures_lab/Lib/site-packages/nautilus_trader/adapters/databento/loaders.py",
+    "sdk_loader_sha256": "502e42749f0fabf769b2761935359f53e224b26db171f844908e4c36ab3d6b36",
+    "dbn_version_pin": "0.43.0"
+  },
+  "sources": [
+    "https://databento.com/docs/schemas-and-data-formats/mbp-1",
+    "https://databento.com/docs/schemas-and-data-formats/trades",
+    "https://databento.com/docs/schemas-and-data-formats/whats-a-schema#deriving-one-schema-from-another",
+    "https://databento.com/docs/venues-and-datasets/glbx-mdp3",
+    "https://issues.databento.com/b/6vrl98vl/feature-ideas/glbxmdp3-mbp-110-schemas-with-wrong-action-fill",
+    "https://databento.com/docs/standards-and-conventions/common-fields-enums-types#flags",
+    "https://raw.githubusercontent.com/databento/dbn/v0.43.0/rust/dbn/src/record.rs",
+    "https://raw.githubusercontent.com/databento/dbn/v0.43.0/rust/dbn/src/flags.rs",
+    "https://raw.githubusercontent.com/nautechsystems/nautilus_trader/v1.221.0/crates/adapters/databento/src/decode.rs",
+    "https://raw.githubusercontent.com/nautechsystems/nautilus_trader/v1.221.0/Cargo.lock"
+  ],
+  "comparison_protocol_status": "PROPOSED_NOT_EXECUTED",
+  "preserve": [
+    "source order",
+    "equal timestamps",
+    "record multiplicity",
+    "raw exchange timestamp",
+    "raw receive timestamp"
+  ],
+  "canonical_trade_fields": [
+    "publisher_id",
+    "instrument_id",
+    "ts_event",
+    "ts_recv",
+    "action",
+    "side",
+    "price_raw",
+    "size",
+    "sequence",
+    "ts_in_delta"
+  ],
+  "additional_fields_require_explicit_reconciliation": [
+    "flags",
+    "depth"
+  ],
+  "forbidden_shortcuts": [
+    "whole DBN byte equality across schemas",
+    "deduplication of equal trade records",
+    "comparison of ES trades against MES trades",
+    "quality-filtered count labelled full raw coverage",
+    "F_LAST-only trade selection"
+  ],
+  "md_report_sha256": "5d523b4fdee4c061719d2bd19aa34034949a4807473c36a9a527bc13ea29ce7c",
+  "credentials_read": false,
+  "market_data_api_calls": 0,
+  "market_data_downloads": 0,
+  "cost_incurred_usd": 0,
+  "existing_plan_sources_changed": false
+}

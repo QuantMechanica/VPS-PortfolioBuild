@@ -200,10 +200,32 @@ class BarTests(unittest.TestCase):
 
     def test_late_trade_is_not_repaired_using_future_knowledge(self):
         start = cash_ns(DAY,"09:30:00")
-        events = [self.trade(0,start),quote(1,start+MINUTE),
+        events = [self.trade(0,start),self.trade(1,start+MINUTE),
                   self.trade(2,start+1,start+MINUTE+1)]
         with self.assertRaisesRegex(DataInvalid,"LATE_TRADE"):
             list(trade_bars(events,"MESM9",end_watermark_ns=start+2*MINUTE))
+
+    def test_delayed_monotonic_trades_finalize_only_on_later_exchange_minute(self):
+        start = cash_ns(DAY,"09:30:00")
+        boundary = start+MINUTE
+        events = [self.trade(0,boundary-2000,boundary+1000,100),
+                  self.trade(1,boundary-1000,boundary+2000,101),
+                  self.trade(2,boundary+1000,boundary+3000,102)]
+        rows = list(trade_bars(events,"MESM9",end_watermark_ns=start+2*MINUTE))
+        self.assertEqual(rows[0].close_raw,px(101))
+        self.assertEqual(rows[0].available_ns,boundary+3000)
+        self.assertEqual(rows[0].last_source_ordinal,1)
+
+    def test_quote_receive_boundary_cannot_finalize_exchange_trade_bar(self):
+        start = cash_ns(DAY,"09:30:00")
+        boundary = start+MINUTE
+        clock_quote = replace(quote(1,boundary+1500),ts_exchange_ns=boundary-1500)
+        events = [self.trade(0,boundary-2000,boundary+1000,100),clock_quote,
+                  self.trade(2,boundary-1000,boundary+2000,101),
+                  self.trade(3,boundary+1000,boundary+3000,102)]
+        rows = list(trade_bars(events,"MESM9",end_watermark_ns=start+2*MINUTE))
+        self.assertEqual(rows[0].close_raw,px(101))
+        self.assertEqual(rows[0].available_ns,boundary+3000)
 
     def test_unresolved_source_order_and_future_timestamp_rejected(self):
         start = cash_ns(DAY,"09:30:00")

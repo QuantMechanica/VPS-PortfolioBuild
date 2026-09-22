@@ -1,2 +1,2 @@
 # Copy receipts bind exact source bytes, including original line endings.
-** -text
+** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

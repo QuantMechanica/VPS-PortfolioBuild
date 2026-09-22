@@ -145,8 +145,9 @@ class TradeBar:
 def trade_bars(events: Iterable, symbol: str, *, end_watermark_ns: int) -> Iterator[TradeBar]:
     """Causal receive-order aggregation of action-T prices, exchange minute buckets.
 
-    An arriving event finalizes older buckets only after processing its own trade.
-    That event is already consumed, so its quote is never an eligible entry fill.
+    Only a trade in a later exchange minute finalizes an older bucket. Receive
+    wall-clock time alone is not an exchange-time completeness watermark. That
+    finalizing event is already consumed, so its quote is not an entry fill.
     A trade for an already finalized minute invalidates the session. No empty bar
     forward fill; an explicit end watermark is needed for the final minute.
     """
@@ -199,11 +200,6 @@ def trade_bars(events: Iterable, symbol: str, *, end_watermark_ns: int) -> Itera
                 bucket = stamp
             prices.append(price)
             ordinal = event.source_ordinal
-        if bucket is not None and event.ts_recv_ns >= bucket + MINUTE:
-            result = TradeBar(symbol,bucket,event.ts_recv_ns,prices[0],max(prices),min(prices),prices[-1],ordinal)
-            result.validate()
-            yield result
-            finalized, bucket, prices = bucket, None, []
     if bucket is not None and end_watermark_ns >= bucket + MINUTE:
         result = TradeBar(symbol,bucket,end_watermark_ns,prices[0],max(prices),min(prices),prices[-1],ordinal)
         result.validate()

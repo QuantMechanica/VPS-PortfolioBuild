@@ -1,0 +1,17 @@
+{
+  "schema": "qm.independent-v2-manifest-comparison.v1",
+  "verified_at_utc": "2026-09-22T14:35:05.175835+00:00",
+  "v1_plan_sha256": "57d1c3eb69d3ceea8d4d30e0bf58866bee8de7ee44a219030f8f4006d768f771",
+  "v2_plan_sha256": "37c72f406ab6f706b992973801acea31a8607083f148388555e31eec452172b7",
+  "changed_data_calendar_config_bindings": [],
+  "changed_code_bindings": [
+    "strategy_run_plan.md",
+    "strategy_runner.py"
+  ],
+  "session_rows_identical": true,
+  "session_policies_identical": true,
+  "frozen_config_hash_identical": true,
+  "session_row_count": 180,
+  "result_status": "PRE_RESULT_INPUT_COMPARISON_ONLY",
+  "status": "PASS_SAME_INPUTS_AND_STRATEGY_SCOPE"
+}
