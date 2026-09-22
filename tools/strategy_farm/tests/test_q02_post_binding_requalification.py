@@ -396,6 +396,137 @@ def test_parameter_change_accepts_exact_compile_source_repair_authority(tmp_path
     assert provenance["registration"]["ea_id"] == "9902"
 
 
+def test_parameter_change_accepts_exact_hash_bound_supplement(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    fixture = _fixture(tmp_path, parameter_change=True, with_authority=True)
+    repo = fixture["repo"]  # type: ignore[assignment]
+    assert isinstance(repo, Path)
+    authority_path = repo / "docs" / "ops" / "evidence" / "authority.json"
+    authority = json.loads(authority_path.read_text(encoding="utf-8"))
+    authority.pop("registrations")
+    authority_path.write_text(json.dumps(authority), encoding="utf-8")
+
+    compile_evidence_path = tmp_path / "compile_evidence.json"
+    compile_evidence = json.loads(
+        compile_evidence_path.read_text(encoding="utf-8")
+    )
+    compile_evidence["candidate_recheck"]["source_repair_artifact_bindings"] = [{
+        "path": "docs/ops/evidence/authority.json",
+        "sha256": _sha(authority_path),
+    }]
+    compile_evidence_path.write_text(
+        json.dumps(compile_evidence), encoding="utf-8"
+    )
+
+    ea_dir = repo / "framework" / "EAs" / f"{EA_ID}_{EA_SLUG}"
+    setfile_path = (
+        ea_dir / "sets" / f"{EA_ID}_{EA_SLUG}_EURUSD.DWX_H1_backtest.set"
+    )
+    parameter_diff = [{
+        "key": "strategy_period",
+        "change": "changed",
+        "before": "20",
+        "after": "21",
+    }]
+    registration_id = "fixture:parameter-change-supplement:QM5_9902"
+    supplemental_path = repo / "docs" / "ops" / "evidence" / "supplement.json"
+    supplemental = {
+        "schema": farmctl.Q02_PARAMETER_CHANGE_SUPPLEMENTAL_AUTHORITY_SCHEMA,
+        "registration_id": registration_id,
+        "source_repair_authority": "fixture:input-pin:QM5_9902",
+        "ea_id": "9902",
+        "ea_label": f"{EA_ID}_{EA_SLUG}",
+        "current_mq5_sha256": _sha(ea_dir / f"{EA_ID}_{EA_SLUG}.mq5"),
+        "current_ex5_sha256": fixture["ex5_sha"],
+        "compile_predecessor": {
+            "work_item_id": COMPILE_ID,
+            "status": "done",
+            "verdict": "COMPILE_OK",
+            "evidence_path": str(compile_evidence_path),
+            "evidence_sha256": _sha(compile_evidence_path),
+            "frozen_authority_binding": {
+                "path": "docs/ops/evidence/authority.json",
+                "sha256": _sha(authority_path),
+            },
+        },
+        "q02_predecessor": {
+            "work_item_id": SOURCE_ID,
+            "symbol": "EURUSD.DWX",
+            "timeframe": "H1",
+            "source_setfile_sha256": fixture["old_setfile_sha"],
+            "current_setfile_path": str(setfile_path.relative_to(repo)),
+            "current_setfile_sha256": fixture["current_setfile_sha"],
+            "parameter_diff": parameter_diff,
+        },
+        "strategy_mechanics_changed_by_setfile_migration": False,
+    }
+    supplemental_path.write_text(json.dumps(supplemental), encoding="utf-8")
+    registered = {
+        "source_work_item_id": SOURCE_ID,
+        "compile_work_item_id": COMPILE_ID,
+        "compile_evidence_sha256": _sha(compile_evidence_path),
+        "evidence_path": str(supplemental_path.relative_to(repo)),
+        "evidence_sha256": _sha(supplemental_path),
+    }
+    monkeypatch.setattr(
+        farmctl,
+        "Q02_PARAMETER_CHANGE_SUPPLEMENTAL_REGISTRATIONS",
+        {registration_id: registered},
+    )
+
+    result = _call(fixture)
+    assert result["eligible"] is True
+    provenance = result["parameter_provenance"]
+    assert provenance["authority_mode"] == "supplemental_exact_registration"
+    assert provenance["supplemental_registration_id"] == registration_id
+    assert provenance["registration"]["parameter_diff"] == parameter_diff
+
+    supplemental["q02_predecessor"]["current_setfile_sha256"] = "0" * 64
+    supplemental_path.write_text(json.dumps(supplemental), encoding="utf-8")
+    registered["evidence_sha256"] = _sha(supplemental_path)
+    refused = _call(fixture)
+    assert refused["ok"] is False
+    assert refused["reason"] == "parameter_change_provenance_not_authenticated"
+    rejected = refused["parameter_provenance"][
+        "rejected_supplemental_registrations"
+    ]
+    assert rejected[0]["failed_checks"] == ["current_setfile_sha256"]
+
+
+def test_qm5_10403_parameter_change_supplement_is_exact_and_hash_bound() -> None:
+    registration_id = (
+        "router_ops_issue:c1fe430f-c9c1-4498-b6b6-12ff89e5c380:QM5_10403"
+    )
+    registered = farmctl.Q02_PARAMETER_CHANGE_SUPPLEMENTAL_REGISTRATIONS[
+        registration_id
+    ]
+    repo_root = Path(__file__).resolve().parents[3]
+    evidence_path = repo_root / registered["evidence_path"]
+    assert _sha(evidence_path) == registered["evidence_sha256"]
+    document = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+    assert document["schema"] == (
+        farmctl.Q02_PARAMETER_CHANGE_SUPPLEMENTAL_AUTHORITY_SCHEMA
+    )
+    assert document["registration_id"] == registration_id
+    assert document["compile_predecessor"]["work_item_id"] == (
+        "98873ebc-8231-4eb5-850a-e7f00d9b3598"
+    )
+    assert document["q02_predecessor"]["work_item_id"] == (
+        "d02bec84-87fe-43a9-94d4-2795ec46cea7"
+    )
+    assert document["q02_predecessor"]["source_setfile_sha256"] == (
+        "9a6fab053d3814077a015eb9f3a864a0c8a703fbe220ae03e74da195960f4c72"
+    )
+    assert document["q02_predecessor"]["current_setfile_sha256"] == (
+        "61c7fe83c7c175b53e43e54901ce80636319cdb23ecb49ea345f6949177e1f3c"
+    )
+    assert len(document["q02_predecessor"]["parameter_diff"]) == 12
+    frozen = document["compile_predecessor"]["frozen_authority_binding"]
+    assert _sha(repo_root / frozen["path"]) == frozen["sha256"]
+
+
 def test_operator_current_ex5_sha_mismatch_is_refused(tmp_path: Path) -> None:
     fixture = _fixture(tmp_path)
     result = farmctl.requalify_q02_post_binding(

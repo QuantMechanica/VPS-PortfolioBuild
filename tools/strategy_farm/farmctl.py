@@ -27687,6 +27687,27 @@ Q02_POST_BINDING_REQUALIFY_RECEIPT_SCHEMA = (
 )
 Q02_POST_BINDING_REQUALIFY_SOURCE_ENCODING = "farmctl:requalify-q02/v1"
 
+Q02_PARAMETER_CHANGE_SUPPLEMENTAL_AUTHORITY_SCHEMA = (
+    "qm.q02-parameter-change-supplement/v1"
+)
+Q02_PARAMETER_CHANGE_SUPPLEMENTAL_REGISTRATIONS: dict[str, dict[str, str]] = {
+    "router_ops_issue:c1fe430f-c9c1-4498-b6b6-12ff89e5c380:QM5_10403": {
+        "source_work_item_id": "d02bec84-87fe-43a9-94d4-2795ec46cea7",
+        "compile_work_item_id": "98873ebc-8231-4eb5-850a-e7f00d9b3598",
+        "compile_evidence_sha256": (
+            "b4803818dce63536b88a23d0e1d422f89c9d0f2f5e4cf4985fb4f13d72ec2ef1"
+        ),
+        "evidence_path": (
+            "docs/ops/evidence/2026-09-22_ks_rebuild_q02_reentry/"
+            "task_c1fe430f-c9c1-4498-b6b6-12ff89e5c380/"
+            "qm5_10403_parameter_change_authority.json"
+        ),
+        "evidence_sha256": (
+            "e706ef44605f226ace9a136d034bdbb89942879b5468c1da472a0e2aa797a677"
+        ),
+    },
+}
+
 _Q02_REBIND_STABLE_EXTRA_PAYLOAD_KEYS = {
     "custom_history_archive_admission",
     "defer_reason",
@@ -28674,9 +28695,25 @@ def _q02_parameter_change_authority(
     *,
     ea_id: str,
     expected_mq5_sha256: str,
+    expected_ex5_sha256: str,
     compile_evidence_path: str,
+    compile_work_item_id: str,
+    source_work_item_id: str,
+    source_setfile_sha256: str,
+    current_setfile_path: str,
+    current_setfile_sha256: str,
+    parameter_diff: list[dict[str, Any]],
+    symbol: str,
+    timeframe: str,
 ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
-    """Authenticate a compile-bound source-repair receipt for parameter drift."""
+    """Authenticate parameter drift against immutable, exact authority.
+
+    The primary path remains the authority document whose hash was frozen by
+    the COMPILE_EA receipt.  A narrowly registered supplement may complete a
+    historical document that omitted its ``registrations`` array, but only
+    when it binds the exact compile evidence, original frozen authority,
+    predecessor Q02 row, both setfile hashes, and full semantic diff.
+    """
 
     evidence_path = Path(compile_evidence_path)
     try:
@@ -28706,9 +28743,11 @@ def _q02_parameter_change_authority(
         }
 
     code_root = repo_root.resolve()
+    compile_evidence_sha256 = _sha256_file(evidence_path).lower()
     numeric_match = re.fullmatch(r"(?:QM5_)?(\d+)", str(ea_id).strip(), re.I)
     numeric_ea_id = numeric_match.group(1) if numeric_match else ""
     rejected: list[dict[str, Any]] = []
+    validated_bindings: list[dict[str, str]] = []
     for raw_binding in bindings:
         if not isinstance(raw_binding, dict):
             rejected.append({"reason": "binding_not_object"})
@@ -28748,6 +28787,10 @@ def _q02_parameter_change_authority(
                 "reason": "binding_not_json_authority_document",
             })
             continue
+        validated_bindings.append({
+            "path": str(bound_path),
+            "sha256": expected_hash,
+        })
         registrations = document.get("registrations") if isinstance(document, dict) else None
         if not isinstance(registrations, list):
             rejected.append({
@@ -28776,18 +28819,207 @@ def _q02_parameter_change_authority(
         return {
             "schema": "qm.q02-parameter-change-authority/v1",
             "compile_evidence_path": str(evidence_path),
-            "compile_evidence_sha256": _sha256_file(evidence_path),
+            "compile_evidence_sha256": compile_evidence_sha256,
             "source_repair_authority": authority,
             "authority_path": str(bound_path),
             "authority_sha256": expected_hash,
             "authority_schema": document.get("schema"),
             "registration": registration,
         }, {"reason": "parameter_change_provenance_authenticated"}
+
+    rejected_supplements: list[dict[str, Any]] = []
+    for registration_id, registered in (
+        Q02_PARAMETER_CHANGE_SUPPLEMENTAL_REGISTRATIONS.items()
+    ):
+        if str(registered.get("source_work_item_id") or "") != source_work_item_id:
+            continue
+        if str(registered.get("compile_work_item_id") or "") != compile_work_item_id:
+            rejected_supplements.append({
+                "registration_id": registration_id,
+                "reason": "compile_work_item_id_mismatch",
+            })
+            continue
+        registered_compile_sha = str(
+            registered.get("compile_evidence_sha256") or ""
+        ).lower()
+        if registered_compile_sha != compile_evidence_sha256:
+            rejected_supplements.append({
+                "registration_id": registration_id,
+                "reason": "compile_evidence_sha256_mismatch",
+                "expected_sha256": registered_compile_sha,
+                "actual_sha256": compile_evidence_sha256,
+            })
+            continue
+
+        supplemental_path = Path(str(registered.get("evidence_path") or ""))
+        if not supplemental_path.is_absolute():
+            supplemental_path = code_root / supplemental_path
+        try:
+            supplemental_path = supplemental_path.resolve()
+            supplemental_path.relative_to(code_root)
+        except (OSError, ValueError):
+            rejected_supplements.append({
+                "registration_id": registration_id,
+                "reason": "supplemental_authority_outside_canonical_repo",
+            })
+            continue
+        supplemental_sha = str(registered.get("evidence_sha256") or "").lower()
+        if (
+            not re.fullmatch(r"[0-9a-f]{64}", supplemental_sha)
+            or not supplemental_path.is_file()
+            or _sha256_file(supplemental_path).lower() != supplemental_sha
+        ):
+            rejected_supplements.append({
+                "registration_id": registration_id,
+                "path": str(supplemental_path),
+                "reason": "supplemental_authority_missing_or_sha256_mismatch",
+                "expected_sha256": supplemental_sha,
+            })
+            continue
+        try:
+            supplemental = json.loads(
+                supplemental_path.read_text(encoding="utf-8-sig")
+            )
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            rejected_supplements.append({
+                "registration_id": registration_id,
+                "path": str(supplemental_path),
+                "reason": "supplemental_authority_not_json",
+            })
+            continue
+        if not isinstance(supplemental, dict):
+            rejected_supplements.append({
+                "registration_id": registration_id,
+                "reason": "supplemental_authority_not_object",
+            })
+            continue
+
+        compile_predecessor = supplemental.get("compile_predecessor")
+        q02_predecessor = supplemental.get("q02_predecessor")
+        if not isinstance(compile_predecessor, dict):
+            compile_predecessor = {}
+        if not isinstance(q02_predecessor, dict):
+            q02_predecessor = {}
+        frozen_binding = compile_predecessor.get("frozen_authority_binding")
+        if not isinstance(frozen_binding, dict):
+            frozen_binding = {}
+        frozen_path = Path(str(frozen_binding.get("path") or ""))
+        if not frozen_path.is_absolute():
+            frozen_path = code_root / frozen_path
+        try:
+            frozen_path = frozen_path.resolve()
+            frozen_path.relative_to(code_root)
+        except (OSError, ValueError):
+            frozen_path = Path()
+        frozen_sha = str(frozen_binding.get("sha256") or "").lower()
+        frozen_binding_valid = any(
+            item["path"] == str(frozen_path)
+            and item["sha256"] == frozen_sha
+            for item in validated_bindings
+        )
+
+        registered_setfile = Path(
+            str(q02_predecessor.get("current_setfile_path") or "")
+        )
+        if not registered_setfile.is_absolute():
+            registered_setfile = code_root / registered_setfile
+        try:
+            setfile_path_matches = (
+                registered_setfile.resolve() == Path(current_setfile_path).resolve()
+            )
+        except OSError:
+            setfile_path_matches = False
+        try:
+            compile_path_matches = (
+                Path(str(compile_predecessor.get("evidence_path") or "")).resolve()
+                == evidence_path.resolve()
+            )
+        except OSError:
+            compile_path_matches = False
+
+        supplemental_ea_match = re.fullmatch(
+            r"(?:QM5_)?(\d+)", str(supplemental.get("ea_id") or "").strip(), re.I
+        )
+        checks = {
+            "schema": supplemental.get("schema")
+            == Q02_PARAMETER_CHANGE_SUPPLEMENTAL_AUTHORITY_SCHEMA,
+            "registration_id": supplemental.get("registration_id")
+            == registration_id,
+            "ea_id": bool(
+                supplemental_ea_match
+                and supplemental_ea_match.group(1) == numeric_ea_id
+            ),
+            "source_repair_authority": supplemental.get("source_repair_authority")
+            == authority,
+            "current_mq5_sha256": str(
+                supplemental.get("current_mq5_sha256") or ""
+            ).lower() == expected_mq5_sha256.lower(),
+            "current_ex5_sha256": str(
+                supplemental.get("current_ex5_sha256") or ""
+            ).lower() == expected_ex5_sha256.lower(),
+            "compile_work_item_id": compile_predecessor.get("work_item_id")
+            == compile_work_item_id,
+            "compile_status": compile_predecessor.get("status") == "done",
+            "compile_verdict": compile_predecessor.get("verdict") == "COMPILE_OK",
+            "compile_evidence_path": compile_path_matches,
+            "compile_evidence_sha256": str(
+                compile_predecessor.get("evidence_sha256") or ""
+            ).lower() == compile_evidence_sha256,
+            "compile_evidence_work_item_id": str(
+                evidence.get("work_item_id") or ""
+            ) == compile_work_item_id,
+            "compile_evidence_ex5_sha256": str(
+                evidence.get("ex5_sha256") or ""
+            ).lower() == expected_ex5_sha256.lower(),
+            "frozen_authority_binding": frozen_binding_valid,
+            "q02_work_item_id": q02_predecessor.get("work_item_id")
+            == source_work_item_id,
+            "q02_symbol": q02_predecessor.get("symbol") == symbol,
+            "q02_timeframe": str(q02_predecessor.get("timeframe") or "").upper()
+            == timeframe.upper(),
+            "source_setfile_sha256": str(
+                q02_predecessor.get("source_setfile_sha256") or ""
+            ).lower() == source_setfile_sha256.lower(),
+            "current_setfile_path": setfile_path_matches,
+            "current_setfile_sha256": str(
+                q02_predecessor.get("current_setfile_sha256") or ""
+            ).lower() == current_setfile_sha256.lower(),
+            "parameter_diff": q02_predecessor.get("parameter_diff")
+            == parameter_diff,
+            "strategy_mechanics_changed_by_setfile_migration": (
+                supplemental.get("strategy_mechanics_changed_by_setfile_migration")
+                is False
+            ),
+        }
+        if not all(checks.values()):
+            rejected_supplements.append({
+                "registration_id": registration_id,
+                "path": str(supplemental_path),
+                "reason": "supplemental_authority_binding_mismatch",
+                "failed_checks": sorted(
+                    key for key, value in checks.items() if not value
+                ),
+            })
+            continue
+        return {
+            "schema": "qm.q02-parameter-change-authority/v2",
+            "authority_mode": "supplemental_exact_registration",
+            "compile_evidence_path": str(evidence_path),
+            "compile_evidence_sha256": compile_evidence_sha256,
+            "source_repair_authority": authority,
+            "frozen_authority_path": str(frozen_path),
+            "frozen_authority_sha256": frozen_sha,
+            "supplemental_registration_id": registration_id,
+            "supplemental_authority_path": str(supplemental_path),
+            "supplemental_authority_sha256": supplemental_sha,
+            "registration": q02_predecessor,
+        }, {"reason": "parameter_change_provenance_authenticated"}
     return None, {
         "reason": "parameter_change_provenance_not_authenticated",
         "compile_evidence_path": str(evidence_path),
         "source_repair_authority": authority,
         "rejected_bindings": rejected,
+        "rejected_supplemental_registrations": rejected_supplements,
     }
 
 
@@ -29304,7 +29536,16 @@ def requalify_q02_post_binding(
                 code_root,
                 ea_id=ea_id,
                 expected_mq5_sha256=canonical_mq5_sha,
+                expected_ex5_sha256=expected_ex5,
                 compile_evidence_path=str(compile_record["evidence_path"]),
+                compile_work_item_id=str(compile_record["work_item_id"]),
+                source_work_item_id=source_id,
+                source_setfile_sha256=str(source_setfile_sha),
+                current_setfile_path=str(canonical_setfile_path),
+                current_setfile_sha256=canonical_setfile_sha,
+                parameter_diff=parameter_diff,
+                symbol=symbol,
+                timeframe=timeframe,
             )
             if parameter_authority is None:
                 return _q02_post_requal_refusal(

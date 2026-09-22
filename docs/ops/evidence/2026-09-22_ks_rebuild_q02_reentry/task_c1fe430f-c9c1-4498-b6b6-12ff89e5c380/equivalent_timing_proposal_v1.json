@@ -1,0 +1,83 @@
+{
+  "schema": "qm.identity-equivalence-contract-proposal/v1",
+  "proposal_id": "EQUIVALENT_TIMING_V1_C1FE430F",
+  "status": "PROPOSAL_ONLY_FABLE_REVIEW_REQUIRED",
+  "proposed_verdict": "EQUIVALENT_TIMING",
+  "proof_contract_changed": false,
+  "authority_required": "OWNER-DEC-FTMO-FINAL-MEGA-20260921 section 68A plus Fable review",
+  "intent": "Permit a sub-minute report timestamp delta only when independent evidence proves it is serialization or same-quote timing noise rather than a changed trade-lifecycle event path.",
+  "all_conditions_required": {
+    "tester_contract_exact": [
+      "symbol",
+      "period",
+      "model",
+      "from_date",
+      "to_date",
+      "tester data/tick archive hash",
+      "setfile semantic parameters"
+    ],
+    "binary_and_source_bindings": [
+      "both EX5 SHA-256 values",
+      "both MQ5 SHA-256 values",
+      "both include-closure SHA-256 values",
+      "durable compile receipts"
+    ],
+    "deal_sequence": {
+      "count_and_order_exact": true,
+      "entry_timestamp_mismatches_allowed": 0,
+      "shifted_deal_directions_allowed": ["out"],
+      "max_abs_delta_seconds_exclusive": 60,
+      "time_delta_sign_constraint": "none, but each delta must be reported"
+    },
+    "row_economics_exact": [
+      "symbol",
+      "type",
+      "direction",
+      "volume",
+      "price",
+      "order sequence",
+      "commission",
+      "swap",
+      "profit",
+      "balance",
+      "comment"
+    ],
+    "aggregate_economics_exact": [
+      "net profit",
+      "trade count",
+      "gross profit",
+      "gross loss",
+      "max drawdown"
+    ],
+    "event_path_invariance": [
+      "No source or include change may alter entry, order, stop/target modification, discretionary exit, Friday close, kill-switch close, or broker-request timing logic.",
+      "Trade-operation logs must show the same order/modify/close requests on the same ticks; a shifted modification or order request is disqualifying.",
+      "Every shifted exit must bind to the same frozen tick/quote and the same already-active SL/TP before that tick."
+    ],
+    "repeatability": {
+      "minimum_independent_runs_per_binary": 2,
+      "same_shift_set_and_delta_distribution_required": true,
+      "pairwise_distinct_receipts_required": true
+    },
+    "economic_null_argument_required": true
+  },
+  "automatic_refusal_conditions": [
+    "any entry-time shift",
+    "any price/volume/PnL/commission/swap/balance/comment mismatch",
+    "any missing EX5, MQ5, include-closure, setfile, tester, or tick-data binding",
+    "any changed trade-lifecycle-capable source path",
+    "any shifted order/modify/close request",
+    "fewer than two deterministic runs per binary"
+  ],
+  "fallback": "NOT_EQUIVALENT; the rebuilt identity runs its own append-only Q03-Q10 chain.",
+  "qm5_10706_candidate_evaluation": {
+    "result": "REFUSED_BY_PROPOSAL",
+    "failed_conditions": [
+      "selected ablation-02 predecessor EX5 binding is missing",
+      "the rebuilt source changes break-even stop-modification timing logic",
+      "the rebuilt log shows the stop modification itself moved to 13:03:45",
+      "only one governed run per binary is bound by the current proof"
+    ],
+    "current_verdict_retained": "NOT_EQUIVALENT"
+  }
+}
