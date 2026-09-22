@@ -1,0 +1,188 @@
+{
+  "active_pair_sensitivity": {
+    "primary": {
+      "audited_fixed_clock_rows": 2079,
+      "exact_minus_60_minute_rows": 82,
+      "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
+      "sha256": "dc96c059f64f609f71a911f2f4d01f00f56b2a7c335a13238258490f34f736ee",
+      "symmetric_difference_from_sealed": 0
+    },
+    "secondary": {
+      "audited_fixed_clock_rows": 2138,
+      "exact_minus_60_minute_rows": 116,
+      "intersection_with_sealed": 80,
+      "note": "Difference includes source impact-taxonomy/row-selection differences; the Q-gate correction set is the sealed 82-row set.",
+      "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv",
+      "sha256": "c2832ce35b863afe303fe7fb05b2c135676a156d6674c008d81e9cee2717715e",
+      "symmetric_difference_from_sealed": 38
+    }
+  },
+  "artifact_hashes": {
+    "affected_rows.csv": "61ed79df14895e215d3b5c7fa580b589417bf1070d8036af00140ab8f8f25dea",
+    "audit.py": "4911901a5581c10b9162fcc7d0b66e9e3c0a723f8197f93e2da7ca55e486e9e5",
+    "native_control/native_join_deltas.csv": "e2b79a8a0cf5064fcc250b301b4a2df5bca21fb9807eedde0b3ecaf9324780a9",
+    "native_control/stored_tod_histogram.csv": "e654ba4d1d5300b3ebaa7c72c4446b4a5d34e613a6827a4528e6418a306ea9ce",
+    "native_control/summary.json": "beae99c2bb5a9c77c8d69d5a66d8e02364fa299e30010ac9b44498193471a1c1",
+    "proposed_archive/events.csv": "7a3243cf14d3ac6786423a48dd50317eed155d9c5360ba1067c55355f9618522",
+    "proposed_archive/manifest.proposed.json": "f98e925394419c6d12f5785951ceda1d75d50f0529a3a5c41ccff86c0a19f1cb",
+    "proposed_correction_diff.csv": "0eeb686ad6b0579ba8852620c28800718ac96da8ec6ce0d1fd364076d3ccaf23",
+    "sealed_verdict_impact.csv": "a6fa51c1d756b663c931e13be60a3b25880f7f0e8bae806308da5a2c57c34719"
+  },
+  "official_schedule_sources": {
+    "BEA": {
+      "description": "BEA news release schedule",
+      "url": "https://www.bea.gov/news/schedule"
+    },
+    "BLS": {
+      "description": "BLS release calendars (Eastern Time)",
+      "url": "https://www.bls.gov/schedule/2026/"
+    },
+    "CENSUS": {
+      "description": "U.S. Census economic indicators calendar",
+      "url": "https://www.census.gov/economic-indicators/calendar-listview.html"
+    },
+    "CONFERENCE_BOARD": {
+      "description": "Conference Board Consumer Confidence releases",
+      "url": "https://www.conference-board.org/topics/consumer-confidence/press"
+    },
+    "DOL": {
+      "description": "Department of Labor economic data releases",
+      "url": "https://www.dol.gov/newsroom/economicdata"
+    },
+    "ISM": {
+      "description": "ISM PMI report release schedule",
+      "url": "https://www.ismworld.org/supply-management-news-and-reports/reports/ism-pmi-reports/"
+    },
+    "NAR": {
+      "description": "NAR statistical news release schedule",
+      "url": "https://www.nar.realtor/press-releases/nar-releases-2026-statistical-news-release-schedule"
+    },
+    "NYFED": {
+      "description": "Federal Reserve Bank of New York Empire State survey",
+      "url": "https://www.newyorkfed.org/survey/empire/empiresurvey_overview"
+    },
+    "PHILFED": {
+      "description": "Federal Reserve Bank of Philadelphia Manufacturing survey",
+      "url": "https://www.philadelphiafed.org/surveys-and-data/regional-economic-analysis/mbos-2026"
+    },
+    "UMICH": {
+      "description": "University of Michigan Surveys of Consumers",
+      "url": "https://www.sca.isr.umich.edu/"
+    }
+  },
+  "pattern_classification": {
+    "classification": "SEASONAL_BATCH_SUBSET_NOT_GLOBAL_TIMEZONE_RULE",
+    "facts": [
+      "The 82 target rows are exactly -60 minutes, not a distribution around -60.",
+      "The concentration is 2023-2024 between late March and September, with one March row in each of 2021, 2022, and 2025.",
+      "Unrelated 08:30 and 10:00 ET event families shift together while adjacent rows can remain correct.",
+      "The identical sealed and active-primary affected key sets exclude a one-off consumer display error."
+    ],
+    "root_cause_inference": "A mixed-source or batch-level DST normalization path applied an extra daylight offset to a subset of rows. The evidence does not identify a single upstream code line.",
+    "separate_known_defect": "This exact -60-minute class is separate from the previously documented -16/-17-hour population; this proposal does not repair or waive that larger defect."
+  },
+  "proposal": {
+    "authorized": false,
+    "candidate_path": "C:/QM/repo/docs/ops/evidence/2026-09-21_news_archive_dst_audit/task_a36a5983-8cfc-4528-8277-8b5d21787f82/proposed_archive/events.csv",
+    "candidate_row_count": 48245,
+    "candidate_sha256": "7a3243cf14d3ac6786423a48dd50317eed155d9c5360ba1067c55355f9618522",
+    "correction_rows": 82,
+    "manifest_path": "C:/QM/repo/docs/ops/evidence/2026-09-21_news_archive_dst_audit/task_a36a5983-8cfc-4528-8277-8b5d21787f82/proposed_archive/manifest.proposed.json",
+    "manifest_sha256": "f98e925394419c6d12f5785951ceda1d75d50f0529a3a5c41ccff86c0a19f1cb"
+  },
+  "schema_version": "qm.news-calendar-dst-audit/v1",
+  "scope": {
+    "currency": "USD",
+    "event_classes": 36,
+    "fixed_release_clocks_et": [
+      "08:30",
+      "10:00"
+    ],
+    "impact": "HIGH",
+    "timezone_rule": "America/New_York (IANA zoneinfo)",
+    "years": [
+      2015,
+      2025
+    ]
+  },
+  "sealed_calendar": {
+    "affected_by_event": {
+      "Advance GDP q/q": 4,
+      "Average Hourly Earnings m/m": 4,
+      "CPI y/y": 2,
+      "Core CPI m/m": 9,
+      "Core PCE Price Index m/m": 4,
+      "Core PPI m/m": 8,
+      "Core Retail Sales m/m": 1,
+      "Final GDP q/q": 4,
+      "Goods Trade Balance": 2,
+      "JOLTS Job Openings": 7,
+      "New Home Sales": 1,
+      "Pending Home Sales m/m": 5,
+      "Prelim GDP q/q": 2,
+      "Prelim UoM Consumer Sentiment": 10,
+      "Revised UoM Consumer Sentiment": 4,
+      "Unemployment Claims": 15
+    },
+    "affected_by_year": {
+      "2021": 1,
+      "2022": 1,
+      "2023": 39,
+      "2024": 40,
+      "2025": 1
+    },
+    "affected_stored_range": {
+      "first_stored_utc": "2021-03-10T12:30:00Z",
+      "last_stored_utc": "2025-03-27T11:30:00Z"
+    },
+    "audited_fixed_clock_rows": 2079,
+    "bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+    "content_sha256": "86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1",
+    "exact_minus_60_minute_rows": 82,
+    "native_export_exact_confirmations": 52,
+    "native_export_unmapped_rows": 30,
+    "row_count": 48245
+  },
+  "sealed_verdict_impact": {
+    "bound_work_items": 143,
+    "by_phase_verdict": {
+      "Q09_NEWS|REVIEW_REQUIRED": 15,
+      "Q10_NEWS|CONFIG_LOCKED": 36,
+      "Q10_NEWS|REVIEW_REQUIRED": 92
+    },
+    "calendar_sha256": "86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1",
+    "direct_by_phase_verdict": {
+      "Q09_NEWS|REVIEW_REQUIRED": 13,
+      "Q10_NEWS|CONFIG_LOCKED": 35,
+      "Q10_NEWS|REVIEW_REQUIRED": 80
+    },
+    "directly_exposed_distinct_eas": 72,
+    "directly_exposed_work_items": 128,
+    "distinct_bound_eas": 81,
+    "hash_bound_without_direct_exposure": 15,
+    "interpretation": "Existing pipeline verdicts remain immutable. Direct rows require new append-only measurement before any new adjudication; the remaining rows are still content-hash bound and require replacement review, but have no direct USD/window exposure in this audit.",
+    "owner_override_config_path": "C:/QM/repo/tools/strategy_farm/config/news_calendar_scoped_consumer_b.v1.json",
+    "owner_override_config_sha256": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2"
+  },
+  "source_integrity": {
+    "hashes_after": {
+      "native_export": "c1554e52d3456575f51d044cd0097e18b960c7f12485e9b45a07e36536b9ab3b",
+      "pair_manifest": "00a5a33fc55759a2b2b1b2b66fc7cec0a5651775070133028fd4461e18931379",
+      "primary": "dc96c059f64f609f71a911f2f4d01f00f56b2a7c335a13238258490f34f736ee",
+      "sealed_events": "86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1",
+      "sealed_manifest": "b204d1ab9fe40fe32afc254ae4284ed6c1df112829df07483912e5ed54527461",
+      "secondary": "c2832ce35b863afe303fe7fb05b2c135676a156d6674c008d81e9cee2717715e"
+    },
+    "hashes_before": {
+      "native_export": "c1554e52d3456575f51d044cd0097e18b960c7f12485e9b45a07e36536b9ab3b",
+      "pair_manifest": "00a5a33fc55759a2b2b1b2b66fc7cec0a5651775070133028fd4461e18931379",
+      "primary": "dc96c059f64f609f71a911f2f4d01f00f56b2a7c335a13238258490f34f736ee",
+      "sealed_events": "86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1",
+      "sealed_manifest": "b204d1ab9fe40fe32afc254ae4284ed6c1df112829df07483912e5ed54527461",
+      "secondary": "c2832ce35b863afe303fe7fb05b2c135676a156d6674c008d81e9cee2717715e"
+    },
+    "read_only_inputs_unchanged": true
+  },
+  "task_id": "a36a5983-8cfc-4528-8277-8b5d21787f82",
+  "verdict": "FAIL_EXACT_MINUS_ONE_HOUR_ROWS_CONFIRMED"
+}

@@ -1,0 +1,61 @@
+{
+  "candidate": {
+    "currency_column": "currency",
+    "datetime_column": "datetime",
+    "event_column": "event_name",
+    "event_from_utc": "2015-01-01T01:00:00Z",
+    "event_to_utc": "2026-08-09T01:30:00Z",
+    "impact_column": "impact",
+    "path": "C:/QM/repo/docs/ops/evidence/2026-09-21_news_archive_dst_audit/task_a36a5983-8cfc-4528-8277-8b5d21787f82/proposed_archive/events.csv",
+    "relative_path": "proposed_archive/events.csv",
+    "row_count": 48245,
+    "sha256": "7a3243cf14d3ac6786423a48dd50317eed155d9c5360ba1067c55355f9618522",
+    "size_bytes": 4453290
+  },
+  "correction": {
+    "affected_rows_path": "../affected_rows.csv",
+    "affected_rows_sha256": "61ed79df14895e215d3b5c7fa580b589417bf1070d8036af00140ab8f8f25dea",
+    "changed_fields": [
+      "datetime",
+      "hour"
+    ],
+    "classification": "EXACT_MINUS_ONE_HOUR_DST_NORMALIZATION_SUBSET",
+    "diff_path": "../proposed_correction_diff.csv",
+    "diff_sha256": "0eeb686ad6b0579ba8852620c28800718ac96da8ec6ce0d1fd364076d3ccaf23",
+    "row_count": 82,
+    "suggested_correction_reason": "Correct 82 high-impact USD fixed-clock releases stored exactly one hour early relative to America/New_York in 2021-2025; retain all other event fields.",
+    "unchanged_archive_in_place": true
+  },
+  "evidence": {
+    "audit_program": "../audit.py",
+    "audit_program_sha256": "4911901a5581c10b9162fcc7d0b66e9e3c0a723f8197f93e2da7ca55e486e9e5",
+    "native_control_path": "../native_control/native_join_deltas.csv",
+    "native_control_sha256": "e2b79a8a0cf5064fcc250b301b4a2df5bca21fb9807eedde0b3ecaf9324780a9"
+  },
+  "parent": {
+    "bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+    "content_sha256": "86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1",
+    "coverage_from_utc": "2015-01-01T00:00:00Z",
+    "coverage_to_utc": "2026-08-09T02:00:00Z",
+    "manifest_path": "D:/QM/data/news_calendar/q09_bundles/q09cal-20150101-20260809-0bb19b5bb9790b76/manifest.json",
+    "manifest_sha256": "b204d1ab9fe40fe32afc254ae4284ed6c1df112829df07483912e5ed54527461",
+    "row_count": 48245
+  },
+  "publication_contract": {
+    "next_safe_step": "OWNER reviews this proposal and, only if approved, supplies a durable receipt; then run q09_news_calendar.py plan before publish.",
+    "owner_approval_received": false,
+    "required_owner_receipt_fields": [
+      "approved_by",
+      "approved_at",
+      "reason",
+      "correction_reason"
+    ],
+    "required_parent_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+    "required_publication_reason": "APPROVED_CORRECTION",
+    "whatif_command_template": "python C:/QM/repo/tools/strategy_farm/q09_news_calendar.py plan --source-csv <THIS_TASK_DIR>/proposed_archive/events.csv --receipt <OWNER_APPROVAL_RECEIPT.json> --coverage-from-utc 2015-01-01T00:00:00Z --coverage-to-utc 2026-08-09T02:00:00Z --publication-reason APPROVED_CORRECTION --parent-manifest D:/QM/data/news_calendar/q09_bundles/q09cal-20150101-20260809-0bb19b5bb9790b76/manifest.json"
+  },
+  "publishable_now": false,
+  "schema_version": "qm.q09-news-calendar-correction-proposal/v1",
+  "status": "PROPOSAL_ONLY_NOT_AUTHORIZED",
+  "task_id": "a36a5983-8cfc-4528-8277-8b5d21787f82"
+}
