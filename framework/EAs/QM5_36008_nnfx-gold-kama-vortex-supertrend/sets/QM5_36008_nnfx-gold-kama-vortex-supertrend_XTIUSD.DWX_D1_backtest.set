@@ -3,16 +3,16 @@
 ; ea_id:        36008
 ; ea_slug:      nnfx-gold-kama-vortex-supertrend
 ; ea_version:   v5.0
-; set_version:  s20260817-001
+; set_version:  s20260922-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   dc2f1fa6ea4eb584ff2a85b2df615245b83739c95d4962e1b6a31b03686f5058
+; build_hash:   18d81915efc111bc5a6b7c6c05224a926c4f2c24f619c2f73d23c911a915df5c
 ; author:       Development
-; date:         2026-08-17
+; date:         2026-09-22
 ;==========================================================
 qm_ea_id=36008
 qm_magic_slot_offset=1
