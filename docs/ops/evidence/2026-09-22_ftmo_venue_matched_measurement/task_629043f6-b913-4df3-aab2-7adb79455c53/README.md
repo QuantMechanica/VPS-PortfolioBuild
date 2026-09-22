@@ -159,6 +159,7 @@ The committed CSV contains the same 2,290 unique symbol-minute records.
 
 Additional bindings:
 
+- Canonical implementation/evidence tree: 395656a5e211ceee3340a2e26e940e64ffdfe4c9 on agents/board-advisor.
 - Financed-stream manifest: 0d4b845c1dc39cb3af09f00a6cd240a0e861b1d1ca74d1cf0e2452573d830633.
 - D2g6 roster: 35844a5524f922cf013f970b21d5b5c895d1d2a25b266f937d4696637072aaa1.
 - Collector source: aeae32316e19ff58e1732ca0d384fe82b77ee127e6567dfbc8aa24c5f02194b7.
