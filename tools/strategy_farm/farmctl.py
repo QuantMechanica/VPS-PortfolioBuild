@@ -22682,38 +22682,43 @@ def _pump_unlocked(
                     _apply_phase_timeout_min(payload, successor_phase)
                 if successor_phase in {"Q05", "Q06", "Q07", _INCUMBENT_PHASE}:
                     _apply_q_phase_full_history_from(payload, successor_phase)
+                q08_binding_refusal: dict[str, Any] | None = None
                 if successor_phase == "Q08":
                     binding_ok, binding_detail = _q08_promotion_execution_binding(
                         conn, wi, payload
                     )
                     if not binding_ok:
-                        result["cascade_promotions_skipped"].append({
-                            "ea_id": wi["ea_id"],
-                            "symbol": wi["symbol"],
-                            "from_phase": prev_phase,
-                            "to_phase": successor_phase,
-                            "from_work_item_id": wi["id"],
-                            "reason": "q08_promotion_identity_binding_refused",
-                            "detail": binding_detail,
-                        })
-                        continue
-                    dsr_status = _attach_q08_dsr_context(conn, wi, payload)
-                    if str(dsr_status.get("reason") or "").startswith(
-                        Q08_PROMOTION_WINDOW_UNAVAILABLE
-                    ):
-                        result["cascade_promotions_skipped"].append({
-                            "ea_id": wi["ea_id"],
-                            "symbol": wi["symbol"],
-                            "from_phase": prev_phase,
-                            "to_phase": successor_phase,
-                            "from_work_item_id": wi["id"],
-                            "reason": "q08_promotion_window_binding_refused",
-                            "detail": dsr_status,
-                        })
-                        continue
+                        q08_binding_refusal = dict(binding_detail)
+                        payload["q08_promotion_identity_status"] = {
+                            "schema": Q08_PROMOTION_BINDING_REFUSAL_SCHEMA,
+                            "status": "HELD",
+                            "hold_code": Q08_PROMOTION_BINDING_REFUSED,
+                            "predecessor_work_item_id": str(wi["id"]),
+                            "detail": q08_binding_refusal,
+                        }
+                        payload.pop("dsr_context", None)
+                        payload["dsr_context_status"] = {
+                            "status": "UNAVAILABLE",
+                            "reason": "BUILD_IDENTITY_BINDING_REFUSED",
+                        }
+                    else:
+                        dsr_status = _attach_q08_dsr_context(conn, wi, payload)
+                        if str(dsr_status.get("reason") or "").startswith(
+                            Q08_PROMOTION_WINDOW_UNAVAILABLE
+                        ):
+                            result["cascade_promotions_skipped"].append({
+                                "ea_id": wi["ea_id"],
+                                "symbol": wi["symbol"],
+                                "from_phase": prev_phase,
+                                "to_phase": successor_phase,
+                                "from_work_item_id": wi["id"],
+                                "reason": "q08_promotion_window_binding_refused",
+                                "detail": dsr_status,
+                            })
+                            continue
                 q08_identity = (
                     _q08_typed_identity_from_payload(payload)
-                    if successor_phase == "Q08"
+                    if successor_phase == "Q08" and q08_binding_refusal is None
                     else {}
                 )
                 contract_phase = successor_phase in {_NEWS_PHASE, _INCUMBENT_PHASE}
@@ -22781,6 +22786,18 @@ def _pump_unlocked(
                         continue
                     else:
                         conn.execute("RELEASE q09_contract_promotion")
+                if q08_binding_refusal is not None:
+                    held = _hold_q08_promotion_binding_refusal(
+                        conn,
+                        work_item_id=new_id,
+                        predecessor_work_item_id=str(wi["id"]),
+                        detail=q08_binding_refusal,
+                        now=now,
+                    )
+                    if not held:
+                        raise RuntimeError(
+                            "Q08 identity-refused promotion could not be parked"
+                        )
                 reopened_parent = False
                 if parent and parent["id"] not in reopened_parents and parent["status"] == "done":
                     conn.execute(
@@ -22798,6 +22815,11 @@ def _pump_unlocked(
                     "from_work_item_id": wi["id"],
                     "parent_task_id": parent_id,
                     "reopened_parent": reopened_parent,
+                    "held": q08_binding_refusal is not None,
+                    "hold_code": (
+                        Q08_PROMOTION_BINDING_REFUSED
+                        if q08_binding_refusal is not None else None
+                    ),
                 })
                 # Keep the serialized writer interval to one promotion.  The
                 # global pump claim prevents a second promoter; terminal workers
@@ -26877,6 +26899,8 @@ def _setfile_path_exists(setfile_path: str) -> bool:
 Q08_PROMOTION_WINDOW_BINDING_SCHEMA = "qm.q08-promotion-window-binding/v1"
 Q08_PROMOTION_IDENTITY_BINDING_SCHEMA = "qm.q08-promotion-identity-binding/v1"
 Q08_PROMOTION_WINDOW_UNAVAILABLE = "Q08_PROMOTION_WINDOW_UNAVAILABLE"
+Q08_PROMOTION_BINDING_REFUSAL_SCHEMA = "qm.q08-promotion-binding-refusal/v1"
+Q08_PROMOTION_BINDING_REFUSED = "Q08_PROMOTION_BINDING_REFUSED"
 
 
 def _carry_q08_candidate_window(
@@ -27212,6 +27236,201 @@ def _q08_typed_identity_from_payload(payload: Mapping[str, Any]) -> dict[str, An
         "data_window_start": payload.get("expected_from_date"),
         "data_window_end": payload.get("expected_to_date"),
     }
+
+
+def _q08_execution_identity_state(
+    candidate: Mapping[str, Any], payload: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Return missing/conflicting four-part execution bindings for one Q08 row."""
+    raw_identity = payload.get("artifact_identity")
+    artifact_identity = (
+        raw_identity if isinstance(raw_identity, Mapping) else {}
+    )
+    values: dict[str, str | None] = {}
+    missing: list[str] = []
+    conflicts: dict[str, list[str]] = {}
+    for role in ("mq5", "ex5", "setfile", "include_closure"):
+        key = role + "_sha256"
+        payload_key = (
+            "include_closure_sha256"
+            if role == "include_closure"
+            else "expected_" + key
+        )
+        claims = [
+            _work_item_value(candidate, key),
+            artifact_identity.get(key),
+            payload.get(payload_key),
+        ]
+        populated = [
+            str(value).strip().lower()
+            for value in claims
+            if value not in (None, "") and str(value).strip()
+        ]
+        distinct = sorted(set(populated))
+        if not distinct:
+            values[key] = None
+            missing.append(role)
+        else:
+            values[key] = distinct[0]
+            if len(distinct) > 1:
+                conflicts[role] = distinct
+    return {
+        "identity": values,
+        "missing_roles": missing,
+        "conflicts": conflicts,
+        "bound": not missing and not conflicts,
+    }
+
+
+def _q08_claim_execution_binding(
+    conn: sqlite3.Connection,
+    candidate: Mapping[str, Any],
+    payload: dict[str, Any],
+) -> tuple[bool, dict[str, Any]]:
+    """Derive a complete Q08 identity before DSR validates a legacy row.
+
+    The helper only plans an in-claim binding; the worker persists the returned
+    typed columns atomically with the pending->active transition.  Any populated
+    candidate claim that differs from the authenticated predecessor/current
+    build remains a genuine mismatch and is never overwritten.
+    """
+    predecessor_id = str(
+        payload.get("promoted_from_work_item")
+        or payload.get("from_work_item_id")
+        or ""
+    ).strip()
+    if not predecessor_id:
+        return False, {
+            "reason": "BUILD_IDENTITY_UNBOUND",
+            "detail": "q08_predecessor_work_item_id_missing",
+        }
+    predecessor = conn.execute(
+        "SELECT * FROM work_items WHERE id=?", (predecessor_id,)
+    ).fetchone()
+    if predecessor is None:
+        return False, {
+            "reason": "BUILD_IDENTITY_UNBOUND",
+            "detail": "q08_predecessor_work_item_missing",
+            "predecessor_work_item_id": predecessor_id,
+        }
+    if str(_work_item_value(predecessor, "status", "") or "").lower() != "done":
+        return False, {
+            "reason": "BUILD_IDENTITY_UNBOUND",
+            "detail": "q08_predecessor_not_terminal",
+            "predecessor_work_item_id": predecessor_id,
+        }
+
+    bound_payload = dict(payload)
+    binding_ok, binding_detail = _q08_promotion_execution_binding(
+        conn, predecessor, bound_payload
+    )
+    if not binding_ok:
+        return False, {
+            "reason": "BUILD_IDENTITY_BINDING_REFUSED",
+            "predecessor_work_item_id": predecessor_id,
+            "detail": binding_detail,
+        }
+    typed = _q08_typed_identity_from_payload(bound_payload)
+    derived = {
+        key: str(typed.get(key) or "").strip().lower()
+        for key in (
+            "mq5_sha256", "ex5_sha256", "setfile_sha256",
+            "include_closure_sha256",
+        )
+    }
+    invalid = [
+        key.removesuffix("_sha256")
+        for key, value in derived.items()
+        if not re.fullmatch(r"[0-9a-f]{64}", value)
+    ]
+    if invalid:
+        return False, {
+            "reason": "BUILD_IDENTITY_UNBOUND",
+            "missing_roles": invalid,
+            "predecessor_work_item_id": predecessor_id,
+        }
+
+    current_state = _q08_execution_identity_state(candidate, payload)
+    for role, claims in current_state["conflicts"].items():
+        return False, {
+            "reason": f"CONFLICTING_BUILD_IDENTITY:{role}",
+            "claims": claims,
+            "predecessor_work_item_id": predecessor_id,
+        }
+    for role in ("mq5", "ex5", "setfile", "include_closure"):
+        key = role + "_sha256"
+        existing = current_state["identity"].get(key)
+        if existing and existing != derived[key]:
+            return False, {
+                "reason": f"BUILD_IDENTITY_MISMATCH:{role}",
+                "recorded_sha256": existing,
+                "authenticated_sha256": derived[key],
+                "predecessor_work_item_id": predecessor_id,
+            }
+
+    bound_payload["q08_claim_identity_binding"] = {
+        "schema": "qm.q08-claim-identity-binding/v1",
+        "predecessor_work_item_id": predecessor_id,
+        "promotion_binding_schema": Q08_PROMOTION_IDENTITY_BINDING_SCHEMA,
+        "authority": (
+            bound_payload.get("q08_promotion_identity_binding") or {}
+        ).get("authority"),
+    }
+    payload.clear()
+    payload.update(bound_payload)
+    bound_candidate = dict(candidate)
+    bound_candidate.update(typed)
+    return True, {
+        "reason": None,
+        "predecessor_work_item_id": predecessor_id,
+        "typed_identity": typed,
+        "candidate": bound_candidate,
+        "binding": bound_payload["q08_claim_identity_binding"],
+    }
+
+
+def _hold_q08_promotion_binding_refusal(
+    conn: sqlite3.Connection,
+    *,
+    work_item_id: str,
+    predecessor_work_item_id: str,
+    detail: Mapping[str, Any],
+    now: str,
+) -> bool:
+    """Park a newly-created refused promotion under a typed non-restart hold."""
+    refusal = {
+        "schema": Q08_PROMOTION_BINDING_REFUSAL_SCHEMA,
+        "predecessor_work_item_id": predecessor_work_item_id,
+        "reason": "identity_binding_refused",
+        "detail": dict(detail),
+    }
+    cursor = conn.execute(
+        """
+        INSERT INTO work_item_holds(
+          work_item_id,hold_code,reason,active,release_on_restart,
+          created_at,updated_at,released_at,release_note
+        )
+        SELECT ?,?,?,1,0,?,?,NULL,NULL
+        WHERE NOT EXISTS(
+          SELECT 1 FROM work_item_holds
+          WHERE work_item_id=? AND active=1
+        )
+        """,
+        (
+            work_item_id, Q08_PROMOTION_BINDING_REFUSED,
+            json.dumps(refusal, sort_keys=True), now, now, work_item_id,
+        ),
+    )
+    if cursor.rowcount == 1:
+        event(
+            conn,
+            "work_item",
+            work_item_id,
+            "q08_promotion_binding_refusal_held",
+            refusal,
+        )
+        return True
+    return False
 
 
 def _attach_q08_dsr_context(

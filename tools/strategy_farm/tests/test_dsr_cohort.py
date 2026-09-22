@@ -212,6 +212,81 @@ def test_claimability_precheck_never_needs_claimed_at_iso_on_the_single_configur
     assert result == {"claimable": True, "reason": None}
 
 
+def test_claimability_precheck_reports_unbound_identity_not_mismatch(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(
+        dsr_cohort,
+        "_find_ledger",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            dsr_cohort.CohortUnavailable("SEALED_SEARCH_LEDGER_UNAVAILABLE")
+        ),
+    )
+    con = sqlite3.connect(":memory:")
+    candidate = {
+        "id": "q08-unbound",
+        "ea_id": "QM5_42",
+        "symbol": "EURUSD.DWX",
+        "setfile_path": str(tmp_path / "QM5_42_EURUSD.DWX_D1_backtest.set"),
+        "mq5_sha256": None,
+        "ex5_sha256": None,
+        "setfile_sha256": None,
+    }
+    payload = {
+        "expected_period": "D1",
+        "from_date": "2024.01.01",
+        "to_date": "2025.12.31",
+    }
+
+    result = dsr_cohort.claimability_precheck(con, candidate, payload)
+
+    assert result == {
+        "claimable": False,
+        "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_UNBOUND",
+        "binding_required": True,
+    }
+
+
+def test_claimability_precheck_preserves_genuine_mismatch_semantics(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(
+        dsr_cohort,
+        "_find_ledger",
+        lambda **_kwargs: (_ for _ in ()).throw(
+            dsr_cohort.CohortUnavailable("SEALED_SEARCH_LEDGER_UNAVAILABLE")
+        ),
+    )
+    monkeypatch.setattr(
+        dsr_cohort,
+        "_resolve_single_configuration_identity",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            dsr_cohort.CohortUnavailable(
+                "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+            )
+        ),
+    )
+    con = sqlite3.connect(":memory:")
+    candidate = {
+        "id": "q08-drifted",
+        "ea_id": "QM5_42",
+        "symbol": "EURUSD.DWX",
+        "setfile_path": str(tmp_path / "QM5_42_EURUSD.DWX_D1_backtest.set"),
+    }
+    payload = {
+        "expected_period": "D1",
+        "from_date": "2024.01.01",
+        "to_date": "2025.12.31",
+    }
+
+    result = dsr_cohort.claimability_precheck(con, candidate, payload)
+
+    assert result == {
+        "claimable": False,
+        "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5",
+    }
+
+
 def test_window_pair_accepts_bare_year_edges():
     """2026-09-14: Q08 reruns declare expected_from_date='2017'/expected_to_date='2022'; a bare year is a
     whole-year edge (first day for from, last day for to); partial or malformed dates stay refused."""
