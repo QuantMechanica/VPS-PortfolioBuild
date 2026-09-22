@@ -1,0 +1,9 @@
+{
+  "adapter": "generic",
+  "adapter_state": "ROUTER_ONLY",
+  "lead_status": "DEFERRED:SOURCE_POLICY",
+  "next_action": "Use already-governed local FTMO source records; do not fetch through another source-intake adapter.",
+  "reason": "generic runtime retrieval is disabled until a cryptographic OWNER authorization verifier exists",
+  "status": "PERMISSION_REQUIRED",
+  "url": "https://ftmo.com/wp-json/ftmo/symbols"
+}
