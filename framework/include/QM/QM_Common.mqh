@@ -362,7 +362,21 @@ bool QM_FrameworkInitCoreAfterRuntimeStateArmed(const int ea_id,
 #else
    QM_EntryPatternDisable();
 #endif
-   QM_KillSwitchInit(ea_id, g_qm_fw_magic, 3.0, 0.0, 1.0);
+   if(!QM_KillSwitchInit(ea_id, g_qm_fw_magic, 3.0, 0.0, 1.0))
+     {
+      QM_LogEvent(QM_ERROR, "FRAMEWORK_INIT_FAILED",
+                  "{\"reason\":\"kill_switch_init_failed\"}");
+      return false;
+     }
+   // One governed initializer for every FTMO-mode sleeve.  It applies the
+   // generation book tag and named Prague-midnight anchor before INIT can be
+   // emitted.  Any missing/invalid input or failed setter is fail-closed.
+   if(!QM_KillSwitchApplyFtmoContract())
+     {
+      QM_LogEvent(QM_ERROR, "FRAMEWORK_INIT_FAILED",
+                  "{\"reason\":\"ftmo_kill_switch_contract_failed\"}");
+      return false;
+     }
 
    // FW4 2026-05-23 — KS-test kill-switch (Q13 burn-in safety).
    // Loads baseline at `QM\baselines\QM5_<ea>_<sym>.json` (sandbox: terminal
@@ -383,11 +397,25 @@ bool QM_FrameworkInitCoreAfterRuntimeStateArmed(const int ea_id,
    // FW6 2026-05-23 — initialise equity snapshot stream (Q08 sub-gate input).
    QM_EquityStreamInit();
 
-   if(!g_qm_fw_chartui_suppressed && qm_chartui_enabled &&
-      MQLInfoInteger(MQL_TESTER) == 0)
+   const bool live_timer_required =
+      MQLInfoInteger(MQL_TESTER) == 0 &&
+      (QM_KillSwitchFtmoContractEnabled() ||
+       (!g_qm_fw_chartui_suppressed && qm_chartui_enabled));
+   if(live_timer_required)
      {
-      EventSetTimer(1);
-      g_qm_fw_timer_active = true;
+      if(!EventSetTimer(1))
+        {
+         if(QM_KillSwitchFtmoContractEnabled())
+           {
+            QM_LogEvent(QM_ERROR, "FRAMEWORK_INIT_FAILED",
+                        "{\"reason\":\"ftmo_rollover_timer_arm_failed\"}");
+            return false;
+           }
+         QM_LogEvent(QM_WARN, "FRAMEWORK_INIT_FAILED",
+                     "{\"reason\":\"chartui_timer_arm_failed\"}");
+        }
+      else
+         g_qm_fw_timer_active = true;
      }
 
    g_qm_fw_initialized = true;
@@ -1041,6 +1069,11 @@ void QM_FrameworkOnTimer()
   {
    if(!g_qm_fw_initialized)
       return;
+   // FTMO rollover must advance even when the market is closed and TimeCurrent
+   // is frozen at Friday's final quote.  The kill-switch uses its wall-clock
+   // Prague calendar only when the governed FTMO mode is active.
+   if(QM_KillSwitchFtmoContractEnabled())
+      QM_KillSwitchRefreshBrokerDay();
    if(!g_qm_fw_chartui_suppressed)
       QM_ChartUI_Refresh();
   }

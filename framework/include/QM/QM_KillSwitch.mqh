@@ -25,6 +25,32 @@ string g_qm_ks_portfolio_dd_signal_file  = "";
 bool   g_qm_ks_portfolio_signal_explicit = false;
 string g_qm_ks_book_tag                  = "";
 
+// Named anchor policy.  FTMO's published Maximum Daily Loss rule uses the
+// balance recorded at midnight Prague time.  MAX_BALANCE_EQUITY is the
+// QuantMechanica conservative overlay: when floating equity is above balance
+// it raises (never lowers) the internal loss floor.  FTMO-mode inputs default
+// to that conservative overlay; legacy/non-FTMO EAs retain EQUITY_AT_DAY_START.
+enum QM_KillSwitchAnchorMode
+  {
+   EQUITY_AT_DAY_START       = 0,
+   FTMO_BALANCE_AT_MIDNIGHT = 1,
+   MAX_BALANCE_EQUITY       = 2
+  };
+
+enum QM_FtmoExecutionMode
+  {
+   QM_FTMO_EXECUTION_OFF      = 0,
+   QM_FTMO_EXECUTION_GOVERNED = 1
+  };
+
+// One shared FTMO contract surface for every V5 EA.  Fable's governed preset
+// turns the mode on and supplies the exact generation/cycle id as book tag;
+// leaving the tag blank while the mode is on is an INIT_FAILED condition.
+input group "FTMO Kill-Switch Contract"
+input QM_FtmoExecutionMode     qm_ftmo_execution_mode = QM_FTMO_EXECUTION_OFF;
+input string                   qm_ftmo_book_tag        = "";
+input QM_KillSwitchAnchorMode  qm_ftmo_anchor_mode     = MAX_BALANCE_EQUITY;
+
 bool   g_qm_ks_initialized               = false;
 bool   g_qm_ks_halted                    = false;
 bool   g_qm_ks_unconfigured_logged       = false;
@@ -38,6 +64,10 @@ double g_qm_ks_day_start_equity          = 0.0;
 // anchor); the FTMO preset opts into the anchor options at challenge rebuild.
 int    g_qm_ks_day_anchor_offset_hours   = 0;
 bool   g_qm_ks_anchor_use_max_be         = false;
+QM_KillSwitchAnchorMode g_qm_ks_anchor_mode = EQUITY_AT_DAY_START;
+bool   g_qm_ks_prague_calendar           = false;
+datetime g_qm_ks_effective_prague_time   = 0;
+datetime g_qm_ks_effective_server_time   = 0;
 string g_qm_ks_state_file                = "";
 datetime g_qm_ks_halt_retry_ts           = 0;
 
@@ -50,6 +80,185 @@ int QM_KillSwitchDayKey(const datetime broker_time)
    MqlDateTime t;
    TimeToStruct(broker_time, t);
    return t.year * 1000 + t.day_of_year;
+}
+
+string QM_KillSwitchAnchorModeName(const QM_KillSwitchAnchorMode mode)
+{
+   switch(mode)
+   {
+      case EQUITY_AT_DAY_START:       return "EQUITY_AT_DAY_START";
+      case FTMO_BALANCE_AT_MIDNIGHT: return "FTMO_BALANCE_AT_MIDNIGHT";
+      case MAX_BALANCE_EQUITY:       return "MAX_BALANCE_EQUITY";
+   }
+   return "UNKNOWN";
+}
+
+int QM_KillSwitchAnchorModeFromName(const string name)
+{
+   if(name == "EQUITY_AT_DAY_START")       return (int)EQUITY_AT_DAY_START;
+   if(name == "FTMO_BALANCE_AT_MIDNIGHT") return (int)FTMO_BALANCE_AT_MIDNIGHT;
+   if(name == "MAX_BALANCE_EQUITY")       return (int)MAX_BALANCE_EQUITY;
+   return -1;
+}
+
+string QM_KillSwitchDateString(const datetime value)
+{
+   MqlDateTime t;
+   TimeToStruct(value, t);
+   return StringFormat("%04d-%02d-%02d", t.year, t.mon, t.day);
+}
+
+string QM_KillSwitchTimeString(const datetime value)
+{
+   return TimeToString(value, TIME_DATE | TIME_SECONDS);
+}
+
+datetime QM_KillSwitchMakeTime(const int year,
+                               const int month,
+                               const int day,
+                               const int hour,
+                               const int minute,
+                               const int second)
+{
+   MqlDateTime t;
+   t.year = year;
+   t.mon = month;
+   t.day = day;
+   t.hour = hour;
+   t.min = minute;
+   t.sec = second;
+   t.day_of_week = 0;
+   t.day_of_year = 0;
+   return StructToTime(t);
+}
+
+int QM_KillSwitchNthSunday(const int year, const int month, const int nth)
+{
+   MqlDateTime first;
+   TimeToStruct(QM_KillSwitchMakeTime(year, month, 1, 0, 0, 0), first);
+   return 1 + ((7 - first.day_of_week) % 7) + 7 * (nth - 1);
+}
+
+int QM_KillSwitchDaysInMonth(const int year, const int month)
+{
+   if(month == 2)
+   {
+      const bool leap = ((year % 4) == 0 && (year % 100) != 0) || ((year % 400) == 0);
+      return leap ? 29 : 28;
+   }
+   if(month == 4 || month == 6 || month == 9 || month == 11)
+      return 30;
+   return 31;
+}
+
+int QM_KillSwitchLastSunday(const int year, const int month)
+{
+   const int last_day = QM_KillSwitchDaysInMonth(year, month);
+   MqlDateTime last;
+   TimeToStruct(QM_KillSwitchMakeTime(year, month, last_day, 0, 0, 0), last);
+   return last_day - last.day_of_week;
+}
+
+// Darwinex/FTMO MT5 server clocks follow the New-York DST calendar while
+// displaying UTC+2 in US standard time and UTC+3 in US daylight time.  These
+// helpers encode the statutory transition instants, not a hard-coded -1 shift.
+bool QM_KillSwitchServerDstAtUtc(const datetime utc_time)
+{
+   MqlDateTime t;
+   TimeToStruct(utc_time, t);
+   const int start_day = QM_KillSwitchNthSunday(t.year, 3, 2);
+   const int end_day = QM_KillSwitchNthSunday(t.year, 11, 1);
+   const datetime start_utc = QM_KillSwitchMakeTime(t.year, 3, start_day, 7, 0, 0);
+   const datetime end_utc = QM_KillSwitchMakeTime(t.year, 11, end_day, 6, 0, 0);
+   return utc_time >= start_utc && utc_time < end_utc;
+}
+
+bool QM_KillSwitchPragueDstAtUtc(const datetime utc_time)
+{
+   MqlDateTime t;
+   TimeToStruct(utc_time, t);
+   const int start_day = QM_KillSwitchLastSunday(t.year, 3);
+   const int end_day = QM_KillSwitchLastSunday(t.year, 10);
+   const datetime start_utc = QM_KillSwitchMakeTime(t.year, 3, start_day, 1, 0, 0);
+   const datetime end_utc = QM_KillSwitchMakeTime(t.year, 10, end_day, 1, 0, 0);
+   return utc_time >= start_utc && utc_time < end_utc;
+}
+
+int QM_KillSwitchServerUtcOffsetAtUtc(const datetime utc_time)
+{
+   return QM_KillSwitchServerDstAtUtc(utc_time) ? 3 : 2;
+}
+
+int QM_KillSwitchPragueUtcOffsetAtUtc(const datetime utc_time)
+{
+   return QM_KillSwitchPragueDstAtUtc(utc_time) ? 2 : 1;
+}
+
+// Infer the UTC offset from a server-clock calendar value.  The repeated hour
+// at the November rollback is intrinsically ambiguous without UTC metadata;
+// the live wall-clock path below starts from TimeGMT and is exact.  This pure
+// server-time helper is deterministic at every Prague day boundary (including
+// both US/EU divergence windows), which is the kill-switch decision surface.
+int QM_KillSwitchServerUtcOffsetFromServerTime(const datetime server_time)
+{
+   MqlDateTime t;
+   TimeToStruct(server_time, t);
+   const int start_day = QM_KillSwitchNthSunday(t.year, 3, 2);
+   const int end_day = QM_KillSwitchNthSunday(t.year, 11, 1);
+   if(t.mon < 3 || t.mon > 11)
+      return 2;
+   if(t.mon > 3 && t.mon < 11)
+      return 3;
+   if(t.mon == 3)
+   {
+      if(t.day > start_day || (t.day == start_day && t.hour >= 10))
+         return 3;
+      return 2;
+   }
+   if(t.day < end_day || (t.day == end_day && t.hour < 9))
+      return 3;
+   return 2;
+}
+
+// Deterministic Europe/Prague translation from an MT5 server timestamp.  The
+// returned offset is -1 in both stable seasons and -2 only while US and EU DST
+// status diverges.
+bool QM_KillSwitchPragueFromServerTime(const datetime server_time,
+                                       datetime &prague_time,
+                                       int &offset_hours)
+{
+   if(server_time <= 0)
+      return false;
+   const int server_utc_offset = QM_KillSwitchServerUtcOffsetFromServerTime(server_time);
+   const datetime utc_time = server_time - server_utc_offset * 3600;
+   const int prague_utc_offset = QM_KillSwitchPragueUtcOffsetAtUtc(utc_time);
+   offset_hours = prague_utc_offset - server_utc_offset;
+   prague_time = server_time + offset_hours * 3600;
+   return true;
+}
+
+// Advancing live clock for weekend/no-tick protection.  TimeGMT is calculated
+// from the machine wall clock and does not freeze at the last received quote.
+// Tester runs retain simulated TimeCurrent semantics for determinism.
+bool QM_KillSwitchPragueClock(datetime &server_time,
+                              datetime &prague_time,
+                              int &offset_hours)
+{
+   if(MQLInfoInteger(MQL_TESTER) != 0)
+   {
+      server_time = TimeCurrent();
+      return QM_KillSwitchPragueFromServerTime(server_time, prague_time, offset_hours);
+   }
+
+   const datetime utc_time = TimeGMT();
+   if(utc_time <= 0)
+      return false;
+   const int server_utc_offset = QM_KillSwitchServerUtcOffsetAtUtc(utc_time);
+   const int prague_utc_offset = QM_KillSwitchPragueUtcOffsetAtUtc(utc_time);
+   server_time = utc_time + server_utc_offset * 3600;
+   prague_time = utc_time + prague_utc_offset * 3600;
+   offset_hours = prague_utc_offset - server_utc_offset;
+   return true;
 }
 
 string QM_KillSwitchTrim(const string value)
@@ -118,16 +327,34 @@ bool QM_KillSwitchTryParseDouble(string text, double &value)
 
 int QM_KillSwitchCurrentDayKey()
 {
-   return QM_KillSwitchDayKey(TimeCurrent() + g_qm_ks_day_anchor_offset_hours * 3600);
+   if(g_qm_ks_prague_calendar)
+   {
+      datetime server_time = 0;
+      datetime prague_time = 0;
+      int offset_hours = 0;
+      if(!QM_KillSwitchPragueClock(server_time, prague_time, offset_hours))
+         return g_qm_ks_day_key;
+      g_qm_ks_effective_server_time = server_time;
+      g_qm_ks_effective_prague_time = prague_time;
+      g_qm_ks_day_anchor_offset_hours = offset_hours;
+      return QM_KillSwitchDayKey(prague_time);
+   }
+
+   g_qm_ks_effective_server_time = TimeCurrent();
+   g_qm_ks_effective_prague_time =
+      g_qm_ks_effective_server_time + g_qm_ks_day_anchor_offset_hours * 3600;
+   return QM_KillSwitchDayKey(g_qm_ks_effective_prague_time);
 }
 
 double QM_KillSwitchAnchorEquity()
 {
    const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
-   if(!g_qm_ks_anchor_use_max_be)
-      return equity;
-   // FTMO semantics: the daily-loss baseline is max(balance, equity) at reset.
-   return MathMax(equity, AccountInfoDouble(ACCOUNT_BALANCE));
+   const double balance = AccountInfoDouble(ACCOUNT_BALANCE);
+   if(g_qm_ks_anchor_mode == FTMO_BALANCE_AT_MIDNIGHT)
+      return balance;
+   if(g_qm_ks_anchor_mode == MAX_BALANCE_EQUITY)
+      return MathMax(equity, balance);
+   return equity;
 }
 
 // E2 fix (2026-07-06 audit): KS_DAILY_LOSS halt + day anchor lived only in
@@ -159,9 +386,13 @@ void QM_KillSwitchSaveState()
    // Review 83be4dd3 (E3 round-trip): state is only valid under the SAME
    // anchor configuration — a state saved pre-SetDayAnchor must not override
    // the max(balance,equity)/offset baseline computed after it.
-   FileWriteString(fh, StringFormat("anchor_offset=%d\n", g_qm_ks_day_anchor_offset_hours));
-   FileWriteString(fh, StringFormat("anchor_max_be=%d\n", g_qm_ks_anchor_use_max_be ? 1 : 0));
-   FileClose(fh);
+    FileWriteString(fh, StringFormat("anchor_offset=%d\n", g_qm_ks_day_anchor_offset_hours));
+    FileWriteString(fh, StringFormat("anchor_max_be=%d\n", g_qm_ks_anchor_use_max_be ? 1 : 0));
+    FileWriteString(fh, StringFormat("anchor_mode=%s\n", QM_KillSwitchAnchorModeName(g_qm_ks_anchor_mode)));
+    FileWriteString(fh, StringFormat("book_tag=%s\n", g_qm_ks_book_tag));
+    FileWriteString(fh, StringFormat("prague_calendar=%d\n", g_qm_ks_prague_calendar ? 1 : 0));
+    FileWriteString(fh, StringFormat("prague_date=%s\n", QM_KillSwitchDateString(g_qm_ks_effective_prague_time)));
+    FileClose(fh);
 }
 
 // Restore outcome (review 5f860f79 item 1): the caller must know WHY nothing
@@ -181,10 +412,11 @@ int QM_KillSwitchRestoreState()
       return QM_KS_RESTORE_NONE; // first run on this terminal — nothing to restore
 
    int saved_day_key = -1, saved_halted = 0, saved_halt_day_key = -1;
-   int saved_anchor_offset = 0, saved_anchor_max_be = 0;
-   double saved_anchor = 0.0;
-   long saved_magic = 0;
-   string saved_reason = "";
+    int saved_anchor_offset = 0, saved_anchor_max_be = 0;
+    int saved_anchor_mode = -1, saved_prague_calendar = -1;
+    double saved_anchor = 0.0;
+    long saved_magic = 0;
+    string saved_reason = "", saved_book_tag = "";
    while(!FileIsEnding(fh))
    {
       const string line = QM_KillSwitchTrim(FileReadString(fh));
@@ -199,10 +431,22 @@ int QM_KillSwitchRestoreState()
       else if(key == "halt_reason")      saved_reason = val;
       else if(key == "halt_day_key")     saved_halt_day_key = (int)StringToInteger(val);
       else if(key == "magic")            saved_magic = StringToInteger(val);
-      else if(key == "anchor_offset")    saved_anchor_offset = (int)StringToInteger(val);
-      else if(key == "anchor_max_be")    saved_anchor_max_be = (int)StringToInteger(val);
-   }
-   FileClose(fh);
+       else if(key == "anchor_offset")    saved_anchor_offset = (int)StringToInteger(val);
+       else if(key == "anchor_max_be")    saved_anchor_max_be = (int)StringToInteger(val);
+       else if(key == "anchor_mode")      saved_anchor_mode = QM_KillSwitchAnchorModeFromName(val);
+       else if(key == "book_tag")         saved_book_tag = val;
+       else if(key == "prague_calendar")  saved_prague_calendar = (int)StringToInteger(val);
+    }
+    FileClose(fh);
+
+    // Backward-compatible inference for pre-named-mode state.  A governed FTMO
+    // file still cannot be mistaken for legacy because its non-empty book tag
+    // and Prague-calendar flag are part of the exact configuration match.
+    if(saved_anchor_mode < 0)
+       saved_anchor_mode = saved_anchor_max_be == 1
+          ? (int)MAX_BALANCE_EQUITY : (int)EQUITY_AT_DAY_START;
+    if(saved_prague_calendar < 0)
+       saved_prague_calendar = 0;
 
    if(saved_magic != g_qm_ks_magic || saved_anchor <= 0.0)
    {
@@ -216,15 +460,23 @@ int QM_KillSwitchRestoreState()
    // comparison — day_key itself is computed under the anchor offset, so a
    // foreign-config file cannot even be judged stale under our boundary. It is
    // preserved for the setter, which re-restores after adopting the config.
-   if(saved_anchor_offset != g_qm_ks_day_anchor_offset_hours ||
-      saved_anchor_max_be != (g_qm_ks_anchor_use_max_be ? 1 : 0))
-   {
-      QM_LogEvent(QM_INFO, "KS_STATE_FOREIGN_CONFIG_PRESERVED",
-                  StringFormat("{\"saved_anchor_offset\":%d,\"current_anchor_offset\":%d,\"saved_anchor_max_be\":%d,\"current_anchor_max_be\":%d}",
-                               saved_anchor_offset, g_qm_ks_day_anchor_offset_hours,
-                               saved_anchor_max_be, g_qm_ks_anchor_use_max_be ? 1 : 0));
-      return QM_KS_RESTORE_FOREIGN_CONFIG;
-   }
+    if(saved_anchor_offset != g_qm_ks_day_anchor_offset_hours ||
+       saved_anchor_max_be != (g_qm_ks_anchor_use_max_be ? 1 : 0) ||
+       saved_anchor_mode != (int)g_qm_ks_anchor_mode ||
+       saved_book_tag != g_qm_ks_book_tag ||
+       saved_prague_calendar != (g_qm_ks_prague_calendar ? 1 : 0))
+    {
+       QM_LogEvent(QM_INFO, "KS_STATE_FOREIGN_CONFIG_PRESERVED",
+                   StringFormat("{\"saved_anchor_offset\":%d,\"current_anchor_offset\":%d,\"saved_anchor_max_be\":%d,\"current_anchor_max_be\":%d,\"saved_anchor_mode\":\"%s\",\"current_anchor_mode\":\"%s\",\"saved_book_tag\":\"%s\",\"current_book_tag\":\"%s\",\"saved_prague_calendar\":%d,\"current_prague_calendar\":%d}",
+                                saved_anchor_offset, g_qm_ks_day_anchor_offset_hours,
+                                saved_anchor_max_be, g_qm_ks_anchor_use_max_be ? 1 : 0,
+                                QM_KillSwitchAnchorModeName((QM_KillSwitchAnchorMode)saved_anchor_mode),
+                                QM_KillSwitchAnchorModeName(g_qm_ks_anchor_mode),
+                                QM_LoggerEscapeJson(saved_book_tag),
+                                QM_LoggerEscapeJson(g_qm_ks_book_tag),
+                                saved_prague_calendar, g_qm_ks_prague_calendar ? 1 : 0));
+       return QM_KS_RESTORE_FOREIGN_CONFIG;
+    }
    if(saved_day_key != g_qm_ks_day_key)
    {
       QM_LogEvent(QM_INFO, "KS_STATE_STALE_IGNORED",
@@ -257,12 +509,34 @@ int QM_KillSwitchRestoreState()
 
 void QM_KillSwitchRefreshBrokerDay()
 {
+   const int old_day_key = g_qm_ks_day_key;
+   const int old_offset_hours = g_qm_ks_day_anchor_offset_hours;
    const int current_day_key = QM_KillSwitchCurrentDayKey();
    if(g_qm_ks_day_key == current_day_key)
+   {
+      // A US/EU DST transition can change the server->Prague offset without
+      // changing the Prague calendar date.  Persist that configuration change
+      // so the pulse never reads a stale -1/-2 offset from an otherwise-current
+      // state file.
+      if(old_offset_hours != g_qm_ks_day_anchor_offset_hours)
+         QM_KillSwitchSaveState();
       return;
+   }
 
    g_qm_ks_day_key = current_day_key;
    g_qm_ks_day_start_equity = QM_KillSwitchAnchorEquity();
+
+   QM_LogEvent(QM_INFO,
+               "KS_DAY_ROLLOVER",
+               StringFormat("{\"old_day_key\":%d,\"new_day_key\":%d,\"server_time\":\"%s\",\"effective_prague_time\":\"%s\",\"offset_hours\":%d,\"anchor_mode\":\"%s\",\"selected_anchor\":%.2f,\"book_tag\":\"%s\"}",
+                            old_day_key,
+                            current_day_key,
+                            QM_LoggerEscapeJson(QM_KillSwitchTimeString(g_qm_ks_effective_server_time)),
+                            QM_LoggerEscapeJson(QM_KillSwitchTimeString(g_qm_ks_effective_prague_time)),
+                            g_qm_ks_day_anchor_offset_hours,
+                            QM_KillSwitchAnchorModeName(g_qm_ks_anchor_mode),
+                            g_qm_ks_day_start_equity,
+                            QM_LoggerEscapeJson(g_qm_ks_book_tag)));
 
    if(g_qm_ks_halted && g_qm_ks_halt_day_key != current_day_key)
    {
@@ -505,6 +779,13 @@ bool QM_KillSwitchInit(const int ea_id,
    g_qm_ks_halt_day_key = -1;
    g_qm_ks_day_key = -1;
    g_qm_ks_day_start_equity = 0.0;
+   g_qm_ks_day_anchor_offset_hours = 0;
+   g_qm_ks_anchor_use_max_be = false;
+   g_qm_ks_anchor_mode = EQUITY_AT_DAY_START;
+   g_qm_ks_prague_calendar = false;
+   g_qm_ks_effective_prague_time = 0;
+   g_qm_ks_effective_server_time = 0;
+   g_qm_ks_book_tag = "";
    g_qm_ks_unconfigured_logged = false;
    g_qm_ks_initialized = true;
    // E2 ordering (adversarial review 27c36fb7, 2026-07-06): RestoreState MUST
@@ -536,6 +817,22 @@ bool QM_KillSwitchInit(const int ea_id,
    return true;
 }
 
+bool QM_KillSwitchBookTagIsSafe(const string tag)
+{
+   const int length = StringLen(tag);
+   if(length < 1 || length > 96)
+      return false;
+   for(int i = 0; i < length; ++i)
+   {
+      const ushort ch = StringGetCharacter(tag, i);
+      const bool alpha = (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
+      const bool digit = ch >= '0' && ch <= '9';
+      if(!alpha && !digit && ch != '_' && ch != '-')
+         return false;
+   }
+   return true;
+}
+
 // H2 book-scoping (2026-07-05): route the portfolio-DD signal per book so a
 // halt of one live book (e.g. FTMO challenge) can never flatten another (e.g.
 // the DXZ T_Live book). Call AFTER QM_KillSwitchInit — same rollout pattern as
@@ -545,7 +842,7 @@ bool QM_KillSwitchInit(const int ea_id,
 bool QM_KillSwitchSetBookTag(const string tag)
 {
    string t = QM_KillSwitchTrim(tag);
-   if(StringLen(t) == 0 || !g_qm_ks_initialized)
+   if(!g_qm_ks_initialized || !QM_KillSwitchBookTagIsSafe(t))
       return false;
    g_qm_ks_book_tag = t;
    if(!g_qm_ks_portfolio_signal_explicit)
@@ -559,24 +856,18 @@ bool QM_KillSwitchSetBookTag(const string tag)
    return true;
 }
 
-// E3 (2026-07-06 audit): configurable halt-day anchor. offset_hours shifts the
-// day boundary relative to broker midnight. FTMO's daily loss resets at
-// midnight Prague CE(S)T; on a US-DST-coupled server (UTC+3 summer / UTC+2
-// winter) the gap is 1h in BOTH stable seasons (-1), but 2h during the ~4
-// weeks/year of US/EU DST divergence (mid/late March + late Oct/early Nov)
-// where a static -1 rolls the KS day 1h EARLY — un-halting and re-arming one
-// hour before FTMO's counter resets (review 27c36fb7, non-conservative).
-// Operator rule: run -2 during divergence windows, or accept the 1h window
-// (the -3% internal halt sits well inside FTMO's -5% budget).
-// use_max_balance_equity mirrors FTMO's baseline = max(balance, equity) at
-// reset. Call AFTER QM_KillSwitchInit (SetBookTag rollout pattern). Fail-safe:
-// an already-active halt is never cleared by re-anchoring.
+// Legacy/manual day-anchor setter retained for non-FTMO consumers.  Governed
+// FTMO builds use QM_KillSwitchSetPragueDayAnchor below so the offset follows
+// the US/EU calendar automatically instead of being an operator-supplied -1.
 bool QM_KillSwitchSetDayAnchor(const int offset_hours, const bool use_max_balance_equity)
 {
    if(!g_qm_ks_initialized || offset_hours < -12 || offset_hours > 12)
       return false;
+   g_qm_ks_prague_calendar = false;
    g_qm_ks_day_anchor_offset_hours = offset_hours;
    g_qm_ks_anchor_use_max_be = use_max_balance_equity;
+   g_qm_ks_anchor_mode = use_max_balance_equity
+      ? MAX_BALANCE_EQUITY : EQUITY_AT_DAY_START;
    g_qm_ks_day_key = QM_KillSwitchCurrentDayKey();
    g_qm_ks_day_start_equity = QM_KillSwitchAnchorEquity();
    // Keep an active halt pinned to the re-based day so it reliably survives
@@ -586,11 +877,79 @@ bool QM_KillSwitchSetDayAnchor(const int offset_hours, const bool use_max_balanc
    QM_KillSwitchRestoreState();
    QM_KillSwitchSaveState();
    QM_LogEvent(QM_INFO, "KS_DAY_ANCHOR_SET",
-               StringFormat("{\"offset_hours\":%d,\"use_max_balance_equity\":%s,\"day_key\":%d,\"day_start_equity\":%.2f}",
+               StringFormat("{\"offset_hours\":%d,\"anchor_mode\":\"%s\",\"use_max_balance_equity\":%s,\"day_key\":%d,\"day_start_equity\":%.2f,\"prague_calendar\":false}",
+                             offset_hours,
+                             QM_KillSwitchAnchorModeName(g_qm_ks_anchor_mode),
+                             use_max_balance_equity ? "true" : "false",
+                             g_qm_ks_day_key,
+                             g_qm_ks_day_start_equity));
+   return true;
+}
+
+// Governed FTMO anchor setter.  The exact FTMO rule is
+// FTMO_BALANCE_AT_MIDNIGHT; MAX_BALANCE_EQUITY is the default conservative QM
+// overlay.  Both use an advancing Prague wall clock and a dynamically derived
+// -1/-2 server offset.  An active daily halt is never cleared by reconfiguration.
+bool QM_KillSwitchSetPragueDayAnchor(const QM_KillSwitchAnchorMode mode)
+{
+   if(!g_qm_ks_initialized ||
+      (mode != FTMO_BALANCE_AT_MIDNIGHT && mode != MAX_BALANCE_EQUITY))
+      return false;
+
+   datetime server_time = 0;
+   datetime prague_time = 0;
+   int offset_hours = 0;
+   if(!QM_KillSwitchPragueClock(server_time, prague_time, offset_hours))
+      return false;
+
+   g_qm_ks_prague_calendar = true;
+   g_qm_ks_effective_server_time = server_time;
+   g_qm_ks_effective_prague_time = prague_time;
+   g_qm_ks_day_anchor_offset_hours = offset_hours;
+   g_qm_ks_anchor_mode = mode;
+   g_qm_ks_anchor_use_max_be = (mode == MAX_BALANCE_EQUITY);
+   g_qm_ks_day_key = QM_KillSwitchDayKey(prague_time);
+   g_qm_ks_day_start_equity = QM_KillSwitchAnchorEquity();
+   if(g_qm_ks_halted)
+      g_qm_ks_halt_day_key = g_qm_ks_day_key;
+   QM_KillSwitchRestoreState();
+   QM_KillSwitchSaveState();
+   QM_LogEvent(QM_INFO, "KS_DAY_ANCHOR_SET",
+               StringFormat("{\"offset_hours\":%d,\"anchor_mode\":\"%s\",\"day_key\":%d,\"day_start_equity\":%.2f,\"server_time\":\"%s\",\"effective_prague_time\":\"%s\",\"prague_calendar\":true}",
                             offset_hours,
-                            use_max_balance_equity ? "true" : "false",
+                            QM_KillSwitchAnchorModeName(mode),
                             g_qm_ks_day_key,
-                            g_qm_ks_day_start_equity));
+                            g_qm_ks_day_start_equity,
+                            QM_LoggerEscapeJson(QM_KillSwitchTimeString(server_time)),
+                            QM_LoggerEscapeJson(QM_KillSwitchTimeString(prague_time))));
+   return true;
+}
+
+bool QM_KillSwitchFtmoContractEnabled()
+{
+   return qm_ftmo_execution_mode == QM_FTMO_EXECUTION_GOVERNED;
+}
+
+// The one governed FTMO initializer called centrally by QM_FrameworkInitCore.
+// Both setters must succeed before the framework is allowed to emit INIT/return
+// success; there is no per-sleeve copy of this contract.
+bool QM_KillSwitchApplyFtmoContract()
+{
+   if(qm_ftmo_execution_mode == QM_FTMO_EXECUTION_OFF)
+      return true;
+   if(qm_ftmo_execution_mode != QM_FTMO_EXECUTION_GOVERNED)
+      return false;
+
+   const string tag = QM_KillSwitchTrim(qm_ftmo_book_tag);
+   if(!QM_KillSwitchBookTagIsSafe(tag))
+      return false;
+   if(qm_ftmo_anchor_mode != FTMO_BALANCE_AT_MIDNIGHT &&
+      qm_ftmo_anchor_mode != MAX_BALANCE_EQUITY)
+      return false;
+   if(!QM_KillSwitchSetBookTag(tag))
+      return false;
+   if(!QM_KillSwitchSetPragueDayAnchor(qm_ftmo_anchor_mode))
+      return false;
    return true;
 }
 

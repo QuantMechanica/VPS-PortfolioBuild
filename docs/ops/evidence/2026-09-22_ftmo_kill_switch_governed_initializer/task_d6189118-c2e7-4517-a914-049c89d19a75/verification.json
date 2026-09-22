@@ -1,0 +1,152 @@
+{
+  "schema_version": "qm.ftmo-governed-kill-switch-evidence/v1",
+  "task_id": "d6189118-c2e7-4517-a914-049c89d19a75",
+  "branch": "agents/board-advisor",
+  "base_commit": "4d69cf643b1fe10a6e47a06c872d09613e65b465",
+  "verdict": "PASS_FOR_REVIEW",
+  "deployment_status": "NOT_DEPLOYED",
+  "runtime_proof_status": "PENDING_OWNER_SIGNED_DEPLOY",
+  "verification": {
+    "pytest": {
+      "result": "PASS",
+      "passed": 51,
+      "command": "python -m pytest -q tools/strategy_farm/tests/test_ftmo_trial_pulse.py tools/strategy_farm/tests/test_ftmo_kill_switch_governed_initializer.py tools/strategy_farm/tests/test_killswitch_state_lifecycle_static.py"
+    },
+    "python_compile": {
+      "result": "PASS",
+      "command": "python -m py_compile tools/strategy_farm/ftmo_trial_pulse.py"
+    },
+    "diff_check": "PASS",
+    "strict_build_checks": {
+      "result": "PASS",
+      "sleeves_passed": 6,
+      "sleeves_required": 6,
+      "compiler_errors": 0,
+      "compiler_warnings": 0
+    }
+  },
+  "source_files": [
+    {
+      "path": "framework/include/QM/QM_Common.mqh",
+      "sha256": "2b81efa029670d4878b3be330896e8a6786e4f4f7c5bf0e6037a7077bced4531"
+    },
+    {
+      "path": "framework/include/QM/QM_KillSwitch.mqh",
+      "sha256": "324896f2fbe7fcb41d76bd51426ca3fd99122a484c197798360b81357b24d090"
+    },
+    {
+      "path": "framework/registry/event_vocabulary.json",
+      "sha256": "7d47252472d61b3092a035937f40020737fecfc3dbd8d18a0afda3ee59bddecc"
+    },
+    {
+      "path": "tools/strategy_farm/ftmo_trial_pulse.py",
+      "sha256": "f4de0156a8eb6516334dcf73306c0cb483b0e3f1b4ae30a37fb125f2ca51bbcf"
+    },
+    {
+      "path": "tools/strategy_farm/tests/test_ftmo_trial_pulse.py",
+      "sha256": "0b75cd19c1ae99114c44196d253bdf2948e4b4507a61c02cafba8afa9475a180"
+    },
+    {
+      "path": "tools/strategy_farm/tests/test_ftmo_kill_switch_governed_initializer.py",
+      "sha256": "f05db2dadd844b1b36768b9ec7eafcca53f68088fb62e7b84ec355cbc548dca4"
+    },
+    {
+      "path": "framework/EAs/QM5_11422_williams-18ma-outside-bar-entry-d1/QM5_11422_williams-18ma-outside-bar-entry-d1.mq5",
+      "sha256": "68684885cf3119b2f4ff3ea8d330c11a396b635b7d4998532e1f56bfc076427c"
+    },
+    {
+      "path": "framework/EAs/QM5_10403_et-turtle20x/QM5_10403_et-turtle20x.mq5",
+      "sha256": "65d4c206ad9d6ad2c8230a309714d1a900a1bc707b54dc96bc4e7fb107b8bae5"
+    }
+  ],
+  "builds": [
+    {
+      "label": "QM5_13213_balke-gmt3-range-breakout",
+      "status": "PASS",
+      "build_warnings": 3,
+      "build_report": "build_reports/QM5_13213_balke-gmt3-range-breakout.build_check.json",
+      "build_report_sha256": "47c2549f9ff42def37812b1ded224ce6863f2a0fc1e73c21afac331836bd4af8",
+      "compile_log": "compile_logs/QM5_13213_balke-gmt3-range-breakout.compile.log",
+      "compile_log_sha256": "3dfb7661f3185322f53dff8cc095a9a54a028e96104985119ac303dfe3ef13b4",
+      "mq5_sha256": "ea3920720c4f71ebe2ed4266075e51bc0fad67b261ebf15ef6335a9c68584448",
+      "compiled_ex5_sha256": "d4bb740652f43974c9187db6088505d458b461ea5ccabad16a339cbbf26a32cb",
+      "compiled_ex5_bytes": 452734,
+      "installed_ex5_sha256": null
+    },
+    {
+      "label": "QM5_10706_tv-mon-ls",
+      "status": "PASS",
+      "build_warnings": 0,
+      "build_report": "build_reports/QM5_10706_tv-mon-ls.build_check.json",
+      "build_report_sha256": "a339c9f9db5739e678d2331686b3c34080c0256343a4436ac3982f33d45feb4e",
+      "compile_log": "compile_logs/QM5_10706_tv-mon-ls.compile.log",
+      "compile_log_sha256": "51e16e1e02405dc7039635a3f0be718e43b62cda5e8ead03a0ffdd96c41ec429",
+      "mq5_sha256": "d7a1f46630f16053f8afec68466932efd305898a0eabb9d5aa2010d03e7eb63d",
+      "compiled_ex5_sha256": "6980e6eb4f4e78c038bbb3334150f6315fc3d47b3b09844ed861bc5cd9ac8724",
+      "compiled_ex5_bytes": 453174,
+      "installed_ex5_sha256": null
+    },
+    {
+      "label": "QM5_10700_tv-liq-break",
+      "status": "PASS",
+      "build_warnings": 0,
+      "build_report": "build_reports/QM5_10700_tv-liq-break.build_check.json",
+      "build_report_sha256": "d37cd2dbd3f74129f63b001070ee46ca897dbf51f524870df666f07b328b64bb",
+      "compile_log": "compile_logs/QM5_10700_tv-liq-break.compile.log",
+      "compile_log_sha256": "bb484a96f84c9487bc753a7167869ec8e5626126373db68f0ff5c57f7a86c3c7",
+      "mq5_sha256": "064d670b736e5125a1def88c10ba00f68fc43253ee904b3d82168d8e2380b850",
+      "compiled_ex5_sha256": "eb5b11ad3d01e894af8b3beb759191377bff2b6563ef74fe79674deb8db41783",
+      "compiled_ex5_bytes": 444878,
+      "installed_ex5_sha256": null
+    },
+    {
+      "label": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+      "status": "PASS",
+      "build_warnings": 0,
+      "build_report": "build_reports/QM5_11422_williams-18ma-outside-bar-entry-d1.build_check.json",
+      "build_report_sha256": "b2e8f7f4ed41dae4ff1518e7a3a38c45883b13bf632424ef2838be45e4466db9",
+      "compile_log": "compile_logs/QM5_11422_williams-18ma-outside-bar-entry-d1.compile.log",
+      "compile_log_sha256": "2a785787739614ed73848c384318b46995df5695326e3ca6902973b97d098c8f",
+      "mq5_sha256": "68684885cf3119b2f4ff3ea8d330c11a396b635b7d4998532e1f56bfc076427c",
+      "compiled_ex5_sha256": "d8c63c759bbb072f4349ddd88df50bf44f71efa965b035f8390fce454a15feac",
+      "compiled_ex5_bytes": 445028,
+      "installed_ex5_sha256": null
+    },
+    {
+      "label": "QM5_10403_et-turtle20x",
+      "status": "PASS",
+      "build_warnings": 0,
+      "build_report": "build_reports/QM5_10403_et-turtle20x.build_check.json",
+      "build_report_sha256": "e21d94b99f59b7c30b8af7c3b6736b059cc25ca37baa24ca0acd33710ccfa960",
+      "compile_log": "compile_logs/QM5_10403_et-turtle20x.compile.log",
+      "compile_log_sha256": "16ffe58263dd4d8a26ad732711e6d7f3049b2d180a40aa9cd6c4c73e136c9917",
+      "mq5_sha256": "65d4c206ad9d6ad2c8230a309714d1a900a1bc707b54dc96bc4e7fb107b8bae5",
+      "compiled_ex5_sha256": "988ac73c35e9d3b89de948b07fe919ea0f6cc5bfeec1d3c5b8705ad659d0322b",
+      "compiled_ex5_bytes": 455504,
+      "installed_ex5_sha256": null
+    },
+    {
+      "label": "QM5_41219_cum-rsi2-commodity-requal8",
+      "status": "PASS",
+      "build_warnings": 3,
+      "build_report": "build_reports/QM5_41219_cum-rsi2-commodity-requal8.build_check.json",
+      "build_report_sha256": "4adf7db33aaeaf75969f173348cd4a98dde889a206d57dc89be37a778b282b32",
+      "compile_log": "compile_logs/QM5_41219_cum-rsi2-commodity-requal8.compile.log",
+      "compile_log_sha256": "1d411be345aed1142c99a06f503140ebb35af964d9f832b8f1a6259243db8f53",
+      "mq5_sha256": "865a14583784bdfeb3f783b04fb69d4a78e00efd68870589163e0fababa900cd",
+      "compiled_ex5_sha256": "217ca85459769153e97b0e73e44a4ecc1fdb262369e1ab1aed0fda611ac7a53b",
+      "compiled_ex5_bytes": 445070,
+      "installed_ex5_sha256": null
+    }
+  ],
+  "remediated_build_guard_findings": [
+    "QM5_11422: added the standard QM_FrameworkTrackOpenPositionMae call before OnTick early returns",
+    "QM5_10403: explicitly zeroed three QM_EntryRequest structs with ZeroMemory"
+  ],
+  "live_actions": {
+    "terminal64_started": false,
+    "autotrading_changed": false,
+    "t_live_changed": false,
+    "ex5_installed": false
+  }
+}

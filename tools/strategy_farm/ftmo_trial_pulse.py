@@ -9,7 +9,8 @@ Checks:
      broker-confirmed activity match the baked RUNNING/PARKED/MAINTENANCE state.
      PARKED requires the new account to remain flat.
   2. Today's journal: disconnects / errors.
-  3. QM EA logs: all 8 expected magics seen, ERROR-level events.
+  3. QM EA logs/state: every roster magic seen, governed kill-switch state,
+     ERROR-level events, and server-request rate/burst thresholds.
   4. Latest EQUITY_SNAPSHOT: equity + day_pnl vs FTMO limits
      (daily 5% / total 10% of 100k) with early-warning margins.
 
@@ -74,11 +75,15 @@ DAILY_LIMIT_PCT = 5.0     # FTMO daily loss limit
 TOTAL_LIMIT_PCT = 10.0    # FTMO max loss limit
 DAILY_WARN_PCT = 2.5      # half-budget early warning thresholds
 TOTAL_WARN_PCT = 5.0
-SERVER_REQUEST_WARN = 1_500
-SERVER_REQUEST_LIMIT = 2_000
+SERVER_REQUEST_WARN = 200
+SERVER_REQUEST_LIMIT = 500
+SERVER_REQUEST_BURST_LIMIT = 25
+SERVER_REQUEST_BURST_WINDOW_SECONDS = 60
 EQUITY_SNAPSHOT_STALE_MINUTES = 180
 COLLECTOR_SNAPSHOT_STALE_MINUTES = 5
 PRAGUE_TZ = ZoneInfo("Europe/Prague")
+NEW_YORK_TZ = ZoneInfo("America/New_York")
+EXPECTED_KS_ANCHOR_MODE = "MAX_BALANCE_EQUITY"
 
 # --- ONE-AUTHORITY TOMBSTONE (permanent; WS-G' round 2, 2026-07-26) ----------
 # This pulse is a CODE-LEVEL OBSERVER ONLY. It never writes a halt, kill, or
@@ -154,14 +159,242 @@ def load_expected_magics(
     return magics, str(path.relative_to(REPO_ROOT)).replace("\\", "/"), None
 
 
+def load_expected_kill_switch_contract(
+    path: Path = EXPECTED_ROSTER_PATH,
+) -> tuple[dict, str | None]:
+    """Load the roster-bound FTMO kill-switch contract.
+
+    The roster cycle id is the governed generation book tag.  A future roster
+    may carry an explicit ``kill_switch_contract`` object; until then the
+    framework's documented conservative default is MAX_BALANCE_EQUITY.  This
+    observer never guesses a tag when the validated roster cannot be loaded.
+    """
+
+    try:
+        from ftmo import trial_setpath
+    except ModuleNotFoundError:
+        from tools.strategy_farm.ftmo import trial_setpath
+    try:
+        roster = trial_setpath.load_roster(path)
+        explicit = roster.get("kill_switch_contract") or {}
+        if not isinstance(explicit, dict):
+            raise ValueError("kill_switch_contract_not_object")
+        book_tag = explicit.get("book_tag") or roster.get("cycle_id")
+        anchor_mode = explicit.get("anchor_mode") or EXPECTED_KS_ANCHOR_MODE
+        timezone_name = explicit.get("timezone") or "Europe/Prague"
+        if not isinstance(book_tag, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,96}", book_tag):
+            raise ValueError("kill_switch_book_tag_invalid")
+        if anchor_mode not in {"FTMO_BALANCE_AT_MIDNIGHT", "MAX_BALANCE_EQUITY"}:
+            raise ValueError("kill_switch_anchor_mode_invalid")
+        if timezone_name != "Europe/Prague":
+            raise ValueError("kill_switch_timezone_invalid")
+        return ({
+            "book_tag": book_tag,
+            "anchor_mode": anchor_mode,
+            "timezone": timezone_name,
+            "source": str(path.relative_to(REPO_ROOT)).replace("\\", "/"),
+            "candidates": [
+                {"ea_id": int(row["ea_id"]), "magic": int(row["magic"])}
+                for row in roster["candidates"]
+            ],
+        }, None)
+    except (OSError, ValueError) as exc:
+        return ({
+            "book_tag": None,
+            "anchor_mode": EXPECTED_KS_ANCHOR_MODE,
+            "timezone": "Europe/Prague",
+            "source": "unavailable",
+            "candidates": [
+                {"ea_id": magic // 10_000, "magic": magic}
+                for magic in sorted(REPO_ROOT_EXPECTED_MAGICS_FALLBACK)
+            ],
+        }, f"{type(exc).__name__}:{exc}")
+
+
 EXPECTED_MAGICS, EXPECTED_MAGICS_SOURCE, EXPECTED_MAGICS_LOAD_ERROR = (
     load_expected_magics()
+)
+EXPECTED_KS_CONTRACT, EXPECTED_KS_CONTRACT_LOAD_ERROR = (
+    load_expected_kill_switch_contract()
 )
 SERVER_REQUEST_EVENTS = {"TM_OPEN", "TM_CLOSE", "TM_MODIFY", "TM_REMOVE_PENDING"}
 
 
 def utc_now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def expected_ftmo_anchor_offset(now: datetime) -> int:
+    """Return Prague minus US-DST-coupled MT5 server offset in hours."""
+
+    if now.tzinfo is None:
+        raise ValueError("now_must_be_timezone_aware")
+    current = now.astimezone(timezone.utc)
+    ny_offset = current.astimezone(NEW_YORK_TZ).utcoffset()
+    prague_offset = current.astimezone(PRAGUE_TZ).utcoffset()
+    if ny_offset is None or prague_offset is None:
+        raise ValueError("timezone_offset_unavailable")
+    # The broker clock is UTC+2 in New-York standard time and UTC+3 in
+    # New-York daylight time: a fixed seven hours ahead of America/New_York.
+    server_hours = int(ny_offset.total_seconds() // 3600) + 7
+    prague_hours = int(prague_offset.total_seconds() // 3600)
+    return prague_hours - server_hours
+
+
+def expected_prague_day_key(now: datetime) -> int:
+    prague = now.astimezone(PRAGUE_TZ)
+    return prague.year * 1000 + prague.timetuple().tm_yday - 1
+
+
+def _parse_kill_switch_state(path: Path) -> tuple[dict[str, str], str | None]:
+    try:
+        lines = path.read_text(encoding="utf-8", errors="strict").splitlines()
+    except (OSError, UnicodeError) as exc:
+        return {}, f"state_read_failed:{type(exc).__name__}"
+    values: dict[str, str] = {}
+    for raw in lines:
+        if not raw.strip():
+            continue
+        key, separator, value = raw.partition("=")
+        key = key.strip()
+        if not separator or not key or key in values:
+            return {}, "state_malformed_or_duplicate_key"
+        values[key] = value.strip()
+    return values, None
+
+
+def read_kill_switch_state_contract(
+    now: datetime,
+    *,
+    qm_dir: Path | None = None,
+    contract: dict | None = None,
+) -> dict:
+    """Read and compare each roster magic's terminal-local ks_state file."""
+
+    if now.tzinfo is None:
+        raise ValueError("now_must_be_timezone_aware")
+    root = qm_dir if qm_dir is not None else QM_DIR
+    expected = contract if contract is not None else EXPECTED_KS_CONTRACT
+    prague = now.astimezone(PRAGUE_TZ)
+    expected_date = prague.strftime("%Y-%m-%d")
+    expected_day_key = expected_prague_day_key(now)
+    expected_offset = expected_ftmo_anchor_offset(now)
+    expected_mode = str(expected.get("anchor_mode") or "")
+    expected_book_tag = expected.get("book_tag")
+    expected_max_be = 1 if expected_mode == "MAX_BALANCE_EQUITY" else 0
+    rows: list[dict] = []
+    valid_magics: list[int] = []
+    mismatches: list[dict] = []
+
+    for candidate in expected.get("candidates") or []:
+        ea_id = int(candidate["ea_id"])
+        magic = int(candidate["magic"])
+        path = root / "halt" / f"ks_state_{ea_id}_{magic}.state"
+        values: dict[str, str] = {}
+        problems: list[str] = []
+        if not path.is_file():
+            problems.append("state_missing")
+        else:
+            values, parse_error = _parse_kill_switch_state(path)
+            if parse_error:
+                problems.append(parse_error)
+
+        def expect_int(key: str, wanted: int) -> None:
+            raw = values.get(key)
+            try:
+                observed = int(raw) if raw is not None else None
+            except ValueError:
+                observed = None
+            if observed != wanted:
+                problems.append(f"{key}:{observed}!={wanted}")
+
+        if values:
+            expect_int("magic", magic)
+            expect_int("day_key", expected_day_key)
+            expect_int("anchor_offset", expected_offset)
+            expect_int("anchor_max_be", expected_max_be)
+            expect_int("prague_calendar", 1)
+            if values.get("anchor_mode") != expected_mode:
+                problems.append(
+                    f"anchor_mode:{values.get('anchor_mode')!r}!={expected_mode!r}"
+                )
+            if expected_book_tag is None:
+                problems.append("book_tag_contract_unavailable")
+            elif values.get("book_tag") != expected_book_tag:
+                problems.append(
+                    f"book_tag:{values.get('book_tag')!r}!={expected_book_tag!r}"
+                )
+            if values.get("prague_date") != expected_date:
+                problems.append(
+                    f"prague_date:{values.get('prague_date')!r}!={expected_date!r}"
+                )
+            try:
+                anchor = float(values.get("day_start_equity", ""))
+            except ValueError:
+                anchor = 0.0
+            if anchor <= 0.0:
+                problems.append("day_start_equity_not_positive")
+
+        row = {
+            "ea_id": ea_id,
+            "magic": magic,
+            "path": str(path),
+            "ok": not problems,
+            "problems": problems,
+            "observed": {
+                key: values.get(key)
+                for key in (
+                    "day_key", "day_start_equity", "anchor_offset",
+                    "anchor_max_be", "anchor_mode", "book_tag",
+                    "prague_calendar", "prague_date",
+                )
+            } if values else None,
+        }
+        rows.append(row)
+        if problems:
+            mismatches.append({"magic": magic, "problems": problems})
+        else:
+            valid_magics.append(magic)
+
+    return {
+        "expected_book_tag": expected_book_tag,
+        "expected_anchor_mode": expected_mode,
+        "expected_anchor_offset": expected_offset,
+        "expected_prague_date": expected_date,
+        "expected_day_key": expected_day_key,
+        "valid_magics": valid_magics,
+        "valid_count": len(valid_magics),
+        "expected_count": len(rows),
+        "mismatches": mismatches,
+        "rows": rows,
+    }
+
+
+def max_request_burst(
+    timestamps: list[datetime],
+    window_seconds: int = SERVER_REQUEST_BURST_WINDOW_SECONDS,
+) -> dict:
+    """Return the maximum count in any inclusive rolling time window."""
+
+    ordered = sorted(t.astimezone(timezone.utc) for t in timestamps)
+    left = 0
+    best_count = 0
+    best_start: datetime | None = None
+    best_end: datetime | None = None
+    for right, current in enumerate(ordered):
+        while left <= right and (current - ordered[left]).total_seconds() > window_seconds:
+            left += 1
+        count = right - left + 1
+        if count > best_count:
+            best_count = count
+            best_start = ordered[left]
+            best_end = current
+    return {
+        "count": best_count,
+        "start_utc": best_start.strftime("%Y-%m-%dT%H:%M:%SZ") if best_start else None,
+        "end_utc": best_end.strftime("%Y-%m-%dT%H:%M:%SZ") if best_end else None,
+        "window_seconds": window_seconds,
+    }
 
 
 def assess_owner_review_trigger(db_path: Path = FARM_DB) -> dict:
@@ -511,6 +744,7 @@ def scan_ea_logs(activation_utc: datetime = ACTIVATION_UTC) -> dict:
     book_tag_magics: set[int] = set()
     request_counts: dict[str, int] = {}
     request_event_counts: dict[str, dict[str, int]] = {}
+    request_times: dict[str, list[datetime]] = {}
     for lf in QM_DIR.glob("QM5_*.log"):
         file_errors: list[dict] = []
         sleeve_states: dict[tuple, tuple[datetime, dict]] = {}
@@ -548,6 +782,8 @@ def scan_ea_logs(activation_utc: datetime = ACTIVATION_UTC) -> dict:
                         request_counts[broker_day] = request_counts.get(broker_day, 0) + 1
                         by_event = request_event_counts.setdefault(broker_day, {})
                         by_event[event] = by_event.get(event, 0) + 1
+                        if event_utc is not None:
+                            request_times.setdefault(broker_day, []).append(event_utc)
             if r.get("level") in ("ERROR", "FATAL"):
                 event_utc = parse_utc_timestamp(r.get("ts_utc"))
                 # The M13 account was cleanly activated at ACTIVATION_UTC.  The
@@ -594,6 +830,9 @@ def scan_ea_logs(activation_utc: datetime = ACTIVATION_UTC) -> dict:
             else:
                 errors.append(f"{lf.name}:{row.get('event')}")
     latest_request_day = max(request_counts, default=None)
+    request_burst = max_request_burst(
+        request_times.get(latest_request_day, []) if latest_request_day else []
+    )
     return {
         "magics_seen": len(seen_magics),
         "magics_missing": sorted(EXPECTED_MAGICS - seen_magics),
@@ -612,6 +851,9 @@ def scan_ea_logs(activation_utc: datetime = ACTIVATION_UTC) -> dict:
         "server_request_events": (
             request_event_counts.get(latest_request_day, {}) if latest_request_day else {}
         ),
+        "server_request_burst_60s_max": request_burst["count"],
+        "server_request_burst_window_start_utc": request_burst["start_utc"],
+        "server_request_burst_window_end_utc": request_burst["end_utc"],
     }
 
 
@@ -628,27 +870,38 @@ def snapshot_age_minutes(timestamp: str | None, now: datetime | None = None) -> 
     return max(0.0, (reference - parsed.astimezone(timezone.utc)).total_seconds() / 60.0)
 
 
-def kill_switch_runtime_proof_warns(eas: dict, now: datetime) -> list[str]:
-    """Return attach-time kill-switch proof gaps only during a Prague trading day.
+def kill_switch_runtime_proof_warns(
+    eas: dict,
+    now: datetime,
+    state_contract: dict | None = None,
+) -> list[str]:
+    """Return attach-event and persisted-state kill-switch proof gaps.
 
     KS_DAY_ANCHOR_SET and KS_BOOK_TAG_SET are emitted by the explicit setter
     calls, normally during EA initialization; they are not emitted by a trade
     or by the next day rollover. A weekend attach can nevertheless have no
     actionable market session, so its absence remains informational until the
-    first Monday Prague day, when the normal warning becomes actionable.
+    first Monday Prague day. Persisted state mismatches are configuration facts
+    and remain WARN on weekends: an old setter event never overrides a current
+    anchor_offset=0, missing tag, wrong mode, or stale Prague date.
     """
 
-    if now.astimezone(PRAGUE_TZ).weekday() >= 5:
-        return []
     warns: list[str] = []
-    if eas["kill_switch_day_anchor_magics"] < len(EXPECTED_MAGICS):
-        warns.append(
-            f"ks_day_anchor_missing:{eas['kill_switch_day_anchor_magics']}/{len(EXPECTED_MAGICS)}"
-        )
-    if eas["kill_switch_book_tag_magics"] < len(EXPECTED_MAGICS):
-        warns.append(
-            f"ks_book_tag_missing:{eas['kill_switch_book_tag_magics']}/{len(EXPECTED_MAGICS)}"
-        )
+    if now.astimezone(PRAGUE_TZ).weekday() < 5:
+        if eas["kill_switch_day_anchor_magics"] < len(EXPECTED_MAGICS):
+            warns.append(
+                f"ks_day_anchor_missing:{eas['kill_switch_day_anchor_magics']}/{len(EXPECTED_MAGICS)}"
+            )
+        if eas["kill_switch_book_tag_magics"] < len(EXPECTED_MAGICS):
+            warns.append(
+                f"ks_book_tag_missing:{eas['kill_switch_book_tag_magics']}/{len(EXPECTED_MAGICS)}"
+            )
+    if state_contract:
+        for mismatch in state_contract.get("mismatches") or []:
+            problems = ",".join(str(item) for item in mismatch.get("problems") or [])
+            warns.append(
+                f"ks_state_contract_mismatch:{int(mismatch['magic'])}:{problems}"
+            )
     return warns
 
 
@@ -979,6 +1232,12 @@ def main() -> int:
             "server_requests_lower_bound": 0,
             "server_request_day_broker": None,
             "server_request_events": {},
+            "server_request_warn_threshold": SERVER_REQUEST_WARN,
+            "server_request_limit_threshold": SERVER_REQUEST_LIMIT,
+            "server_request_burst_limit": SERVER_REQUEST_BURST_LIMIT,
+            "server_request_burst_window_seconds": SERVER_REQUEST_BURST_WINDOW_SECONDS,
+            "server_request_burst_60s_max": 0,
+            "kill_switch_state_contract": None,
             "alarms": alarms,
             "warns": warns[-10:],
         })
@@ -994,6 +1253,10 @@ def main() -> int:
         warns.append(
             f"expected_magics_roster_load_failed:{EXPECTED_MAGICS_LOAD_ERROR}"
         )
+    if EXPECTED_KS_CONTRACT_LOAD_ERROR:
+        warns.append(
+            f"expected_ks_contract_load_failed:{EXPECTED_KS_CONTRACT_LOAD_ERROR}"
+        )
 
     eas = scan_ea_logs()
     if eas["magics_missing"]:
@@ -1004,7 +1267,8 @@ def main() -> int:
     if eas["ea_errors"]:
         alarms.append(f"ea_errors:{eas['ea_errors']}")
 
-    warns.extend(kill_switch_runtime_proof_warns(eas, now))
+    ks_state = read_kill_switch_state_contract(now)
+    warns.extend(kill_switch_runtime_proof_warns(eas, now, ks_state))
 
     # Journal/log scans can take minutes on long-lived append-only files. Use
     # a current reference for collector freshness, not main()'s start time.
@@ -1047,10 +1311,17 @@ def main() -> int:
             warns.append(f"equity_snapshot_stale:{equity_snapshot_age:.1f}m")
 
     request_count = int(eas.get("server_requests_lower_bound") or 0)
-    if request_count > SERVER_REQUEST_LIMIT:
+    if request_count >= SERVER_REQUEST_LIMIT:
         alarms.append(f"server_request_limit_exceeded:{request_count}")
     elif request_count >= SERVER_REQUEST_WARN:
         warns.append(f"server_request_warning:{request_count}_vs_limit_{SERVER_REQUEST_LIMIT}")
+    request_burst = int(eas.get("server_request_burst_60s_max") or 0)
+    if request_burst > SERVER_REQUEST_BURST_LIMIT:
+        alarms.append(
+            f"server_request_burst_exceeded:{request_burst}>"
+            f"{SERVER_REQUEST_BURST_LIMIT}_within_"
+            f"{SERVER_REQUEST_BURST_WINDOW_SECONDS}s"
+        )
 
     # ONE-AUTHORITY (see tombstone near the top): this observer NEVER emits a
     # halt/liquidation signal. Even if the retired arm flag is still on disk, we
@@ -1107,9 +1378,21 @@ def main() -> int:
         "equity_snapshot_age_minutes": equity_snapshot_age,
         "kill_switch_day_anchor_magics": eas["kill_switch_day_anchor_magics"],
         "kill_switch_book_tag_magics": eas["kill_switch_book_tag_magics"],
+        "kill_switch_state_contract": ks_state,
         "server_requests_lower_bound": request_count,
         "server_request_day_broker": eas.get("server_request_day_broker"),
         "server_request_events": eas.get("server_request_events"),
+        "server_request_warn_threshold": SERVER_REQUEST_WARN,
+        "server_request_limit_threshold": SERVER_REQUEST_LIMIT,
+        "server_request_burst_limit": SERVER_REQUEST_BURST_LIMIT,
+        "server_request_burst_window_seconds": SERVER_REQUEST_BURST_WINDOW_SECONDS,
+        "server_request_burst_60s_max": request_burst,
+        "server_request_burst_window_start_utc": eas.get(
+            "server_request_burst_window_start_utc"
+        ),
+        "server_request_burst_window_end_utc": eas.get(
+            "server_request_burst_window_end_utc"
+        ),
         "ea_errors_resolved": eas.get("ea_errors_resolved", []),
         "alarms": alarms,
         "warns": warns[-10:],

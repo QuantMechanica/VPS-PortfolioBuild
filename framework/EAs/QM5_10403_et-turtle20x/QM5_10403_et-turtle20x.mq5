@@ -286,6 +286,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    QM_EntryRequest buy_req;
    QM_EntryRequest sell_req;
+   ZeroMemory(buy_req);
+   ZeroMemory(sell_req);
    const bool can_buy = BuildStopRequest(QM_BUY_STOP, entry_high, exit_low, buy_req);
    const bool can_sell = BuildStopRequest(QM_SELL_STOP, entry_low, exit_high, sell_req);
 
@@ -493,6 +495,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

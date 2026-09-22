@@ -167,6 +167,7 @@
         "KS_BASELINE_N_MISMATCH",
         "KS_BOOK_TAG_SET",
         "KS_DAY_ANCHOR_SET",
+        "KS_DAY_ROLLOVER",
         "KS_DISTRIBUTION_DIVERGENCE",
         "KS_STATE_FOREIGN_CONFIG_PRESERVED",
         "KS_STATE_RESTORED_ANCHOR",
@@ -360,7 +361,7 @@
         "event",
         "payload"
       ],
-      "resolved_call_count": 7448,
+      "resolved_call_count": 7454,
       "schema_version": 1,
       "stream": "qm_events"
     }

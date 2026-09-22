@@ -1,7 +1,7 @@
 """Contract tests for the read-only FTMO trial pulse."""
 import sys
 from types import SimpleNamespace
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 
@@ -385,6 +385,143 @@ def test_kill_switch_runtime_proof_gaps_warn_on_prague_trading_day() -> None:
 
     n = len(ftmo_trial_pulse.EXPECTED_MAGICS)
     assert warns == [f"ks_day_anchor_missing:0/{n}", f"ks_book_tag_missing:0/{n}"]
+
+
+def test_ftmo_anchor_offsets_cover_stable_and_divergence_boundaries() -> None:
+    # Inspect all three UTC hours around the possible Prague-midnight boundary.
+    for hour in (21, 22, 23):
+        assert ftmo_trial_pulse.expected_ftmo_anchor_offset(
+            datetime(2026, 1, 15, hour, tzinfo=timezone.utc)
+        ) == -1
+        assert ftmo_trial_pulse.expected_ftmo_anchor_offset(
+            datetime(2026, 7, 15, hour, tzinfo=timezone.utc)
+        ) == -1
+        for day in range(8, 29):
+            assert ftmo_trial_pulse.expected_ftmo_anchor_offset(
+                datetime(2026, 3, day, hour, tzinfo=timezone.utc)
+            ) == -2
+        assert ftmo_trial_pulse.expected_ftmo_anchor_offset(
+            datetime(2026, 3, 29, hour, tzinfo=timezone.utc)
+        ) == -1
+        for day in range(25, 32):
+            assert ftmo_trial_pulse.expected_ftmo_anchor_offset(
+                datetime(2026, 10, day, hour, tzinfo=timezone.utc)
+            ) == -2
+        assert ftmo_trial_pulse.expected_ftmo_anchor_offset(
+            datetime(2026, 11, 1, hour, tzinfo=timezone.utc)
+        ) == -1
+
+
+def test_prague_day_key_rolls_at_the_correct_utc_hour_around_dst_gaps() -> None:
+    def keys(month: int, day: int) -> list[int]:
+        return [
+            ftmo_trial_pulse.expected_prague_day_key(
+                datetime(2026, month, day, hour, tzinfo=timezone.utc)
+            )
+            for hour in (21, 22, 23)
+        ]
+
+    # Prague is UTC+1 before 29 March and from 25 October: midnight is 23Z.
+    for month, day in ((3, 8), (3, 28), (10, 25), (10, 31), (11, 1)):
+        observed = keys(month, day)
+        assert observed[0] == observed[1]
+        assert observed[2] == observed[1] + 1
+
+    # From Prague's 29 March DST transition, midnight is 22Z.
+    observed = keys(3, 29)
+    assert observed[1] == observed[0] + 1
+    assert observed[2] == observed[1]
+
+
+def test_kill_switch_state_contract_reads_all_governed_fields(tmp_path: Path) -> None:
+    now = datetime(2026, 3, 20, 22, 30, tzinfo=timezone.utc)
+    contract = {
+        "book_tag": "FTMO_DEMO_BOOK_TEST",
+        "anchor_mode": "MAX_BALANCE_EQUITY",
+        "timezone": "Europe/Prague",
+        "candidates": [{"ea_id": 10706, "magic": 107060001}],
+    }
+    state = tmp_path / "halt" / "ks_state_10706_107060001.state"
+    state.parent.mkdir(parents=True)
+    state.write_text(
+        "\n".join([
+            f"day_key={ftmo_trial_pulse.expected_prague_day_key(now)}",
+            "day_start_equity=99813.22",
+            "halted=0",
+            "halt_reason=",
+            "halt_day_key=-1",
+            "magic=107060001",
+            "anchor_offset=-2",
+            "anchor_max_be=1",
+            "anchor_mode=MAX_BALANCE_EQUITY",
+            "book_tag=FTMO_DEMO_BOOK_TEST",
+            "prague_calendar=1",
+            "prague_date=2026-03-20",
+            "",
+        ]),
+        encoding="utf-8",
+    )
+
+    result = ftmo_trial_pulse.read_kill_switch_state_contract(
+        now, qm_dir=tmp_path, contract=contract
+    )
+
+    assert result["expected_anchor_offset"] == -2
+    assert result["valid_magics"] == [107060001]
+    assert result["mismatches"] == []
+
+
+def test_state_mismatch_warns_even_when_old_setter_events_exist_on_weekend(
+    tmp_path: Path,
+) -> None:
+    now = datetime(2026, 9, 20, 8, tzinfo=timezone.utc)  # Sunday Prague
+    contract = {
+        "book_tag": "FTMO_DEMO_BOOK_TEST",
+        "anchor_mode": "MAX_BALANCE_EQUITY",
+        "timezone": "Europe/Prague",
+        "candidates": [{"ea_id": 10706, "magic": 107060001}],
+    }
+    state = tmp_path / "halt" / "ks_state_10706_107060001.state"
+    state.parent.mkdir(parents=True)
+    state.write_text(
+        "day_key=2026261\n"
+        "day_start_equity=99811.51\n"
+        "magic=107060001\n"
+        "anchor_offset=0\n"
+        "anchor_max_be=0\n",
+        encoding="utf-8",
+    )
+    state_result = ftmo_trial_pulse.read_kill_switch_state_contract(
+        now, qm_dir=tmp_path, contract=contract
+    )
+    eas = {
+        "kill_switch_day_anchor_magics": 1,
+        "kill_switch_book_tag_magics": 1,
+    }
+
+    warns = ftmo_trial_pulse.kill_switch_runtime_proof_warns(
+        eas, now, state_result
+    )
+
+    assert len(warns) == 1
+    assert warns[0].startswith("ks_state_contract_mismatch:107060001:")
+    assert "anchor_offset:0!=-1" in warns[0]
+    assert "book_tag:None!='FTMO_DEMO_BOOK_TEST'" in warns[0]
+
+
+def test_server_request_thresholds_and_synthetic_60_second_burst() -> None:
+    assert ftmo_trial_pulse.SERVER_REQUEST_WARN == 200
+    assert ftmo_trial_pulse.SERVER_REQUEST_LIMIT == 500
+    assert ftmo_trial_pulse.SERVER_REQUEST_BURST_LIMIT == 25
+    start = datetime(2026, 9, 22, 8, 0, tzinfo=timezone.utc)
+    burst = ftmo_trial_pulse.max_request_burst(
+        [start + timedelta(seconds=index * 2) for index in range(26)]
+    )
+    assert burst["count"] == 26
+    spread = ftmo_trial_pulse.max_request_burst(
+        [start + timedelta(seconds=index * 3) for index in range(26)]
+    )
+    assert spread["count"] <= 21
 
 
 def test_scan_ea_logs_ignores_pre_activation_errors(monkeypatch, tmp_path: Path) -> None:

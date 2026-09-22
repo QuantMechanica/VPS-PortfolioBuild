@@ -1,0 +1,14 @@
+﻿{
+    "run_tag":  "20260922_014125",
+    "timestamp_utc":  "2026-09-22T01:41:25.2678743Z",
+    "strict":  true,
+    "failures":  [
+
+                 ],
+    "warnings":  [
+                     "EA_CARD_LOSS_LIMIT_UNDECIDABLE: QM5_41219_cum-rsi2-commodity-requal8.mq5 has no unique approved/card-of-record file; no loss-limit value was guessed.",
+                     "EA_BROKER_TIME_WINDOW_UNDECIDABLE: QM5_41219_cum-rsi2-commodity-requal8.mq5 has no unique card; GMT/session intent was not guessed.",
+                     "EA_CARD_PENDING_ORDER_UNDECIDABLE: QM5_41219_cum-rsi2-commodity-requal8.mq5 card missing; no pending-order contract was inferred."
+                 ],
+    "status":  "PASS"
+}
