@@ -62,6 +62,11 @@ from framework.scripts.q08_7_pbo_runner import (
     SCORES_SCHEMA_VERSION as PBO_SCHEMA_VERSION,
 )
 from tools.strategy_farm.q08_recovery_lineage import validate_q08_recovery_lineage
+from tools.strategy_farm.q08_window import (
+    Q08WindowError,
+    host_symbol_from_setfile,
+    resolve_q08_window,
+)
 # Execution order matches the Vault Q08 spec numbering.
 SUB_GATES = [
     ("8.1",  sub_8_1_correlation),
@@ -888,23 +893,11 @@ def _latest_structured_qm_log(ea_id: int, symbol: str, terminal: str | None = No
 
 
 def _host_symbol_from_setfile(setfile: Path, fallback: str) -> str:
-    """Read '; host_symbol:' from the setfile header. Basket EAs carry a logical
-    composite symbol that does not exist in MT5's market watch; the host_symbol
-    is the physical MT5 symbol the baseline backtest must run on.
-
-    Tolerant parser: strips leading/trailing whitespace, case-insensitive on the
-    key, accepts both ';host_symbol:' and '; host_symbol :' spacings.
-    Single-symbol EAs have no such header line — the fallback is returned unchanged,
-    so this helper is a zero-regression no-op for non-basket EAs.
-    """
+    """Compatibility alias for tests and callers of the historical helper."""
     try:
-        for line in setfile.read_text(encoding="utf-8-sig").splitlines():
-            m = re.match(r";\s*host_symbol\s*:\s*(\S+)", line.strip(), flags=re.IGNORECASE)
-            if m:
-                return m.group(1)
-    except (OSError, UnicodeDecodeError):
-        pass
-    return fallback
+        return host_symbol_from_setfile(setfile, fallback)
+    except Q08WindowError:
+        return fallback
 
 
 def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
@@ -924,10 +917,13 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
     if not ea_dirs:
         return {"skipped": "no_ea_dir"}
     expert = f"QM\\{ea_dirs[0].name}"
-    m = _re.search(r"_(M1|M5|M15|M30|H1|H4|H6|H8|D1|W1|MN1)_backtest", baseline.name)
-    period = m.group(1) if m else "H1"
+    try:
+        phase_window = resolve_q08_window(repo_root, baseline, symbol)
+    except Q08WindowError as exc:
+        return {"skipped": "q08_window_unavailable", "reason": str(exc)}
+    period = str(phase_window["timeframe"])
     report_root = Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/_baseline")
-    test_symbol = _host_symbol_from_setfile(baseline, symbol)
+    test_symbol = str(phase_window["host_symbol"])
     # Basket EAs run on the host physical symbol rather than the logical composite.
     # Real-tick (Model 4) multi-symbol baskets can exceed 2400s; allow 5400s.
     # The Q08 phase-runner timeout in farmctl must be >= 90 min for basket EAs.
@@ -937,28 +933,14 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
     # not a sleep — fast EAs still exit early.
     timeout_run = 5400 if is_basket else 4800
     timeout_proc = timeout_run + 120
-    # Data-honest window: DWX index/late-start symbols begin 2018.07.02. A fixed
-    # 2017.01.01 request against the cleanly rebuilt NDX store hard-fails the
-    # tester ("history synchronization error", wave evidence 2026-07-18). Clamp
-    # from the symbol-history registry instead of requesting data that never existed.
-    from_date = "2017.01.01"
-    try:
-        import csv as _csv
-        _reg = repo_root / "framework" / "registry" / "dwx_symbol_history_ranges.csv"
-        with _reg.open("r", encoding="utf-8-sig", newline="") as _fh:
-            for _row in _csv.DictReader(_fh):
-                if (str(_row.get("symbol") or "").casefold() == test_symbol.casefold()
-                        and str(_row.get("period") or "").casefold() == period.casefold()):
-                    if int(_row.get("first_year") or 2017) >= 2018:
-                        from_date = "2018.07.02"
-                    break
-    except (OSError, TypeError, ValueError):
-        pass
+    # Resolve the queue seal and the tester window from one shared contract.
+    from_date = str(phase_window["from_date"])
+    to_date = str(phase_window["to_date"])
     args = [
         "pwsh.exe", "-NoProfile", "-File",
         str(repo_root / "framework" / "scripts" / "run_smoke.ps1"),
         "-EAId", str(ea_id), "-Expert", expert, "-Symbol", test_symbol,
-        "-Year", "2025", "-FromDate", from_date, "-ToDate", "2025.12.31",
+        "-Year", "2025", "-FromDate", from_date, "-ToDate", to_date,
         "-Terminal", terminal or "T1", "-Period", period,
         "-Runs", "1", "-MinTrades", "1", "-Model", "4",
         "-SetFile", str(baseline), "-ReportRoot", str(report_root),

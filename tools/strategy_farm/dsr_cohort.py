@@ -176,12 +176,16 @@ def _candidate_window(
 ) -> tuple[dict[str, str], str]:
     """Resolve a Q08 window from explicit fields, then its governed Q07 lineage."""
     direct = (
-        ("payload.from_date/to_date", payload.get("from_date"), payload.get("to_date")),
+        # The expected_* pair is the phase execution contract.  Legacy
+        # promotions copied Q02 canary from_date/to_date into every later
+        # phase, so preferring those aliases sealed Q08 DSR cohorts to a
+        # different calendar than the Q08 runner actually executed.
         (
             "payload.expected_from_date/expected_to_date",
             payload.get("expected_from_date"),
             payload.get("expected_to_date"),
         ),
+        ("payload.from_date/to_date", payload.get("from_date"), payload.get("to_date")),
         (
             "work_items.data_window_start/data_window_end",
             candidate.get("data_window_start"),

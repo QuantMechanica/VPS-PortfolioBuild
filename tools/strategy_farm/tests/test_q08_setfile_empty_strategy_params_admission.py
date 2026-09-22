@@ -3,6 +3,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -154,7 +155,21 @@ class Q08CascadeEnqueueAdmissionTests(unittest.TestCase):
         old_repo_root = farmctl.REPO_ROOT
         try:
             farmctl.REPO_ROOT = repo_root
-            return farmctl.enqueue_cascade_backtest_for_ea(root, "QM5_9999", "Q08")
+            # This suite isolates the strategy-parameter admission gate.  The
+            # promotion identity/window contracts have dedicated authenticated
+            # fixtures in test_q08_promotion_repair.py.
+            with mock.patch.object(
+                farmctl,
+                "_q08_promotion_execution_binding",
+                return_value=(True, {"compile_record": {"work_item_id": "fixture"}}),
+            ), mock.patch.object(
+                farmctl,
+                "_attach_q08_dsr_context",
+                return_value={"status": "SEALED"},
+            ):
+                return farmctl.enqueue_cascade_backtest_for_ea(
+                    root, "QM5_9999", "Q08"
+                )
         finally:
             farmctl.REPO_ROOT = old_repo_root
 

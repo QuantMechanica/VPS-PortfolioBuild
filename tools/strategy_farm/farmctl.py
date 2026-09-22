@@ -22683,19 +22683,63 @@ def _pump_unlocked(
                 if successor_phase in {"Q05", "Q06", "Q07", _INCUMBENT_PHASE}:
                     _apply_q_phase_full_history_from(payload, successor_phase)
                 if successor_phase == "Q08":
-                    _attach_q08_dsr_context(conn, wi, payload)
+                    binding_ok, binding_detail = _q08_promotion_execution_binding(
+                        conn, wi, payload
+                    )
+                    if not binding_ok:
+                        result["cascade_promotions_skipped"].append({
+                            "ea_id": wi["ea_id"],
+                            "symbol": wi["symbol"],
+                            "from_phase": prev_phase,
+                            "to_phase": successor_phase,
+                            "from_work_item_id": wi["id"],
+                            "reason": "q08_promotion_identity_binding_refused",
+                            "detail": binding_detail,
+                        })
+                        continue
+                    dsr_status = _attach_q08_dsr_context(conn, wi, payload)
+                    if str(dsr_status.get("reason") or "").startswith(
+                        Q08_PROMOTION_WINDOW_UNAVAILABLE
+                    ):
+                        result["cascade_promotions_skipped"].append({
+                            "ea_id": wi["ea_id"],
+                            "symbol": wi["symbol"],
+                            "from_phase": prev_phase,
+                            "to_phase": successor_phase,
+                            "from_work_item_id": wi["id"],
+                            "reason": "q08_promotion_window_binding_refused",
+                            "detail": dsr_status,
+                        })
+                        continue
+                q08_identity = (
+                    _q08_typed_identity_from_payload(payload)
+                    if successor_phase == "Q08"
+                    else {}
+                )
                 contract_phase = successor_phase in {_NEWS_PHASE, _INCUMBENT_PHASE}
                 insert_sql = """
                     INSERT INTO work_items
                       (id, kind, phase, ea_id, symbol, setfile_path, status,
                        attempt_count, parent_task_id, payload_json, created_at, updated_at,
-                       gate_contract_version)
-                    VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, ?, ?, ?, ?, ?)
+                       gate_contract_version,ex5_sha256,setfile_sha256,mq5_sha256,
+                       include_closure_sha256,build_id,data_window_start,data_window_end,
+                       verdict_taxonomy,sh3_enforced)
+                    VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, ?, ?, ?, ?, ?,
+                            ?,?,?,?,?,?,?,?,?)
                 """
                 insert_args = (
                     new_id, successor_phase, wi["ea_id"], wi["symbol"], wi["setfile_path"],
                     parent_id, json.dumps(payload, sort_keys=True), now, now,
                     ACTIVE_GATE_CONTRACT_VERSION,
+                    q08_identity.get("ex5_sha256"),
+                    q08_identity.get("setfile_sha256"),
+                    q08_identity.get("mq5_sha256"),
+                    q08_identity.get("include_closure_sha256"),
+                    q08_identity.get("build_id"),
+                    q08_identity.get("data_window_start"),
+                    q08_identity.get("data_window_end"),
+                    "open" if successor_phase == "Q08" else None,
+                    1 if successor_phase == "Q08" else 0,
                 )
                 if not contract_phase:
                     conn.execute(insert_sql, insert_args)
@@ -26830,31 +26874,344 @@ def _setfile_path_exists(setfile_path: str) -> bool:
     return False
 
 
+Q08_PROMOTION_WINDOW_BINDING_SCHEMA = "qm.q08-promotion-window-binding/v1"
+Q08_PROMOTION_IDENTITY_BINDING_SCHEMA = "qm.q08-promotion-identity-binding/v1"
+Q08_PROMOTION_WINDOW_UNAVAILABLE = "Q08_PROMOTION_WINDOW_UNAVAILABLE"
+
+
 def _carry_q08_candidate_window(
     predecessor: Mapping[str, Any], payload: dict[str, Any]
-) -> None:
-    """Make a new Q08 row self-contained from its authoritative predecessor."""
+) -> tuple[bool, dict[str, Any]]:
+    """Bind the queue payload to the exact Q08 runner calendar.
+
+    A promoted row is a new phase, so Q02/Q04 ``from_date``/``to_date`` and
+    ``from_year``/``to_year`` are provenance, not its execution calendar.  The
+    old copier carried those canary values all the way to Q08, where the DSR
+    producer selected them ahead of the actual 2017/2018--2025 Q08 window.
+    Resolve from the same contract as the runner and overwrite every ambiguous
+    legacy window alias.  Failure is explicit so callers can refuse insertion.
+    """
+    try:
+        from tools.strategy_farm.q08_window import (
+            Q08WindowError,
+            resolve_q08_window,
+        )
+    except ModuleNotFoundError:
+        from q08_window import Q08WindowError, resolve_q08_window
+
+    setfile_path = str(_work_item_value(predecessor, "setfile_path", "") or "")
+    logical_symbol = str(_work_item_value(predecessor, "symbol", "") or "")
+    try:
+        window = resolve_q08_window(
+            CANONICAL_REPO_ROOT,
+            setfile_path,
+            logical_symbol,
+        )
+    except Q08WindowError as exc:
+        detail = {
+            "status": "UNAVAILABLE",
+            "reason": f"{Q08_PROMOTION_WINDOW_UNAVAILABLE}:{exc}",
+            "producer_schema": Q08_PROMOTION_WINDOW_BINDING_SCHEMA,
+            "predecessor_work_item_id": str(
+                _work_item_value(predecessor, "id", "") or ""
+            ),
+            "setfile_path": setfile_path,
+            "symbol": logical_symbol,
+        }
+        return False, detail
+
+    start = str(window["from_date"])
+    end = str(window["to_date"])
+    inherited = {
+        key: payload.get(key)
+        for key in (
+            "from_date", "to_date", "from_year", "to_year",
+            "expected_from_date", "expected_to_date",
+        )
+        if payload.get(key) not in (None, "")
+    }
+    payload.update({
+        "from_date": start,
+        "to_date": end,
+        "from_year": int(start[:4]),
+        "to_year": int(end[:4]),
+        "expected_from_date": start,
+        "expected_to_date": end,
+        "q08_candidate_window_binding": {
+            "schema": Q08_PROMOTION_WINDOW_BINDING_SCHEMA,
+            "source": "q08_phase_contract",
+            "predecessor_work_item_id": str(
+                _work_item_value(predecessor, "id", "") or ""
+            ),
+            "from_date": start,
+            "to_date": end,
+            "logical_symbol": window["logical_symbol"],
+            "host_symbol": window["host_symbol"],
+            "timeframe": window["timeframe"],
+            "history_first_year": window["history_first_year"],
+            "history_last_year": window["history_last_year"],
+            "history_registry_path": window["history_registry_path"],
+            "history_registry_sha256": window["history_registry_sha256"],
+            "inherited_window_replaced": inherited,
+        },
+    })
+    return True, dict(payload["q08_candidate_window_binding"])
+
+
+def _q08_promotion_execution_binding(
+    conn: sqlite3.Connection,
+    predecessor: Mapping[str, Any],
+    payload: dict[str, Any],
+    *,
+    current_bindings: dict[str, Any] | None = None,
+) -> tuple[bool, dict[str, Any]]:
+    """Bind a promoted Q08 row to a predecessor-authenticated current build."""
     try:
         predecessor_payload = json.loads(
-            _work_item_value(predecessor, "payload_json", "{}") or "{}"
+            str(_work_item_value(predecessor, "payload_json", "{}") or "{}")
         )
     except (TypeError, json.JSONDecodeError):
-        predecessor_payload = {}
+        predecessor_payload = None
     if not isinstance(predecessor_payload, dict):
-        predecessor_payload = {}
-    start = (
-        _work_item_value(predecessor, "data_window_start")
-        or predecessor_payload.get("expected_from_date")
-        or predecessor_payload.get("from_date")
+        return False, {"reason": "q08_predecessor_payload_invalid"}
+    predecessor_identity = predecessor_payload.get("artifact_identity")
+    if not isinstance(predecessor_identity, dict):
+        predecessor_identity = {}
+
+    source_ex5, source_ex5_error = _q02_rebind_single_bound_sha256(
+        "ex5",
+        {
+            "column": _work_item_value(predecessor, "ex5_sha256"),
+            "expected_ex5_sha256": predecessor_payload.get("expected_ex5_sha256"),
+            "expected_current_ex5_sha256": predecessor_payload.get(
+                "expected_current_ex5_sha256"
+            ),
+            "artifact_identity": predecessor_identity.get("ex5_sha256"),
+        },
     )
-    end = (
-        _work_item_value(predecessor, "data_window_end")
-        or predecessor_payload.get("expected_to_date")
-        or predecessor_payload.get("to_date")
+    source_mq5, source_mq5_error = _q02_rebind_single_bound_sha256(
+        "mq5",
+        {
+            "column": _work_item_value(predecessor, "mq5_sha256"),
+            "expected_mq5_sha256": predecessor_payload.get("expected_mq5_sha256"),
+            "artifact_identity": predecessor_identity.get("mq5_sha256"),
+        },
     )
-    if start not in (None, "") and end not in (None, ""):
-        payload.setdefault("expected_from_date", start)
-        payload.setdefault("expected_to_date", end)
+    source_setfile, source_setfile_error = _q02_rebind_single_bound_sha256(
+        "setfile",
+        {
+            "column": _work_item_value(predecessor, "setfile_sha256"),
+            "expected_setfile_sha256": predecessor_payload.get(
+                "expected_setfile_sha256"
+            ),
+            "artifact_identity": predecessor_identity.get("setfile_sha256"),
+        },
+    )
+    source_closure, source_closure_error = _q02_rebind_single_bound_sha256(
+        "include_closure",
+        {
+            "column": _work_item_value(predecessor, "include_closure_sha256"),
+            "payload": predecessor_payload.get("include_closure_sha256"),
+            "artifact_identity": predecessor_identity.get(
+                "include_closure_sha256"
+            ),
+        },
+    )
+    bindings = current_bindings
+    if bindings is None:
+        expected_ex5 = source_ex5
+        if expected_ex5 is None:
+            setfile_path = Path(
+                str(_work_item_value(predecessor, "setfile_path", "") or "")
+            )
+            ea_id = str(_work_item_value(predecessor, "ea_id", "") or "")
+            ea_dir = _ea_dir_from_setfile_path(setfile_path, ea_id)
+            current_ex5_path = (
+                ea_dir / f"{ea_dir.name}.ex5" if ea_dir is not None else None
+            )
+            if current_ex5_path is None or not current_ex5_path.is_file():
+                return False, {
+                    "reason": "q08_current_ex5_unavailable",
+                    "source_identity_error": source_ex5_error,
+                }
+            expected_ex5 = _sha256_file(current_ex5_path)
+        binding_ok, binding_detail = _expected_current_execution_bindings(
+            predecessor, expected_ex5
+        )
+        if not binding_ok:
+            return False, {
+                "reason": "q08_current_execution_binding_refused",
+                "detail": binding_detail,
+            }
+        bindings = binding_detail
+    artifact_sha256 = bindings.get("artifact_sha256")
+    if not isinstance(artifact_sha256, dict):
+        return False, {"reason": "q08_current_execution_binding_invalid"}
+    current_ex5 = str(artifact_sha256.get("expected_ex5_sha256") or "").lower()
+    current_mq5 = str(artifact_sha256.get("expected_mq5_sha256") or "").lower()
+    if source_ex5 is not None and current_ex5 != source_ex5:
+        return False, {
+            "reason": "q08_predecessor_ex5_identity_mismatch",
+            "predecessor_ex5_sha256": source_ex5,
+            "current_ex5_sha256": current_ex5,
+        }
+    if source_mq5 is not None and current_mq5 != source_mq5:
+        return False, {
+            "reason": "q08_predecessor_mq5_identity_mismatch",
+            "predecessor_mq5_sha256": source_mq5,
+            "current_mq5_sha256": current_mq5,
+        }
+    current_setfile = str(
+        artifact_sha256.get("expected_setfile_sha256") or ""
+    ).lower()
+
+    try:
+        from tools.strategy_farm import compile_work_items
+    except ModuleNotFoundError:
+        import compile_work_items
+    current_closure = str(
+        compile_work_items._current_include_closure_sha256(
+            CANONICAL_REPO_ROOT
+        )
+        or ""
+    ).strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", current_closure):
+        return False, {"reason": "q08_current_include_closure_unavailable"}
+
+    ea_id = str(_work_item_value(predecessor, "ea_id", "") or "")
+    compile_record, rejected = _q02_rebind_compile_provenance(
+        conn,
+        ea_id=ea_id,
+        expected_ex5_sha256=current_ex5,
+        expected_mq5_sha256=current_mq5,
+    )
+    predecessor_identity_complete = all(
+        value is not None
+        for value in (source_ex5, source_mq5, source_setfile, source_closure)
+    )
+    # A governed compile receipt authenticates the current source/binary and
+    # include closure; the current setfile is independently hashed above for
+    # the not-yet-executed row.  Without such a receipt, all four predecessor
+    # bindings must remain current before they can act as the authority.
+    if (
+        compile_record is None
+        and source_setfile is not None
+        and current_setfile != source_setfile
+    ):
+        return False, {
+            "reason": "q08_predecessor_setfile_identity_mismatch",
+            "predecessor_setfile_sha256": source_setfile,
+            "current_setfile_sha256": current_setfile,
+        }
+    if (
+        compile_record is None
+        and source_closure is not None
+        and current_closure != source_closure
+    ):
+        return False, {
+            "reason": "q08_predecessor_include_closure_mismatch",
+            "predecessor_include_closure_sha256": source_closure,
+            "current_include_closure_sha256": current_closure,
+        }
+    if compile_record is None and not predecessor_identity_complete:
+        return False, {
+            "reason": "q08_current_build_compile_provenance_unavailable",
+            "ea_id": ea_id,
+            "source_ex5_identity_error": source_ex5_error,
+            "source_mq5_identity_error": source_mq5_error,
+            "source_setfile_identity_error": source_setfile_error,
+            "source_include_closure_identity_error": source_closure_error,
+            "rejected_compile_records": rejected,
+        }
+    include_closure = str(
+        (compile_record or {}).get("include_closure_sha256")
+        or source_closure
+        or ""
+    ).strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", include_closure):
+        return False, {
+            "reason": "q08_compile_include_closure_unbound",
+            "compile_work_item_id": (
+                compile_record.get("work_item_id") if compile_record else None
+            ),
+        }
+    if include_closure != current_closure:
+        return False, {
+            "reason": "q08_compile_include_closure_not_current",
+            "compile_work_item_id": (
+                compile_record.get("work_item_id") if compile_record else None
+            ),
+            "bound_include_closure_sha256": include_closure,
+            "current_include_closure_sha256": current_closure,
+        }
+
+    payload.update({
+        "expected_current_ex5_sha256": current_ex5,
+        **artifact_sha256,
+        "expected_symbol": bindings["expected_symbol"],
+        "expected_period": bindings["expected_period"],
+        "expected_expert": bindings["expected_expert"],
+    })
+    artifact_identity = dict(payload.get("artifact_identity") or {})
+    artifact_identity.update({
+        key.removeprefix("expected_"): value
+        for key, value in artifact_sha256.items()
+    })
+    artifact_identity["include_closure_sha256"] = include_closure
+    if compile_record and compile_record.get("build_id") not in (None, ""):
+        artifact_identity["build_id"] = compile_record["build_id"]
+    payload["artifact_identity"] = artifact_identity
+    payload["include_closure_sha256"] = include_closure
+    payload["q08_promotion_identity_binding"] = {
+        "schema": Q08_PROMOTION_IDENTITY_BINDING_SCHEMA,
+        "predecessor_work_item_id": str(
+            _work_item_value(predecessor, "id", "") or ""
+        ),
+        "authority": (
+            "governed_compile_evidence"
+            if compile_record
+            else "predecessor_verified_identity"
+        ),
+        "predecessor_ex5_sha256": source_ex5,
+        "predecessor_mq5_sha256": source_mq5,
+        "predecessor_setfile_sha256": source_setfile,
+        "predecessor_include_closure_sha256": source_closure,
+        "compile_work_item_id": (
+            compile_record.get("work_item_id") if compile_record else None
+        ),
+        "compile_evidence_path": (
+            compile_record.get("evidence_path") if compile_record else None
+        ),
+        "compile_evidence_sha256": (
+            compile_record.get("evidence_sha256") if compile_record else None
+        ),
+        "include_closure_sha256": include_closure,
+    }
+    return True, {
+        "artifact_sha256": artifact_sha256,
+        "include_closure_sha256": include_closure,
+        "build_id": compile_record.get("build_id") if compile_record else None,
+        "compile_record": compile_record,
+    }
+
+
+def _q08_typed_identity_from_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
+    identity = payload.get("artifact_identity")
+    if not isinstance(identity, Mapping):
+        identity = {}
+    return {
+        "ex5_sha256": identity.get("ex5_sha256")
+        or payload.get("expected_ex5_sha256"),
+        "setfile_sha256": identity.get("setfile_sha256")
+        or payload.get("expected_setfile_sha256"),
+        "mq5_sha256": identity.get("mq5_sha256")
+        or payload.get("expected_mq5_sha256"),
+        "include_closure_sha256": identity.get("include_closure_sha256")
+        or payload.get("include_closure_sha256"),
+        "build_id": identity.get("build_id") or payload.get("build_id"),
+        "data_window_start": payload.get("expected_from_date"),
+        "data_window_end": payload.get("expected_to_date"),
+    }
 
 
 def _attach_q08_dsr_context(
@@ -26868,7 +27225,11 @@ def _attach_q08_dsr_context(
     binding or records a machine-readable refusal; callers then insert the new
     row once.  Existing Q08 rows never pass through this helper.
     """
-    _carry_q08_candidate_window(predecessor, payload)
+    window_ok, window_detail = _carry_q08_candidate_window(predecessor, payload)
+    if not window_ok:
+        payload.pop("dsr_context", None)
+        payload["dsr_context_status"] = window_detail
+        return window_detail
     try:
         from tools.strategy_farm import dsr_cohort
     except ModuleNotFoundError:
@@ -32646,20 +33007,56 @@ def enqueue_cascade_backtest_for_ea(
                     # append-only update above (guarded non-empty upstream).
                     payload.update(forced_news_expansion_identity)
                 if phase == "Q08":
+                    promotion_binding_ok, promotion_binding_detail = (
+                        _q08_promotion_execution_binding(
+                            conn,
+                            prev,
+                            payload,
+                            current_bindings=current_bindings,
+                        )
+                    )
+                    if not promotion_binding_ok:
+                        skipped.append({
+                            "id": str(append_only_rerun_of),
+                            "symbol": prev["symbol"],
+                            "reason": "q08_promotion_identity_binding_refused",
+                            "detail": promotion_binding_detail,
+                        })
+                        continue
                     dsr_candidate = dict(execution_candidate)
                     if current_bindings:
                         dsr_candidate.update({
                             key.removeprefix("expected_"): value
                             for key, value in current_bindings["artifact_sha256"].items()
                         })
-                    _attach_q08_dsr_context(conn, dsr_candidate, payload)
+                    dsr_status = _attach_q08_dsr_context(
+                        conn, dsr_candidate, payload
+                    )
+                    if str(dsr_status.get("reason") or "").startswith(
+                        Q08_PROMOTION_WINDOW_UNAVAILABLE
+                    ):
+                        skipped.append({
+                            "id": str(append_only_rerun_of),
+                            "symbol": prev["symbol"],
+                            "reason": "q08_promotion_window_binding_refused",
+                            "detail": dsr_status,
+                        })
+                        continue
+                q08_identity = (
+                    _q08_typed_identity_from_payload(payload)
+                    if phase == "Q08"
+                    else {}
+                )
                 wid = str(uuid.uuid4())
                 insert_sql = """
                     INSERT INTO work_items
                       (id, kind, phase, ea_id, symbol, setfile_path, status,
                        attempt_count, parent_task_id, payload_json, created_at, updated_at,
-                       gate_contract_version)
-                    VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, NULL, ?, ?, ?, ?)
+                       gate_contract_version,ex5_sha256,setfile_sha256,mq5_sha256,
+                       include_closure_sha256,build_id,data_window_start,data_window_end,
+                       verdict_taxonomy,sh3_enforced)
+                    VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, NULL, ?, ?, ?, ?,
+                            ?,?,?,?,?,?,?,?,?)
                 """
                 insert_args = (
                     wid,
@@ -32671,6 +33068,15 @@ def enqueue_cascade_backtest_for_ea(
                     now,
                     now,
                     ACTIVE_GATE_CONTRACT_VERSION,
+                    q08_identity.get("ex5_sha256"),
+                    q08_identity.get("setfile_sha256"),
+                    q08_identity.get("mq5_sha256"),
+                    q08_identity.get("include_closure_sha256"),
+                    q08_identity.get("build_id"),
+                    q08_identity.get("data_window_start"),
+                    q08_identity.get("data_window_end"),
+                    "open" if phase == "Q08" else None,
+                    1 if phase == "Q08" else 0,
                 )
                 contract_phase = phase in {
                     _NEWS_PHASE, _NEWS_PORTFOLIO_PHASE, _INCUMBENT_PHASE
@@ -32873,13 +33279,46 @@ def enqueue_cascade_backtest_for_ea(
                 requeued.append({"id": existing["id"], "symbol": existing["symbol"]})
                 continue
             if phase == "Q08":
+                promotion_binding_ok, promotion_binding_detail = (
+                    _q08_promotion_execution_binding(
+                        conn,
+                        prev,
+                        payload,
+                        current_bindings=fresh_bindings,
+                    )
+                )
+                if not promotion_binding_ok:
+                    skipped.append({
+                        "id": str(prev["id"]),
+                        "symbol": prev["symbol"],
+                        "reason": "q08_promotion_identity_binding_refused",
+                        "detail": promotion_binding_detail,
+                    })
+                    continue
                 dsr_candidate = dict(prev)
                 if fresh_bindings:
                     dsr_candidate.update({
                         key.removeprefix("expected_"): value
                         for key, value in fresh_bindings["artifact_sha256"].items()
                     })
-                _attach_q08_dsr_context(conn, dsr_candidate, payload)
+                dsr_status = _attach_q08_dsr_context(
+                    conn, dsr_candidate, payload
+                )
+                if str(dsr_status.get("reason") or "").startswith(
+                    Q08_PROMOTION_WINDOW_UNAVAILABLE
+                ):
+                    skipped.append({
+                        "id": str(prev["id"]),
+                        "symbol": prev["symbol"],
+                        "reason": "q08_promotion_window_binding_refused",
+                        "detail": dsr_status,
+                    })
+                    continue
+            q08_identity = (
+                _q08_typed_identity_from_payload(payload)
+                if phase == "Q08"
+                else {}
+            )
             wid = str(uuid.uuid4())
             contract_phase = phase in {
                 _NEWS_PHASE, _NEWS_PORTFOLIO_PHASE, _INCUMBENT_PHASE
@@ -32888,8 +33327,11 @@ def enqueue_cascade_backtest_for_ea(
                 INSERT INTO work_items
                   (id, kind, phase, ea_id, symbol, setfile_path, status,
                    attempt_count, parent_task_id, payload_json, created_at, updated_at,
-                   gate_contract_version)
-                VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, NULL, ?, ?, ?, ?)
+                   gate_contract_version,ex5_sha256,setfile_sha256,mq5_sha256,
+                   include_closure_sha256,build_id,data_window_start,data_window_end,
+                   verdict_taxonomy,sh3_enforced)
+                VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, NULL, ?, ?, ?, ?,
+                        ?,?,?,?,?,?,?,?,?)
             """
             insert_args = (
                 wid,
@@ -32901,6 +33343,15 @@ def enqueue_cascade_backtest_for_ea(
                 now,
                 now,
                 ACTIVE_GATE_CONTRACT_VERSION,
+                q08_identity.get("ex5_sha256"),
+                q08_identity.get("setfile_sha256"),
+                q08_identity.get("mq5_sha256"),
+                q08_identity.get("include_closure_sha256"),
+                q08_identity.get("build_id"),
+                q08_identity.get("data_window_start"),
+                q08_identity.get("data_window_end"),
+                "open" if phase == "Q08" else None,
+                1 if phase == "Q08" else 0,
             )
             if not contract_phase:
                 conn.execute(insert_sql, insert_args)
