@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   373196a8908a7d28f9d856e7928b7bb529e0846263314149518aa6decce8a61e
+; build_hash:   0a70510cee535d4328142a51d65329a437652e4192c9ca1e5d26f77cdd4631e8
 ; author:       Development
 ; date:         2026-07-16
 ;==========================================================
@@ -47,5 +47,5 @@ BeLockFrac=0.1
 EntryMode=1
 FridayExitHourBroker=18
 FridayExitMinuteBroker=30
-; --- ablation child 01 of QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest (perturb=±25%) ---
+; --- ablation child 01 of QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest (perturb=Â±25%) ---
 strategy_spread_atr_mult=0.28226

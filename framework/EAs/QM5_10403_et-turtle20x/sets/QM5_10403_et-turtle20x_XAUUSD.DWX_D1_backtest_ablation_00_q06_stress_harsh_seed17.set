@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d0c4b21e8d9ef19d25122c865a7d539560653b7c094a704622db2ce6f8e4020a
+; build_hash:   33d9f3970afb14b719126b39c9da1511568af8e65b8cd883cbfec12658fbe226
 ; author:       Development
 ; date:         2026-07-14
 ;==========================================================
@@ -34,7 +34,7 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-; --- ablation child 00 of QM5_10403_et-turtle20x_XAUUSD.DWX_D1_backtest (perturb=±25%) ---
+; --- ablation child 00 of QM5_10403_et-turtle20x_XAUUSD.DWX_D1_backtest (perturb=Â±25%) ---
 strategy_entry_channel=19
 strategy_exit_channel=11
 strategy_atr_period=19

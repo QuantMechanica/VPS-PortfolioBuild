@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4ccd76eb61311c636c8d07291becf62104617b880fdda0dc146321efc51cbf7c
+; build_hash:   ad210eaf9709ce2b36252c8743bbb1863eefdcd53a1f8f3286bf96af919fe08b
 ; author:       Development
 ; date:         2026-06-05
 ;==========================================================
@@ -32,5 +32,5 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-; --- ablation child 00 of QM5_10706_tv-mon-ls_USDJPY.DWX_H1_backtest (perturb=±25%) ---
+; --- ablation child 00 of QM5_10706_tv-mon-ls_USDJPY.DWX_H1_backtest (perturb=Â±25%) ---
 strategy_spread_atr_mult=0.210365

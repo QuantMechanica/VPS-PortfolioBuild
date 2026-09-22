@@ -10,7 +10,7 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   1c66664a386706f3b02097725a78e9ad57ed0dd29d9deaece4b754a3d42371a7
+; build_hash:   c3df7529be6ac327ddf3bf563e22591f035f8ba67fd530987caa9ea70963895c
 ; author:       Development
 ; date:         2026-07-15
 ;==========================================================
@@ -34,7 +34,7 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-; --- ablation child 01 of QM5_10403_et-turtle20x_GDAXI.DWX_D1_backtest (perturb=±25%) ---
+; --- ablation child 01 of QM5_10403_et-turtle20x_GDAXI.DWX_D1_backtest (perturb=Â±25%) ---
 strategy_entry_channel=24
 strategy_exit_channel=12
 strategy_atr_period=21

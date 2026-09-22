@@ -10,7 +10,7 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6d2fafda40f580e28764f246f92bc1bedeb2187f3e0fbf005c05d51f850c37cd
+; build_hash:   6b2dea595a709d34f58782c026f2ce59240b51b41d940ca0c4f173222c4f3149
 ; author:       Development
 ; date:         2026-06-05
 ;==========================================================
@@ -32,5 +32,5 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-; --- ablation child 01 of QM5_10706_tv-mon-ls_XAUUSD.DWX_H1_backtest (perturb=±25%) ---
+; --- ablation child 01 of QM5_10706_tv-mon-ls_XAUUSD.DWX_H1_backtest (perturb=Â±25%) ---
 strategy_spread_atr_mult=0.283075
