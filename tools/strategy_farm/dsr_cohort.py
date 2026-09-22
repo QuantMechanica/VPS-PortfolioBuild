@@ -829,8 +829,57 @@ def claimability_precheck(
     try:
         _resolve_single_configuration_identity(candidate, payload, timeframe)
     except CohortUnavailable as exc:
-        return {"claimable": False, "reason": str(exc)}
+        reason = str(exc)
+        result = {"claimable": False, "reason": reason}
+        if reason == "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_UNBOUND":
+            result["binding_required"] = True
+        return result
     return {"claimable": True, "reason": None}
+
+
+def single_configuration_identity_state(
+    candidate: Mapping[str, Any], payload: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Classify the row's three-part DSR build identity without reading files.
+
+    An absent binding is repairable from governed predecessor/compile evidence
+    at claim time.  It is materially different from a populated binding whose
+    bytes no longer match the EA directory, so callers must never collapse the
+    former into ``BUILD_IDENTITY_MISMATCH``.
+    """
+    raw_identity = payload.get("artifact_identity")
+    artifact_identity = (
+        raw_identity if isinstance(raw_identity, Mapping) else {}
+    )
+    identity: dict[str, Any] = {}
+    conflicts: dict[str, list[str]] = {}
+    missing: list[str] = []
+    for role in ("mq5", "ex5", "setfile"):
+        key = role + "_sha256"
+        claims = [
+            candidate.get(key),
+            artifact_identity.get(key),
+            payload.get("expected_" + key),
+        ]
+        populated = [
+            str(value).strip().lower()
+            for value in claims
+            if value not in (None, "") and str(value).strip()
+        ]
+        distinct = sorted(set(populated))
+        if not distinct:
+            identity[key] = None
+            missing.append(role)
+        else:
+            identity[key] = distinct[0]
+            if len(distinct) > 1:
+                conflicts[role] = distinct
+    return {
+        "identity": identity,
+        "missing_roles": missing,
+        "conflicts": conflicts,
+        "bound": not missing and not conflicts,
+    }
 
 
 def _resolve_single_configuration_identity(candidate, payload, timeframe):
@@ -845,6 +894,18 @@ def _resolve_single_configuration_identity(candidate, payload, timeframe):
         from . import dsr_single_configuration as single
     except ImportError:
         import dsr_single_configuration as single
+    state = single_configuration_identity_state(candidate, payload)
+    if state["missing_roles"]:
+        raise CohortUnavailable(
+            "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_UNBOUND"
+        )
+    for role in ("mq5", "ex5", "setfile"):
+        if role in state["conflicts"]:
+            raise CohortUnavailable(
+                "SINGLE_CONFIGURATION_UNAVAILABLE:"
+                "CONFLICTING_BUILD_IDENTITY:" + role
+            )
+
     setfile = Path(str(candidate.get('setfile_path') or ''))
     ea_directory = setfile.parent.parent
     label = ea_directory.name
@@ -855,10 +916,7 @@ def _resolve_single_configuration_identity(candidate, payload, timeframe):
         # Check explicit search authority first; defaults and absent ledgers never imply n=1.
         single.declaration(paths['card'].read_bytes())
         provenance = {role: {'path': str(path.resolve()), 'sha256': sha256_file(path)} for role, path in paths.items()}
-        identity = {role+'_sha256': candidate.get(role+'_sha256') or (payload.get('artifact_identity') or {}).get(role+'_sha256') or payload.get('expected_'+role+'_sha256') for role in ('mq5','ex5','setfile')}
-        for role in ('mq5', 'ex5', 'setfile'):
-            claims = [candidate.get(role+'_sha256'), (payload.get('artifact_identity') or {}).get(role+'_sha256'), payload.get('expected_'+role+'_sha256')]
-            _require(all(value == identity[role+'_sha256'] for value in claims if value), 'CONFLICTING_BUILD_IDENTITY:'+role)
+        identity = dict(state["identity"])
         candidate_id = {'ea_id': str(candidate['ea_id']), 'symbol': str(candidate['symbol']), 'timeframe': timeframe}
         single.validate(provenance, candidate_id, identity)
     except (OSError, ValueError, KeyError, TypeError) as exc:

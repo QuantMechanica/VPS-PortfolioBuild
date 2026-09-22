@@ -5769,7 +5769,39 @@ def _seal_q08_dsr_at_claim(
         from tools.strategy_farm import dsr_cohort
     except ModuleNotFoundError:
         import dsr_cohort
-    status = dsr_cohort.attach(conn, dict(item), payload)
+    candidate = dict(item)
+    bound_identity: dict[str, Any] | None = None
+    predecessor_id = str(
+        payload.get("promoted_from_work_item")
+        or payload.get("from_work_item_id")
+        or ""
+    ).strip()
+    if predecessor_id:
+        identity_state = farmctl._q08_execution_identity_state(candidate, payload)
+        if identity_state["conflicts"]:
+            role = sorted(identity_state["conflicts"])[0]
+            return {
+                "claimable": False,
+                "status": "UNAVAILABLE",
+                "reason": f"CONFLICTING_BUILD_IDENTITY:{role}",
+            }
+        if identity_state["missing_roles"]:
+            binding_ok, binding_detail = farmctl._q08_claim_execution_binding(
+                conn, candidate, payload
+            )
+            if not binding_ok:
+                return {
+                    "claimable": False,
+                    "status": "UNAVAILABLE",
+                    "reason": str(
+                        binding_detail.get("reason")
+                        or "BUILD_IDENTITY_BINDING_REFUSED"
+                    ),
+                    "binding_detail": binding_detail,
+                }
+            candidate = dict(binding_detail["candidate"])
+            bound_identity = dict(binding_detail["typed_identity"])
+    status = dsr_cohort.attach(conn, candidate, payload)
     preflight_enabled = (
         os.environ.get(Q08_DSR_CONTEXT_PREFLIGHT_ENV) == "1"
         and os.environ.get("QM_DSR_V2") == "1"
@@ -5783,7 +5815,13 @@ def _seal_q08_dsr_at_claim(
         and bool(binding.get("sha256"))
     )
     if not preflight_enabled or sealed:
-        return {"claimable": True, **(status if isinstance(status, dict) else {})}
+        result = {
+            "claimable": True,
+            **(status if isinstance(status, dict) else {}),
+        }
+        if bound_identity is not None:
+            result["bound_identity"] = bound_identity
+        return result
     return {
         "claimable": False,
         "status": "UNAVAILABLE",
@@ -6818,6 +6856,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         os.environ.get(Q08_DSR_CONTEXT_PREFLIGHT_ENV) == "1"
                         and os.environ.get("QM_DSR_V2") == "1"
                     )
+                    q08_bound_identity: dict[str, Any] | None = None
                     if (
                         q08_preflight_enabled
                         and str(_work_item_value(item, "phase", "") or "").upper()
@@ -6844,6 +6883,43 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             from tools.strategy_farm import dsr_cohort
                         except ModuleNotFoundError:
                             import dsr_cohort
+                        predecessor_id = str(
+                            payload.get("promoted_from_work_item")
+                            or payload.get("from_work_item_id")
+                            or ""
+                        ).strip()
+                        if predecessor_id:
+                            identity_state = farmctl._q08_execution_identity_state(
+                                item, payload
+                            )
+                            if identity_state["conflicts"]:
+                                role = sorted(identity_state["conflicts"])[0]
+                                skipped_q08_dsr_context.append({
+                                    "item_id": item["id"],
+                                    "ea_id": item["ea_id"],
+                                    "reason": f"CONFLICTING_BUILD_IDENTITY:{role}",
+                                    "stage": "claim_identity_binding",
+                                })
+                                continue
+                            if identity_state["missing_roles"]:
+                                binding_ok, binding_detail = (
+                                    farmctl._q08_claim_execution_binding(
+                                        conn, item, payload
+                                    )
+                                )
+                                if not binding_ok:
+                                    skipped_q08_dsr_context.append({
+                                        "item_id": item["id"],
+                                        "ea_id": item["ea_id"],
+                                        "reason": binding_detail.get("reason"),
+                                        "binding_detail": binding_detail,
+                                        "stage": "claim_identity_binding",
+                                    })
+                                    continue
+                                item = dict(binding_detail["candidate"])
+                                q08_bound_identity = dict(
+                                    binding_detail["typed_identity"]
+                                )
                         q08_precheck = dsr_cohort.claimability_precheck(
                             conn, item, payload
                         )
@@ -6891,6 +6967,10 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             "reason": dsr_preflight.get("reason"),
                         })
                         continue
+                    if dsr_preflight.get("bound_identity"):
+                        q08_bound_identity = dict(
+                            dsr_preflight["bound_identity"]
+                        )
                     if compile_only_due_to_commit_headroom:
                         payload.update({
                             "claim_admission_mode": "compile_only_under_reservation_pressure",
@@ -6953,10 +7033,28 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         conn.rollback()
                         conn.execute("PRAGMA query_only=ON")
                         continue
-                    cur = conn.execute(
+                    identity_update_sql = ""
+                    identity_update_args: tuple[Any, ...] = ()
+                    if q08_bound_identity is not None:
+                        identity_update_sql = """
+                            ,ex5_sha256=COALESCE(?,ex5_sha256)
+                            ,setfile_sha256=COALESCE(?,setfile_sha256)
+                            ,mq5_sha256=COALESCE(?,mq5_sha256)
+                            ,include_closure_sha256=COALESCE(?,include_closure_sha256)
+                            ,build_id=COALESCE(?,build_id)
                         """
+                        identity_update_args = (
+                            q08_bound_identity.get("ex5_sha256"),
+                            q08_bound_identity.get("setfile_sha256"),
+                            q08_bound_identity.get("mq5_sha256"),
+                            q08_bound_identity.get("include_closure_sha256"),
+                            q08_bound_identity.get("build_id"),
+                        )
+                    cur = conn.execute(
+                        f"""
                         UPDATE work_items
                         SET status='active', claimed_by=?, payload_json=?, updated_at=?
+                            {identity_update_sql}
                         WHERE id=? AND status='pending' AND claimed_by IS NULL
                           AND NOT EXISTS (
                             SELECT 1 FROM work_item_holds h
@@ -6974,7 +7072,11 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                               AND q.active=1
                           )
                         """,
-                        (terminal, json.dumps(payload, sort_keys=True), now, item["id"]),
+                        (
+                            terminal, json.dumps(payload, sort_keys=True), now,
+                            *identity_update_args,
+                            item["id"],
+                        ),
                     )
                     if cur.rowcount == 1:
                         # Advance the durable claim-class ledger in the SAME
@@ -7687,6 +7789,10 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                         "item_id": item_id,
                         "dsr_context_reason": dsr_preflight.get("reason"),
                     }
+                q08_bound_identity = (
+                    dict(dsr_preflight["bound_identity"])
+                    if dsr_preflight.get("bound_identity") else None
+                )
                 _set_commit_reservation(
                     payload,
                     claimed_at_iso=now,
@@ -7694,10 +7800,28 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                     commit_class=_multisymbol_commit_class(item, payload, item_is_multisym),
                     item=item,
                 )
-                cur = conn.execute(
+                identity_update_sql = ""
+                identity_update_args: tuple[Any, ...] = ()
+                if q08_bound_identity is not None:
+                    identity_update_sql = """
+                        ,ex5_sha256=COALESCE(?,ex5_sha256)
+                        ,setfile_sha256=COALESCE(?,setfile_sha256)
+                        ,mq5_sha256=COALESCE(?,mq5_sha256)
+                        ,include_closure_sha256=COALESCE(?,include_closure_sha256)
+                        ,build_id=COALESCE(?,build_id)
                     """
+                    identity_update_args = (
+                        q08_bound_identity.get("ex5_sha256"),
+                        q08_bound_identity.get("setfile_sha256"),
+                        q08_bound_identity.get("mq5_sha256"),
+                        q08_bound_identity.get("include_closure_sha256"),
+                        q08_bound_identity.get("build_id"),
+                    )
+                cur = conn.execute(
+                    f"""
                     UPDATE work_items
                     SET status='active', claimed_by=?, payload_json=?, updated_at=?
+                        {identity_update_sql}
                     WHERE id=? AND status='pending'
                       AND NOT EXISTS (
                         SELECT 1 FROM poison_pill_quarantine q
@@ -7707,7 +7831,10 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                           AND q.active=1
                       )
                     """,
-                    (terminal, json.dumps(payload, sort_keys=True), now, item_id),
+                    (
+                        terminal, json.dumps(payload, sort_keys=True), now,
+                        *identity_update_args, item_id,
+                    ),
                 )
                 if cur.rowcount != 1:
                     conn.rollback()
