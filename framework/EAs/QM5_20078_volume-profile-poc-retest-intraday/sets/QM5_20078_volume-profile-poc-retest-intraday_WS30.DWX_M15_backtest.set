@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20078
+; ea_slug:      volume-profile-poc-retest-intraday
+; ea_version:   v5.0
+; set_version:  s20260922-001
+; symbol:       WS30.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   5
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   afffb5b4a4347fbdb391babdd93940b42b062570de84b2d17ca5effb7eb30c68
+; author:       Development
+; date:         2026-09-22
+;==========================================================
+qm_ea_id=20078
+qm_magic_slot_offset=5
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_20078_volume-profile-poc-retest-intraday.md
+strategy_atr_period=14
+strategy_ema_period=200
+strategy_rsi_period=14
+strategy_rsi_buy_min=45.0
+strategy_rsi_sell_max=55.0
+strategy_va_coverage=0.70
+strategy_stop_atr_mult=1.0
+strategy_poc_stop_atr_mult=0.5
+strategy_tp_atr_mult=2.0
+strategy_va_min_atr_d1=0.5
+strategy_spread_median_mult=1.5
+strategy_max_hold_bars=24
+strategy_min_session_bars=4
+strategy_min_profile_bars=60
