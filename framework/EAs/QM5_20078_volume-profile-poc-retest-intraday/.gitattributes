@@ -1,0 +1,2 @@
+*.mq5 text eol=lf
+sets/*.set text eol=lf

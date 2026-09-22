@@ -3751,6 +3751,43 @@ def _stale_include_closure_authorized(
     return True
 
 
+# OWNER FTMO BR/NNFX intake, continued interactively on 2026-09-22.
+# Exact source/evidence bindings for the four recycled NNFX builds. Existing
+# binaries have no authenticated COMPILE_OK; their historical files stay intact.
+# Normal compile checks, rollout holds, and downstream review still apply.
+NNFX_RECOVERY_20260922_REGISTRATIONS = {
+    "router_ops_issue:cd3b761c-54d4-4b71-ba7e-f60018df57d3:QM5_36001": {
+        "ea_id": "36001", "ea_label": "QM5_36001_nnfx-classic-mcginley-ssl-wae",
+        "source_sha256": "3a77cdff99a14dd0579b088d05a2c9d3bd896ad663f6fd48534463e1b28521da",
+        "predecessors": {}, "superseded_predecessors": [],
+        "evidence_path": "docs/ops/evidence/2026-09-22_ftmo_recovery/QM5_36001_compile_authority.json",
+        "evidence_sha256": "a210135ffc02c80d1082844f203dde05008d32d57db351c7478e65963f102407",
+    },
+    "router_ops_issue:cd3b761c-54d4-4b71-ba7e-f60018df57d3:QM5_36003": {
+        "ea_id": "36003", "ea_label": "QM5_36003_nnfx-hull-ma-zerolag-macd-stc",
+        "source_sha256": "df2e5bccf65e5332ccb5a3a1ed16bfbc1ab4c5388002e42f28b132f3b69b139c",
+        "predecessors": {}, "superseded_predecessors": [],
+        "evidence_path": "docs/ops/evidence/2026-09-22_ftmo_recovery/QM5_36003_compile_authority.json",
+        "evidence_sha256": "fe1c8547d88e276cf31b3c97f31811f41855aefc16cfd20ecbbd73862e2bf8e0",
+    },
+    "router_ops_issue:cd3b761c-54d4-4b71-ba7e-f60018df57d3:QM5_36004": {
+        "ea_id": "36004", "ea_label": "QM5_36004_nnfx-alma-qqe-volume-flow-sniper",
+        "source_sha256": "8b292c0e88e6f3b509775bb94e4f2ed677da4639275f1ab529e07db4eb88abf8",
+        "predecessors": {}, "superseded_predecessors": [],
+        "evidence_path": "docs/ops/evidence/2026-09-22_ftmo_recovery/QM5_36004_compile_authority.json",
+        "evidence_sha256": "925aa44796aa29f0594ab21150e7209c184cf06696e53cda75915a310cd65b88",
+    },
+    "router_ops_issue:cd3b761c-54d4-4b71-ba7e-f60018df57d3:QM5_36008": {
+        "ea_id": "36008", "ea_label": "QM5_36008_nnfx-gold-kama-vortex-supertrend",
+        "source_sha256": "54a9d8c51c90fb6f50c3547fdc83a36fde5dd6468105539fe99c5665d9003783",
+        "predecessors": {}, "superseded_predecessors": [],
+        "evidence_path": "docs/ops/evidence/2026-09-22_ftmo_recovery/QM5_36008_compile_authority.json",
+        "evidence_sha256": "e8ba10570ca1abd6d0848effb5ed67fa4058b21e70d29c102f3ed70b08aee422",
+    },
+}
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS.update(NNFX_RECOVERY_20260922_REGISTRATIONS)
+
+
 def _backlog_source_repair_artifact_bindings(authority: str | None = None) -> list[dict[str, str]]:
     binding = BACKLOG_SOURCE_REPAIR_REGISTRATIONS.get(authority or "", {})
     return [{"path": binding.get("evidence_path", BACKLOG_SOURCE_REPAIR_EVIDENCE),

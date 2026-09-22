@@ -361,6 +361,32 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return true;
 }
 
+// Deal history survives EA/terminal restarts and a failed BE modification.
+// A partial close and an SL modification are separate broker operations.
+int Strategy_TP1PartialState(const ulong position_id, const datetime position_time)
+{
+   if(position_id == 0 || position_time <= 0)
+      return -1;
+   if(!HistorySelect(position_time, TimeCurrent()))
+      return -1;
+
+   const long magic = (long)QM_FrameworkMagic();
+   for(int i = HistoryDealsTotal() - 1; i >= 0; --i)
+   {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0)
+         return -1;
+      if((ulong)HistoryDealGetInteger(deal, DEAL_POSITION_ID) != position_id)
+         continue;
+      if(HistoryDealGetInteger(deal, DEAL_MAGIC) != magic)
+         continue;
+      const ENUM_DEAL_ENTRY entry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal, DEAL_ENTRY);
+      if(entry == DEAL_ENTRY_OUT || entry == DEAL_ENTRY_OUT_BY)
+         return 1;
+   }
+   return 0;
+}
+
 void Strategy_ManageOpenPosition()
 {
    const int magic = QM_FrameworkMagic();
@@ -374,6 +400,8 @@ void Strategy_ManageOpenPosition()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
 
       const ENUM_POSITION_TYPE position_type =
          (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
@@ -385,11 +413,31 @@ void Strategy_ManageOpenPosition()
       if(open_price <= 0.0 || current_sl <= 0.0 || volume <= 0.0 || point <= 0.0)
          continue;
 
-      // Once protected, the SL itself is the restart-safe proof that TP1 ran.
+      // A protected runner needs no further TP1 action.
       const bool unprotected = is_buy ? (current_sl < open_price - point * 0.5)
                                       : (current_sl > open_price + point * 0.5);
       if(!unprotected)
          continue;
+
+      const ulong position_id = (ulong)PositionGetInteger(POSITION_IDENTIFIER);
+      const datetime position_time = (datetime)PositionGetInteger(POSITION_TIME);
+      const int partial_state = Strategy_TP1PartialState(position_id, position_time);
+      if(partial_state < 0)
+         continue;
+      const double be_buffer = QM_StopRulesPipsToPriceDistance(_Symbol,
+                                                               strategy_be_buffer_pips);
+      if(be_buffer < 0.0)
+         continue;
+      const double be_sl = QM_TM_NormalizePrice(_Symbol,
+                                                is_buy ? (open_price + be_buffer)
+                                                       : (open_price - be_buffer));
+      if(partial_state > 0)
+      {
+         // Retry protection even if price has retraced below the TP1 trigger.
+         // Never close half of the remaining volume a second time.
+         QM_TM_MoveSL(ticket, be_sl, "NNFX_TP1_BE_RESTORE");
+         continue;
+      }
 
       const double initial_risk = is_buy ? (open_price - current_sl)
                                          : (current_sl - open_price);
@@ -414,12 +462,8 @@ void Strategy_ManageOpenPosition()
 
       if(QM_TM_PartialClose(ticket, partial_lots, QM_EXIT_PARTIAL))
       {
-         const double be_buffer = QM_StopRulesPipsToPriceDistance(_Symbol,
-                                                                  strategy_be_buffer_pips);
-         const double be_sl = is_buy ? (open_price + be_buffer)
-                                     : (open_price - be_buffer);
          QM_TM_MoveSL(ticket,
-                      QM_TM_NormalizePrice(_Symbol, be_sl),
+                      be_sl,
                       "NNFX_TP1_BE_PROTECTION");
       }
    }

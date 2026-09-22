@@ -137,7 +137,18 @@ def test_buffer_is_bounded_every_input_is_wired_and_sets_bind_source() -> None:
     for set_path in SET_PATHS:
         text = set_path.read_text(encoding="utf-8-sig")
         values = assignments(set_path)
-        assert re.search(rf"(?m)^; build_hash:\s+{source_hash}$", text)
+        # build_hash is reserved for the authenticated EX5: "pending" before
+        # COMPILE_EA, the compiled binary's SHA-256 afterwards. Source->binary
+        # provenance is NOT carried in this comment - it is enforced by the
+        # COMPILE_OK receipt (mq5_sha256/ex5_sha256 on the work item) and by
+        # farmctl's compile_evidence_mq5_hash_mismatch_row guard, so the set
+        # header must never become a third, drift-prone copy of it.
+        build_hash = re.search(r"(?m)^; build_hash:\s+(\S+)$", text)
+        assert build_hash
+        ex5 = EA_DIR / f"{EA_LABEL}.ex5"
+        assert build_hash[1] == "pending" or (
+            ex5.is_file() and build_hash[1] == hashlib.sha256(ex5.read_bytes()).hexdigest()
+        )
         assert values["qm_ea_id"] == "36004"
         assert values["RISK_FIXED"] == "1000"
         assert values["RISK_PERCENT"] == "0"

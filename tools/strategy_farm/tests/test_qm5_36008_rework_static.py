@@ -84,6 +84,28 @@ def test_wae_is_a_symmetric_expansion_filter_and_runner_exit_is_kama_only() -> N
     assert "vi_plus" not in exit_signal
 
 
+def test_partial_close_cannot_repeat_after_failed_be_or_terminal_restart() -> None:
+    source = _source()
+    manage = _function_body(source, "Strategy_ManageOpenPosition")
+    history = _function_body(source, "Strategy_TP1PartialState")
+    # Broker history is durable; the current SL alone cannot prove a partial
+    # did not occur, because modification can fail after a successful close.
+    assert "HistorySelect(position_time, TimeCurrent())" in history
+    assert "DEAL_POSITION_ID" in history and "DEAL_MAGIC" in history
+    assert "DEAL_ENTRY_OUT" in history and "DEAL_ENTRY_OUT_BY" in history
+    assert "if(deal == 0)\n         return -1;" in history
+    assert "if(partial_state < 0)\n         continue;" in manage
+    retry = manage.index("if(partial_state > 0)")
+    retry_end = manage.index("const double initial_risk", retry)
+    retry_branch = manage[retry:retry_end]
+    assert "QM_TM_MoveSL" in retry_branch and "continue;" in retry_branch
+    assert "QM_TM_PartialClose" not in retry_branch
+    # Retry BE even after price retraces; do not run the TP1 trigger first.
+    assert retry < manage.index("favorable_move < trigger_distance")
+    assert retry < manage.index("QM_TM_PartialClose")
+    assert 'PositionGetString(POSITION_SYMBOL) != _Symbol' in manage
+
+
 def test_kama_vector_is_refreshed_once_per_closed_bar_and_before_exit() -> None:
     source = _source()
     refresh = _function_body(source, "AdvanceState_OnNewBar")

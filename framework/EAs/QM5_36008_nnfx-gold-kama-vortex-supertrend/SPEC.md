@@ -4,7 +4,7 @@
 **Slug:** `nnfx-gold-kama-vortex-supertrend`
 **Source:** `nnfx-gold-kama-vortex-supertrend-official-source` (see `strategy-seeds/sources/nnfx-gold-kama-vortex-supertrend-official-source/`)
 **Author of this spec:** auto-generated ex-post by gen_spec_md.py
-**Last revised:** 2026-08-17
+**Last revised:** 2026-09-22
 
 ---
 
@@ -18,6 +18,12 @@ implementation surface.
 Entry/exit logic is encoded in the five `Strategy_*` hooks in
 `QM5_36008_nnfx-gold-kama-vortex-supertrend.mq5`. Framework wiring (risk, magic, news, Friday close)
 is inherited from `QM_Common.mqh` and is not redocumented here.
+
+TP1 closes 50% once. Deal history, scoped to position identifier and magic,
+records completion independently of the subsequent break-even SL update.
+If that update fails, later ticks retry only protection, including after a
+restart or a price retracement. Unavailable history blocks another partial
+close. This correction changes execution safety, not the card's signals.
 
 ---
 
