@@ -1,0 +1,16 @@
+{
+  "counts": {
+    "HELD:NEWS_ARCHIVE_REQUALIFICATION_BLOCKED": 110,
+    "HELD:NEWS_CALENDAR_TAINTED": 2,
+    "PENDING_REMEASUREMENT": 13,
+    "TARGET_IDENTITY_HAS_NO_ELIGIBLE_Q08_CHAIN": 3
+  },
+  "d2g6_config_locked_losses": [],
+  "interpretation": "Only completed successor evidence can produce a verdict delta; pending and held rows do not alter historical verdicts.",
+  "observed_at_utc": "2026-09-22T06:50:29.937507+00:00",
+  "schema_version": "qm.q09-calendar-requalification-status/v1",
+  "stable_plan_sha256": "fc71284dc419a25549aad464bcadcc733ea6b384c509cbb9a324aaa8f0befe68",
+  "successor_calendar_content_sha256": "7a3243cf14d3ac6786423a48dd50317eed155d9c5360ba1067c55355f9618522",
+  "sunday_status_update_required": false,
+  "task_id": "f50a0bba-a85d-4203-a18b-ad3b198f5ee9"
+}
