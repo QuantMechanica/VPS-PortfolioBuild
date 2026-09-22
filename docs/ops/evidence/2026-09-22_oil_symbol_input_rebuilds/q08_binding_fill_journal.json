@@ -1,0 +1,43 @@
+{
+ "at_utc": "2026-09-22T00:34:00Z",
+ "authority": "OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917 (GRUEN: metadata fill on verdict-less pending rows; no verdict, status or queue deletion)",
+ "backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_q08_binding_fill_2026-09-22T003400Z.sqlite",
+ "rows": [
+  {
+   "id": "3e157d97-45fa-4f8a-8f55-60484ffdbea4",
+   "ea_id": "QM5_41488",
+   "symbol": "XTIUSD.DWX",
+   "before": {
+    "mq5_sha256": null,
+    "ex5_sha256": null,
+    "setfile_sha256": null,
+    "include_closure_sha256": null
+   },
+   "after": {
+    "mq5_sha256": "e8ff5415daf04c74c46421c50b177a43797dd68b2055cd7b4cfaf7d432b63e63",
+    "ex5_sha256": "3c2cac2fe817fb60fbef394ba4b1ee46a39423c563c46797fd99262593b4eb08",
+    "setfile_sha256": "9e8efb17798a3ea20f5e2255507abada381f04e4a73c67830c51928ebe5ca504",
+    "include_closure_sha256": "7a3a71ea665415b7822c7f2995a0199b530dc3e2508b9180d2c0e6f47af23861"
+   },
+   "compile_evidence": "c9b81f7e-2723-4161-878a-8badaeded7fb"
+  },
+  {
+   "id": "f38417ed-c2a8-4ec9-919e-bc7223e9b8f1",
+   "ea_id": "QM5_41489",
+   "symbol": "XTIUSD.DWX",
+   "before": {
+    "mq5_sha256": null,
+    "ex5_sha256": null,
+    "setfile_sha256": null,
+    "include_closure_sha256": null
+   },
+   "after": {
+    "mq5_sha256": "25fd30a52a8f2a56a614b132616b6e20b46957db95e28ff46a1367cbe7f027fa",
+    "ex5_sha256": "e582501f16fb9820bb4ec53ca18a880a0ee044b16f3ce3637fa8ee1c031da842",
+    "setfile_sha256": "f709fc0f9773b389069ba5769cbb10a5757b0d6b51c8c111ca34d96279014341",
+    "include_closure_sha256": "7a3a71ea665415b7822c7f2995a0199b530dc3e2508b9180d2c0e6f47af23861"
+   },
+   "compile_evidence": "3056a976-b5ec-43da-b5be-b73bbe750402"
+  }
+ ]
+}
