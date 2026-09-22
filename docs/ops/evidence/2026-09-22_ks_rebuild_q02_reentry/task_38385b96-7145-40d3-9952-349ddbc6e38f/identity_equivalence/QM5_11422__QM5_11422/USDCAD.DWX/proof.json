@@ -1,0 +1,137 @@
+{
+  "checks": {
+    "deals": {
+      "compared_rows": 223,
+      "count_match": true,
+      "count_original": 223,
+      "count_rebuilt": 223,
+      "field_keys_checked": [
+        "time",
+        "symbol",
+        "type",
+        "direction",
+        "price",
+        "comment"
+      ],
+      "field_match": true,
+      "field_mismatch_count": 0,
+      "field_mismatches": [],
+      "field_mismatches_truncated": false,
+      "pnl": {
+        "exact": true,
+        "net_original": 2989.5899999999965,
+        "net_ratio": 1.0,
+        "net_rebuilt": 2989.5899999999965,
+        "rows_compared": 111,
+        "rows_over_tolerance": 0,
+        "within_tolerance": true,
+        "worst_per_lot_rel": 0.0
+      },
+      "volume": {
+        "exact": true,
+        "max_abs_step_lots": 0.0,
+        "ratio_max": 1.0,
+        "ratio_mean": 1.0,
+        "ratio_min": 1.0,
+        "rows_compared": 222,
+        "sign_consistent": true,
+        "within_tolerance": true,
+        "worst_ratio_deviation": 0.0
+      }
+    },
+    "setfile": {
+      "ignored_id_bearing": [
+        {
+          "key": "qm_ea_id",
+          "original": "11422",
+          "rebuilt": "11422"
+        }
+      ],
+      "ignored_transport_inputs": [],
+      "match": true,
+      "mismatches": []
+    },
+    "tester_ini": {
+      "core": {
+        "FromDate": {
+          "match": true,
+          "original": "2018.07.02",
+          "rebuilt": "2018.07.02"
+        },
+        "Model": {
+          "match": true,
+          "original": "4",
+          "rebuilt": "4"
+        },
+        "Period": {
+          "match": true,
+          "original": "D1",
+          "rebuilt": "D1"
+        },
+        "Symbol": {
+          "match": true,
+          "original": "USDCAD.DWX",
+          "rebuilt": "USDCAD.DWX"
+        },
+        "ToDate": {
+          "match": true,
+          "original": "2022.12.31",
+          "rebuilt": "2022.12.31"
+        }
+      },
+      "match": true,
+      "mismatches": []
+    }
+  },
+  "generated_at": "2026-09-22T05:37:50.772167+00:00",
+  "inputs": {
+    "original": {
+      "ea_id": "QM5_11422",
+      "ea_label": "QM5_11422",
+      "ex5_sha256_compile": "6daa9923062996ef26a26ce537bf9e5ecc328c3480c4ca0c4791cf4c674a9560",
+      "ex5_sha256_workitem": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+      "phase": "Q02",
+      "recorded_report_sha256": "359201630cf4ded2362f421b905a7d27fdffcde778acb89b9e1c1af6ba80440c",
+      "report_path": "D:\\QM\\reports\\work_items\\7922733b-c27e-4829-9f21-2c8e1e16e03e\\QM5_11422\\20260802_230626\\raw\\run_01\\report.htm.gz",
+      "report_sha256": "359201630cf4ded2362f421b905a7d27fdffcde778acb89b9e1c1af6ba80440c",
+      "report_sha256_matches_summary": true,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\sets\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD.DWX_D1_backtest.set",
+      "setfile_sha256": "0ba55a7729aa02ba7d66ea1e2cae15a520bc3915c82a7da20d178bf83d31f4d5",
+      "summary_path": "D:\\QM\\reports\\work_items\\7922733b-c27e-4829-9f21-2c8e1e16e03e\\QM5_11422\\20260802_230626\\summary.json.gz",
+      "summary_sha256": "c2c3fca1bc584a85b001e9de190a6b9bba1d2acdbd4c8447486ab7dfa1c4e0f0",
+      "symbol": "USDCAD.DWX",
+      "tester_ini_path": "D:\\QM\\reports\\work_items\\7922733b-c27e-4829-9f21-2c8e1e16e03e\\QM5_11422\\20260802_230626\\raw\\run_01\\tester.ini",
+      "tester_ini_sha256": "342e7d18ea85be5d5d8de810d34f4fd539f4354d4bfea933b5232cf07bfcb487",
+      "work_item_id": "7922733b-c27e-4829-9f21-2c8e1e16e03e"
+    },
+    "rebuilt": {
+      "ea_id": "QM5_11422",
+      "ea_label": "QM5_11422",
+      "ex5_sha256_compile": "6daa9923062996ef26a26ce537bf9e5ecc328c3480c4ca0c4791cf4c674a9560",
+      "ex5_sha256_workitem": "6daa9923062996ef26a26ce537bf9e5ecc328c3480c4ca0c4791cf4c674a9560",
+      "phase": "Q02",
+      "recorded_report_sha256": "d1c1c0e3f73537d7799a74bed5463e8dc78e3e3376d249da4365ff3ada6bb19d",
+      "report_path": "D:\\QM\\reports\\work_items\\87522e35-4451-4594-aaf8-167e0f414b3f\\QM5_11422\\20260922_052921\\raw\\run_01\\report.htm",
+      "report_sha256": "d1c1c0e3f73537d7799a74bed5463e8dc78e3e3376d249da4365ff3ada6bb19d",
+      "report_sha256_matches_summary": true,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\sets\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD.DWX_D1_backtest.set",
+      "setfile_sha256": "0ba55a7729aa02ba7d66ea1e2cae15a520bc3915c82a7da20d178bf83d31f4d5",
+      "summary_path": "D:\\QM\\reports\\work_items\\87522e35-4451-4594-aaf8-167e0f414b3f\\QM5_11422\\20260922_052921\\summary.json",
+      "summary_sha256": "9c7dfac9a7e9fbae42a602712a3b3d04c683701950cae2d374a0ff92709b21ce",
+      "symbol": "USDCAD.DWX",
+      "tester_ini_path": "D:\\QM\\reports\\work_items\\87522e35-4451-4594-aaf8-167e0f414b3f\\QM5_11422\\20260922_052921\\raw\\run_01\\tester.ini",
+      "tester_ini_sha256": "b229fd435a067a001185a9feb708e4c957bceabb08554139078cf300fc07a5cc",
+      "work_item_id": "87522e35-4451-4594-aaf8-167e0f414b3f"
+    }
+  },
+  "not_equivalent_reasons": [],
+  "proof_tolerances": {
+    "net_ratio_abs_tol": 0.05,
+    "pnl_per_lot_rel_tol": 0.005,
+    "volume_max_step_lots": 0.01,
+    "volume_ratio_abs_tol": 0.02
+  },
+  "schema": "qm.identity-equivalence-proof/v1",
+  "tool_sha256": "ba8a3a8888cebfffd72fab012963625930224948c3075fec33365de3965dd288",
+  "verdict": "EQUIVALENT_EXACT"
+}

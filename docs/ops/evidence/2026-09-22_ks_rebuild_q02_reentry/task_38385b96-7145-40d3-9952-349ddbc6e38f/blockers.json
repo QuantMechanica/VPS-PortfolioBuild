@@ -1,0 +1,65 @@
+{
+  "schema": "qm.ks-rebuild-q02-reentry-blockers/v1",
+  "task_id": "38385b96-7145-40d3-9952-349ddbc6e38f",
+  "blockers": [
+    {
+      "code": "IDENTITY_DIVERGENCE",
+      "ea_id": 10706,
+      "predecessor_q02": "bb234ab2-499b-4cfe-8de1-d2ef52be6a27",
+      "successor_q02": "972a6d85-d5d0-4a5b-92d6-2a138adbc08d",
+      "proof_sha256": "54d4f59f1b759d74f63b0af10a00d411339089f90d0f07b91176b331bb33e297",
+      "deal": "15",
+      "index": 14,
+      "field": "time",
+      "original": "2018.09.12 13:03:44",
+      "rebuilt": "2018.09.12 13:03:47"
+    },
+    {
+      "code": "SELECTED_Q02_PREDECESSOR_EX5_BINDING_MISSING",
+      "ea_id": 10706,
+      "selected_setfile_role": "D2G6_ABLATION_02",
+      "selected_predecessor_q02": "7cf004b7-f4cf-42cb-80cc-d5c98f119ce4",
+      "requalify_refusal": "source_ex5_sha256_missing",
+      "base_control_predecessor_q02": "bb234ab2-499b-4cfe-8de1-d2ef52be6a27",
+      "base_control_successor_q02": "972a6d85-d5d0-4a5b-92d6-2a138adbc08d",
+      "base_control_proof_sha256": "54d4f59f1b759d74f63b0af10a00d411339089f90d0f07b91176b331bb33e297"
+    },
+    {
+      "code": "PARAMETER_CHANGE_PROVENANCE_NOT_AUTHENTICATED",
+      "ea_id": 10403,
+      "predecessor_q02": "d02bec84-87fe-43a9-94d4-2795ec46cea7",
+      "compile_work_item": "98873ebc-8231-4eb5-850a-e7f00d9b3598",
+      "source_setfile_sha256": "9a6fab053d3814077a015eb9f3a864a0c8a703fbe220ae03e74da195960f4c72",
+      "current_setfile_sha256": "61c7fe83c7c175b53e43e54901ce80636319cdb23ecb49ea345f6949177e1f3c",
+      "rejected_authority": "docs/ops/evidence/2026-09-22_ftmo_kill_switch_governed_initializer/2026-09-22_qm5_10403_et-turtle20x_ks_initializer_rebuild_authority.json",
+      "rejected_authority_reason": "binding_registrations_missing",
+      "parameter_diff_keys": [
+        "qm_ea_id",
+        "qm_filter_news_enabled",
+        "qm_filter_news_mode",
+        "qm_filter_regime_bear_return_pct",
+        "qm_filter_regime_bull_return_pct",
+        "qm_filter_regime_enabled",
+        "qm_filter_regime_lookback_bars",
+        "qm_filter_volatility_atr_period",
+        "qm_filter_volatility_compression_ratio",
+        "qm_filter_volatility_enabled",
+        "qm_filter_volatility_expansion_ratio",
+        "qm_filter_volatility_lookback_bars"
+      ]
+    },
+    {
+      "code": "FTMO_TARGET_AUTOTRADING_NOT_DISABLED",
+      "command": "python C:/QM/repo/tools/strategy_farm/ftmo/demo_install.py --package <task_package> --dry-run",
+      "refusal": "autotrading_must_be_disabled",
+      "action_taken": "NONE",
+      "source_hash_plan_validation": "PASS"
+    },
+    {
+      "code": "NEWS_CALENDAR_CORRECTION_REQUIRED",
+      "correction_task_id": "f50a0bba-a85d-4203-a18b-ad3b198f5ee9",
+      "bound_news_calendar_sha256": "86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1",
+      "affected_ea_ids": [13213, 10706, 10700, 11422, 10403, 41219]
+    }
+  ]
+}

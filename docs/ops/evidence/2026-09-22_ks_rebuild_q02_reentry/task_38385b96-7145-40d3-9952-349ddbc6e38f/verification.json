@@ -1,0 +1,43 @@
+{
+  "schema": "qm.ks-rebuild-q02-reentry-verification/v1",
+  "task_id": "38385b96-7145-40d3-9952-349ddbc6e38f",
+  "identity_proof_verify": {
+    "status": "PASS",
+    "proof_count": 5,
+    "equivalent_exact_count": 4,
+    "not_equivalent_count": 1,
+    "integrity_failures": 0
+  },
+  "preset_contract": {
+    "status": "PASS",
+    "candidate_count": 6,
+    "risk_fixed": "0",
+    "risk_percent_positive": true,
+    "qm_news_stale_max_hours": "336",
+    "qm_ftmo_execution_mode": "QM_FTMO_EXECUTION_GOVERNED",
+    "qm_ftmo_book_tag": "FTMO_DEMO_BOOK_V3_D2G6_20260918",
+    "qm_ftmo_anchor_mode": "MAX_BALANCE_EQUITY"
+  },
+  "source_hash_plan": {
+    "status": "PASS",
+    "candidate_count": 6,
+    "planned_copy_count": 14,
+    "authority_task_state": "IN_PROGRESS"
+  },
+  "magic_registry": {
+    "status": "PASS",
+    "active_row_count": 6
+  },
+  "canonical_demo_install_dry_run": {
+    "status": "REFUSED_FAIL_CLOSED",
+    "reason": "autotrading_must_be_disabled",
+    "terminal_state_changed": false
+  },
+  "forbidden_actions": {
+    "terminal_started": false,
+    "autotrading_changed": false,
+    "tlive_written": false,
+    "charts_changed": false,
+    "install_executed": false
+  }
+}

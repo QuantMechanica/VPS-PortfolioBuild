@@ -1,0 +1,150 @@
+{
+  "checks": {
+    "deals": {
+      "compared_rows": 303,
+      "count_match": true,
+      "count_original": 303,
+      "count_rebuilt": 303,
+      "field_keys_checked": [
+        "time",
+        "symbol",
+        "type",
+        "direction",
+        "price",
+        "comment"
+      ],
+      "field_match": false,
+      "field_mismatch_count": 1,
+      "field_mismatches": [
+        {
+          "deal": "15",
+          "fields": {
+            "time": {
+              "original": "2018.09.12 13:03:44",
+              "rebuilt": "2018.09.12 13:03:47"
+            }
+          },
+          "index": 14
+        }
+      ],
+      "field_mismatches_truncated": false,
+      "pnl": {
+        "exact": true,
+        "net_original": 48833.16,
+        "net_ratio": 1.0,
+        "net_rebuilt": 48833.16,
+        "rows_compared": 151,
+        "rows_over_tolerance": 0,
+        "within_tolerance": true,
+        "worst_per_lot_rel": 0.0
+      },
+      "volume": {
+        "exact": true,
+        "max_abs_step_lots": 0.0,
+        "ratio_max": 1.0,
+        "ratio_mean": 1.0,
+        "ratio_min": 1.0,
+        "rows_compared": 302,
+        "sign_consistent": true,
+        "within_tolerance": true,
+        "worst_ratio_deviation": 0.0
+      }
+    },
+    "setfile": {
+      "ignored_id_bearing": [
+        {
+          "key": "qm_ea_id",
+          "original": "10706",
+          "rebuilt": "10706"
+        }
+      ],
+      "ignored_transport_inputs": [],
+      "match": true,
+      "mismatches": []
+    },
+    "tester_ini": {
+      "core": {
+        "FromDate": {
+          "match": true,
+          "original": "2018.07.02",
+          "rebuilt": "2018.07.02"
+        },
+        "Model": {
+          "match": true,
+          "original": "4",
+          "rebuilt": "4"
+        },
+        "Period": {
+          "match": true,
+          "original": "H1",
+          "rebuilt": "H1"
+        },
+        "Symbol": {
+          "match": true,
+          "original": "GBPUSD.DWX",
+          "rebuilt": "GBPUSD.DWX"
+        },
+        "ToDate": {
+          "match": true,
+          "original": "2022.12.31",
+          "rebuilt": "2022.12.31"
+        }
+      },
+      "match": true,
+      "mismatches": []
+    }
+  },
+  "generated_at": "2026-09-22T05:37:50.275958+00:00",
+  "inputs": {
+    "original": {
+      "ea_id": "QM5_10706",
+      "ea_label": "QM5_10706",
+      "ex5_sha256_compile": "c9bf8e83963255eda114787892f8a4edba2584b2282d3c8297ea30b3332e8885",
+      "ex5_sha256_workitem": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+      "phase": "Q02",
+      "recorded_report_sha256": "2068a1d0e1ea7f0e96b80612c23d36a51f98635cf2b6ff58985431380705c331",
+      "report_path": "D:\\QM\\reports\\work_items\\bb234ab2-499b-4cfe-8de1-d2ef52be6a27\\QM5_10706\\20260821_174117\\raw\\run_01\\report.htm.gz",
+      "report_sha256": "2068a1d0e1ea7f0e96b80612c23d36a51f98635cf2b6ff58985431380705c331",
+      "report_sha256_matches_summary": true,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest.set",
+      "setfile_sha256": "f87d38b3430663ed8d297f8b218c8c5f68ca70374b12c90bc4934c1f1faecfac",
+      "summary_path": "D:\\QM\\reports\\work_items\\bb234ab2-499b-4cfe-8de1-d2ef52be6a27\\QM5_10706\\20260821_174117\\summary.json.gz",
+      "summary_sha256": "4e2bbe6e4410ac645a87d080822ab82cfc7b16f0c9dc5473305ac16373e6737a",
+      "symbol": "GBPUSD.DWX",
+      "tester_ini_path": "D:\\QM\\reports\\work_items\\bb234ab2-499b-4cfe-8de1-d2ef52be6a27\\QM5_10706\\20260821_174117\\raw\\run_01\\tester.ini",
+      "tester_ini_sha256": "ede36882415235b01612f28e438a19369a5ed8b487d31a6d244fae4877f4522c",
+      "work_item_id": "bb234ab2-499b-4cfe-8de1-d2ef52be6a27"
+    },
+    "rebuilt": {
+      "ea_id": "QM5_10706",
+      "ea_label": "QM5_10706",
+      "ex5_sha256_compile": "c9bf8e83963255eda114787892f8a4edba2584b2282d3c8297ea30b3332e8885",
+      "ex5_sha256_workitem": "c9bf8e83963255eda114787892f8a4edba2584b2282d3c8297ea30b3332e8885",
+      "phase": "Q02",
+      "recorded_report_sha256": "d8770a2967785c0bd2b0e9bc0d959c7d5fd3dd89d44a830399da78a933a6f66f",
+      "report_path": "D:\\QM\\reports\\work_items\\972a6d85-d5d0-4a5b-92d6-2a138adbc08d\\QM5_10706\\20260922_052843\\raw\\run_01\\report.htm",
+      "report_sha256": "d8770a2967785c0bd2b0e9bc0d959c7d5fd3dd89d44a830399da78a933a6f66f",
+      "report_sha256_matches_summary": true,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest.set",
+      "setfile_sha256": "f87d38b3430663ed8d297f8b218c8c5f68ca70374b12c90bc4934c1f1faecfac",
+      "summary_path": "D:\\QM\\reports\\work_items\\972a6d85-d5d0-4a5b-92d6-2a138adbc08d\\QM5_10706\\20260922_052843\\summary.json",
+      "summary_sha256": "cd4b4229f632db2b347e8633bc62e7262b6ee703d5a2c5ba0044e63720c9a68d",
+      "symbol": "GBPUSD.DWX",
+      "tester_ini_path": "D:\\QM\\reports\\work_items\\972a6d85-d5d0-4a5b-92d6-2a138adbc08d\\QM5_10706\\20260922_052843\\raw\\run_01\\tester.ini",
+      "tester_ini_sha256": "fdf29209d0a24f6c25c423f160d2152179ddc7ec26f9458b6ab2e8d05a2e3de4",
+      "work_item_id": "972a6d85-d5d0-4a5b-92d6-2a138adbc08d"
+    }
+  },
+  "not_equivalent_reasons": [
+    "1 deal(s) differ on time/symbol/type/direction/price/comment"
+  ],
+  "proof_tolerances": {
+    "net_ratio_abs_tol": 0.05,
+    "pnl_per_lot_rel_tol": 0.005,
+    "volume_max_step_lots": 0.01,
+    "volume_ratio_abs_tol": 0.02
+  },
+  "schema": "qm.identity-equivalence-proof/v1",
+  "tool_sha256": "ba8a3a8888cebfffd72fab012963625930224948c3075fec33365de3965dd288",
+  "verdict": "NOT_EQUIVALENT"
+}
