@@ -25369,7 +25369,75 @@ def _card_declared_universe_for_ea(root: Path, ea_id: str) -> set[str]:
         return set()
 
 
+Q01_AGENT_TASK_SUCCESSOR_VERSION = "qm.q01-agent-task-smoke-successor/v1"
+Q01_AGENT_TASK_ADMISSION_RECEIPT_VERSION = (
+    "qm.q01-agent-task-smoke-admission-receipt/v1"
+)
+
+
+def _validated_agent_q01_successor(
+    task_id: str,
+    ea_id: str,
+    payload: Mapping[str, Any],
+) -> tuple[dict[str, Any] | None, str]:
+    """Validate the append-only receipt behind an agent-task Q01 successor."""
+    successor = payload.get("q01_smoke_successor")
+    if not isinstance(successor, dict) or not successor:
+        return None, "q01_agent_successor_missing"
+    if successor.get("schema") != Q01_AGENT_TASK_SUCCESSOR_VERSION:
+        return None, "q01_agent_successor_schema_mismatch"
+    if successor.get("build_task_kind") != "agent_tasks":
+        return None, "q01_agent_successor_kind_mismatch"
+    if (
+        successor.get("admission_receipt_schema")
+        != Q01_AGENT_TASK_ADMISSION_RECEIPT_VERSION
+    ):
+        return None, "q01_agent_successor_receipt_schema_mismatch"
+    if successor.get("q01_smoke_verdict") != "PASS":
+        return None, "q01_agent_successor_verdict_mismatch"
+    if str(successor.get("build_task_id") or "") != str(task_id):
+        return None, "q01_agent_successor_build_task_mismatch"
+    if _normalise_ea_label(successor.get("ea_id")) != _normalise_ea_label(ea_id):
+        return None, "q01_agent_successor_ea_mismatch"
+    if str(successor.get("smoke_result") or "").strip().lower() != "passed":
+        return None, "q01_agent_successor_not_passed"
+
+    receipt_path = Path(str(successor.get("admission_receipt_path") or ""))
+    expected_sha = str(
+        successor.get("admission_receipt_sha256") or ""
+    ).strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_sha):
+        return None, "q01_agent_successor_receipt_sha_invalid"
+    try:
+        receipt_bytes = receipt_path.read_bytes()
+        receipt = json.loads(receipt_bytes.decode("utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None, "q01_agent_successor_receipt_unreadable"
+    if hashlib.sha256(receipt_bytes).hexdigest() != expected_sha:
+        return None, "q01_agent_successor_receipt_hash_mismatch"
+    if not isinstance(receipt, dict):
+        return None, "q01_agent_successor_receipt_not_object"
+    expected_receipt_values = {
+        "schema": Q01_AGENT_TASK_ADMISSION_RECEIPT_VERSION,
+        "build_task_kind": "agent_tasks",
+        "build_task_id": str(task_id),
+        "ea_id": _normalise_ea_label(ea_id),
+        "smoke_work_item_id": str(successor.get("smoke_work_item_id") or ""),
+        "smoke_result": "passed",
+        "smoke_verdict": "PASS",
+    }
+    observed_receipt_values = {
+        key: receipt.get(key) for key in expected_receipt_values
+    }
+    if observed_receipt_values != expected_receipt_values:
+        return None, "q01_agent_successor_receipt_binding_mismatch"
+    if receipt.get("artifact_identity") != successor.get("artifact_identity"):
+        return None, "q01_agent_successor_receipt_artifact_mismatch"
+    return successor, ""
+
+
 def _latest_build_smoke_result(con: sqlite3.Connection, ea_id: str) -> dict[str, Any] | None:
+    candidates: list[dict[str, Any]] = []
     row = con.execute(
         """
         SELECT id, payload_json, updated_at
@@ -25380,34 +25448,89 @@ def _latest_build_smoke_result(con: sqlite3.Connection, ea_id: str) -> dict[str,
         """,
         (ea_id,),
     ).fetchone()
-    if not row:
-        return None
+    if row:
+        try:
+            payload = json.loads(row["payload_json"] or "{}")
+        except json.JSONDecodeError:
+            payload = {}
+        codex_result = payload.get("codex_result") if isinstance(payload.get("codex_result"), dict) else {}
+        smoke_result = (
+            codex_result.get("smoke_result")
+            or payload.get("smoke_result")
+            or payload.get("build_smoke_result")
+        )
+        candidates.append({
+            "build_task_id": row["id"],
+            "build_task_kind": "tasks",
+            "smoke_result": str(smoke_result or "").strip().lower(),
+            "blocked_reason": str(codex_result.get("blocked_reason") or "").strip(),
+            "smoke_skipped_reason": str(
+                codex_result.get("smoke_skipped_reason")
+                or payload.get("smoke_skipped_reason")
+                or ""
+            ).strip(),
+            "capacity_evidence": str(
+                codex_result.get("capacity_evidence")
+                or payload.get("capacity_evidence")
+                or ""
+            ).strip(),
+            "updated_at": row["updated_at"],
+        })
+
+    # ``agent_tasks`` is owned by agent_router and is absent in some isolated
+    # farmctl databases/tests. Read all build rows defensively, then normalize
+    # the payload EA id because legacy rows use QM5_N while router rows use N.
     try:
-        payload = json.loads(row["payload_json"] or "{}")
-    except json.JSONDecodeError:
-        payload = {}
-    codex_result = payload.get("codex_result") if isinstance(payload.get("codex_result"), dict) else {}
-    smoke_result = (
-        codex_result.get("smoke_result")
-        or payload.get("smoke_result")
-        or payload.get("build_smoke_result")
+        agent_rows = con.execute(
+            """
+            SELECT id,state,payload_json,updated_at
+            FROM agent_tasks
+            WHERE task_type='build_ea'
+            """
+        ).fetchall()
+    except sqlite3.OperationalError:
+        agent_rows = []
+    normalized_ea = _normalise_ea_label(ea_id)
+    for agent_row in agent_rows:
+        try:
+            agent_payload = json.loads(agent_row["payload_json"] or "{}")
+        except (json.JSONDecodeError, TypeError):
+            continue
+        if not isinstance(agent_payload, dict):
+            continue
+        successor = agent_payload.get("q01_smoke_successor")
+        payload_ea = agent_payload.get("ea_id")
+        if not payload_ea and isinstance(successor, dict):
+            payload_ea = successor.get("ea_id")
+        if _normalise_ea_label(payload_ea) != normalized_ea:
+            continue
+        validated, refusal = _validated_agent_q01_successor(
+            str(agent_row["id"]), normalized_ea, agent_payload
+        )
+        candidates.append({
+            "build_task_id": agent_row["id"],
+            "build_task_kind": "agent_tasks",
+            "smoke_result": (
+                str(validated.get("smoke_result") or "").strip().lower()
+                if validated
+                else ""
+            ),
+            "blocked_reason": refusal,
+            "smoke_skipped_reason": "",
+            "capacity_evidence": "",
+            "updated_at": agent_row["updated_at"],
+            "agent_task_state": agent_row["state"],
+        })
+
+    if not candidates:
+        return None
+    return max(
+        candidates,
+        key=lambda item: (
+            str(item.get("updated_at") or ""),
+            item.get("build_task_kind") == "agent_tasks",
+        ),
     )
-    return {
-        "build_task_id": row["id"],
-        "smoke_result": str(smoke_result or "").strip().lower(),
-        "blocked_reason": str(codex_result.get("blocked_reason") or "").strip(),
-        "smoke_skipped_reason": str(
-            codex_result.get("smoke_skipped_reason")
-            or payload.get("smoke_skipped_reason")
-            or ""
-        ).strip(),
-        "capacity_evidence": str(
-            codex_result.get("capacity_evidence")
-            or payload.get("capacity_evidence")
-            or ""
-        ).strip(),
-        "updated_at": row["updated_at"],
-    }
 
 
 Q01_SMOKE_CAPACITY_EVIDENCE_MARKERS = (
@@ -25563,6 +25686,287 @@ def _governed_state_backup(root: Path, label: str) -> tuple[Path, str]:
     return Path(resolved["path"]), str(resolved["sha256"])
 
 
+def _authenticate_agent_task_q01_smoke_successor(
+    conn: sqlite3.Connection,
+    *,
+    build_task_id: str,
+    smoke: Mapping[str, Any],
+    smoke_payload: Mapping[str, Any],
+    bound: Mapping[str, str],
+) -> dict[str, Any]:
+    """Authenticate Q01 PASS admission for an ``agent_tasks`` build."""
+    try:
+        build_row_raw = conn.execute(
+            """
+            SELECT id,task_type,state,artifact_path,payload_json,updated_at
+            FROM agent_tasks WHERE id=?
+            """,
+            (build_task_id,),
+        ).fetchone()
+    except sqlite3.OperationalError as exc:
+        return {"ok": False, "reason": "agent_tasks_table_missing", "detail": str(exc)}
+    if build_row_raw is None:
+        return {"ok": False, "reason": "build_task_not_found", "build_task_id": build_task_id}
+    build_row = dict(build_row_raw)
+    if str(build_row.get("task_type") or "") != "build_ea":
+        return {
+            "ok": False,
+            "reason": "build_task_kind_mismatch",
+            "detail": f"task_type={build_row.get('task_type')!r}; require build_ea",
+        }
+    if str(build_row.get("state") or "") in _Q01_SMOKE_DISPATCH_DISQUALIFIED_BUILD_STATES:
+        return {
+            "ok": False,
+            "reason": "build_task_state_disqualified",
+            "detail": build_row.get("state"),
+        }
+    try:
+        build_payload = json.loads(build_row.get("payload_json") or "{}")
+    except (json.JSONDecodeError, TypeError):
+        return {"ok": False, "reason": "build_task_payload_invalid"}
+    if not isinstance(build_payload, dict):
+        return {"ok": False, "reason": "build_task_payload_not_object"}
+
+    compile_evidence_path = Path(
+        str(smoke_payload.get("compile_evidence_path") or "")
+    )
+    if not compile_evidence_path.is_file():
+        return {
+            "ok": False,
+            "reason": "compile_evidence_not_found",
+            "detail": str(compile_evidence_path),
+        }
+    if _normpath_key(build_row.get("artifact_path")) != _normpath_key(
+        compile_evidence_path
+    ):
+        return {
+            "ok": False,
+            "reason": "build_task_artifact_path_mismatch",
+            "detail": {
+                "build_task_artifact_path": build_row.get("artifact_path"),
+                "compile_evidence_path": str(compile_evidence_path),
+            },
+        }
+    compile_evidence_sha = _sha256_file(compile_evidence_path)
+    if compile_evidence_sha != str(
+        smoke_payload.get("compile_evidence_sha256") or ""
+    ).strip().lower():
+        return {"ok": False, "reason": "compile_evidence_sha256_mismatch"}
+    try:
+        evidence = json.loads(
+            compile_evidence_path.read_text(encoding="utf-8-sig")
+        )
+    except (OSError, json.JSONDecodeError):
+        return {"ok": False, "reason": "compile_evidence_unreadable"}
+    if not isinstance(evidence, dict):
+        return {"ok": False, "reason": "compile_evidence_not_an_object"}
+    if evidence.get("success") is not True or str(
+        evidence.get("compile_result") or ""
+    ) != "PASS":
+        return {"ok": False, "reason": "compile_evidence_not_success"}
+
+    compile_work_item_id = str(
+        smoke_payload.get("compile_work_item_id") or ""
+    )
+    compile_row_raw = conn.execute(
+        "SELECT * FROM work_items WHERE id=?", (compile_work_item_id,)
+    ).fetchone()
+    if compile_row_raw is None:
+        return {"ok": False, "reason": "compile_work_item_not_found"}
+    compile_row = dict(compile_row_raw)
+    expected_compile_row = {
+        "kind": "compile",
+        "phase": "COMPILE_EA",
+        "status": "done",
+        "verdict": "COMPILE_OK",
+    }
+    if any(
+        str(compile_row.get(key) or "") != value
+        for key, value in expected_compile_row.items()
+    ):
+        return {
+            "ok": False,
+            "reason": "compile_work_item_not_terminal_ok",
+            "detail": {
+                key: compile_row.get(key) for key in expected_compile_row
+            },
+        }
+    if _normpath_key(compile_row.get("evidence_path")) != _normpath_key(
+        compile_evidence_path
+    ):
+        return {"ok": False, "reason": "compile_work_item_evidence_path_mismatch"}
+
+    smoke_ea = _normalise_ea_label(smoke.get("ea_id"))
+    if (
+        _normalise_ea_label(evidence.get("ea_id")) != smoke_ea
+        or _normalise_ea_label(compile_row.get("ea_id")) != smoke_ea
+        or _normalise_ea_label(build_payload.get("ea_id")) != smoke_ea
+    ):
+        return {"ok": False, "reason": "q01_successor_ea_binding_mismatch"}
+    symbol = str(smoke.get("symbol") or "").strip().upper()
+    smoke_setfile = str(smoke.get("setfile_path") or "").strip()
+    setfile_entries = evidence.get("setfile_generation")
+    setfile_entries = setfile_entries if isinstance(setfile_entries, list) else []
+    matches = [
+        entry
+        for entry in setfile_entries
+        if isinstance(entry, dict)
+        and str(entry.get("symbol") or "").strip().upper() == symbol
+        and _normpath_key(entry.get("setfile_path")) == _normpath_key(smoke_setfile)
+    ]
+    if len(matches) != 1:
+        return {
+            "ok": False,
+            "reason": "compile_setfile_binding_unresolvable",
+            "detail": f"matching entries={len(matches)}",
+        }
+    artifact_paths = {
+        "mq5": str(evidence.get("mq5_path") or ""),
+        "ex5": str(evidence.get("ex5_path") or ""),
+        "setfile": smoke_setfile,
+    }
+    evidence_hashes = {
+        "mq5": str(evidence.get("mq5_sha256") or "").strip().lower(),
+        "ex5": str(evidence.get("ex5_sha256") or "").strip().lower(),
+    }
+    for kind in ("mq5", "ex5"):
+        row_sha = str(compile_row.get(f"{kind}_sha256") or "").strip().lower()
+        if evidence_hashes[kind] != bound[kind] or (
+            row_sha and row_sha != bound[kind]
+        ):
+            return {
+                "ok": False,
+                "reason": "compile_artifact_binding_mismatch",
+                "detail": kind,
+            }
+
+    dispatch_auth = _authenticate_q01_smoke_dispatch(
+        conn,
+        ea_id=smoke_ea,
+        symbol=str(smoke.get("symbol") or ""),
+        build_task_id=str(build_task_id),
+        compile_evidence_path=str(compile_evidence_path),
+        from_date=str(smoke_payload.get("from_date") or ""),
+        to_date=str(smoke_payload.get("to_date") or ""),
+    )
+    if dispatch_auth.get("ok") is not True:
+        return {
+            "ok": False,
+            "reason": "q01_dispatch_binding_reauthentication_failed",
+            "detail": dispatch_auth,
+        }
+    expected_smoke_id = _q01_smoke_dispatch_work_item_id(
+        smoke_ea,
+        str(smoke.get("symbol") or ""),
+        str(build_task_id),
+        compile_work_item_id,
+    )
+    if expected_smoke_id != str(smoke.get("id") or ""):
+        return {"ok": False, "reason": "q01_smoke_work_item_identity_mismatch"}
+    if any(
+        str(dispatch_auth.get(f"expected_{kind}_sha256") or "").lower()
+        != bound[kind]
+        for kind in ("mq5", "ex5", "setfile")
+    ):
+        return {"ok": False, "reason": "q01_dispatch_artifact_identity_mismatch"}
+
+    receipt_path = Path(
+        str(smoke_payload.get("setfile_binding_receipt_path") or "")
+    )
+    receipt_sha = str(
+        smoke_payload.get("setfile_binding_receipt_sha256") or ""
+    ).strip().lower()
+    if (
+        smoke_payload.get("setfile_binding_receipt_schema")
+        != Q01_SETFILE_BINDING_RECEIPT_VERSION
+        or not re.fullmatch(r"[0-9a-f]{64}", receipt_sha)
+    ):
+        return {"ok": False, "reason": "setfile_binding_receipt_reference_invalid"}
+    try:
+        receipt_bytes = receipt_path.read_bytes()
+        receipt = json.loads(receipt_bytes.decode("utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return {"ok": False, "reason": "setfile_binding_receipt_unreadable"}
+    if hashlib.sha256(receipt_bytes).hexdigest() != receipt_sha:
+        return {"ok": False, "reason": "setfile_binding_receipt_hash_mismatch"}
+    expected_receipt = {
+        "schema": Q01_SETFILE_BINDING_RECEIPT_VERSION,
+        "work_item_id": str(smoke.get("id") or ""),
+        "ea_id": smoke_ea,
+        "symbol": str(smoke.get("symbol") or ""),
+        "build_task_id": str(build_task_id),
+        "compile_work_item_id": compile_work_item_id,
+        "compile_evidence_path": str(compile_evidence_path),
+        "compile_evidence_sha256": compile_evidence_sha,
+        "setfile_path": smoke_setfile,
+        "artifact_identity": {
+            "mq5_sha256": bound["mq5"],
+            "ex5_sha256": bound["ex5"],
+            "setfile_sha256": bound["setfile"],
+        },
+    }
+    observed_receipt = {
+        key: receipt.get(key) for key in expected_receipt
+    } if isinstance(receipt, dict) else {}
+    if observed_receipt != expected_receipt:
+        return {
+            "ok": False,
+            "reason": "setfile_binding_receipt_binding_mismatch",
+            "detail": {"observed": observed_receipt, "expected": expected_receipt},
+        }
+    provenance = receipt.get("setfile_binding_provenance")
+    if (
+        not isinstance(provenance, dict)
+        or provenance.get("final_setfile_sha256") != bound["setfile"]
+        or not isinstance(provenance.get("transition"), dict)
+        or provenance["transition"].get("ok") is not True
+        or provenance != dispatch_auth.get("setfile_binding_provenance")
+        or receipt.get("historical_compile_evidence_rewritten") is not False
+    ):
+        return {"ok": False, "reason": "setfile_binding_receipt_provenance_invalid"}
+
+    current: dict[str, str] = {}
+    for kind, path_value in artifact_paths.items():
+        if not path_value:
+            return {"ok": False, "reason": "build_artifact_path_missing", "detail": kind}
+        current_sha = _sha256_path_current(Path(path_value))
+        if current_sha is None:
+            return {"ok": False, "reason": "build_artifact_missing", "detail": path_value}
+        current[kind] = current_sha.lower()
+    mismatches = [
+        f"{kind}: sealed={bound[kind]} != current={current[kind]}"
+        for kind in ("mq5", "ex5", "setfile")
+        if bound[kind] != current[kind]
+    ]
+    if mismatches:
+        return {
+            "ok": False,
+            "reason": "artifact_sha256_mismatch",
+            "detail": "; ".join(mismatches),
+            "sealed_sha256": dict(bound),
+            "current_sha256": current,
+        }
+
+    return {
+        "ok": True,
+        "build_task_kind": "agent_tasks",
+        "smoke": dict(smoke),
+        "smoke_payload": dict(smoke_payload),
+        "build_payload": build_payload,
+        "build_payload_json": str(build_row.get("payload_json") or "{}"),
+        "build_task_state": build_row.get("state"),
+        "artifact_sha256": current,
+        "artifact_paths": artifact_paths,
+        "smoke_evidence_path": smoke.get("evidence_path"),
+        "ea_id": smoke_ea,
+        "compile_work_item_id": compile_work_item_id,
+        "compile_evidence_path": str(compile_evidence_path),
+        "compile_evidence_sha256": compile_evidence_sha,
+        "setfile_binding_receipt_path": str(receipt_path),
+        "setfile_binding_receipt_sha256": receipt_sha,
+    }
+
+
 def _authenticate_q01_smoke_successor(
     conn: sqlite3.Connection,
     build_task_id: str,
@@ -25608,27 +26012,6 @@ def _authenticate_q01_smoke_successor(
             "detail": f"smoke.build_task_id={bound_build_task_id!r}; requested {build_task_id!r}",
         }
 
-    build_row = conn.execute(
-        "SELECT id,kind,card_id,status,payload_json FROM tasks WHERE id=?",
-        (build_task_id,),
-    ).fetchone()
-    if build_row is None:
-        return {"ok": False, "reason": "build_task_not_found", "build_task_id": build_task_id}
-    if str(build_row["kind"]) != "build_ea":
-        return {
-            "ok": False,
-            "reason": "build_task_kind_mismatch",
-            "detail": f"kind={build_row['kind']!r}; require build_ea",
-        }
-    try:
-        build_payload = json.loads(build_row["payload_json"] or "{}")
-    except (json.JSONDecodeError, TypeError):
-        build_payload = {}
-    build_cr = build_payload.get("codex_result")
-    if not isinstance(build_cr, dict) or not build_cr:
-        return {"ok": False, "reason": "build_task_has_no_codex_result",
-                "build_task_id": build_task_id}
-
     # --- Smoke-row internal binding consistency (3-way): the durable work_items
     #     columns, the payload expected_* fields, and artifact_identity must all
     #     agree before their value is trusted as the sealed execution binding.
@@ -25656,6 +26039,45 @@ def _authenticate_q01_smoke_successor(
                     "detail": f"{kind}: work_items.{col}={col_sha} != {source_name}={sval}",
                 }
         bound[kind] = col_sha
+
+    build_task_kind = str(
+        smoke_payload.get("build_task_kind") or "tasks"
+    ).strip()
+    if build_task_kind == "agent_tasks":
+        return _authenticate_agent_task_q01_smoke_successor(
+            conn,
+            build_task_id=build_task_id,
+            smoke=smoke,
+            smoke_payload=smoke_payload,
+            bound=bound,
+        )
+    if build_task_kind != "tasks":
+        return {
+            "ok": False,
+            "reason": "smoke_build_task_kind_unsupported",
+            "detail": build_task_kind,
+        }
+
+    build_row = conn.execute(
+        "SELECT id,kind,card_id,status,payload_json FROM tasks WHERE id=?",
+        (build_task_id,),
+    ).fetchone()
+    if build_row is None:
+        return {"ok": False, "reason": "build_task_not_found", "build_task_id": build_task_id}
+    if str(build_row["kind"]) != "build_ea":
+        return {
+            "ok": False,
+            "reason": "build_task_kind_mismatch",
+            "detail": f"kind={build_row['kind']!r}; require build_ea",
+        }
+    try:
+        build_payload = json.loads(build_row["payload_json"] or "{}")
+    except (json.JSONDecodeError, TypeError):
+        build_payload = {}
+    build_cr = build_payload.get("codex_result")
+    if not isinstance(build_cr, dict) or not build_cr:
+        return {"ok": False, "reason": "build_task_has_no_codex_result",
+                "build_task_id": build_task_id}
 
     # --- Resolve the exact artifacts the BUILD recorded and hash their CURRENT
     #     repo bytes.  The build records artifacts by path, so hashing those exact
@@ -25714,6 +26136,7 @@ def _authenticate_q01_smoke_successor(
 
     return {
         "ok": True,
+        "build_task_kind": "tasks",
         "smoke": smoke,
         "smoke_payload": smoke_payload,
         "build_payload": build_payload,
@@ -25734,6 +26157,258 @@ def _sha256_path_current(path: Path) -> str | None:
     return None
 
 
+def _q01_agent_task_admission_receipt(
+    root: Path,
+    build_task_id: str,
+    smoke_work_item_id: str,
+    auth: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Create deterministic bytes for an authenticated agent-task admission."""
+    path = (
+        root
+        / "artifacts"
+        / "receipts"
+        / "q01_admission"
+        / f"{build_task_id}.{smoke_work_item_id}.json"
+    )
+    artifact_identity = {
+        "mq5_sha256": auth["artifact_sha256"]["mq5"],
+        "ex5_sha256": auth["artifact_sha256"]["ex5"],
+        "setfile_sha256": auth["artifact_sha256"]["setfile"],
+    }
+    document = {
+        "schema": Q01_AGENT_TASK_ADMISSION_RECEIPT_VERSION,
+        "build_task_kind": "agent_tasks",
+        "build_task_id": str(build_task_id),
+        "ea_id": _normalise_ea_label(auth.get("ea_id")),
+        "smoke_work_item_id": str(smoke_work_item_id),
+        "smoke_result": "passed",
+        "smoke_verdict": "PASS",
+        "smoke_evidence_path": auth.get("smoke_evidence_path"),
+        "compile_work_item_id": auth["compile_work_item_id"],
+        "compile_evidence_path": auth["compile_evidence_path"],
+        "compile_evidence_sha256": auth["compile_evidence_sha256"],
+        "setfile_binding_receipt_path": auth["setfile_binding_receipt_path"],
+        "setfile_binding_receipt_sha256": auth[
+            "setfile_binding_receipt_sha256"
+        ],
+        "artifact_identity": artifact_identity,
+        "artifact_paths": auth["artifact_paths"],
+        "source_rows_rewritten": False,
+    }
+    receipt_bytes = (
+        json.dumps(document, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+    return {
+        "path": str(path),
+        "sha256": hashlib.sha256(receipt_bytes).hexdigest(),
+        "document": document,
+        "bytes": receipt_bytes,
+    }
+
+
+def _record_agent_task_q01_smoke_successor(
+    root: Path,
+    build_task_id: str,
+    smoke_work_item_id: str,
+    auth: Mapping[str, Any],
+    *,
+    dry_run: bool,
+) -> dict[str, Any]:
+    """Append a receipted Q01 admission marker to one agent task payload."""
+    build_payload = dict(auth["build_payload"])
+    admission = _q01_agent_task_admission_receipt(
+        root, build_task_id, smoke_work_item_id, auth
+    )
+    successor = {
+        "schema": Q01_AGENT_TASK_SUCCESSOR_VERSION,
+        "build_task_kind": "agent_tasks",
+        "build_task_id": str(build_task_id),
+        "ea_id": _normalise_ea_label(auth.get("ea_id")),
+        "smoke_work_item_id": str(smoke_work_item_id),
+        "smoke_result": "passed",
+        "q01_smoke_verdict": "PASS",
+        "admission_receipt_schema": Q01_AGENT_TASK_ADMISSION_RECEIPT_VERSION,
+        "admission_receipt_path": admission["path"],
+        "admission_receipt_sha256": admission["sha256"],
+        "compile_work_item_id": auth["compile_work_item_id"],
+        "compile_evidence_path": auth["compile_evidence_path"],
+        "compile_evidence_sha256": auth["compile_evidence_sha256"],
+        "setfile_binding_receipt_path": auth["setfile_binding_receipt_path"],
+        "setfile_binding_receipt_sha256": auth[
+            "setfile_binding_receipt_sha256"
+        ],
+        "artifact_identity": admission["document"]["artifact_identity"],
+        "recorded_by": "farmctl.record_q01_smoke_successor",
+    }
+    prior = build_payload.get("q01_smoke_successor")
+    if isinstance(prior, dict) and prior:
+        prior_smoke = str(prior.get("smoke_work_item_id") or "")
+        validated, refusal = _validated_agent_q01_successor(
+            str(build_task_id), str(auth.get("ea_id") or ""), build_payload
+        )
+        if (
+            prior_smoke == str(smoke_work_item_id)
+            and validated == successor
+            and not refusal
+        ):
+            return {
+                "recorded": False,
+                "already_recorded": True,
+                "reason": "q01_smoke_successor_already_recorded",
+                "build_task_kind": "agent_tasks",
+                "build_task_id": build_task_id,
+                "smoke_work_item_id": smoke_work_item_id,
+                "latest_smoke_result": "passed",
+                "admission_receipt_path": admission["path"],
+                "admission_receipt_sha256": admission["sha256"],
+            }
+        return {
+            "recorded": False,
+            "reason": "q01_smoke_successor_conflict",
+            "detail": (
+                f"agent task already carries successor for smoke {prior_smoke!r}; "
+                f"receipt_validation={refusal or 'different_successor'}"
+            ),
+            "build_task_kind": "agent_tasks",
+            "build_task_id": build_task_id,
+            "smoke_work_item_id": smoke_work_item_id,
+        }
+
+    new_payload = dict(build_payload)
+    new_payload["q01_smoke_successor"] = successor
+    new_payload_json = json.dumps(new_payload)
+    plan = {
+        "build_task_kind": "agent_tasks",
+        "build_task_id": build_task_id,
+        "smoke_work_item_id": smoke_work_item_id,
+        "ea_id": successor["ea_id"],
+        "artifact_sha256": dict(auth["artifact_sha256"]),
+        "artifact_paths": dict(auth["artifact_paths"]),
+        "admission_receipt_path": admission["path"],
+        "admission_receipt_sha256": admission["sha256"],
+    }
+    if dry_run:
+        return {
+            "recorded": False,
+            "dry_run": True,
+            "would_record": True,
+            "authenticated": True,
+            "latest_smoke_result_after": "passed",
+            **plan,
+        }
+
+    now = utc_now()
+    backup_resolution = _governed_state_backup_resolution(
+        root, "q01_agent_task_smoke_successor"
+    )
+    backup_path = Path(backup_resolution["path"])
+    backup_sha = str(backup_resolution["sha256"])
+    lock = FactoryMutationLock(
+        path_for_factory_flag(factory_off_flag_path(root)),
+        owner=f"record_q01_agent_task_smoke_successor:{build_task_id}",
+    )
+    try:
+        lock.__enter__()
+    except RuntimeError as exc:
+        return {
+            "recorded": False,
+            "reason": "factory_mutation_lock_busy",
+            "detail": str(exc),
+            **plan,
+        }
+    apply_result: dict[str, Any]
+    try:
+        def _apply() -> dict[str, Any]:
+            conn = connect_short_under_mutation_lock(root)
+            try:
+                conn.execute("BEGIN IMMEDIATE")
+                row = conn.execute(
+                    "SELECT task_type,state,payload_json FROM agent_tasks WHERE id=?",
+                    (build_task_id,),
+                ).fetchone()
+                if row is None or str(row["task_type"]) != "build_ea":
+                    raise RuntimeError("build_task_disappeared_or_kind_changed")
+                if str(row["state"] or "") in _Q01_SMOKE_DISPATCH_DISQUALIFIED_BUILD_STATES:
+                    raise RuntimeError("build_task_state_became_disqualified")
+                if str(row["payload_json"] or "{}") != str(
+                    auth["build_payload_json"]
+                ):
+                    raise RuntimeError("build_task_payload_changed")
+                receipt_created = _write_append_only_receipt(
+                    Path(admission["path"]), admission["bytes"]
+                )
+                cursor = conn.execute(
+                    """
+                    UPDATE agent_tasks SET payload_json=?,updated_at=?
+                    WHERE id=? AND payload_json=?
+                    """,
+                    (
+                        new_payload_json,
+                        now,
+                        build_task_id,
+                        auth["build_payload_json"],
+                    ),
+                )
+                if cursor.rowcount != 1:
+                    raise RuntimeError("build_task_payload_cas_failed")
+                event(
+                    conn,
+                    "agent_task",
+                    build_task_id,
+                    "q01_agent_task_smoke_successor_recorded",
+                    {
+                        "ea_id": successor["ea_id"],
+                        "smoke_work_item_id": smoke_work_item_id,
+                        "smoke_verdict": "PASS",
+                        "admission_receipt_path": admission["path"],
+                        "admission_receipt_sha256": admission["sha256"],
+                        "artifact_sha256": auth["artifact_sha256"],
+                        "backup_path": str(backup_path),
+                        "backup_sha256": backup_sha,
+                        "backup_reused": bool(backup_resolution["reused"]),
+                    },
+                )
+                conn.commit()
+                return {"receipt_created": receipt_created}
+            except Exception:
+                conn.rollback()
+                raise
+            finally:
+                conn.close()
+
+        try:
+            apply_result = retry_sqlite_busy(
+                _apply, attempts=MUTATION_LOCK_DB_ATTEMPTS
+            )
+        except sqlite3.OperationalError as exc:
+            if not _is_sqlite_locked(exc):
+                raise
+            return {
+                "recorded": False,
+                "reason": "db_busy_under_mutation_lock",
+                "detail": str(exc),
+                "backup_path": str(backup_path),
+                **plan,
+            }
+    finally:
+        lock.__exit__(None, None, None)
+
+    with connect(root) as conn:
+        latest = _latest_build_smoke_result(conn, successor["ea_id"])
+    admission_result = _q01_smoke_admission(latest)
+    return {
+        "recorded": True,
+        "dry_run": False,
+        **plan,
+        "admission_receipt_created": apply_result["receipt_created"],
+        "latest_smoke_result_after": (latest or {}).get("smoke_result"),
+        "q01_smoke_admission_after": admission_result,
+        "backup": backup_resolution,
+        "factory_mutation_lock_release": lock.release_status,
+    }
+
+
 def record_q01_smoke_successor(
     root: Path,
     build_task_id: str,
@@ -25750,8 +26425,11 @@ def record_q01_smoke_successor(
     (a distinct ``artifacts/builds/<task_id>.gen<N>.json`` file - the generation-0
     file is never overwritten) whose ``smoke_result="passed"`` and flips the
     tasks-row active ``codex_result`` to it, keeping every prior generation in an
-    append-only ``build_generations`` list, so ``_latest_build_smoke_result``
-    returns ``passed``.  Idempotent; refuses on any hash mismatch or non-PASS.
+    append-only ``build_generations`` list. For an ``agent_tasks`` build, it
+    instead appends a hash-bound admission receipt and a small successor pointer
+    to that same row; it never fabricates a legacy task/build generation. Thus
+    ``_latest_build_smoke_result`` returns ``passed`` for either task model.
+    Idempotent; refuses on any hash mismatch or non-PASS.
     """
     init_db(root)
     now = utc_now()
@@ -25761,6 +26439,15 @@ def record_q01_smoke_successor(
     if not auth.get("ok"):
         return {"recorded": False, **auth, "build_task_id": build_task_id,
                 "smoke_work_item_id": smoke_work_item_id}
+
+    if auth.get("build_task_kind") == "agent_tasks":
+        return _record_agent_task_q01_smoke_successor(
+            root,
+            build_task_id,
+            smoke_work_item_id,
+            auth,
+            dry_run=dry_run,
+        )
 
     build_payload = auth["build_payload"]
     build_cr = auth["build_codex_result"]
