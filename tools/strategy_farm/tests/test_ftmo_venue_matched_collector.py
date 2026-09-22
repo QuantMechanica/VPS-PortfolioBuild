@@ -48,6 +48,17 @@ def test_first_quote_normalizes_broker_wall_clock_to_utc() -> None:
     assert rows[60]["server_time_msc"] == 3_660_200
 
 
+def test_process_path_match_is_exact_and_case_insensitive(tmp_path: Path) -> None:
+    executable = tmp_path / "Terminal64.exe"
+    executable.touch()
+    paths = {
+        11: str(executable),
+        12: str(tmp_path / "other" / "terminal64.exe"),
+        13: "",
+    }
+    assert collector._matching_process_ids(executable, paths) == {11}
+
+
 def test_matched_rows_require_exact_minute_and_compute_bid_ask_bps() -> None:
     ftmo = {
         "USDJPY": {

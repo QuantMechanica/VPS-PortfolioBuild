@@ -120,7 +120,9 @@ terminals:
 - Darwinex PID 10168, login masked as *******541, server Darwinex-Live, build 6182.
 
 The guard requires exactly one process at each configured executable before
-attachment and proves that the process set is unchanged after initialization. The
+attachment and proves that the process set is unchanged after initialization. It
+enumerates full process image paths through Win32 and has no optional-package
+dependency in the scheduled Python environment. The
 collector has no order, terminal-start, terminal-control, or AutoTrading API
 surface. Its state records orders_sent=0, terminal_control_actions=0, and
 autotrading_touched=false for both venues.
@@ -162,7 +164,7 @@ Additional bindings:
 - Canonical implementation/evidence tree: 395656a5e211ceee3340a2e26e940e64ffdfe4c9 on agents/board-advisor.
 - Financed-stream manifest: 0d4b845c1dc39cb3af09f00a6cd240a0e861b1d1ca74d1cf0e2452573d830633.
 - D2g6 roster: 35844a5524f922cf013f970b21d5b5c895d1d2a25b266f937d4696637072aaa1.
-- Collector source: aeae32316e19ff58e1732ca0d384fe82b77ee127e6567dfbc8aa24c5f02194b7.
+- Collector source: 592266adae82dfa122a9d2617dede24579218571a07079c047319fc741285dbd.
 - Pulse source: 08fe031ae9c0c92ee5887e6d7b4b58effbfae51e79fab1a2fb788b1aeec0410b.
 - Book simulator: d88a3e399dbd40d098b0f0c2faace521ae11edafc612d97d8258412785749ad5.
 - First-passage engine: b2c56edf7327f5301eda5d1b5793cecf62466dd0e7db7052503f277af9ef6335.
@@ -177,7 +179,7 @@ Focused verification:
       tools/strategy_farm/tests/test_ftmo_trial_pulse.py
       tools/strategy_farm/tests/test_ftmo_book_sim.py
       -p no:cacheprovider
-    69 passed
+    70 passed
 
     python -m py_compile
       tools/strategy_farm/ftmo/venue_matched_collector.py
@@ -187,6 +189,11 @@ Focused verification:
 CSV/ledger contract check: 2,290 spread rows = 2,290 unique symbol-minute
 keys; 5 slippage rows = 5 unique deal tickets; zero rows lack the required
 request price, fill, server time, symbol, side, or volume.
+
+The exact Python 3.11 executable configured in QM_FTMO_TrialPulse independently
+resolved the pre-existing FTMO/DXZ PIDs as 11756/10168 and completed the fixed
+backfill with zero additions. This closes the optional-psutil warning exposed by
+the first final-health probe.
 
 ## Remaining measurement gaps
 

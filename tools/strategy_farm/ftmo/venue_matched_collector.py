@@ -186,21 +186,104 @@ def contiguous_hour_windows(
     return result
 
 
+def _matching_process_ids(
+    executable: Path, process_paths: Mapping[int, str]
+) -> set[int]:
+    expected = os.path.normcase(str(executable.resolve()))
+    return {
+        int(pid)
+        for pid, actual in process_paths.items()
+        if actual
+        and os.path.normcase(str(Path(actual).resolve())) == expected
+    }
+
+
+def _windows_process_image_paths() -> dict[int, str]:
+    """Enumerate full process image paths with Win32 only.
+
+    The scheduled pulse interpreter deliberately has a small dependency set,
+    so the safety guard cannot rely on optional ``psutil`` being installed.
+    Access-denied system processes are irrelevant and skipped; failure to
+    enumerate the process table itself remains fail-closed.
+    """
+    import ctypes
+    from ctypes import wintypes
+
+    process_query_limited_information = 0x1000
+    psapi = ctypes.WinDLL("psapi", use_last_error=True)
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+
+    enum_processes = psapi.EnumProcesses
+    enum_processes.argtypes = (
+        ctypes.POINTER(wintypes.DWORD),
+        wintypes.DWORD,
+        ctypes.POINTER(wintypes.DWORD),
+    )
+    enum_processes.restype = wintypes.BOOL
+    open_process = kernel32.OpenProcess
+    open_process.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.DWORD)
+    open_process.restype = wintypes.HANDLE
+    query_image = kernel32.QueryFullProcessImageNameW
+    query_image.argtypes = (
+        wintypes.HANDLE,
+        wintypes.DWORD,
+        wintypes.LPWSTR,
+        ctypes.POINTER(wintypes.DWORD),
+    )
+    query_image.restype = wintypes.BOOL
+    close_handle = kernel32.CloseHandle
+    close_handle.argtypes = (wintypes.HANDLE,)
+    close_handle.restype = wintypes.BOOL
+
+    capacity = 4096
+    while True:
+        pids = (wintypes.DWORD * capacity)()
+        bytes_used = wintypes.DWORD()
+        if not enum_processes(pids, ctypes.sizeof(pids), ctypes.byref(bytes_used)):
+            raise CollectionError(
+                f"win32_process_enumeration_failed:{ctypes.get_last_error()}"
+            )
+        count = int(bytes_used.value // ctypes.sizeof(wintypes.DWORD))
+        if count < capacity:
+            break
+        capacity *= 2
+        if capacity > 65_536:
+            raise CollectionError("win32_process_enumeration_capacity_exceeded")
+
+    result: dict[int, str] = {}
+    for raw_pid in pids[:count]:
+        pid = int(raw_pid)
+        if pid <= 0:
+            continue
+        handle = open_process(process_query_limited_information, False, pid)
+        if not handle:
+            continue
+        try:
+            buffer = ctypes.create_unicode_buffer(32_768)
+            length = wintypes.DWORD(len(buffer))
+            if query_image(handle, 0, buffer, ctypes.byref(length)):
+                result[pid] = buffer.value
+        finally:
+            close_handle(handle)
+    return result
+
+
 def _processes_for(executable: Path) -> set[int]:
+    if os.name == "nt":
+        return _matching_process_ids(executable, _windows_process_image_paths())
     try:
         import psutil
-    except ImportError as exc:  # pragma: no cover - environment dependency
-        raise CollectionError("psutil is required for the no-start guard") from exc
-    expected = os.path.normcase(str(executable.resolve()))
-    result: set[int] = set()
+    except ImportError as exc:  # pragma: no cover - non-Windows development only
+        raise CollectionError("psutil is required outside Windows") from exc
+    process_paths: dict[int, str] = {}
     for process in psutil.process_iter(["pid", "exe"]):
         try:
             actual = process.info.get("exe")
-            if actual and os.path.normcase(str(Path(actual).resolve())) == expected:
-                result.add(int(process.info["pid"]))
+            if actual:
+                process_paths[int(process.info["pid"])] = str(actual)
         except (OSError, psutil.Error):
             continue
-    return result
+    return _matching_process_ids(executable, process_paths)
 
 
 def prove_preexisting_process(spec: TerminalSpec) -> set[int]:
