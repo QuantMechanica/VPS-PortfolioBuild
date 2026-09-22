@@ -12,8 +12,10 @@ Base and candidate comparisons use one fixed calendar: the base book's common
 window.  This deliberately replaces the older roster-intersection rule.  Under
 that rule a short candidate changed the evidence window as well as the roster;
 for example, adding QM5_11910 ended the D2g comparison on 2025-06-05 and
-discarded later incumbent observations.  A candidate may now be inactive
-outside its own stream span, but it cannot move the comparison endpoints.
+discarded later incumbent observations.  Streams must now reach within 14
+calendar days of the fixed window end.  A deliberately truncated comparison is
+available only through an explicit research-only CLI override and can never be
+book evidence.
 
 Financing is explicit and fail-closed at the CLI.  Governed book evidence must
 use --financed-streams whose every trade carries qm_financing metadata, or the
@@ -75,6 +77,8 @@ DEFAULT_MARGINAL_REPLICATES = 5
 DEFAULT_RESOLUTION_TARGET = 0.01
 SOURCE_RISK_PERCENT = 1.0
 PROXY_LABEL = "CONSERVATIVE_SIMULTANEOUS_ACTIVE_MAE_ENVELOPE_NOT_TICK_EXACT"
+TRUNCATED_STREAM_RESEARCH_ONLY = "TRUNCATED_STREAM_RESEARCH_ONLY"
+STREAM_WINDOW_TOLERANCE_DAYS = 14
 
 
 @dataclass(frozen=True)
@@ -360,12 +364,17 @@ def prepare_sleeve(
     commission_sources: set[str] = set()
     swap_sources: set[str] = set()
     factor = spec.risk_percent / SOURCE_RISK_PERCENT
-    for row in _iter_jsonl(Path(spec.stream_path)):
+    for trade_number, row in enumerate(_iter_jsonl(Path(spec.stream_path)), 1):
         entry = _parse_epoch(row.get("entry_time"))
         close = _parse_epoch(row.get("time"))
         if close < entry:
             raise ValueError(f"{spec.id}: trade closes before entry")
-        gross = float(row.get("profit", row.get("net") or 0.0))
+        if "profit" not in row or row.get("profit") is None:
+            raise ValueError(
+                "STREAM_ROW_MISSING_GROSS_PROFIT: "
+                f"{spec.id}: TRADE_CLOSED row {trade_number} must carry profit"
+            )
+        gross = float(row["profit"])
         commission, commission_source = _commission_for_trade(row, spec.symbol, commission_registry)
         swap, swap_source = _trade_swap(
             row, spec.symbol, financing_module, financing_label
@@ -523,6 +532,48 @@ def common_window(sleeves: Sequence[Mapping[str, Any]]) -> tuple[dt.date, dt.dat
     return start, end
 
 
+def _stream_window_violations(
+    sleeves: Sequence[Mapping[str, Any]], window_end: dt.date,
+) -> list[dict[str, Any]]:
+    cutoff = window_end - dt.timedelta(days=STREAM_WINDOW_TOLERANCE_DAYS)
+    violations: list[dict[str, Any]] = []
+    for sleeve in sleeves:
+        trades = sleeve.get("trades") or []
+        if not trades:
+            continue
+        last_close_epoch = max(float(trade["close_time"]) for trade in trades)
+        last_close_date = _prague_date(last_close_epoch)
+        if last_close_date < cutoff:
+            violations.append({
+                "id": str(sleeve.get("id") or sleeve.get("ea_id") or "UNKNOWN"),
+                "last_close_utc": dt.datetime.fromtimestamp(
+                    last_close_epoch, dt.timezone.utc
+                ).isoformat(),
+                "last_close_prague_date": last_close_date.isoformat(),
+                "fixed_window_end": window_end.isoformat(),
+                "minimum_allowed_close_date": cutoff.isoformat(),
+                "tolerance_calendar_days": STREAM_WINDOW_TOLERANCE_DAYS,
+            })
+    return violations
+
+
+def _validate_stream_windows(
+    sleeves: Sequence[Mapping[str, Any]], window_end: dt.date, *,
+    allow_truncated_streams: bool,
+) -> list[dict[str, Any]]:
+    violations = _stream_window_violations(sleeves, window_end)
+    if violations and not allow_truncated_streams:
+        details = "; ".join(
+            f"{row['id']} last close {row['last_close_utc']} "
+            f"is earlier than fixed window end {row['fixed_window_end']} minus "
+            f"{row['tolerance_calendar_days']} calendar days "
+            f"(minimum {row['minimum_allowed_close_date']})"
+            for row in violations
+        )
+        raise ValueError(f"STREAM_WINDOW_INSUFFICIENT: {details}")
+    return violations
+
+
 def _clip_sleeves(
     sleeves: Sequence[Mapping[str, Any]], start: dt.date, end: dt.date
 ) -> list[dict[str, Any]]:
@@ -537,6 +588,75 @@ def _clip_sleeves(
             raise ValueError(f"{sleeve['id']}: no trades inside fixed comparison window")
         clipped.append(row)
     return clipped
+
+
+def _exclude_top_trades(
+    sleeves: Sequence[Mapping[str, Any]], exclusions: Mapping[str, int],
+) -> list[dict[str, Any]]:
+    """Return sleeves with the highest-net trades removed for tail diagnostics."""
+    requested = {str(key): int(value) for key, value in exclusions.items() if int(value) > 0}
+    matched = {key: 0 for key in requested}
+    out: list[dict[str, Any]] = []
+    for sleeve in sleeves:
+        row = {key: value for key, value in sleeve.items() if key != "trades"}
+        trades = [dict(trade) for trade in sleeve["trades"]]
+        sleeve_id = str(sleeve.get("id"))
+        count = requested.get(sleeve_id, 0)
+        if count:
+            matched[sleeve_id] += 1
+            if len(trades) <= count:
+                raise ValueError(
+                    f"TAIL_CONCENTRATION_INSUFFICIENT: {sleeve_id} has "
+                    f"{len(trades)} trades; more than {count} are required"
+                )
+            ranked = sorted(
+                range(len(trades)),
+                key=lambda index: (
+                    float(trades[index]["net_scaled"]),
+                    float(trades[index]["close_time"]),
+                    float(trades[index]["entry_time"]),
+                ),
+                reverse=True,
+            )
+            removed = set(ranked[:count])
+            trades = [trade for index, trade in enumerate(trades) if index not in removed]
+        row["trades"] = trades
+        out.append(row)
+    bad_targets = [key for key, count in matched.items() if count != 1]
+    if bad_targets:
+        raise ValueError(
+            "TAIL_CONCENTRATION_TARGET_INVALID: expected exactly one sleeve for "
+            + ", ".join(sorted(bad_targets))
+        )
+    return out
+
+
+def _tail_concentration(
+    sleeve: Mapping[str, Any], *, start: dt.date, end: dt.date,
+) -> dict[str, float | int | None]:
+    """Summarize dependence on the largest trades over the fixed window."""
+    trades = list(sleeve.get("trades") or [])
+    nets = sorted((float(trade["net_scaled"]) for trade in trades), reverse=True)
+    total = sum(nets)
+
+    def share(count: int) -> float | None:
+        if abs(total) <= 1e-12:
+            return None
+        return round(sum(nets[:count]) / total, 6)
+
+    annual = {year: 0.0 for year in range(start.year, end.year + 1)}
+    for trade in trades:
+        year = _prague_date(float(trade["close_time"])).year
+        if year in annual:
+            annual[year] += float(trade["net_scaled"])
+    years_positive = sum(value > 0.0 for value in annual.values())
+    return {
+        "top3_trade_share_of_net": share(3),
+        "top10_share": share(10),
+        "years_positive_share": round(years_positive / len(annual), 6),
+        "trade_count": len(trades),
+        "calendar_year_count": len(annual),
+    }
 
 
 def _daily_sleeve(sleeve: Mapping[str, Any]) -> dict[dt.date, dict[str, float]]:
@@ -789,6 +909,8 @@ def evaluate_book(
     n_paths: int = 2000, seed: int = 20260921, block_len: int = 20,
     horizon: int = 756, as_of: dt.datetime | None = None,
     lightweight: bool = False,
+    allow_truncated_streams: bool = False,
+    exclude_top_n_trades: Mapping[str, int] | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, Any]]:
     as_of = as_of or dt.datetime.now(dt.timezone.utc).replace(microsecond=0)
     sleeves, provenance = prepare_book(
@@ -799,7 +921,12 @@ def evaluate_book(
         financing_manifest_path=financing_manifest_path,
     )
     start, end = fixed_window or common_window(sleeves)
+    window_violations = _validate_stream_windows(
+        sleeves, end, allow_truncated_streams=allow_truncated_streams
+    )
     sleeves = _clip_sleeves(sleeves, start, end)
+    if exclude_top_n_trades:
+        sleeves = _exclude_top_trades(sleeves, exclude_top_n_trades)
     metrics, path = account_path_metrics(sleeves, start=start, end=end)
     dependence = compute_dependence_matrix(
         sleeves, generated_at_utc=as_of.isoformat()
@@ -834,26 +961,36 @@ def evaluate_book(
         "provenance": provenance,
         "financing_label": financing_label,
     }
+    if allow_truncated_streams:
+        manifest["allow_truncated_streams"] = True
+        manifest["run_label"] = TRUNCATED_STREAM_RESEARCH_ONLY
+    if exclude_top_n_trades:
+        manifest["exclude_top_n_trades"] = dict(sorted(exclude_top_n_trades.items()))
+    label = (
+        f"{financing_label}; real chronological trades; registry commission; "
+        + (
+            "qm_financing-bound embedded financing; "
+            if financing_label == FINANCED
+            else "unfinanced research input; "
+        )
+        + "floating equity is a conservative simultaneous-active-MAE proxy"
+    )
+    if allow_truncated_streams:
+        label = f"{TRUNCATED_STREAM_RESEARCH_ONLY}; {label}"
     result = {
         "schema": SCHEMA,
         "generated_at_utc": as_of.isoformat(),
         "status": "OK",
-        "label": (
-            f"{financing_label}; real chronological trades; registry commission; "
-            + (
-                "qm_financing-bound embedded financing; "
-                if financing_label == FINANCED
-                else "unfinanced research input; "
-            )
-            + "floating equity is a conservative simultaneous-active-MAE proxy"
-        ),
+        "label": label,
         "financing": {
             "label": financing_label,
             "source": provenance["financing_library_status"],
             "financed_stream_root": provenance["financed_stream_root"],
             "manifest": provenance["financing_manifest"],
             "manifest_sha256": provenance["financing_manifest_sha256"],
-            "book_evidence_eligible": financing_label == FINANCED,
+            "book_evidence_eligible": (
+                financing_label == FINANCED and not allow_truncated_streams
+            ),
         },
         "input_manifest": manifest,
         "input_manifest_sha256": canonical_sha256(manifest),
@@ -885,6 +1022,12 @@ def evaluate_book(
             "maximum_loss_floor": "static 90% of initial equity",
         },
     }
+    if allow_truncated_streams:
+        result["run_label"] = TRUNCATED_STREAM_RESEARCH_ONLY
+        result["truncated_streams"] = window_violations
+        result["financing"]["research_only_reason"] = (
+            TRUNCATED_STREAM_RESEARCH_ONLY
+        )
     return result, sleeves, dependence
 
 
@@ -1021,6 +1164,7 @@ def marginal_contributions(
     resolution_target_delta: float = DEFAULT_RESOLUTION_TARGET,
     block_len: int = 20,
     horizon: int = 504, as_of: dt.datetime | None = None,
+    allow_truncated_streams: bool = False,
 ) -> dict[str, Any]:
     if replicate_count < 5:
         raise ValueError("marginal resolution requires at least 5 seed replicates")
@@ -1029,17 +1173,76 @@ def marginal_contributions(
     as_of = as_of or dt.datetime.now(dt.timezone.utc).replace(microsecond=0)
     manifest_hashes = _manifest_stream_hashes(stream_manifest)
     rows: list[dict[str, Any]] = []
+    plan_rows = list(candidate_plan.get("candidates") or [])
     base_prepared, _ = prepare_book(
         base_specs, cost=cost, financing_label=financing_label,
         financed_stream_root=financed_stream_root,
         financing_manifest_path=financing_manifest_path,
     )
     base_window = common_window(base_prepared)
+    truncation_violations: dict[tuple[str, str, str], dict[str, Any]] = {}
+
+    def record_window_violations(values: Sequence[Mapping[str, Any]]) -> None:
+        for value in values:
+            row = dict(value)
+            key = (
+                str(row.get("id")), str(row.get("last_close_utc")),
+                str(row.get("fixed_window_end")),
+            )
+            truncation_violations[key] = row
+
+    record_window_violations(_validate_stream_windows(
+        base_prepared, base_window[1],
+        allow_truncated_streams=allow_truncated_streams,
+    ))
+
+    # Preflight every measurable stream before spending paths on any candidate.
+    # This makes a stale tail or malformed gross-P/L row a fast fail-closed error.
+    preflight: dict[int, tuple[SleeveSpec, dict[str, float | int | None]]] = {}
+    for plan_index, plan_row in enumerate(plan_rows):
+        mode = str(plan_row.get("mode") or "add")
+        if mode == "placeholder":
+            continue
+        if mode == "leave_one_out":
+            ea_id = int(plan_row["ea_id"])
+            matches = [
+                (spec, sleeve) for spec, sleeve in zip(base_specs, base_prepared)
+                if spec.ea_id == ea_id
+            ]
+            if len(matches) != 1:
+                raise ValueError(
+                    f"leave-one-out {ea_id}: expected one base sleeve, got {len(matches)}"
+                )
+            candidate, prepared = matches[0]
+        elif mode == "add":
+            candidate = _candidate_spec(
+                plan_row, stream_root=stream_root, manifest_hashes=manifest_hashes,
+                financed_stream_root=financed_stream_root,
+            )
+            prepared_rows, _ = prepare_book(
+                [candidate], cost=cost, financing_label=financing_label,
+                financed_stream_root=financed_stream_root,
+                financing_manifest_path=financing_manifest_path,
+            )
+            prepared = prepared_rows[0]
+        else:
+            raise ValueError(f"unsupported candidate mode: {mode}")
+        record_window_violations(_validate_stream_windows(
+            [prepared], base_window[1],
+            allow_truncated_streams=allow_truncated_streams,
+        ))
+        clipped = _clip_sleeves([prepared], *base_window)[0]
+        preflight[plan_index] = (
+            candidate,
+            _tail_concentration(clipped, start=base_window[0], end=base_window[1]),
+        )
+
     base_cache: dict[tuple[str, str, int, int, bool], dict[str, Any]] = {}
 
     def evaluate(
         specs: Sequence[SleeveSpec], window: tuple[dt.date, dt.date], run_seed: int,
         path_count: int, *, lightweight: bool,
+        exclude_top_n_trades: Mapping[str, int] | None = None,
     ) -> dict[str, Any]:
         result, _, _ = evaluate_book(
             specs, cost=cost, financing_label=financing_label,
@@ -1048,6 +1251,8 @@ def marginal_contributions(
             fixed_window=window, n_paths=path_count, seed=run_seed,
             block_len=block_len, horizon=horizon, as_of=as_of,
             lightweight=lightweight,
+            allow_truncated_streams=allow_truncated_streams,
+            exclude_top_n_trades=exclude_top_n_trades,
         )
         return result
 
@@ -1107,7 +1312,35 @@ def marginal_contributions(
         report["seeds"] = replicate_seeds
         return report
 
-    for plan_row in candidate_plan.get("candidates") or []:
+    def tail_fields(
+        candidate: SleeveSpec, summary: Mapping[str, Any],
+        reference: Mapping[str, Any], variant_specs: Sequence[SleeveSpec],
+        window: tuple[dt.date, dt.date],
+    ) -> dict[str, Any]:
+        variant_ex_top3 = evaluate(
+            variant_specs, window, seed, grid_n_paths, lightweight=False,
+            exclude_top_n_trades={candidate.id: 3},
+        )
+        delta_ex_top3 = _difference(
+            _metric_projection(variant_ex_top3)["P_FIRST_NET_FTMO_PAYOUT_LCB"],
+            _metric_projection(reference)["P_FIRST_NET_FTMO_PAYOUT_LCB"],
+        )
+        top3_share = summary.get("top3_trade_share_of_net")
+        rare_winner_dependent = (
+            (top3_share is not None and float(top3_share) > 0.60)
+            or (delta_ex_top3 is not None and delta_ex_top3 < 0.0)
+        )
+        return {
+            **dict(summary),
+            "DELTA_LCB_EX_TOP3": delta_ex_top3,
+            "rare_winner_dependent": rare_winner_dependent,
+            "tail_concentration_status": (
+                "RARE_WINNER_DEPENDENT"
+                if rare_winner_dependent else "NOT_RARE_WINNER_DEPENDENT"
+            ),
+        }
+
+    for plan_index, plan_row in enumerate(plan_rows):
         mode = str(plan_row.get("mode") or "add")
         candidate_id = str(plan_row.get("id") or plan_row.get("ea_id") or "candidate")
         if mode == "placeholder":
@@ -1116,6 +1349,10 @@ def marginal_contributions(
                 "reason": str(plan_row.get("reason") or "stream pending"),
                 "book_action": str(plan_row.get("book_action") or "TEST"),
                 "role": plan_row.get("role"), "symbol": plan_row.get("symbol"),
+                "top3_trade_share_of_net": None, "top10_share": None,
+                "years_positive_share": None, "DELTA_LCB_EX_TOP3": None,
+                "rare_winner_dependent": None,
+                "tail_concentration_status": "NOT_YET_MEASURABLE",
             })
             continue
         if mode == "leave_one_out":
@@ -1123,6 +1360,7 @@ def marginal_contributions(
             matches = [spec for spec in base_specs if spec.ea_id == ea_id]
             if len(matches) != 1:
                 raise ValueError(f"leave-one-out {ea_id}: expected one base sleeve, got {len(matches)}")
+            candidate, tail_summary = preflight[plan_index]
             without = [spec for spec in base_specs if spec.ea_id != ea_id]
             reference = evaluate(
                 without, base_window, seed, grid_n_paths, lightweight=False
@@ -1134,22 +1372,22 @@ def marginal_contributions(
             contribution["resolution"] = resolution(
                 without, base_specs, base_window, reference_is_base=False
             )
+            tail = tail_fields(
+                candidate, tail_summary, reference, base_specs, base_window
+            )
             rows.append({
                 "id": candidate_id, "mode": mode, "status": "OK",
+                "role": candidate.role, "symbol": candidate.symbol,
+                "stream_sha256": candidate.stream_sha256,
                 "proposed_risk_percent": matches[0].risk_percent,
                 "comparison_window": [base_window[0].isoformat(), base_window[1].isoformat()],
                 "contribution_when_present": contribution,
+                **tail,
             })
             continue
         if mode != "add":
             raise ValueError(f"unsupported candidate mode: {mode}")
-        candidate = _candidate_spec(
-            plan_row, stream_root=stream_root, manifest_hashes=manifest_hashes,
-            financed_stream_root=financed_stream_root,
-        )
-        # The candidate's shorter stream must not truncate incumbent history.
-        # Both sides use the fixed base calendar; out-of-span candidate days
-        # are correctly represented as candidate inactivity.
+        candidate, tail_summary = preflight[plan_index]
         comparison_window = base_window
         reference = cached_base(
             comparison_window, seed, grid_n_paths, lightweight=False
@@ -1175,6 +1413,10 @@ def marginal_contributions(
             base_specs, [*base_specs, proposed_spec], comparison_window,
             reference_is_base=True,
         )
+        tail = tail_fields(
+            proposed_spec, tail_summary, reference,
+            [*base_specs, proposed_spec], comparison_window,
+        )
         rows.append({
             "id": candidate_id, "mode": mode, "status": "OK",
             "role": candidate.role, "symbol": candidate.symbol,
@@ -1183,15 +1425,18 @@ def marginal_contributions(
             "comparison_window": [comparison_window[0].isoformat(), comparison_window[1].isoformat()],
             "proposed": proposed_row,
             "weight_grid": grid_rows,
+            **tail,
         })
-    return {
+    report = {
         "schema": MARGINAL_SCHEMA,
         "generated_at_utc": as_of.isoformat(),
         "method": (
             "all candidates and paired base references use the fixed base-book common "
             "window, identical seeds, block bootstrap, financing/cost model and "
-            "first_passage engine; a short candidate cannot truncate incumbent history; "
-            "deltas are variant-reference"
+            "first_passage engine; stream tails must reach within 14 calendar days of "
+            "the window end unless the explicit research-only bypass is selected; "
+            "deltas are variant-reference; DELTA_LCB_EX_TOP3 removes the candidate's "
+            "three highest-net trades"
         ),
         "params": {"seed": seed, "n_paths": n_paths,
                    "weight_grid_n_paths": grid_n_paths, "block_len": block_len,
@@ -1205,6 +1450,11 @@ def marginal_contributions(
                    "financing_label": financing_label},
         "candidates": rows,
     }
+    if allow_truncated_streams:
+        report["run_label"] = TRUNCATED_STREAM_RESEARCH_ONLY
+        report["book_evidence_eligible"] = False
+        report["truncated_streams"] = list(truncation_violations.values())
+    return report
 
 
 def _parse_missing_behavior(human_mirror: Path, existing_state: Mapping[str, Any] | None) -> str:
@@ -1228,6 +1478,14 @@ def _candidate_state_rows(marginal: Mapping[str, Any]) -> list[dict[str, Any]]:
                 "id": row.get("id"), "symbol": row.get("symbol"),
                 "role": row.get("role"), "book_action": row.get("book_action", "TEST"),
                 "marginal_payout_probability": "NOT_YET_MEASURABLE",
+                "marginal_delta_se": None,
+                "is_statistically_resolved": False,
+                "top3_trade_share_of_net": row.get("top3_trade_share_of_net"),
+                "top10_share": row.get("top10_share"),
+                "years_positive_share": row.get("years_positive_share"),
+                "DELTA_LCB_EX_TOP3": row.get("DELTA_LCB_EX_TOP3"),
+                "rare_winner_dependent": row.get("rare_winner_dependent"),
+                "tail_concentration_status": row.get("tail_concentration_status"),
                 "reason": row.get("reason"),
             })
             continue
@@ -1237,6 +1495,7 @@ def _candidate_state_rows(marginal: Mapping[str, Any]) -> list[dict[str, Any]]:
             "lcb_delta_mean", delta.get("DELTA_P_FIRST_NET_FTMO_PAYOUT_LCB")
         )
         resolved = resolution.get("resolution_status") == "RESOLVED"
+        rare_winner_dependent = bool(row.get("rare_winner_dependent"))
         daily = delta.get("DELTA_P_DAILY_LOSS_BREACH")
         maximum = delta.get("DELTA_P_MAX_LOSS_BREACH")
         if row.get("mode") == "leave_one_out":
@@ -1251,10 +1510,20 @@ def _candidate_state_rows(marginal: Mapping[str, Any]) -> list[dict[str, Any]]:
                 action = "SHADOW_BOOK"
             else:
                 action = "HOLD"
+            if rare_winner_dependent and action == "CONSIDER_ADD":
+                action = "SHADOW_BOOK"
         out.append({
             "id": row.get("id"), "symbol": row.get("symbol"), "role": row.get("role"),
             "mode": row.get("mode"), "book_action": action,
+            "marginal_delta_se": resolution.get("lcb_standard_error"),
+            "is_statistically_resolved": resolved,
             "proposed_risk_percent": row.get("proposed_risk_percent"),
+            "top3_trade_share_of_net": row.get("top3_trade_share_of_net"),
+            "top10_share": row.get("top10_share"),
+            "years_positive_share": row.get("years_positive_share"),
+            "DELTA_LCB_EX_TOP3": row.get("DELTA_LCB_EX_TOP3"),
+            "rare_winner_dependent": rare_winner_dependent,
+            "tail_concentration_status": row.get("tail_concentration_status"),
             "marginal": {key: value for key, value in delta.items() if key.startswith("DELTA_")},
             "resolution": copy.deepcopy(resolution),
         })
@@ -1364,6 +1633,10 @@ def build_state(
             "first_passage": first.get("input_manifest_sha256"),
         },
     })
+    if base.get("run_label"):
+        state["run_label"] = base["run_label"]
+    else:
+        state.pop("run_label", None)
     return state
 
 
@@ -1399,6 +1672,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--allow-unfinanced", action="store_true",
         help="explicit research-only opt-in; output is labelled UNFINANCED",
+    )
+    parser.add_argument(
+        "--allow-truncated-streams", action="store_true",
+        help=(
+            "research-only override for STREAM_WINDOW_INSUFFICIENT; labels the "
+            "run TRUNCATED_STREAM_RESEARCH_ONLY and makes it evidence-ineligible"
+        ),
     )
     parser.add_argument("--candidate-plan", type=Path)
     parser.add_argument("--out", required=True, type=Path)
@@ -1486,14 +1766,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         financing_manifest_path=args.financing_manifest,
         n_paths=args.n_paths, seed=args.seed,
         block_len=args.block_len, horizon=args.horizon, as_of=as_of,
+        allow_truncated_streams=args.allow_truncated_streams,
     )
-    _write_json(args.out, base)
-    if args.dependence_out:
-        _write_json(args.dependence_out, dependence)
-    if args.dependence_md:
-        args.dependence_md.parent.mkdir(parents=True, exist_ok=True)
-        args.dependence_md.write_text(render_markdown(dependence), encoding="utf-8")
-
     if args.candidate_plan:
         candidate_plan = _load_json(args.candidate_plan)
         marginal = marginal_contributions(
@@ -1507,10 +1781,21 @@ def main(argv: Sequence[str] | None = None) -> int:
             replicate_count=args.marginal_replicates,
             resolution_target_delta=args.resolution_target_delta,
             block_len=args.block_len, horizon=args.marginal_horizon, as_of=as_of,
+            allow_truncated_streams=args.allow_truncated_streams,
         )
     else:
         marginal = {"schema": MARGINAL_SCHEMA, "generated_at_utc": as_of.isoformat(),
                     "status": "NOT_REQUESTED", "candidates": []}
+
+    # A marginal preflight failure must leave no apparently eligible partial
+    # base artifact behind.  Persist only after every requested computation has
+    # completed successfully.
+    _write_json(args.out, base)
+    if args.dependence_out:
+        _write_json(args.dependence_out, dependence)
+    if args.dependence_md:
+        args.dependence_md.parent.mkdir(parents=True, exist_ok=True)
+        args.dependence_md.write_text(render_markdown(dependence), encoding="utf-8")
     if args.marginal_out:
         _write_json(args.marginal_out, marginal)
 

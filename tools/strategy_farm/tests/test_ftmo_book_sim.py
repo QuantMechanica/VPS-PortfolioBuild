@@ -112,6 +112,20 @@ def test_registry_commission_swap_fallback_and_scaling(tmp_path: Path) -> None:
     assert "PRIMARY_FINANCING_TABLE_MISSING" in provenance["financing_library_status"]
 
 
+def test_net_only_trade_row_fails_closed_without_gross_profit(tmp_path: Path) -> None:
+    registry, financing, _, specs = _fixture(tmp_path)
+    path = Path(specs[0].stream_path)
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    rows[0].pop("profit")
+    sha = _write_stream(path, rows)
+    spec = dataclasses.replace(specs[0], stream_sha256=sha)
+
+    with pytest.raises(ValueError, match="STREAM_ROW_MISSING_GROSS_PROFIT"):
+        book_sim.prepare_book(
+            [spec], commission_registry_path=registry, financing_lib_path=financing,
+        )
+
+
 def test_symbol_cost_table_charges_only_matching_symbol_once(tmp_path: Path) -> None:
     registry, financing, _, specs = _fixture(tmp_path)
     cost = book_sim.CostConfig(
@@ -218,6 +232,34 @@ def test_full_book_result_is_deterministic_at_fixed_as_of(tmp_path: Path) -> Non
     assert first["account_path_summary"]["equity_proxy"] == book_sim.PROXY_LABEL
 
 
+def test_truncated_fixed_window_fails_closed_and_override_is_ineligible(
+    tmp_path: Path,
+) -> None:
+    registry, financing, _, specs = _fixture(tmp_path)
+    fixed_window = (dt.date(2024, 1, 2), dt.date(2024, 1, 31))
+
+    with pytest.raises(
+        ValueError,
+        match=r"STREAM_WINDOW_INSUFFICIENT: S1 last close .*fixed window end 2024-01-31",
+    ):
+        book_sim.evaluate_book(
+            [specs[0]], commission_registry_path=registry,
+            financing_lib_path=financing, fixed_window=fixed_window,
+            n_paths=20, horizon=10, as_of=AS_OF,
+        )
+
+    result, _, _ = book_sim.evaluate_book(
+        [specs[0]], commission_registry_path=registry,
+        financing_lib_path=financing, fixed_window=fixed_window,
+        n_paths=20, horizon=10, as_of=AS_OF,
+        allow_truncated_streams=True,
+    )
+
+    assert result["run_label"] == book_sim.TRUNCATED_STREAM_RESEARCH_ONLY
+    assert result["financing"]["book_evidence_eligible"] is False
+    assert result["truncated_streams"][0]["id"] == "S1"
+
+
 def test_financed_streams_are_validated_labelled_and_deterministic(
     tmp_path: Path,
 ) -> None:
@@ -277,12 +319,154 @@ def test_lcb_resolution_fields_and_unresolved_positive_action() -> None:
     row = book_sim._candidate_state_rows(marginal)[0]
 
     assert row["book_action"] == "SHADOW_BOOK"
+    assert row["marginal_delta_se"] is None
+    assert row["is_statistically_resolved"] is False
     assert row["resolution"]["resolution_status"] == "UNRESOLVED"
+
+
+def test_rare_winner_candidate_cannot_be_consider_add() -> None:
+    marginal = {
+        "candidates": [{
+            "id": "rare", "mode": "add", "status": "OK",
+            "top3_trade_share_of_net": 1.34,
+            "top10_share": 1.6,
+            "years_positive_share": 0.5,
+            "DELTA_LCB_EX_TOP3": -0.02,
+            "rare_winner_dependent": True,
+            "tail_concentration_status": "RARE_WINNER_DEPENDENT",
+            "proposed": {
+                "DELTA_P_DAILY_LOSS_BREACH": -0.01,
+                "DELTA_P_MAX_LOSS_BREACH": -0.01,
+                "resolution": {
+                    "lcb_delta_mean": 0.1,
+                    "lcb_standard_error": 0.01,
+                    "resolution_status": "RESOLVED",
+                },
+            },
+        }]
+    }
+
+    row = book_sim._candidate_state_rows(marginal)[0]
+
+    assert row["book_action"] == "SHADOW_BOOK"
+    assert row["marginal_delta_se"] == 0.01
+    assert row["is_statistically_resolved"] is True
+    assert row["tail_concentration_status"] == "RARE_WINNER_DEPENDENT"
+
+
+def test_tail_concentration_shares_and_top3_removal() -> None:
+    close_2024 = int(dt.datetime(2024, 6, 1, tzinfo=dt.timezone.utc).timestamp())
+    close_2025 = int(dt.datetime(2025, 6, 1, tzinfo=dt.timezone.utc).timestamp())
+    sleeve = {
+        "id": "tail",
+        "trades": [
+            {"entry_time": close_2024 - 60, "close_time": close_2024 + index,
+             "net_scaled": net}
+            for index, net in enumerate((100.0, 80.0, 60.0))
+        ] + [
+            {"entry_time": close_2025 - 60, "close_time": close_2025 + index,
+             "net_scaled": net}
+            for index, net in enumerate((-50.0, -40.0))
+        ],
+    }
+
+    summary = book_sim._tail_concentration(
+        sleeve, start=dt.date(2024, 1, 1), end=dt.date(2025, 12, 31)
+    )
+    stripped = book_sim._exclude_top_trades([sleeve], {"tail": 3})[0]
+
+    assert summary["top3_trade_share_of_net"] == 1.6
+    assert summary["top10_share"] == 1.0
+    assert summary["years_positive_share"] == 0.5
+    assert [trade["net_scaled"] for trade in stripped["trades"]] == [-50.0, -40.0]
+
+
+def test_marginal_output_publishes_tail_fields(tmp_path: Path) -> None:
+    _, _, root, specs = _fixture(tmp_path)
+    financed_specs = [_mark_financed(spec) for spec in specs]
+    candidate_rows = [
+        _row(_epoch(2, 8 + index), _epoch(2, 9 + index), profit, -25.0)
+        for index, profit in enumerate((100.0, 60.0, 30.0, -20.0, -10.0))
+    ]
+    for row in candidate_rows:
+        row["qm_financing"] = {
+            "status": "FIXTURE", "financing_usd": row["swap"],
+            "units": 1.0, "nights": 1,
+        }
+    candidate_path = root / "4_EURUSD_DWX.jsonl"
+    candidate_sha = _write_stream(candidate_path, candidate_rows)
+    plan = {"candidates": [{
+        "id": "C4", "mode": "add", "ea_id": 4, "symbol": "EURUSD.DWX",
+        "timeframe": "H1", "stream_path": str(candidate_path),
+        "stream_sha256": candidate_sha, "proposed_risk_percent": 0.5,
+    }]}
+
+    marginal = book_sim.marginal_contributions(
+        financed_specs, plan, stream_manifest=None,
+        financing_label=book_sim.FINANCED, financed_stream_root=root,
+        weight_grid=(0.5,), n_paths=10, grid_n_paths=10,
+        replicate_count=5, block_len=2, horizon=5, as_of=AS_OF,
+    )
+
+    candidate = marginal["candidates"][0]
+    assert candidate["top3_trade_share_of_net"] is not None
+    assert candidate["top10_share"] is not None
+    assert candidate["years_positive_share"] is not None
+    assert candidate["DELTA_LCB_EX_TOP3"] is not None
+    assert isinstance(candidate["rare_winner_dependent"], bool)
+    assert candidate["tail_concentration_status"] in {
+        "RARE_WINNER_DEPENDENT", "NOT_RARE_WINNER_DEPENDENT"
+    }
 
 
 def test_cli_requires_explicit_financing_mode() -> None:
     with pytest.raises(SystemExit):
         book_sim.main(["--roster", "unused.json", "--out", "unused-out.json"])
+
+
+def test_cli_preflight_failure_writes_no_partial_artifacts(tmp_path: Path) -> None:
+    _, _, _, specs = _fixture(tmp_path)
+    roster = tmp_path / "roster.json"
+    roster.write_text(json.dumps({"sleeves": [{
+        "id": specs[0].id, "ea_id": specs[0].ea_id,
+        "symbol": specs[0].symbol, "timeframe": specs[0].timeframe,
+        "risk_percent": specs[0].risk_percent,
+        "stream_path": specs[0].stream_path,
+        "stream_sha256": specs[0].stream_sha256,
+    }]}), encoding="utf-8")
+    old_close = int(dt.datetime(2023, 12, 1, 12, tzinfo=dt.timezone.utc).timestamp())
+    candidate_path = tmp_path / "4_EURUSD_DWX.jsonl"
+    candidate_sha = _write_stream(candidate_path, [
+        _row(old_close - 3600, old_close, 10.0, -5.0),
+        _row(old_close - 7200, old_close - 1800, 5.0, -5.0),
+        _row(old_close - 10800, old_close - 3600, 4.0, -5.0),
+        _row(old_close - 14400, old_close - 5400, 3.0, -5.0),
+    ])
+    plan = tmp_path / "plan.json"
+    plan.write_text(json.dumps({"candidates": [{
+        "id": "STALE", "mode": "add", "ea_id": 4, "symbol": "EURUSD.DWX",
+        "timeframe": "H1", "risk_percent": 0.5,
+        "stream_path": str(candidate_path), "stream_sha256": candidate_sha,
+    }]}), encoding="utf-8")
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(json.dumps({
+        "schema": "qm.recompose-frozen-inputs/v1", "streams": {"records": []}
+    }), encoding="utf-8")
+    out = tmp_path / "base.json"
+    marginal_out = tmp_path / "marginal.json"
+
+    with pytest.raises(ValueError, match="STREAM_WINDOW_INSUFFICIENT: STALE"):
+        book_sim.main([
+            "--roster", str(roster), "--stream-manifest", str(manifest),
+            "--candidate-plan", str(plan), "--allow-unfinanced",
+            "--out", str(out), "--marginal-out", str(marginal_out),
+            "--n-paths", "10", "--horizon", "5",
+            "--marginal-n-paths", "10", "--marginal-grid-n-paths", "10",
+            "--as-of", AS_OF.isoformat(),
+        ])
+
+    assert not out.exists()
+    assert not marginal_out.exists()
 
 
 def test_state_writer_preserves_human_mirror_bytes(tmp_path: Path) -> None:
