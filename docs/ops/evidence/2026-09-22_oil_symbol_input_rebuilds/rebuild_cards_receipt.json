@@ -1,0 +1,26 @@
+{
+ "cards": [
+  {
+   "ea": "QM5_41488",
+   "approved": true,
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41488_commodity-tsmom-12m-atr-symbolinput.md",
+   "reason": null,
+   "issues": null,
+   "precondition": "ready",
+   "mirror": "QM5_41488_commodity-tsmom-12m-atr-symbolinput.md"
+  },
+  {
+   "ea": "QM5_41489",
+   "approved": true,
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41489_collins-66mom-symbolinput.md",
+   "reason": null,
+   "issues": null,
+   "precondition": "ready",
+   "mirror": "QM5_41489_collins-66mom-symbolinput.md"
+  }
+ ],
+ "q08_rows": [
+  "3e157d97-45fa-4f8a-8f55-60484ffdbea4",
+  "f38417ed-c2a8-4ec9-919e-bc7223e9b8f1"
+ ]
+}
