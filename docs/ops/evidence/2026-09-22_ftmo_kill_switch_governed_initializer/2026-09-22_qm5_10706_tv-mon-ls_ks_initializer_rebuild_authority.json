@@ -1,0 +1,56 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "router_ops_issue:d6189118-c2e7-4517-a914-049c89d19a75:QM5_10706",
+  "created_at_local": "2026-09-22T04:30:55+02:00",
+  "ea_id": "QM5_10706",
+  "ea_label": "QM5_10706_tv-mon-ls",
+  "mission_priority": 86,
+  "scope": "one append-only governed COMPILE_EA successor of the current reviewed source after the governed FTMO kill-switch initializer (Codex d6189118, APPROVED by Fable 2026-09-22); no strategy-mechanics change, no economic verdict, pipeline-gate, live, portfolio-gate or cross-EA authority",
+  "diagnosis": {
+    "router_task_id": "d6189118-c2e7-4517-a914-049c89d19a75",
+    "source_rework_commit": "e93979c3eb99b84ae38dbed4bc61e659be64426f",
+    "source_rework_summary": "commit e93979c3eb (ftmo: govern Prague kill-switch initialization) changed the shared framework includes (QM_Common.mqh, QM_KillSwitch.mqh, QM_FrameworkInit) - governed FTMO execution mode with book tag + named Prague-midnight anchor, US-DST-coupled -1/-2 offset, TimeGMT wall clock + 1 s OnTimer, persisted anchor_offset/anchor_mode/book_tag/prague_calendar/prague_date, KS_DAY_ROLLOVER telemetry; QM5_11422 additionally calls the standard Q08 MAE hook before early returns and QM5_10403 zeroes three QM_EntryRequest structs (mechanics-neutral guard findings). The committed .ex5 predates all of it.",
+    "stale_ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+    "reviewed_task_worktree_compiled_ex5_sha256": "6980e6eb4f4e78c038bbb3334150f6315fc3d47b3b09844ed861bc5cd9ac8724",
+    "governed_compile_status_before_repair": "REFUSED_EX5_ALREADY_PRESENT (plain enqueue-compile 2026-09-22T02:28Z)",
+    "evidence_source": "docs/ops/evidence/2026-09-22_ftmo_kill_switch_governed_initializer/task_d6189118-c2e7-4517-a914-049c89d19a75/{README.md,verification.json}"
+  },
+  "repair": {
+    "current_mq5_sha256": "c932fdd800548a7dae4c39d910c3726491e46b506c5ee60ba1abef523c78bf1e",
+    "strategy_mechanics_changed": false,
+    "action": "strict governed compile of the already-committed current source (framework includes at e93979c3eb); no further source edit is authorized",
+    "host_timeframe": "D1",
+    "instrument_scope": [
+      "XAUUSD.DWX"
+    ]
+  },
+  "new_identity_consequence": {
+    "rebuilt_ex5_is_new_identity": true,
+    "doctrine": "2026-08-17 stale-EX5 doctrine (build date is a predicate of EA identity)",
+    "requires_q02_re_entry": true,
+    "evidence_inheritance_path": "the pump seeds the Q02 canary on COMPILE_OK; an identity-equivalence proof (OWNER-DEC-IDENTITY-EQUIVALENCE-20260913, identity_equivalence_proof.py) of the new build against the sealed Q02 of the current identity carries the existing Q03-Q10 evidence forward; only then does the new ex5 enter the FTMO demo deploy manifest",
+    "not_performed_by_this_authority": "Q02 re-entry, identity proof, deploy manifest and the four-step runtime proof chain are separate governed actions; this receipt only authorizes the COMPILE_EA successor"
+  },
+  "validation": {
+    "strict_build_check_on_task_worktree": "PASS (Codex d6189118, 0 errors / 0 warnings)",
+    "tests": "51 passed (test_ftmo_trial_pulse, test_ftmo_kill_switch_governed_initializer, test_killswitch_state_lifecycle_static), re-run by Fable 2026-09-22T02:3xZ",
+    "fixed_risk_setfile_contract": {
+      "RISK_FIXED_required_positive": true,
+      "RISK_PERCENT_required_zero": true
+    }
+  },
+  "coordination": {
+    "router_task_id": "d6189118-c2e7-4517-a914-049c89d19a75",
+    "claimed_by": "fable",
+    "branch": "agents/board-advisor",
+    "owner_authority_cited": "OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917; OWNER-DEC-FTMO-FINAL-MEGA-20260921 section U priority 1 (kill-switch / Prague rollover correctness)"
+  },
+  "safety": {
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "terminal_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false,
+    "compile_path": "append-only governed COMPILE_EA row for the resident compile worker; ad-hoc compile not used"
+  }
+}

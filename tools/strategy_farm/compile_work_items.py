@@ -3491,6 +3491,102 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_10505_ONINIT_INSTRUMENTED_REBUILD_AUTHOR
     ),
 }
 
+# Router ops_issue d6189118 (2026-09-22, accepted by Fable): the governed FTMO
+# kill-switch initializer (commit e93979c3eb) changed the shared framework
+# includes; the committed QM5_10403_et-turtle20x binary predates it and the plain
+# enqueue refused with EX5_ALREADY_PRESENT. Bind one append-only strict rebuild
+# of the current committed source. New ex5 = new identity (Q02 re-entry +
+# identity-equivalence proof before any demo deploy); grants no strategy,
+# verdict, gate, live, portfolio or cross-EA authority.
+QM5_10403_KS_INITIALIZER_REBUILD_AUTHORITY = (
+    "router_ops_issue:d6189118-c2e7-4517-a914-049c89d19a75:QM5_10403"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_10403_KS_INITIALIZER_REBUILD_AUTHORITY] = {
+    "ea_id": "10403",
+    "ea_label": "QM5_10403_et-turtle20x",
+    "source_sha256": "65d4c206ad9d6ad2c8230a309714d1a900a1bc707b54dc96bc4e7fb107b8bae5",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/2026-09-22_ftmo_kill_switch_governed_initializer/2026-09-22_qm5_10403_et-turtle20x_ks_initializer_rebuild_authority.json"
+    ),
+    "evidence_sha256": (
+        "065a0cd3fc1ff399b84bff94738584891b612d271412f432a016e36a3015383f"
+    ),
+}
+
+# Router ops_issue d6189118 (2026-09-22, accepted by Fable): the governed FTMO
+# kill-switch initializer (commit e93979c3eb) changed the shared framework
+# includes; the committed QM5_10706_tv-mon-ls binary predates it and the plain
+# enqueue refused with EX5_ALREADY_PRESENT. Bind one append-only strict rebuild
+# of the current committed source. New ex5 = new identity (Q02 re-entry +
+# identity-equivalence proof before any demo deploy); grants no strategy,
+# verdict, gate, live, portfolio or cross-EA authority.
+QM5_10706_KS_INITIALIZER_REBUILD_AUTHORITY = (
+    "router_ops_issue:d6189118-c2e7-4517-a914-049c89d19a75:QM5_10706"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_10706_KS_INITIALIZER_REBUILD_AUTHORITY] = {
+    "ea_id": "10706",
+    "ea_label": "QM5_10706_tv-mon-ls",
+    "source_sha256": "c932fdd800548a7dae4c39d910c3726491e46b506c5ee60ba1abef523c78bf1e",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/2026-09-22_ftmo_kill_switch_governed_initializer/2026-09-22_qm5_10706_tv-mon-ls_ks_initializer_rebuild_authority.json"
+    ),
+    "evidence_sha256": (
+        "c94e37f3ed373ccad360a9d36b5e639960031a3e2ce17a93e54c30b01d3f6ef5"
+    ),
+}
+
+# Router ops_issue d6189118 (2026-09-22, accepted by Fable): the governed FTMO
+# kill-switch initializer (commit e93979c3eb) changed the shared framework
+# includes; the committed QM5_11422_williams-18ma-outside-bar-entry-d1 binary predates it and the plain
+# enqueue refused with EX5_ALREADY_PRESENT. Bind one append-only strict rebuild
+# of the current committed source. New ex5 = new identity (Q02 re-entry +
+# identity-equivalence proof before any demo deploy); grants no strategy,
+# verdict, gate, live, portfolio or cross-EA authority.
+QM5_11422_KS_INITIALIZER_REBUILD_AUTHORITY = (
+    "router_ops_issue:d6189118-c2e7-4517-a914-049c89d19a75:QM5_11422"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_11422_KS_INITIALIZER_REBUILD_AUTHORITY] = {
+    "ea_id": "11422",
+    "ea_label": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+    "source_sha256": "68684885cf3119b2f4ff3ea8d330c11a396b635b7d4998532e1f56bfc076427c",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/2026-09-22_ftmo_kill_switch_governed_initializer/2026-09-22_qm5_11422_williams-18ma-outside-bar-entry-d1_ks_initializer_rebuild_authority.json"
+    ),
+    "evidence_sha256": (
+        "ef1c809e3671c6c3df2555603881ea4eb6c081c69cb8ec287318f8094394600d"
+    ),
+}
+
+# Router ops_issue d6189118 (2026-09-22, accepted by Fable): the governed FTMO
+# kill-switch initializer (commit e93979c3eb) changed the shared framework
+# includes; the committed QM5_41219_cum-rsi2-commodity-requal8 binary predates it and the plain
+# enqueue refused with EX5_ALREADY_PRESENT. Bind one append-only strict rebuild
+# of the current committed source. New ex5 = new identity (Q02 re-entry +
+# identity-equivalence proof before any demo deploy); grants no strategy,
+# verdict, gate, live, portfolio or cross-EA authority.
+QM5_41219_KS_INITIALIZER_REBUILD_AUTHORITY = (
+    "router_ops_issue:d6189118-c2e7-4517-a914-049c89d19a75:QM5_41219"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_41219_KS_INITIALIZER_REBUILD_AUTHORITY] = {
+    "ea_id": "41219",
+    "ea_label": "QM5_41219_cum-rsi2-commodity-requal8",
+    "source_sha256": "cd2a0ac6e3f4a677cbb30197e23eaeb8338f06f69d66341eeedfc45cb68746b3",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/2026-09-22_ftmo_kill_switch_governed_initializer/2026-09-22_qm5_41219_cum-rsi2-commodity-requal8_ks_initializer_rebuild_authority.json"
+    ),
+    "evidence_sha256": (
+        "ec63de4500472eb4d607cedf60eb0b2c65dbc3e1be8e9ce8aff6c32c279b8038"
+    ),
+}
+
 
 # 2026-09-19/20 (task 340b228c, Fable successor of fa45d828, QM5_41347/NDX):
 # classify_candidate's USABLE_CURRENT_COMPILE_VERDICT_EXISTS check compares
