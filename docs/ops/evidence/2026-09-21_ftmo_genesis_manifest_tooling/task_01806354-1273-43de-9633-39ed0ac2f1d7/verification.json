@@ -1,0 +1,44 @@
+{
+  "base_commit": "9511455f277a279987eae9ccb8bea4683e6e204d",
+  "rehearsal": {
+    "counts": {
+      "GREEN": 19,
+      "NOT_CHECKABLE": 5,
+      "RED": 10
+    },
+    "decision": "NO_GO",
+    "drift_count": 4,
+    "drift_items": [
+      "sleeve[3]:11422.source",
+      "sleeve[4]:10403.source",
+      "registries.ea_id",
+      "registries.magic"
+    ],
+    "manifest_sha256": "2f079710d5cd2d051ea2499b82c9127ef6ca18c763fafe7ec8abfb453b4a6f06",
+    "output_json_sha256": "bbff20e98ac7d91edfbb9a019fdb159cccbd54a25587076a05e0058e236507ce",
+    "output_markdown_sha256": "c24b5fab39b4e6341324eeb4acf8d250b824e0460048deddc90da2b9ff87bc0c"
+  },
+  "safety": {
+    "autotrading_changed": false,
+    "orders_placed": false,
+    "t_live_changed": false,
+    "terminal_started": false
+  },
+  "schema": "qm.ftmo-sunday-preflight-addendum-evidence/v1",
+  "source_sha256": {
+    "evidence_config": "51f3fbf3e7ed9ac3bfc71145ff44c1cbb67fc36801cc74a288621aa6e2fc122c",
+    "sunday_preflight.py": "aad64736d28fed8fbf4943663757fa961547c335b8fc1548a70e7fd1d8b50d58",
+    "test_ftmo_genesis_manifest.py": "06b8e24a618e344a90349921c5ff1072cd3bd3c79c3164cbf5bbd9ca5e2d556d"
+  },
+  "task_id": "01806354-1273-43de-9633-39ed0ac2f1d7",
+  "verification": {
+    "diff_check": "PASS",
+    "json_parse": "PASS",
+    "py_compile": "PASS",
+    "pytest": {
+      "passed": 17,
+      "result": "PASS"
+    }
+  },
+  "verdict": "PASS_FOR_REVIEW"
+}

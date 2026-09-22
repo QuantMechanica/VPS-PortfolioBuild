@@ -7,6 +7,38 @@
       "evidence_path": "docs/ops/evidence/2026-09-21_4fd8222f_ftmo_d2g6_kill_switch_anchor_diagnosis.md",
       "reason": "Current D2g6 diagnosis proves legacy/raw-equity anchor behavior; the governed initializer and runtime proof are still pending."
     },
+    "live_news_feed_binding": {
+      "state": "RED",
+      "evidence_path": "docs/ftmo/FTMO_SUNDAY_LAUNCH_STATUS.md",
+      "reason": "The rehearsal presets have no evidence binding all six sleeves to a fresh daily live-calendar seed in D:/QM/data/news_calendar plus FILE_COMMON while excluding the static Q09 backtest CSV."
+    },
+    "terminal_autotrading_flag": {
+      "state": "NOT_CHECKABLE",
+      "evidence_path": "docs/ftmo/genesis/SUNDAY_LAUNCH_RUNBOOK_2026-09-27.md",
+      "reason": "The Sunday generation is not attached; TERMINAL_TRADE_ALLOWED and per-chart trading_allowed proof for all six charts is intentionally collected after attach without toggling."
+    },
+    "weekend_non_tick_rollover": {
+      "state": "RED",
+      "evidence_path": "docs/ops/evidence/2026-09-22_ftmo_kill_switch_governed_initializer/task_d6189118-c2e7-4517-a914-049c89d19a75/verification.json",
+      "reason": "The wall-clock/OnTimer implementation is built, but runtime_proof_status is PENDING_OWNER_SIGNED_DEPLOY and no KS_DAY_ROLLOVER after a no-tick boundary has been observed."
+    },
+    "server_request_thresholds": {
+      "state": "GREEN",
+      "evidence_path": "docs/ops/evidence/2026-09-22_ftmo_kill_switch_governed_initializer/task_d6189118-c2e7-4517-a914-049c89d19a75/README.md",
+      "contains": "Server request thresholds are WARN at 200, ALARM at 500, and ALARM above 25 requests in any rolling 60-second window.",
+      "reason": "The read-only pulse is configured for WARN 200, LIMIT/ALARM 500, and a >25-request rolling 60-second burst alarm."
+    },
+    "clean_initial_account": {
+      "state": "NOT_CHECKABLE",
+      "evidence_path": "docs/ftmo/genesis/SUNDAY_LAUNCH_RUNBOOK_2026-09-27.md",
+      "reason": "Balance 100000.00, PositionsTotal() == 0 and OrdersTotal() == 0 must be captured immediately before the Sunday-generation chart attach."
+    },
+    "sleeve_attribution_dry_run": {
+      "state": "GREEN",
+      "evidence_path": "D:/QM/reports/state/ftmo_sleeve_attribution.json",
+      "contains": "\"difference_usd\": 0.0",
+      "reason": "The 74c41987 sidecar reports reconciliation_ok=true and Sum(sleeve plus itemized unattributed P&L) equals account P&L with difference 0.00 USD."
+    },
     "cost_assumptions": {
       "state": "GREEN",
       "evidence_path": "docs/ops/evidence/2026-09-21_ftmo_book_sim_v2_financed/README.md",
@@ -58,9 +90,10 @@
       "reason": "Current first-passage state artifact is present; Saturday preflight must regenerate it for the frozen generation."
     },
     "sleeve_attribution": {
-      "state": "RED",
+      "state": "GREEN",
       "evidence_path": "D:/QM/reports/state/ftmo_sleeve_attribution.json",
-      "reason": "Required sleeve-attribution sidecar does not yet exist."
+      "contains": "\"reconciliation_ok\": true",
+      "reason": "The accepted 74c41987 sidecar exists and reports a cent-exact reconciliation."
     },
     "logs": {
       "state": "GREEN",

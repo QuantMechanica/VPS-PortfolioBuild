@@ -163,3 +163,50 @@ def test_prelaunch_manifest_can_be_sealed_once(tmp_path: Path) -> None:
     sealed = seal_launch(paths["output"], "2026-09-27T12:00:00Z")
     assert sealed["status"] == "LAUNCHED_IMMUTABLE"
     assert verify_manifest(paths["output"])["status"] == "PASS"
+
+
+@pytest.mark.parametrize(
+    ("check_id", "critical"),
+    [
+        ("live_news_feed_binding", True),
+        ("terminal_autotrading_flag", True),
+        ("weekend_non_tick_rollover", True),
+        ("server_request_thresholds", False),
+        ("clean_initial_account", True),
+        ("sleeve_attribution_dry_run", False),
+    ],
+)
+@pytest.mark.parametrize("state", ["GREEN", "RED"])
+def test_critique_addendum_rows_accept_evidence_bound_green_and_red_fixtures(
+    tmp_path: Path,
+    check_id: str,
+    critical: bool,
+    state: str,
+) -> None:
+    paths = _fixture(tmp_path)
+    _build(paths)
+    evidence = _write(tmp_path / f"{check_id}.json", '{"fixture": true}\n')
+    config = tmp_path / f"preflight-{check_id}-{state.lower()}.json"
+    config.write_text(
+        json.dumps(
+            {
+                "schema": "qm.ftmo-sunday-preflight-evidence/v1",
+                "checks": {
+                    check_id: {
+                        "state": state,
+                        "evidence_path": str(evidence),
+                        "reason": f"{check_id} {state} fixture",
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    report = run_preflight(paths["output"], evidence_config=config)
+    row = next(row for row in report["checks"] if row["check_id"] == check_id)
+
+    assert row["state"] == state
+    assert row["critical"] is critical
+    assert row["evidence_path"] == str(evidence)
+    assert row["automatic"] is False
