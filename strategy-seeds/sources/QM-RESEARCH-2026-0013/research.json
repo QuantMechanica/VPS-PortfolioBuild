@@ -1,0 +1,64 @@
+{
+  "author": "multi-agent:Fable+Codex",
+  "candidate_edge": "A clock-normalized session-range breakout research instrument can reproduce the harness-v2 A2/A3/A4 cells in MT5 without freezing one anchor or range length.",
+  "computed_outputs": [
+    {
+      "claim_ref": "harness_v2_cells",
+      "file": "harness_v2_cells.json",
+      "sha256": "pending"
+    }
+  ],
+  "confidence": "High that the three input mappings and harness measurements are durably bound; high that an MT5 instrument is needed; economic equivalence remains unknown until authentic Q02 reports exist.",
+  "confounders": [
+    "The harness is a prescreen and has not established MT5 economic equivalence for these three cells.",
+    "Two frozen USDJPY arms share one EA/symbol, while the current first-Q02 control plane discovers one canonical set file per EA/symbol.",
+    "EURUSD.DWX is included as a future-instrument slot but has no registered cell in this three-cell falsification batch.",
+    "Harness fills and native-news facts can differ from the MT5 real-tick tester; those differences are the purpose of the experiment."
+  ],
+  "created_utc": "2026-09-22T07:24:02+00:00",
+  "critic_receipt": "critic_receipt.json",
+  "lineage": "lineage.json",
+  "ml_method": null,
+  "model": "claude-fable-5-1+gpt-5.6-sol",
+  "observations": "The reviewed v2 sweep contains 315 defined and 314 populated cells. Three cells are WORTH_MT5_TEST. The review verdict is mechanics PASS and economic equivalence UNKNOWN. The prior attempt could not execute them because QM5_41485 froze the C anchor, range sizes 2/3, and two declared symbols; this source binds the requirements for a separate neutral instrument.",
+  "originating_task_id": "955537dd-63d2-4f84-a1b1-c4d2499b78c4",
+  "proposed_mechanism": "A completed multi-hour range ending at a session transition defines symmetric breakout levels. Fail-closed OCO orders test directional expansion with the opposite edge as the stop, an ATR width filter, and a two-grid-bar trailing exit. Clock normalization permits the same mechanics to be falsified at a fixed economic anchor across broker DST regimes.",
+  "quantitative_claims": [
+    {
+      "claim": "NZDJPY.DWX A2 selection-period harness-v2 result",
+      "computed_output_ref": "harness_v2_cells",
+      "value": "2018-07-02..2022-12-30; n=970; E[R]=+0.0570; PF=1.122; worst-year DD=21.00R"
+    },
+    {
+      "claim": "USDJPY.DWX A3 selection-period harness-v2 result",
+      "computed_output_ref": "harness_v2_cells",
+      "value": "2018-07-02..2022-12-30; n=893; E[R]=+0.0675; PF=1.161; worst-year DD=21.87R"
+    },
+    {
+      "claim": "USDJPY.DWX A4 selection-period harness-v2 result",
+      "computed_output_ref": "harness_v2_cells",
+      "value": "2018-07-02..2022-12-30; n=821; E[R]=+0.0753; PF=1.184; worst-year DD=18.56R"
+    },
+    {
+      "claim": "Harness-v2 registration population and route count",
+      "computed_output_ref": "harness_v2_cells",
+      "value": "315 defined cells; 314 populated; 3 WORTH_MT5_TEST"
+    }
+  ],
+  "related_strategies": [
+    "QM5_13213",
+    "QM5_41485"
+  ],
+  "research_id": "QM-RESEARCH-2026-0013",
+  "research_question": "Can one clock-normalized, parameterized MT5 research instrument produce like-for-like Q02 measurements for harness-v2 cells NZDJPY A2, USDJPY A3, and USDJPY A4?",
+  "research_trial_count": 314,
+  "schema": "qm.internal-research-source/v1",
+  "search_history_ref": "docs/ops/evidence/2026-09-21_velocity_harness_v2/task_7088da77-9e03-45cf-a568-581863f03ef1/velocity_family_f1_sweep_v2.json at commit 252d6de23596ce4415dec6f3d815f89cf9174c5e",
+  "source_datasets": [
+    {
+      "dataset_id": "velocity_family_f1_sweep_v2_checked_in",
+      "path": "harness_v2_cells.json",
+      "sha256": "pending"
+    }
+  ]
+}
