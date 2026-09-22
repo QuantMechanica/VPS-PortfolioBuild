@@ -112,12 +112,24 @@ function was only exercised through pytest against throwaway `tmp_path` DBs
 and files, and no `smoke_passed` or capacity-waiver evidence was fabricated
 anywhere, per the task's explicit instruction.
 
-Changed-file hashes (this worktree, `agents/claude-orchestration-1`):
+Changed-file hashes (this worktree, `agents/claude-orchestration-1`, after the
+line-ending fixup commit below):
 
 - `tools/strategy_farm/farmctl.py` sha256
-  `14455dbe6f53b0d55884245e2d5bafef5d20e27080ba9fa592ed2c7f78b58081`
+  `5dd8416c91ea47de5858126f96044b6868954111d11ffe288e0eb3c339bc6f10`
 - `tools/strategy_farm/tests/test_farmctl_q01_smoke_dispatch.py` sha256
   `85930cb8deca23327859de2d7fa0ea31831a4a79fb5a5cbea5e2d832adc751c7`
+
+**Self-correction:** the first commit's edit tooling silently normalized ~790
+pre-existing LF-only lines in `farmctl.py` to CRLF across the whole file while
+making the intended addition — `farmctl.py` is a documented raw-byte-contract
+file (`.gitattributes: -text`, 2026-08-02 phantom-dirty incident) whose line
+endings must never be re-smudged. A follow-up commit rebuilt the file
+(content-diff with EOLs stripped against the pre-change blob; unchanged lines
+kept byte-identical, only genuinely new lines written CRLF) so the net diff
+vs the pre-task baseline is exactly the intended 475-line addition
+(`git diff --stat HEAD~2 HEAD -- tools/strategy_farm/farmctl.py`). Tests and
+CLI `--help` were re-verified after the fixup.
 
 ## 4. Known follow-on gap (documented, not fixed here — out of bounded scope)
 
