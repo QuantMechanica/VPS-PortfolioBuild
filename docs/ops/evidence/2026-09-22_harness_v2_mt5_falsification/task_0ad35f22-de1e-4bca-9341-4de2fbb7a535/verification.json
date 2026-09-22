@@ -1,0 +1,59 @@
+{
+  "checks": [
+    {
+      "id": "ea_frozen_contract_static",
+      "result": "PASS",
+      "result_detail": "OnInit exact guards found for C-only 15:30/23:00/:30 and range_bars 2-or-3."
+    },
+    {
+      "id": "anchor_A_seasonal_mapping",
+      "result": "PASS",
+      "result_detail": "2024-01-15 maps to broker 05:00/17:00; 2024-07-15 maps to broker 06:00/18:00."
+    },
+    {
+      "id": "governed_allocator_exact_card_dry_run",
+      "result": "PASS",
+      "result_detail": "planned_rows=0; already_allocated; exact symbols USDJPY.DWX and EURUSD.DWX."
+    },
+    {
+      "id": "canonical_q02_replacement_guard_probe",
+      "result": "PASS",
+      "result_detail": "enqueued=false; replacement_setfile_requires_cascade_phase."
+    },
+    {
+      "id": "no_new_q02_rows",
+      "result": "PASS",
+      "result_detail": "QM5_41485 inventory remains 12 total rows with three terminal Q02 PASS rows and no pending/active row."
+    }
+  ],
+  "focused_test_run": {
+    "failures": [
+      {
+        "classification": "PRE_EXISTING_SETFILE_TEST_MISMATCH",
+        "test": "test_three_setfiles_are_fixed_backtest_arms",
+        "why": "At least one checked-in canonical setfile omits explicit qm_news_temporal=3 even though the test requires it."
+      },
+      {
+        "classification": "CONCURRENT_GLOBAL_ALLOCATOR_LOCK",
+        "test": "test_orphan_identity_recovery_requires_exact_card_mode",
+        "why": "The test entered the live default allocator lock and received PermissionError while the shared lock was owned elsewhere."
+      }
+    ],
+    "passed": 20,
+    "result": "PARTIAL"
+  },
+  "targeted_test_runs": [
+    {
+      "command": "python -m pytest framework/EAs/QM5_41485_ny-preopen-range-breakout-jpy/tests/test_grid_contract.py -q -k \"not three_setfiles_are_fixed_backtest_arms\"",
+      "result": "PASS",
+      "summary": "5 passed, 1 deselected"
+    },
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_universe_expansion_owner_decision.py -q",
+      "result": "PASS",
+      "summary": "3 passed"
+    }
+  ],
+  "schema": "qm.harness-v2-mt5-verification/v1",
+  "task_id": "0ad35f22-de1e-4bca-9341-4de2fbb7a535"
+}

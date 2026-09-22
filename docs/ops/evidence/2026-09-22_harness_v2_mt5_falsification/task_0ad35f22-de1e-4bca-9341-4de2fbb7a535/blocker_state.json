@@ -1,0 +1,74 @@
+{
+  "bindings": {
+    "approved_card_sha256": "f70740a7c2909d1c6ddbb972f0400ca40f5b056a599c47797bdfb1c8c114b54c",
+    "ea_ex5_sha256": "f6224fcc952a0094478498d9559fd621b838a680fe4b0bc717beac5bdfdfac19",
+    "ea_mq5_sha256": "be665dc9068b1a163b0253c14cbc8f08bf03622a58f77e1ec10cdf6764d90b76",
+    "farmctl_sha256": "fa6256c2b81d313ca9caf06aec69d2741f1bc412037c25a252abf2f88269bb5b",
+    "governed_magic_allocator_sha256": "ae3f84068380d5dba13852802526c91981629499a6b1a81a3a292ecec1768dc8",
+    "harness_v2_sweep_sha256": "1f4fb67ed444ad34f63ac7aa20b5341d86bbd63c10be21fceacebce6a1a49264",
+    "magic_registry_sha256": "7a3a71ea665415b7822c7f2995a0199b530dc3e2508b9180d2c0e6f47af23861",
+    "magic_resolver_sha256": "eb5e34d030929cff4d44264ae84c00ac9975cd5395161fbaf0bbccb255c31c2e",
+    "usd_jpy_q02_rows": [
+      "ffe3a8dc-182c-4713-b2b6-3baf3f8ea502",
+      "bae8cf20-1a3a-4c6f-9f49-7a6faea4e7f2"
+    ]
+  },
+  "blockers": [
+    {
+      "code": "EA_FROZEN_TO_C2_C3",
+      "fact": "QM5_41485 OnInit accepts only a 15:30 raw-server anchor, 23:00 raw-server exit, 30-minute grid offset, and range_bars 2 or 3; every requested A cell violates this frozen contract and A4 also violates the range_bars bound."
+    },
+    {
+      "code": "A_ANCHOR_NOT_REPRESENTABLE_BY_ONE_41485_SETFILE",
+      "fact": "Harness anchor A is fixed GMT+3-equivalent and maps to DXZ raw-server 05:00/17:00 in winter and 06:00/18:00 in summer; QM5_41485 uses fixed raw-server hour inputs and has no GMT+3 normalization."
+    },
+    {
+      "code": "NZDJPY_NOT_IN_CARD_OR_MAGIC_REGISTRY",
+      "fact": "The approved card declares only USDJPY.DWX and EURUSD.DWX; the governed allocator therefore reports already_allocated for those two rows and cannot append NZDJPY.DWX without a prohibited card change."
+    },
+    {
+      "code": "Q02_ALTERNATE_ARM_ENQUEUE_UNSUPPORTED",
+      "fact": "The canonical enqueue-backtest path rejects a Q02 replacement setfile with replacement_setfile_requires_cascade_phase; universe expansion also requires a card-declared new EA-symbol pair and cannot represent additional USDJPY arm rows."
+    }
+  ],
+  "golden_verdicts": {
+    "NZDJPY.DWX|A2": "UNKNOWN",
+    "USDJPY.DWX|A3": "UNKNOWN",
+    "USDJPY.DWX|A4": "UNKNOWN"
+  },
+  "requested_cells": [
+    {
+      "cell": "A2",
+      "harness_sel": {
+        "E_R": 0.057,
+        "PF": 1.122,
+        "n": 970,
+        "worst_year_DD_R": 21.0
+      },
+      "symbol": "NZDJPY.DWX"
+    },
+    {
+      "cell": "A3",
+      "harness_sel": {
+        "E_R": 0.0675,
+        "PF": 1.161,
+        "n": 893,
+        "worst_year_DD_R": 21.87
+      },
+      "symbol": "USDJPY.DWX"
+    },
+    {
+      "cell": "A4",
+      "harness_sel": {
+        "E_R": 0.0753,
+        "PF": 1.184,
+        "n": 821,
+        "worst_year_DD_R": 18.56
+      },
+      "symbol": "USDJPY.DWX"
+    }
+  ],
+  "schema": "qm.agent-task-blocker-state/v1",
+  "task_id": "0ad35f22-de1e-4bca-9341-4de2fbb7a535"
+}
+

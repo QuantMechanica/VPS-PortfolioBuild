@@ -1,0 +1,67 @@
+{
+  "anchor_A": {
+    "broker_clock_summer": {
+      "flat": "18:00",
+      "range_end": "06:00"
+    },
+    "broker_clock_winter": {
+      "flat": "17:00",
+      "range_end": "05:00"
+    },
+    "grid_offset_minutes": 0,
+    "time_basis": "fixed GMT+3 equivalent"
+  },
+  "cells": [
+    {
+      "cell": "A2",
+      "executable_with_bound_binary": false,
+      "magic_slot": "unallocated; next contiguous candidate would be 2",
+      "range_bars": 2,
+      "setfile_emitted": false,
+      "symbol": "NZDJPY.DWX"
+    },
+    {
+      "cell": "A3",
+      "executable_with_bound_binary": false,
+      "magic_slot": 0,
+      "range_bars": 3,
+      "setfile_emitted": false,
+      "symbol": "USDJPY.DWX"
+    },
+    {
+      "cell": "A4",
+      "executable_with_bound_binary": false,
+      "magic_slot": 0,
+      "range_bars": 4,
+      "setfile_emitted": false,
+      "symbol": "USDJPY.DWX"
+    }
+  ],
+  "common_required_inputs": {
+    "PORTFOLIO_WEIGHT": 1,
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "environment": "backtest",
+    "qm_ea_id": 41485,
+    "qm_news_compliance": 1,
+    "qm_news_stale_max_hours": 336,
+    "qm_news_temporal": 3,
+    "strategy_atr_period": 14,
+    "strategy_max_range_atr_mult": 2.5,
+    "strategy_min_range_atr_mult": 0.4,
+    "strategy_news_retry_window_minutes": 60,
+    "strategy_range_end_minute": 0,
+    "strategy_range_scan_bars": 36,
+    "strategy_trail_trigger_r": 1.0
+  },
+  "non_executable_reasons": [
+    "A requires a seasonal broker-hour switch that one QM5_41485 setfile cannot express.",
+    "The bound binary rejects every A time/grid tuple in OnInit.",
+    "The bound binary rejects range_bars=4.",
+    "NZDJPY.DWX has no card-declared governed magic row.",
+    "Canonical Q02 enqueue has no exact-arm replacement-setfile route."
+  ],
+  "schema": "qm.harness-v2-mt5-cell-input-mapping/v1",
+  "task_id": "0ad35f22-de1e-4bca-9341-4de2fbb7a535"
+}
+
