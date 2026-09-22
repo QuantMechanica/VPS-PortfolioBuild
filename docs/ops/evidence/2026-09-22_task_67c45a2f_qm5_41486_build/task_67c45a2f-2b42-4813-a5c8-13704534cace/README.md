@@ -146,8 +146,34 @@ velocity pump.
 
 BUILD_COMPLETE_COMPILE_PENDING_MAIN_INTEGRATION — source/SPEC/setfiles for
 QM5_41486 (Second-Chance v2 of QM5_11563) committed on
-`agents/claude-orchestration-1`; identity-only delta vs. parent confirmed;
-governed COMPILE_EA enqueue correctly deferred (farmctl canonical-checkout
-guard + EA files not yet in `C:/QM/repo`) to post-merge close-out. Worktree
-was also resynced from 6271 commits stale (see above), which is separately
-useful infra hygiene for this branch going forward.
+`agents/claude-orchestration-1` (`7e25fe0076`); identity-only delta vs.
+parent confirmed; governed COMPILE_EA enqueue correctly deferred (farmctl
+canonical-checkout guard + EA files not yet in `C:/QM/repo`) to post-merge
+close-out. Worktree was also resynced from 6271 commits stale (see above),
+which is separately useful infra hygiene for this branch going forward.
+
+## Router state left unchanged (IN_PROGRESS) — REVIEW dispatch gate refused
+
+`agent_router.py update-task 67c45a2f-2b42-4813-a5c8-13704534cace --state REVIEW
+--artifact-path <this README> --verdict ...` was attempted and correctly
+refused by `_build_review_dispatch_gate` (`agent_router.py`):
+
+```
+{"allowed": false, "gate_code": "D6_BUILD_IDENTITY_MISSING",
+ "reason": "build_identity_json_missing_review_dispatch_refused", ...}
+```
+
+This gate requires the `--artifact-path` to be a `build_identity.json`
+(not a README) carrying `build_check_passed: true` plus hash-bound
+`mq5_path`/`mq5_sha256` **and `ex5_path`/`ex5_sha256`** that are git-tracked
+clean at HEAD, plus a non-empty `setfiles_generated` list. That JSON is the
+governed COMPILE_EA work item's compile receipt — it does not exist yet
+because, as documented above, the compile itself cannot run until this
+branch is merged into `main`/`C:/QM/repo`. This is a structural sequencing
+gap for `build_ea` tasks assigned to non-canonical Claude worktrees: the
+router's D6 gate (correctly) will not accept REVIEW without a real compiled
+`.ex5`, but only the canonical checkout can produce one, and only
+Claude+OWNER close-outs may advance `main`. Flagging for OWNER/board-advisor
+attention; not forcing a bypass. Task `67c45a2f-2b42-4813-a5c8-13704534cace`
+therefore remains `IN_PROGRESS`, not `REVIEW`, at the end of this cycle —
+this reflects real pipeline state, not an oversight.
