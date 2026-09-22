@@ -3,16 +3,16 @@
 ; ea_id:        37001
 ; ea_slug:      ernest-chan-ornstein-uhlenbeck-statarb
 ; ea_version:   v5.0
-; set_version:  s20260817-001
+; set_version:  s20260920-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4699fd9643135c316209fd45bb5981ebd341ef38d4c29b63e863e23c989bd242
+; build_hash:   b3f758ae010b8142ad2fceafdfa8efd2645f653c83be4ae9f8f5faf6cd86deaf
 ; author:       Development
-; date:         2026-08-17
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=37001
 qm_magic_slot_offset=0

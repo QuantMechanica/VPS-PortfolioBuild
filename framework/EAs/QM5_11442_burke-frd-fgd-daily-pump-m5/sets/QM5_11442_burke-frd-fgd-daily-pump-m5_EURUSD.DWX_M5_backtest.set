@@ -1,0 +1,35 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11442
+; ea_slug:      burke-frd-fgd-daily-pump-m5
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       EURUSD.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   84a52fab1f5657f22e4d8397092d76fcfa5ec24f55703119a5af86b3fa117e7c
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=11442
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11442_burke-frd-fgd-daily-pump-m5.md
+strategy_ema_period=20
+strategy_session_london=true
+strategy_session_ny=true
+strategy_london_start_utc=7
+strategy_london_end_utc=12
+strategy_ny_start_utc=13
+strategy_ny_end_utc=17
+strategy_tp_pips=50
+strategy_sl_pips=20
+strategy_short_ema_buffer_pips=5
+strategy_sl_cap_pips=25
+strategy_spread_cap_pips=15

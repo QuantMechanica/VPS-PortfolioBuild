@@ -3,14 +3,14 @@
 ; ea_id:        41489
 ; ea_slug:      collins-66mom-symbolinput
 ; ea_version:   v5.0
-; set_version:  s20260922-001
+; set_version:  s20260922-stress-harsh
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  q06_stress_harsh
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   298a83add766f438e66b5418d3cd73af7e5d5b5d753f2db89e4a605b28273684
+; build_hash:   a6a46352b800fe263fb8707ebe6637b8130715e0a1981e75971fedb587a54736
 ; author:       Development
 ; date:         2026-09-22
 ;==========================================================
@@ -21,8 +21,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 qm_stress_reject_probability=0.1000
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\collins-66mom_card.md
-strategy_host_symbol=XTIUSD.DWX
+; card_defaults_source=ea_input_defaults
+strategy_host_symbol=XTIUSD
 strategy_lookback_d1=9
 strategy_entry_fraction=0.66
 strategy_stop_fraction=1.32

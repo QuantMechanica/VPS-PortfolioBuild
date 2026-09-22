@@ -3,16 +3,16 @@
 ; ea_id:        30005
 ; ea_slug:      bollinger-bands-grid-dark-venus
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260920-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   cebe6212114a5e60abf1edc53548a68caffa1108e03ebda87e0d87dc26824dff
+; build_hash:   70ec43ae332aae1ff3a57071de87c1af57386e1073f1b985699230c546001966
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=30005
 qm_magic_slot_offset=2

@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10827
+; ea_slug:      tv-vol-exp
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       GDAXI.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   408bcd59dc44d660e99fae5c7996939e7582a296189b81be8ab14be8b72acec0
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=10827
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10827_tv-vol-exp.md
+strategy_lookback_bars=20
+strategy_atr_period=14
+strategy_outlier_mult=1.5
+strategy_rr_target=2.0
+strategy_midline_stop=true
+strategy_atr_fallback_mult=2.0
+strategy_stale_bars=12
+strategy_max_range_atr=2.5
+strategy_min_stop_atr=0.5
+strategy_max_stop_atr=3.0

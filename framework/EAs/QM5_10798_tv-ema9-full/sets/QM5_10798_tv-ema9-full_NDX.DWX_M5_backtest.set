@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10798
+; ea_slug:      tv-ema9-full
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       NDX.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   5
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   88b09e198f09069b36ec732a122ea7fc4ac0c3720056911745c1c05634960da6
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=10798
+qm_magic_slot_offset=5
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10798_tv-ema9-full.md
+strategy_ema_period=9
+strategy_atr_period=14
+strategy_atr_stop_mult=1.5
+strategy_entry_extreme_buffer=0.25
+strategy_session_enabled=true
+strategy_session_start_hour=8
+strategy_session_end_hour=21
+strategy_max_spread_points=0

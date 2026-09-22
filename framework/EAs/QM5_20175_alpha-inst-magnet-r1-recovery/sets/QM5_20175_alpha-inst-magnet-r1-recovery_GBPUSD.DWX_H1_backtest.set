@@ -1,0 +1,24 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20175
+; ea_slug:      alpha-inst-magnet-r1-recovery
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       GBPUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   ed68f5415eb3ed55670e87bfb03d76a59bd20f0e0ace4b4b8d891c1317075213
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=20175
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_20175_alpha-inst-magnet-r1-recovery.md
+; card_defaults_status=none_found

@@ -1,0 +1,36 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11508
+; ea_slug:      carter-t-ema50-100-macd-breakout
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       USDJPY.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   5ef324090899e44ef33137e219d19a4793bd68eb123604733d4ee231c0e8882a
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=11508
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11508_carter-t-ema50-100-macd-breakout.md
+strategy_ema_fast_period=50
+strategy_ema_slow_period=100
+strategy_macd_fast=12
+strategy_macd_slow=26
+strategy_macd_signal=9
+strategy_macd_cross_lookback=5
+strategy_breakout_pips=10
+strategy_structure_bars=5
+strategy_sl_cap_pips=40
+strategy_tp1_r_multiple=2.0
+strategy_partial_close_ratio=0.50
+strategy_be_buffer_pips=0
+strategy_spread_cap_pips=15

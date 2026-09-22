@@ -3,16 +3,16 @@
 ; ea_id:        21505
 ; ea_slug:      xag-weekly-lowvol-momentum
 ; ea_version:   v5.0
-; set_version:  s20260817-001
+; set_version:  s20260919-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5385763ac80853482faaf4e3642449c036e5ce415bc63d7742c443642a028854
+; build_hash:   3b4829ff217002a3cabe2878f061ec647cff39531a39affdd1c13c8d4d58ba72
 ; author:       Development
-; date:         2026-08-17
+; date:         2026-09-19
 ;==========================================================
 qm_ea_id=21505
 qm_magic_slot_offset=0
@@ -22,10 +22,9 @@ PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_21505_xag-weekly-lowvol-momentum.md
 strategy_vol_lookback=40
-strategy_vol_percentile=33.0
 strategy_atr_period=14
-strategy_atr_sl_mult=2.5
 strategy_max_hold_bars=10
+strategy_atr_sl_mult=2.5
 strategy_max_spread_points=250
-; symbol inputs (Hard Rule OWNER 2026-09-06): factory .DWX defaults; live presets carry bare broker names
+strategy_vol_percentile=33
 strategy_host_symbol=XAGUSD.DWX

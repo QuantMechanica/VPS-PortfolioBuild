@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11872
+; ea_slug:      rsi-80-20-fade-m15
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       EURUSD.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   d401d76d0ac77ea47db92391fb3238b4930b37a74c4477c26cf4c3ba09f0b8c5
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=11872
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11872_rsi-80-20-fade-m15.md
+strategy_rsi_period=14
+strategy_rsi_upper=80.0
+strategy_rsi_lower=20.0
+strategy_sl_pips=5.0
+strategy_tp_pips=5.0
+strategy_spread_pct_of_stop=30.0

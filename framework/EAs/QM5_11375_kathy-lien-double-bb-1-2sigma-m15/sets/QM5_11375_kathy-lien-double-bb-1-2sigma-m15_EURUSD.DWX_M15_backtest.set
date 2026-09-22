@@ -1,0 +1,24 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11375
+; ea_slug:      kathy-lien-double-bb-1-2sigma-m15
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       EURUSD.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   ae9b2842e52ae7b8d63712e5fbe08821d70aa75bacfca8cdc5f6dffaffe9dbde
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=11375
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11375_kathy-lien-double-bb-1-2sigma-m15.md
+; card_defaults_status=none_found

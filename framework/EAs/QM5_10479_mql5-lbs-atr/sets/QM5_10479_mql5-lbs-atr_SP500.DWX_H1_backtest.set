@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10479
+; ea_slug:      mql5-lbs-atr
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       SP500.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   9
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   20e5db435667db5546a2e441d69d1f74075ce021f607cbe4c58cc4290df1a18d
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=10479
+qm_magic_slot_offset=9
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10479_mql5-lbs-atr.md
+strategy_signal_tf=16385
+strategy_atr_period=14
+strategy_setup_hour_1=8
+strategy_setup_hour_2=12
+strategy_setup_hour_3=16
+strategy_tp_rr=2.0
+strategy_hold_bars=12
+strategy_max_spread_stop_frac=0.15

@@ -1,0 +1,28 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10812
+; ea_slug:      tv-bb-atrtrail
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       NDX.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   5
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   75f6da530c2cac3aa894312a23b4aed353896d0c12343694d7a1a94b5eb0870c
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=10812
+qm_magic_slot_offset=5
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10812_tv-bb-atrtrail.md
+strategy_bb_period=20
+strategy_bb_deviation=2.0
+strategy_sma_period=200
+strategy_atr_period=14
+strategy_atr_mult=3.0

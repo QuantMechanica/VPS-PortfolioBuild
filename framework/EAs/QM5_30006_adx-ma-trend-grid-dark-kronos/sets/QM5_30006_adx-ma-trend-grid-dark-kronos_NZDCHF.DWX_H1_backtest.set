@@ -3,16 +3,16 @@
 ; ea_id:        30006
 ; ea_slug:      adx-ma-trend-grid-dark-kronos
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260920-001
 ; symbol:       NZDCHF.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   86843456f6f35d09d6008fbc3e2bc0454dfbe29abdd0f9fea87708b7591f2bbd
+; build_hash:   1c752165f108eb6c3f722616c64eeef7c4bd898ddcebd6d91573e6e51fe26a10
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=30006
 qm_magic_slot_offset=3

@@ -1,0 +1,27 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11276
+; ea_slug:      iaf-donchian
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       XAUUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   19abcd262b55067eabeb7e5da70ef7464cdffcb90aa51db98248bbf7c1cb5f40
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=11276
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11276_iaf-donchian.md
+strategy_donchian_period=48
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_spread_pct_of_stop=12.0

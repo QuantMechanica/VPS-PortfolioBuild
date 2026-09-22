@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   2c65a4a372498ba78a12e4896dd4d3acf3b0ece06acbe34d3f1a5ccc7d0d00eb
 ; author:       Development
 ; date:         2026-09-22
 ;==========================================================
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\worktrees\claude-orchestration-1\artifacts\cards_approved\QM5_41486_connors-rsi2-sma200-mean-reversion-d1-v2.md
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_41486_connors-rsi2-sma200-mean-reversion-d1-v2.md
 strategy_sma_period=200
 strategy_rsi_period=2
 strategy_rsi_entry_long=10.0

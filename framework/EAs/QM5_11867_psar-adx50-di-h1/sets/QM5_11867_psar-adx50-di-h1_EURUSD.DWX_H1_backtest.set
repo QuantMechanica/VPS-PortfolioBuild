@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11867
+; ea_slug:      psar-adx50-di-h1
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       EURUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   417a63124d1df297533f11a59a50e5421796656cef9a7d80d3bd5b3d988e0fb6
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=11867
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11867_psar-adx50-di-h1.md
+strategy_adx_period=50
+strategy_psar_step=0.02
+strategy_psar_maximum=0.20
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_atr_tp_mult=4.0

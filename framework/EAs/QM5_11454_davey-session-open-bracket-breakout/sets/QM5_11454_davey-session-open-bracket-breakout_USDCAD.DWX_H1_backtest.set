@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11454
+; ea_slug:      davey-session-open-bracket-breakout
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       USDCAD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   4
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   d0a5eb803658a58127f22176c7860d123c8cbc06af58a465ab6a8b56eaad3d49
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=11454
+qm_magic_slot_offset=4
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11454_davey-session-open-bracket-breakout.md
+strategy_session_open_utc_hour=8
+strategy_session_open_utc_minute=0
+strategy_session_close_utc_hour=21
+strategy_session_close_utc_minute=0
+strategy_offset_pips=1
+strategy_max_bracket_pips=60
+strategy_atr_period=14
+strategy_tp_atr_mult=1.5
+strategy_spread_cap_pips=20

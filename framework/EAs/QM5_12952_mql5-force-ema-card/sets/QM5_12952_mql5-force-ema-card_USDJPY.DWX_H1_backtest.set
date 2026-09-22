@@ -3,16 +3,16 @@
 ; ea_id:        12952
 ; ea_slug:      mql5-force-ema-card
 ; ea_version:   v5.0
-; set_version:  s20260825-001
+; set_version:  s20260919-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b06ad1365e48fa7cd33120ec4dcb8bf527ef08b2c5bff3590c3fcee2eea520dd
+; build_hash:   1c575aaea2d8403fb0dcd09b58066b708dc79452c5459f62b9ca849f8a1de7fe
 ; author:       Development
-; date:         2026-08-25
+; date:         2026-09-19
 ;==========================================================
 qm_ea_id=12952
 qm_magic_slot_offset=1

@@ -3,16 +3,16 @@
 ; ea_id:        41488
 ; ea_slug:      commodity-tsmom-12m-atr-symbolinput
 ; ea_version:   v5.0
-; set_version:  s20260922-001
+; set_version:  s20260921-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  q10_full_history_confirmation
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   20f3abd4fbf12f865d02249918ec77c528aecc0b5b30f307b0abf09ad7e3f91e
+; build_hash:   206bf7e309eab20fe64be5892ac68b99b0d29ed354ec00a6d0507962e2b443bf
 ; author:       Development
-; date:         2026-09-22
+; date:         2026-09-21
 ;==========================================================
 qm_ea_id=41488
 qm_magic_slot_offset=0
@@ -20,8 +20,8 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\commodity-tsmom-12m-atr_card.md
-strategy_host_symbol=XTIUSD.DWX
+; card_defaults_source=ea_input_defaults
+strategy_host_symbol=XTIUSD
 strategy_momentum_lookback_d1=252
 strategy_min_abs_return_pct=1.0
 strategy_atr_period=20

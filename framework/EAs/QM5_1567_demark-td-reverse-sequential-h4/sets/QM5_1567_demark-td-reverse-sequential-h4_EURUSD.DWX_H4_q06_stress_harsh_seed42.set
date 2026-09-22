@@ -3,25 +3,26 @@
 ; ea_id:        1567
 ; ea_slug:      demark-td-reverse-sequential-h4
 ; ea_version:   v5.0
-; set_version:  s20260726-stress-harsh
+; set_version:  s20260917-stress-harsh
 ; symbol:       EURUSD.DWX
 ; timeframe:    H4
 ; environment:  q06_stress_harsh
 ; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6e206743bd181e275bf185c5ca5d509a5f8b47042f6c122103aedbed0c4e85ae
+; build_hash:   0f578ae94b4a1dee69845ec0cec1ccf051f68d5f95da24f896d5ebc4f7a07b59
 ; author:       Development
-; date:         2026-07-26
+; date:         2026-09-17
 ;==========================================================
+qm_ea_id=1567
 qm_magic_slot_offset=7
 qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 qm_stress_reject_probability=0.1000
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=ea_input_defaults (materialized 2026-07-19 push: setgen param-empty repair)
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1567_demark-td-reverse-sequential-h4.md
 strategy_setup_bars=9
 strategy_countdown_bars=13
 strategy_countdown_timeout=24

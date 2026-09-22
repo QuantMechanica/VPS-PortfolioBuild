@@ -3,16 +3,16 @@
 ; ea_id:        11731
 ; ea_slug:      tc-m5-s20-ema3-bb-macd
 ; ea_version:   v5.0
-; set_version:  s20260804-001
+; set_version:  s20260916-001
 ; symbol:       USDCHF.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   0d06a8db4ff2f039a038d1c51a137a3a87e47ca457985e309303b73b1f718a4b
 ; author:       Development
-; date:         2026-08-04
+; date:         2026-09-16
 ;==========================================================
 qm_ea_id=11731
 qm_magic_slot_offset=3

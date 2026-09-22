@@ -3,16 +3,16 @@
 ; ea_id:        30006
 ; ea_slug:      adx-ma-trend-grid-dark-kronos
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260920-001
 ; symbol:       AUDCHF.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0b85460e4c5ef2fb19ad8cc1bbed9405fb309b18f94ee3f67d68240264f48f98
+; build_hash:   8de8059336898bfcf641a4a401b55518eb1553a01beee07676ca49a979bd166d
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=30006
 qm_magic_slot_offset=0

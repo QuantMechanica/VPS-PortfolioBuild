@@ -1,0 +1,24 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9165
+; ea_slug:      tv-joovier-london-session-breakout
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       AUDUSD.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   cd379347f85025af4b75e212c4bf99cac79c31ee331e43c382ec2ec0651b0304
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=9165
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9165_tv-joovier-london-session-breakout.md
+; card_defaults_status=none_found

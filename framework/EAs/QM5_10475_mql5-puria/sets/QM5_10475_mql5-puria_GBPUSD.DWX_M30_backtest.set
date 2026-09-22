@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10475
+; ea_slug:      mql5-puria
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       GBPUSD.DWX
+; timeframe:    M30
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   c4736fed33b990303c5907e6f6a69bf998b5e1f52f46909e6771353aeb03355a
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=10475
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10475_mql5-puria.md
+strategy_fast_period=6
+strategy_slow1_period=17
+strategy_slow2_period=28
+strategy_disp_points=0.5
+strategy_macd_fast=12
+strategy_macd_slow=26
+strategy_macd_signal=9
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_tp_rr=2.0

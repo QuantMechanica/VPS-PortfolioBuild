@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11304
+; ea_slug:      kathy-lien-double-bollinger-trend
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       USDJPY.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   32b837e822c8d6421252c5eb21a6b4917458789ecc2250fa20c5916e36275d54
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=11304
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11304_kathy-lien-double-bollinger-trend.md
+strategy_bb_period=20
+strategy_bb_dev_inner=1.0
+strategy_bb_dev_outer=2.0
+strategy_atr_period=14
+strategy_sl_atr_mult=2.0
+strategy_spread_pct_of_stop=15.0

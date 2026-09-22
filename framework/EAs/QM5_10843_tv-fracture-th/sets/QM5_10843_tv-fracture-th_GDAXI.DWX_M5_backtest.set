@@ -1,0 +1,48 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10843
+; ea_slug:      tv-fracture-th
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       GDAXI.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   2564c2fab704a2a02a04bf59f404cbfb108306c67c99cf13b9db4a26893f3808
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=10843
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10843_tv-fracture-th.md
+strategy_ema_fast=4
+strategy_ema_signal=5
+strategy_rsi_period=14
+strategy_ema_mid=21
+strategy_sma_mid=50
+strategy_ema_slow1=55
+strategy_ema_slow2=89
+strategy_ema_baseline=750
+strategy_min_score=5
+strategy_volume_gate_on=true
+strategy_vol_short=5
+strategy_vol_long=20
+strategy_vol_smooth=14
+strategy_vol_threshold=0.90
+strategy_session_london_on=true
+strategy_london_start_hr=10
+strategy_london_end_hr=19
+strategy_session_ny_on=true
+strategy_ny_start_hr=16
+strategy_ny_end_hr=23
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_reward_risk=3.0
+strategy_spread_stop_frac=0.15
+strategy_warmup_bars=750

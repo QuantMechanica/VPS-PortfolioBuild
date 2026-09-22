@@ -1,0 +1,24 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9165
+; ea_slug:      tv-joovier-london-session-breakout
+; ea_version:   v5.0
+; set_version:  s20260920-001
+; symbol:       USDJPY.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   fcd240bc8e40bdca53575fdf81e7ab4b407d6d97bf0ee216db21da75ba785231
+; author:       Development
+; date:         2026-09-20
+;==========================================================
+qm_ea_id=9165
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9165_tv-joovier-london-session-breakout.md
+; card_defaults_status=none_found
