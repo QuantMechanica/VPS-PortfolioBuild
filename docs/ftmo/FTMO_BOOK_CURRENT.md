@@ -83,6 +83,16 @@ Reading: the incumbent is a **slow but breach-safe** book - the failure mode is 
 > FAIL_SOFT). The shadow roster maps 12710→41488 and 20266→41489 as soon as the rebuilt Q08 streams exist. Evidence:
 > `docs/ops/evidence/2026-09-22_oil_symbol_input_rebuilds/README.md`.
 
+> **Shadow downgrade (2026-09-22T04:29:16Z):** the rebuilt identities ran their own Q08 on the governed 2017-2025 window after the promotion-window fix
+> (Codex 5de65240): **QM5_41488 (12710 lineage) = FAIL_SOFT, QM5_41489 (20266 lineage) = FAIL_HARD** (8.2 DSR FAIL, 8.4 losing months
+> 1/10/11/12, 8.6 chopping block PF 0.80 after removing the top 5 % of trades — the edge sits in a few trades). Under the identity
+> doctrine neither rebuild is admissible on its own evidence, and the parent 20266 Q08 PASS is not reproduced by the same rule under the
+> current contract, so the shadow composition D2g6 + 12710 + 20266 is **withdrawn**: `FTMO_BOOK_SHADOW = D2g6` (no admissible addition)
+> with 11708 as the only open candidate (SHADOW_BOOK, resolution −0.0056 under stress). The 2.34 % LCB / −32 bd figures above are kept as
+> history of a composition that is no longer evidence-supported. Next: the news-archive requalification (f50a0bba) re-measures every
+> roster Q10 seal; Track B family B5 (XNGUSD Thursday, two independent scanner leads) is the next shadow candidate source.
+
+
 
 No candidate has a **resolved** positive marginal contribution, so the shadow composition equals the incumbent. Candidate actions under OWNER §F:
 
