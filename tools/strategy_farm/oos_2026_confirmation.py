@@ -13,7 +13,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from tools.strategy_farm import farmctl, q09_news_contract as contract, q09_news_runner as q09
+from tools.strategy_farm import (
+    farmctl,
+    q09_calendar_pin as calendar_pin,
+    q09_news_contract as contract,
+    q09_news_runner as q09,
+)
 try:
     from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
 except ModuleNotFoundError:
@@ -23,8 +28,8 @@ FARM_ROOT = Path(r"D:\QM\strategy_farm")
 REPO_ROOT = Path(r"C:\QM\repo")
 PULSE = Path(r"D:\QM\reports\state\live_book_pulse.json")
 LIVE_EXPERTS = Path(r"C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs")
-CALENDAR_MANIFEST = Path(r"D:\QM\data\news_calendar\q09_bundles\q09cal-20150101-20260809-0bb19b5bb9790b76\manifest.json")
-CALENDAR_COMMON = "QM/q09_news/q09cal-20150101-20260809-0bb19b5bb9790b76/events.csv"
+CALENDAR_MANIFEST = calendar_pin.MANIFEST_PATH
+CALENDAR_COMMON = calendar_pin.COMMON_RELATIVE_PATH
 ARTIFACT_ROOT = Path(r"D:\QM\strategy_farm\artifacts\oos_2026_confirmation_v1")
 FARM_DB = FARM_ROOT / "state" / "farm_state.sqlite"
 FACTORY_MUTATION_LOCK = FARM_ROOT / "state" / "FACTORY_MUTATION.lock"
@@ -349,7 +354,7 @@ def build_one(item: dict[str, Any], rank: int, task_id: str) -> dict[str, Any]:
     source_text, encoding, bom = q09._decode_setfile(item["baseline"].read_bytes())
     updated = q09._replace_set_values(source_text, {
         "RISK_FIXED":"1000", "RISK_PERCENT":"0", "qm_rng_seed":str(SEED),
-        "qm_news_calendar_bundle_id":"q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "qm_news_calendar_bundle_id": calendar_pin.BUNDLE_ID,
         "qm_news_calendar_common_relative_path":CALENDAR_COMMON,
     })
     setfile = root / "cell" / "inputs.set"
@@ -377,7 +382,7 @@ def build_one(item: dict[str, Any], rank: int, task_id: str) -> dict[str, Any]:
                     "work_item_id":wid, "candidate_lineage_key":sha(anchor), "deployment_target":"DXZ",
                     "target_compliance":"DXZ", "source_paths":{"q08_evidence":str(anchor),"baseline_setfile":str(setfile),
                     "ex5":str(item["ex5"]),"include_closure":str(anchor),"calendar_manifest":str(CALENDAR_MANIFEST)},
-                    "identities":identities, "calendar_bundle":{"bundle_id":"q09cal-20150101-20260809-0bb19b5bb9790b76",
+                    "identities":identities, "calendar_bundle":{"bundle_id":calendar_pin.BUNDLE_ID,
                     "manifest_sha256":sha(CALENDAR_MANIFEST),"content_sha256":json.loads(CALENDAR_MANIFEST.read_text())["content_sha256"],
                     "coverage_from_utc":"2015-01-01T00:00:00Z","coverage_to_utc":"2026-08-09T23:59:59Z","common_relative_path":CALENDAR_COMMON},
                     "windows":{"full_from_utc":FROM_UTC,"full_to_utc":TO_UTC,"selection_from_utc":FROM_UTC,
@@ -441,7 +446,9 @@ def enqueue(campaign: dict[str, Any]) -> dict[str, Any]:
         for row in campaign["runs"]:
             if conn.execute("SELECT 1 FROM work_items WHERE id=?",(row["work_item_id"],)).fetchone():
                 existing.append(row["work_item_id"]); continue
-            payload={"window_source":WINDOW_SOURCE,**window,**plan_binding,"diagnostic_non_admission":True,"diagnostic_contract":q09.DIAGNOSTIC_CONTRACT,
+            payload={"window_source":WINDOW_SOURCE,**window,**plan_binding,
+                     "q09_calendar_pin_contract":calendar_pin.payload_binding(),
+                     "diagnostic_non_admission":True,"diagnostic_contract":q09.DIAGNOSTIC_CONTRACT,
                      "diagnostic_single_window":True,"diagnostic_campaign_id":CAMPAIGN_ID,"diagnostic_queue_rank":10000+row["rank"],
                      "host_symbol":row["symbol"],"host_timeframe":row["period"],"risk_fixed":1000.0,"risk_percent":0.0,
                      "staged_ex5_path":row["staged_ex5_path"],"staged_ex5_sha256":row["staged_ex5_sha256"],

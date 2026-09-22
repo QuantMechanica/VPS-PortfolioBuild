@@ -117,6 +117,11 @@ except ModuleNotFoundError:
     )
 
 try:
+    import q09_calendar_pin
+except ModuleNotFoundError:
+    from tools.strategy_farm import q09_calendar_pin
+
+try:
     from q08_recovery_lineage import validate_q08_recovery_lineage
 except ModuleNotFoundError:
     try:
@@ -497,14 +502,10 @@ COMMON_FILES_ROOT = Path(
 )
 Q09_PORTFOLIO_MIN_TRADES = 20
 Q09_NEWS_SUCCESS_VERDICTS = frozenset({"CONFIG_LOCKED"})
-Q09_AUTOPILOT_CALENDAR_BUNDLE_ID = "q09cal-20150101-20260809-0bb19b5bb9790b76"
-Q09_AUTOPILOT_CALENDAR_MANIFEST = (
-    Path(r"D:\QM\data\news_calendar\q09_bundles")
-    / Q09_AUTOPILOT_CALENDAR_BUNDLE_ID
-    / "manifest.json"
-)
+Q09_AUTOPILOT_CALENDAR_BUNDLE_ID = q09_calendar_pin.BUNDLE_ID
+Q09_AUTOPILOT_CALENDAR_MANIFEST = q09_calendar_pin.MANIFEST_PATH
 Q09_AUTOPILOT_CALENDAR_COMMON_RELATIVE_PATH = (
-    f"QM/q09_news/{Q09_AUTOPILOT_CALENDAR_BUNDLE_ID}/events.csv"
+    q09_calendar_pin.COMMON_RELATIVE_PATH
 )
 Q09_AUTOPILOT_INCLUDE_CLOSURE_ROOT = Path(
     r"D:\QM\reports\pipeline\_q09_include_closures"
@@ -19303,6 +19304,7 @@ def _mark_q09_awaiting_sealed_plan(
         "q09_activation_state": Q09_ACTIVATION_AWAITING_PLAN,
         "q09_activation_hold_code": Q09_ACTIVATION_HOLD_CODE,
         "q09_activation_next_action": "create and hash-bind a sealed Q09 run plan",
+        "q09_calendar_pin_contract": q09_calendar_pin.payload_binding(),
     })
     conn.execute(
         "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
