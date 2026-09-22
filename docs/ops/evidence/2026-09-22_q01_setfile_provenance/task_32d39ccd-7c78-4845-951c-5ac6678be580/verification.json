@@ -1,0 +1,126 @@
+{
+  "schema": "qm.q01-setfile-provenance-review/v1",
+  "task_id": "32d39ccd-7c78-4845-951c-5ac6678be580",
+  "disposition": "REVIEW_READY_NOT_APPLIED",
+  "canonical_base_commit": "77370ea61eced6d3b3be991242499017f908c470",
+  "implementation_commits": {
+    "agent_task_admission": "13a96a618e",
+    "setfile_provenance": "0f5a5b7f8d"
+  },
+  "verification": {
+    "focused_tests": "43 passed",
+    "cascade_tests": "25 passed, 42 deselected, 6 subtests passed",
+    "py_compile": "PASS",
+    "public_cli_dry_runs_authenticated": 6,
+    "q01_rows_created": 0,
+    "setfile_binding_receipts_created": 0
+  },
+  "dry_run_contract": {
+    "from_date": "2019.01.01",
+    "to_date": "2019.12.31",
+    "binding_mode": "historical_pre_stamp_exact_transition",
+    "transition_mode": "authenticated_ex5_hash_restamp",
+    "historical_compile_evidence_rewritten": false
+  },
+  "candidates": [
+    {
+      "ea_id": "QM5_9241",
+      "symbol": "EURUSD.DWX",
+      "build_task_id": "d00d7571-74f4-45ea-b652-57fa439f7bd9",
+      "compile_work_item_id": "b3482782-4fef-47ef-b7d0-34bb05b6c70b",
+      "compile_evidence_sha256": "a49d82315c76fb90960767bebb0304a88546311ed59c3c8f59c0829dcfd4fce7",
+      "mq5_sha256": "e84883844a12834263429e91121e7af9bca984eb66f24c33aec87421c753510a",
+      "ex5_sha256": "1190ae3dae45cd4d14ff987c47da127620c1dc4a55adbfd2e598576708de8855",
+      "generated_setfile_sha256": "2102ba763f36a50e342b3c716f97a8a519a3850dbaf46fe68c8d403773cb52a9",
+      "final_setfile_sha256": "c928b7a38ba393af2980d97cedf0be8b900f553f7b6366cdc3ad74544925a9e3",
+      "planned_work_item_id": "e5362d7a-328b-5088-9e60-22fa1f7a923a",
+      "planned_setfile_binding_receipt_sha256": "3c64ca7d0fd161586b30a4e2d064640748c2d8ed8b33f1a4f2bf25d9cb8ec92b",
+      "authenticated": true,
+      "work_item_exists": false
+    },
+    {
+      "ea_id": "QM5_20078",
+      "symbol": "EURUSD.DWX",
+      "build_task_id": "751d8eb5-d9de-4cfe-85c6-27468c409078",
+      "compile_work_item_id": "17501e85-c8d5-4379-a8f8-95f73a284626",
+      "compile_evidence_sha256": "b38f52fae074b4361c7c9dd9081723b479c250238528f2693b8aed900247912f",
+      "mq5_sha256": "6a902810b1ae3a3aa29391d74f66b872f8aa0cc688afae7d8088d9304103774d",
+      "ex5_sha256": "afffb5b4a4347fbdb391babdd93940b42b062570de84b2d17ca5effb7eb30c68",
+      "generated_setfile_sha256": "8aabd810f3e8545c32f6dd3a5463c404c4fc90ed7e19bc69eb35d60464346b73",
+      "final_setfile_sha256": "ee5cb07c842b824bd9ed2f0486cb1201ae3bb72a1e74276c37f979ac97a51d53",
+      "planned_work_item_id": "559f8a74-8599-5f81-8949-fa55b6bf467c",
+      "planned_setfile_binding_receipt_sha256": "438aa086332eb5a09be81436496a4836277aaf96164b63c584389881f39013b5",
+      "authenticated": true,
+      "work_item_exists": false
+    },
+    {
+      "ea_id": "QM5_36001",
+      "symbol": "EURUSD.DWX",
+      "build_task_id": "3c1da904-b03a-40d5-a1b3-c23e9ffad4b8",
+      "compile_work_item_id": "00c3153c-2e36-4da3-80d7-d8b0a3bdc487",
+      "compile_evidence_sha256": "9948d35bc373c8136468af86b54eb1722a58d9a3f9f65cd42ceb84381a993bc8",
+      "mq5_sha256": "3a77cdff99a14dd0579b088d05a2c9d3bd896ad663f6fd48534463e1b28521da",
+      "ex5_sha256": "f5548d620507be411fd4f205258541c5f9a7d525c3689565fd46f7c7b52eba6c",
+      "generated_setfile_sha256": "e7ef0ce8059b0ec256edbcb3e5e0708f51b2206b6730cb03b1be297defdf0f13",
+      "final_setfile_sha256": "58ab48612b62c31a488c52a46c21e60fb5df11b3c2c4258f56b42dd9aa27d5a4",
+      "planned_work_item_id": "fc2cb735-2fbc-528d-91e9-dcda1ea7a3d1",
+      "planned_setfile_binding_receipt_sha256": "431e891fc6ee22351243436e0b0478062c308e7e87d428c8f2aba58212ec3027",
+      "authenticated": true,
+      "work_item_exists": false
+    },
+    {
+      "ea_id": "QM5_36003",
+      "symbol": "EURUSD.DWX",
+      "build_task_id": "019d50ff-a716-46a4-b097-c5c650dea63b",
+      "compile_work_item_id": "1c80b184-1f62-4b93-a737-48ef26f0f13b",
+      "compile_evidence_sha256": "8f6692193e8ad4732ff92a721efe67616a9620fb44422df023c721d31ede3abc",
+      "mq5_sha256": "df2e5bccf65e5332ccb5a3a1ed16bfbc1ab4c5388002e42f28b132f3b69b139c",
+      "ex5_sha256": "77af06ab633af7ea72af9f528edb60fb489372accae657f700b92cdf9a81d815",
+      "generated_setfile_sha256": "a7b196e3847d26191dc6985c5a8d325972c62fe3b6a470e30b7cb62a66f4b7f5",
+      "final_setfile_sha256": "b4069ee075a84d9852cae05453f34c23c979bda82ead4ceb3d85812e2516936b",
+      "planned_work_item_id": "d80e8f0d-2dc0-5143-b67c-9135f3155bbf",
+      "planned_setfile_binding_receipt_sha256": "e5e9f29127d5d7b3028eced3ad4c73f3b07c300372b53df5fefb2769218183b0",
+      "authenticated": true,
+      "work_item_exists": false
+    },
+    {
+      "ea_id": "QM5_36004",
+      "symbol": "EURUSD.DWX",
+      "build_task_id": "22225e01-3ed6-4a1f-8fca-b55655117d01",
+      "compile_work_item_id": "467f5ea4-05b8-4a90-bb74-c02ae633b5d1",
+      "compile_evidence_sha256": "4e4167b1c8865c68069b0aed52880e82ca4351be4b5e6ff0b98de92a92f41ddb",
+      "mq5_sha256": "8b292c0e88e6f3b509775bb94e4f2ed677da4639275f1ab529e07db4eb88abf8",
+      "ex5_sha256": "c23fc4d06229fa172b95f779a6ddc961cc977791b2a91582b2d99808c80a21d7",
+      "generated_setfile_sha256": "6d39a110aae41b8e5ca0ccaff40b8f6aff108753c4ff7f05faedc8fae6a5650e",
+      "final_setfile_sha256": "b0096987602c800ab1cdbc4c8a5a79f108c1af09dfeee6002cf521137e3ae658",
+      "planned_work_item_id": "6379fe26-dacd-559c-846e-e9fdec61c4cd",
+      "planned_setfile_binding_receipt_sha256": "75de5322026eef729eeba67705e31b14cd76bbca056f250b621134cb21ba6046",
+      "authenticated": true,
+      "work_item_exists": false
+    },
+    {
+      "ea_id": "QM5_36008",
+      "symbol": "XAUUSD.DWX",
+      "build_task_id": "bab6e8bf-435d-4da2-a25f-1e651cb33960",
+      "compile_work_item_id": "34293ad6-271c-4348-a509-5d8e1884f4f2",
+      "compile_evidence_sha256": "0b64f03f6c7c4dbdcffb860948260f4ef39d640f3cd9072520255ca502fe6766",
+      "mq5_sha256": "54a9d8c51c90fb6f50c3547fdc83a36fde5dd6468105539fe99c5665d9003783",
+      "ex5_sha256": "46701c2e2eb3f48bcbd1a188ca99e4fad4767dc5b24a1105f21e3b58bde0b423",
+      "generated_setfile_sha256": "bb9bffce1c6f6a963fae79dcd84298ff9a71223bf01eba7d1c93aa59003c7b6c",
+      "final_setfile_sha256": "690e06d9833d5d9f9f3600d288ee0363c7f8838f30b72c75925bb38494ad30ea",
+      "planned_work_item_id": "876fa41e-c39d-55b6-a324-2bb121b66278",
+      "planned_setfile_binding_receipt_sha256": "04f69f7510376bff0aafc33091f7efe93b7c537769027be71787638e9cc07e97",
+      "authenticated": true,
+      "work_item_exists": false
+    }
+  ],
+  "preserved_q02": {
+    "work_item_id": "18865d7c-baba-43d3-8327-2ffc2896a1f3",
+    "ea_id": "QM5_36008",
+    "symbol": "XAUUSD.DWX",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "payload_sha256": "5d9c29549b0c66d66e4c0952a3c5d99e14bbd04d16fe891f823d72f358f1aa9c"
+  }
+}
