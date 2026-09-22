@@ -383,9 +383,14 @@ Cycle:
    DO NOT run `agent_router.py run`, `route-many`, `route-once`, or `replenish`.
    You consume work the router assigned to you; you never route. The router is its own scheduled task
    (QM_StrategyFarm_AgentRouter_5min) which always executes the canonical
-   checkout C:/QM/repo. Your task workspace may be a worktree that is months
-   behind, but every control-plane command above uses the absolute canonical
-   script path. On 2026-08-22 an agent ran `run`/`route-many` from a checkout 12,210
+   checkout C:/QM/repo. Every control-plane command above uses the absolute canonical
+   script path. EDIT AND COMMIT ONLY INSIDE YOUR OWN WORKING DIRECTORY (the launcher
+   placed it at the canonical HEAD; if it is behind, fast-forward it first). NEVER
+   modify, patch or write files under C:/QM/repo: the live factory workers import
+   farmctl.py / compile_work_items.py from that checkout at run time, and a half-applied
+   edit there broke a governed enqueue with a SyntaxError on 2026-09-22T02:38Z. Read
+   from C:/QM/repo is fine; writes there are a resource collision, not delivery.
+   On 2026-08-22 an agent ran `run`/`route-many` from a checkout 12,210
    commits stale, whose router had neither the human-lane hold nor the registry
    writer gate, and it assigned an OWNER-only video ticket to a lane that cannot
    watch videos. A guard only exists in the code that runs it - so routing runs
