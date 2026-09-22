@@ -1,0 +1,1181 @@
+{
+  "applied_count": 0,
+  "backup": {
+    "cap_receipt": null,
+    "identity": {
+      "schema_version": 1404071,
+      "source_mtime_ns": 1790046036872386300,
+      "source_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "source_size": 1369845760,
+      "source_wal_size": 1582112
+    },
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_q08_promotion_repair_20260922T031737Z_2668abee.sqlite",
+    "reused": true,
+    "reused_from_sidecar": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_q08_promotion_repair_20260922T031737Z_2668abee.sqlite.identity.json",
+    "sha256": "691d7a98f0f4c6cfbbd343b04f48c217b2f1efd9cae7a516397ad7f2442909bd"
+  },
+  "candidate_count": 47,
+  "evidence_paths_edited": 0,
+  "held": [
+    {
+      "before_payload_sha256": "15103dd7012645a92efef19276acae25ddbe7020cefe0d4ab370f2f8a8fb5004",
+      "detail": {
+        "ea_id": "QM5_1567",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": null,
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": null,
+        "source_setfile_identity_error": {
+          "bindings": {
+            "artifact_identity": "2155958dbe60178bdc5dc5563d7457066908f23f9a5a1593fe09a547261478f2",
+            "column": "2155958dbe60178bdc5dc5563d7457066908f23f9a5a1593fe09a547261478f2",
+            "expected_setfile_sha256": "2e9347a132ed89218a293d03e1b6eb10abce2a74bec50190aa4c6039754fba58"
+          },
+          "reason": "source_setfile_sha256_conflict"
+        }
+      },
+      "ea_id": "QM5_1567",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "ceebbe72-4556-4fdb-8f4e-bb623ae22b41",
+      "reason": "identity_binding_refused",
+      "symbol": "EURUSD.DWX",
+      "work_item_id": "0c063694-2f89-4304-80c5-79a9d190f06a"
+    },
+    {
+      "before_payload_sha256": "3e2cc8115e267e0aae1925a7f2a6cc863ca1c2edd9db274301df0465ffee4790",
+      "detail": {
+        "compile_work_item_id": "1af3e3ce-ac8b-453e-89d6-c4c077c7971b",
+        "reason": "q08_compile_include_closure_unbound"
+      },
+      "ea_id": "QM5_41450",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "c5c82877-ad84-4c39-a700-0742e55eaea1",
+      "reason": "identity_binding_refused",
+      "symbol": "QM5_41450_XAU_XAG_NR2_BODY_RV_D1",
+      "work_item_id": "14b8d3fc-7b7f-4c41-8f57-fe636f442d08"
+    }
+  ],
+  "held_count": 2,
+  "raced": [
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "0e3f3359-d8ee-4b1c-83ac-58ef97a41848"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+      "reason": "active_hold_conflict",
+      "work_item_id": "fda2f049-a7cf-485d-ab07-0439d2487696"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CANDIDATE_WINDOW_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "63d4ce1d-6d4c-4c49-adc4-98ae67aa7c27"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "MONITOR_BUDGET_REVIEW_REQUIRED",
+      "reason": "active_hold_conflict",
+      "work_item_id": "5901ae3b-8725-4126-841e-d2dcec30184b"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "c8d8c2c7-7287-41d8-98ab-57606bec09f5"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "169d5dda-f119-4f87-8c06-c9623733265c"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "7aaf7760-476c-4599-be92-4dae0a50c6df"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "BOOK_V2_STREAM_RECOVERED_RERUN_NOT_NEEDED",
+      "reason": "active_hold_conflict",
+      "work_item_id": "1983778f-f72b-4850-80f0-eb906123ef81"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "BOOK_V2_STREAM_RECOVERED_RERUN_NOT_NEEDED",
+      "reason": "active_hold_conflict",
+      "work_item_id": "d1077e5d-7ee4-4382-ab61-65a99d643c94"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "BOOK_V2_STREAM_RECOVERED_RERUN_NOT_NEEDED",
+      "reason": "active_hold_conflict",
+      "work_item_id": "10e932f5-b367-4d8a-9f62-c46d8df8ad1a"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "BOOK_V2_STREAM_RECOVERED_RERUN_NOT_NEEDED",
+      "reason": "active_hold_conflict",
+      "work_item_id": "ab0f13fc-853a-46cb-894f-a141e3b6c222"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "BOOK_V2_STREAM_RECOVERED_RERUN_NOT_NEEDED",
+      "reason": "active_hold_conflict",
+      "work_item_id": "7929be53-e4a3-4147-84ca-d5f44196a426"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "BOOK_V2_STREAM_RECOVERED_RERUN_NOT_NEEDED",
+      "reason": "active_hold_conflict",
+      "work_item_id": "08cb518a-acf4-4993-9793-a264f3403c50"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "BOOK_V2_STREAM_RECOVERED_RERUN_NOT_NEEDED",
+      "reason": "active_hold_conflict",
+      "work_item_id": "94fd38df-198c-47ca-830e-42d856c1bc0f"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "5c8271e0-9bd3-4210-82b3-8a5bbfe1ed85"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "249c556b-feca-4c32-9f45-cb858fe53c3b"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "ce8f0416-55ac-4a91-b963-ea30f54984a4"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "fc6ceb1d-e73a-4639-9ec6-89a85261721a"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "f762cbe6-8b8d-4181-ad42-83799c242040"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "bc7d5af7-04c9-403f-95ca-534f48a73866"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "75af8ef0-cc4b-4e3d-a600-c559fdf8d553"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "676b23b9-6cd1-4eb3-8b1a-0ff526f71df8"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "4aa9b74b-d52d-4147-b42f-c0cef4fa09d1"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "962d1a67-62bd-4722-9052-68f9e799b8ce"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "235bf9ad-9d07-4f80-944d-18d956240ae2"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "4300c5ad-ad70-449b-9952-bfd9444ebf99"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "a17469d0-649f-4614-ad83-711c2b809114"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "MONITOR_BUDGET_REVIEW_REQUIRED",
+      "reason": "active_hold_conflict",
+      "work_item_id": "6a060ccb-1130-48dd-9507-064cf05963e9"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "MONITOR_BUDGET_REVIEW_REQUIRED",
+      "reason": "active_hold_conflict",
+      "work_item_id": "f74cea03-d310-43ee-9e32-6bbdd81c2b76"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "ba75c59a-e638-425f-a9ad-e06493db0a9c"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "443ad2eb-6a9e-4046-80c4-0468b16dcea8"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "fba34963-564b-4169-b241-1c4156110b98"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "601a9fa9-211c-4a0c-acd3-93c188e7dc9a"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+      "reason": "active_hold_conflict",
+      "work_item_id": "c297063b-2483-4cf0-baba-f4696fd3463d"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+      "reason": "active_hold_conflict",
+      "work_item_id": "47bea32e-976a-4ede-9246-8498e0f4c0d9"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+      "reason": "active_hold_conflict",
+      "work_item_id": "2d3da3de-6169-4d41-861f-99035151b187"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+      "reason": "active_hold_conflict",
+      "work_item_id": "bdba95f1-9aed-4f2b-af7e-c0cf60407aa5"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+      "reason": "active_hold_conflict",
+      "work_item_id": "2276786b-2a89-4f28-a2ed-ac5dd1b857cb"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+      "reason": "active_hold_conflict",
+      "work_item_id": "0031f42d-65be-4c1d-ae45-bbaa67c071ca"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+      "reason": "active_hold_conflict",
+      "work_item_id": "3b320089-5553-486e-b824-5c7d1405886d"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+      "reason": "active_hold_conflict",
+      "work_item_id": "dfb2f622-b7c0-4da3-a8ac-17825dde0cf9"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "SETFILE_EMPTY_STRATEGY_PARAMS",
+      "reason": "active_hold_conflict",
+      "work_item_id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+      "reason": "active_hold_conflict",
+      "work_item_id": "74718ef2-2e3c-4432-8f3b-07115b6ba632"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+      "reason": "active_hold_conflict",
+      "work_item_id": "f3132f22-11a8-48e4-8b11-39b4fcfc4e59"
+    },
+    {
+      "action": "q08_promotion_binding_refusal_held",
+      "existing_hold_code": "VELOCITY_LINEAGE_RETIRED_20260920",
+      "reason": "active_hold_conflict",
+      "work_item_id": "1311d1e9-84d2-45e6-bf04-ea26b18a8bba"
+    }
+  ],
+  "raced_count": 45,
+  "reason": "Bind pending promoted Q08 rows to authenticated current artifacts and the governed Q08 execution window",
+  "recorded_at": "2026-09-22T03:19:09+00:00",
+  "recorded_by": "q08_promotion_repair.py",
+  "refused": [
+    {
+      "before_payload_sha256": "993d966547c517e3d5daf4002ac1f753a4e82356a209c8ae19acd858d2c5e286",
+      "detail": {
+        "ea_id": "QM5_1328",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": {
+          "reason": "source_ex5_sha256_missing"
+        },
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": {
+          "reason": "source_mq5_sha256_missing"
+        },
+        "source_setfile_identity_error": {
+          "reason": "source_setfile_sha256_missing"
+        }
+      },
+      "ea_id": "QM5_1328",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "78871829-3a59-48df-ab7b-17d049f26221",
+      "reason": "identity_binding_refused",
+      "symbol": "USDCAD.DWX",
+      "work_item_id": "0e3f3359-d8ee-4b1c-83ac-58ef97a41848"
+    },
+    {
+      "before_payload_sha256": "0312600c90c733fc14303b0e0bd9d54244fe8e51a3af69babf3ed56b78b1fa14",
+      "detail": {
+        "ea_id": "QM5_1206",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": null,
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": {
+          "reason": "source_mq5_sha256_missing"
+        },
+        "source_setfile_identity_error": {
+          "reason": "source_setfile_sha256_missing"
+        }
+      },
+      "ea_id": "QM5_1206",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "c66474ef-ade3-46c1-b65c-fc5163277ae5",
+      "reason": "identity_binding_refused",
+      "symbol": "SP500.DWX",
+      "work_item_id": "fda2f049-a7cf-485d-ab07-0439d2487696"
+    },
+    {
+      "before_payload_sha256": "8174c5f5a9a0004840be9c92a4c7798eb8d090853908a9d8361244b672a1cf58",
+      "detail": {
+        "ea_id": "QM5_1230",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": {
+          "reason": "source_ex5_sha256_missing"
+        },
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": {
+          "reason": "source_mq5_sha256_missing"
+        },
+        "source_setfile_identity_error": {
+          "reason": "source_setfile_sha256_missing"
+        }
+      },
+      "ea_id": "QM5_1230",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "9784decf-3cf1-433c-8274-20053411af3e",
+      "reason": "identity_binding_refused",
+      "symbol": "AUDJPY.DWX",
+      "work_item_id": "63d4ce1d-6d4c-4c49-adc4-98ae67aa7c27"
+    },
+    {
+      "before_payload_sha256": "c2cbcabce69fe886ebad3b27d75e9737728c3bf43ab9b1d0efbcb1c5ee146dfa",
+      "detail": {
+        "ea_id": "QM5_10287",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": {
+          "reason": "source_ex5_sha256_missing"
+        },
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": {
+          "reason": "source_mq5_sha256_missing"
+        },
+        "source_setfile_identity_error": {
+          "reason": "source_setfile_sha256_missing"
+        }
+      },
+      "ea_id": "QM5_10287",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "89ff6993-4a49-4d6a-9df3-9f669c0cea90",
+      "reason": "identity_binding_refused",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "5901ae3b-8725-4126-841e-d2dcec30184b"
+    },
+    {
+      "before_payload_sha256": "2128d5c00955f5882ffa9e466c05b99521f0ab448105f13ee96dea57cb948a63",
+      "detail": {
+        "ea_id": "QM5_10848",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": null,
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": {
+          "reason": "source_mq5_sha256_missing"
+        },
+        "source_setfile_identity_error": {
+          "reason": "source_setfile_sha256_missing"
+        }
+      },
+      "ea_id": "QM5_10848",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "923997c7-067d-49f8-ad15-f15bb628519f",
+      "reason": "identity_binding_refused",
+      "symbol": "GDAXI.DWX",
+      "work_item_id": "c8d8c2c7-7287-41d8-98ab-57606bec09f5"
+    },
+    {
+      "before_payload_sha256": "37005f53b31e05f62b38403c1ad733d0014487ae8227a37de16be5094c081406",
+      "detail": {
+        "ea_id": "QM5_11132",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": {
+          "reason": "source_ex5_sha256_missing"
+        },
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": {
+          "reason": "source_mq5_sha256_missing"
+        },
+        "source_setfile_identity_error": {
+          "reason": "source_setfile_sha256_missing"
+        }
+      },
+      "ea_id": "QM5_11132",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "9275f769-2c6d-4cfd-a598-40cf68921c0d",
+      "reason": "identity_binding_refused",
+      "symbol": "NDX.DWX",
+      "work_item_id": "169d5dda-f119-4f87-8c06-c9623733265c"
+    },
+    {
+      "before_payload_sha256": "278717ef14e36e14530085b3ab27b96ed9bdd0757e62c63d2adce115b9f60d8e",
+      "detail": {
+        "ea_id": "QM5_9573",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": null,
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": {
+          "reason": "source_mq5_sha256_missing"
+        },
+        "source_setfile_identity_error": {
+          "reason": "source_setfile_sha256_missing"
+        }
+      },
+      "ea_id": "QM5_9573",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "0598961b-124c-447a-b611-038aa50e1bdc",
+      "reason": "identity_binding_refused",
+      "symbol": "NDX.DWX",
+      "work_item_id": "7aaf7760-476c-4599-be92-4dae0a50c6df"
+    },
+    {
+      "before_payload_sha256": "956142d9705c315b9a5e3afbd2fbf9580e337f142c334e35b841e9287c1e7207",
+      "detail": {
+        "ea_id": "QM5_10145",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": null,
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": null,
+        "source_setfile_identity_error": {
+          "bindings": {
+            "artifact_identity": "4d4e8f0f2c9e9bc5d9cbf12b7b7396e207c2aa778a374eb437d088cdd992a904",
+            "column": "4d4e8f0f2c9e9bc5d9cbf12b7b7396e207c2aa778a374eb437d088cdd992a904",
+            "expected_setfile_sha256": "9a8b6573cec9991f167aa0710e6977c16800150568cdb491e184c1d41f1ccb35"
+          },
+          "reason": "source_setfile_sha256_conflict"
+        }
+      },
+      "ea_id": "QM5_10145",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "00f84670-6610-4d41-bf32-bb28825f7516",
+      "reason": "identity_binding_refused",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "1983778f-f72b-4850-80f0-eb906123ef81"
+    },
+    {
+      "before_payload_sha256": "e79f503af39d42f9ad94e5451c852a91c690b49fce451ce066799af2016564cf",
+      "detail": {
+        "current_mq5_sha256": "65d4c206ad9d6ad2c8230a309714d1a900a1bc707b54dc96bc4e7fb107b8bae5",
+        "predecessor_mq5_sha256": "b38cfd471fd31811bb23a5447c430cc1bfcc1f370eb816236c99bb88be55d251",
+        "reason": "q08_predecessor_mq5_identity_mismatch"
+      },
+      "ea_id": "QM5_10403",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "831c9521-ce8c-4cd7-983e-b53b5c15cd69",
+      "reason": "identity_binding_refused",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "d1077e5d-7ee4-4382-ab61-65a99d643c94"
+    },
+    {
+      "before_payload_sha256": "3a49891c6a925e8459ed005d1c4a306b70aa5eaab76da00878df3b3b43cd53e4",
+      "detail": {
+        "ea_id": "QM5_10513",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": null,
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": null,
+        "source_setfile_identity_error": {
+          "bindings": {
+            "artifact_identity": "7b1c50f2d84084faebb539ee7e0794d882fb92255dee3a767efb9550becc55e4",
+            "column": "7b1c50f2d84084faebb539ee7e0794d882fb92255dee3a767efb9550becc55e4",
+            "expected_setfile_sha256": "4810a3486b6d6cd82931e6ba030d54b7406156a3f4b3d88540867c386edf7ac7"
+          },
+          "reason": "source_setfile_sha256_conflict"
+        }
+      },
+      "ea_id": "QM5_10513",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "ec0344ec-c74b-4859-afde-5495af712af3",
+      "reason": "identity_binding_refused",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "10e932f5-b367-4d8a-9f62-c46d8df8ad1a"
+    },
+    {
+      "before_payload_sha256": "b40ffdd434caaae67df601e7e24bf8cf0864f500715bd292219f4a1eb6e30d56",
+      "detail": {
+        "ea_id": "QM5_11660",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": null,
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": {
+          "reason": "source_mq5_sha256_missing"
+        },
+        "source_setfile_identity_error": {
+          "reason": "source_setfile_sha256_missing"
+        }
+      },
+      "ea_id": "QM5_11660",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "7adec7fb-dd7f-4fbe-93c9-c570001094af",
+      "reason": "identity_binding_refused",
+      "symbol": "NDX.DWX",
+      "work_item_id": "ab0f13fc-853a-46cb-894f-a141e3b6c222"
+    },
+    {
+      "before_payload_sha256": "acffec7b226cd31a05d41082281d4ac96e70e1d36c27df127616a88ffbf16743",
+      "detail": {
+        "ea_id": "QM5_12849",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": null,
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": {
+          "reason": "source_mq5_sha256_missing"
+        },
+        "source_setfile_identity_error": {
+          "reason": "source_setfile_sha256_missing"
+        }
+      },
+      "ea_id": "QM5_12849",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "164ace95-2f47-4d6f-98e0-5346d9ca514e",
+      "reason": "identity_binding_refused",
+      "symbol": "XTIUSD.DWX",
+      "work_item_id": "7929be53-e4a3-4147-84ca-d5f44196a426"
+    },
+    {
+      "before_payload_sha256": "8f6aa68fa65fd4c9ea37a16a8790e56f5827cccda83cd6bc3a418cd69d70db3b",
+      "detail": {
+        "ea_id": "QM5_12855",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": null,
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": {
+          "reason": "source_mq5_sha256_missing"
+        },
+        "source_setfile_identity_error": {
+          "reason": "source_setfile_sha256_missing"
+        }
+      },
+      "ea_id": "QM5_12855",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "efcc9665-7d2c-4bb6-a5bc-dd7b039ba7c8",
+      "reason": "identity_binding_refused",
+      "symbol": "XTIUSD.DWX",
+      "work_item_id": "08cb518a-acf4-4993-9793-a264f3403c50"
+    },
+    {
+      "before_payload_sha256": "e51a1e43edf0af9234a917c2f884ec91a97d4a78da036471589ae4b0a00fd964",
+      "detail": {
+        "ea_id": "QM5_9641",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": null,
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": {
+          "reason": "source_mq5_sha256_missing"
+        },
+        "source_setfile_identity_error": {
+          "reason": "source_setfile_sha256_missing"
+        }
+      },
+      "ea_id": "QM5_9641",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "83a26d73-ee4b-4ce7-b441-8163ffc3f60c",
+      "reason": "identity_binding_refused",
+      "symbol": "WS30.DWX",
+      "work_item_id": "94fd38df-198c-47ca-830e-42d856c1bc0f"
+    },
+    {
+      "before_payload_sha256": "15ad3c0778e9ad1310704efb5c152c55f96c4de4937c56c470940d778f2eba41",
+      "detail": {
+        "compile_work_item_id": "fa0d5533-61ad-468f-9c52-7598d42e1ae5",
+        "reason": "q08_compile_include_closure_unbound"
+      },
+      "ea_id": "QM5_41474",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "eeb0f5bf-cfec-4968-9289-a1d72d743619",
+      "reason": "identity_binding_refused",
+      "symbol": "XAGUSD.DWX",
+      "work_item_id": "5c8271e0-9bd3-4210-82b3-8a5bbfe1ed85"
+    },
+    {
+      "before_payload_sha256": "aff59e8411d64f7dd114bc5174e059483ed0bae41f51f0659fda00873c5cc262",
+      "detail": {
+        "compile_work_item_id": "1bd628b0-8253-48ff-9f38-e6608f3b5cd2",
+        "reason": "q08_compile_include_closure_unbound"
+      },
+      "ea_id": "QM5_41473",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "eb58c949-28c3-4518-8917-79f20019477b",
+      "reason": "identity_binding_refused",
+      "symbol": "XTIUSD.DWX",
+      "work_item_id": "249c556b-feca-4c32-9f45-cb858fe53c3b"
+    },
+    {
+      "before_payload_sha256": "e8788d89dd6f06bf3cdbff113d623c82bda9f2f20bd30bd7a23e5b4eb4bdfd9e",
+      "detail": {
+        "current_setfile_sha256": "181a51d5b344856b58feca0631fa544f73ef67ef865b35aa7d6b69a7b87a9675",
+        "predecessor_setfile_sha256": "f9676d40a7acc16c4ea918354880bfeac65d1bdb11e488db8f7712646a376a14",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_10932",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "834c9492-763b-469e-9ff6-60613f966ae5",
+      "reason": "identity_binding_refused",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "ce8f0416-55ac-4a91-b963-ea30f54984a4"
+    },
+    {
+      "before_payload_sha256": "6e1e58e11ddcfa23f46cc83df87e122e24d7372d248302031b741f85832b7960",
+      "detail": {
+        "compile_work_item_id": "f478f59e-ff3a-4ff1-9e99-f67e94ace4f1",
+        "reason": "q08_compile_include_closure_unbound"
+      },
+      "ea_id": "QM5_41472",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "3ffb59e1-28d6-4d73-9f29-76603ef0c5b8",
+      "reason": "identity_binding_refused",
+      "symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+      "work_item_id": "fc6ceb1d-e73a-4639-9ec6-89a85261721a"
+    },
+    {
+      "before_payload_sha256": "057b0cb78f9f295a9cbf36a74fc8e72dcd00e5f269843ebc75a84efa1747105e",
+      "detail": {
+        "current_setfile_sha256": "c06f458aca037f5e4d34d4e9d95225093ac624557ae751cacfc39774eaa183cd",
+        "predecessor_setfile_sha256": "a363954b1b5b8c7f6cf08ecdae8c3486f4d73dd0955dc53e501dca59a83c53f3",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_10037",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "0bd38739-c0ed-41d1-bd98-2607dd8cf4ba",
+      "reason": "identity_binding_refused",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "f762cbe6-8b8d-4181-ad42-83799c242040"
+    },
+    {
+      "before_payload_sha256": "fcee44e9e8cfbfb782579dbf32201ccf8844e8b734a727c798bb2e369bb6503a",
+      "detail": {
+        "compile_work_item_id": "624dde76-cafe-4932-b108-712bbe5bb89d",
+        "reason": "q08_compile_include_closure_unbound"
+      },
+      "ea_id": "QM5_41470",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "28aa698a-c88f-41ad-ba0e-ab8f23550e96",
+      "reason": "identity_binding_refused",
+      "symbol": "USDJPY.DWX",
+      "work_item_id": "bc7d5af7-04c9-403f-95ca-534f48a73866"
+    },
+    {
+      "before_payload_sha256": "212ba4b06550fcadac5aec2ac202de497efb2517ad5e7a349d262550bd87e2e3",
+      "detail": {
+        "current_setfile_sha256": "4d875a25d9563cbe412921b0bfb8ff0e8596841e7cff3ffc98b4ab51acd364e9",
+        "predecessor_setfile_sha256": "5b332cb6c2ed0d5672b1d928ccca0da788bcc1dd0b4711f0dbcf369fe5b68856",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_10122",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "d93be636-3898-4401-a752-c5bdde5fa307",
+      "reason": "identity_binding_refused",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "75af8ef0-cc4b-4e3d-a600-c559fdf8d553"
+    },
+    {
+      "before_payload_sha256": "3d5813ff7425d9f1c0640c81744a87eb7eb2a839620e6bf8e8d417aed24be9d1",
+      "detail": {
+        "current_setfile_sha256": "45e8b7e01c3d62b2c22f37c4e0c53af7efe4a3357461789ec8282261a613fadc",
+        "predecessor_setfile_sha256": "9a6e80f4049c6307f5cd21a8eb2b6eed5106373f012094bf1a44af314f17bffc",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_12358",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "e4be5458-9d45-49da-85be-39b4ef30c1b2",
+      "reason": "identity_binding_refused",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "676b23b9-6cd1-4eb3-8b1a-0ff526f71df8"
+    },
+    {
+      "before_payload_sha256": "4608f28a7bfa12f394edb1409a50f100e1862045b03a9c293c118da364e2a95c",
+      "detail": {
+        "current_setfile_sha256": "ed0a04bae397f19718a6b04a2e4aabf0b7e65906d1ad90de6b3ee8996c064977",
+        "predecessor_setfile_sha256": "4a8b6bbcb1cf6539e680c52a7971901e39a6aa5212dc2d6ec47375db66d00ab6",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_12366",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "67d04308-8d52-4803-af00-85a44e9fa937",
+      "reason": "identity_binding_refused",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "4aa9b74b-d52d-4147-b42f-c0cef4fa09d1"
+    },
+    {
+      "before_payload_sha256": "04742253324ea68cfe429273faa8c59e615d31fc8766905004d927864c85c739",
+      "detail": {
+        "current_setfile_sha256": "b1752be75c7163b4810b239f50ae41e047a07f6c00ac024ebe744e39e9f797fc",
+        "predecessor_setfile_sha256": "e78a4f2247c661b08237a55057968c89a86d7031b00d4a44c8f3eb8c989fca6e",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_12549",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "6fbc8bde-c490-44e8-8bd3-662413aa7d7e",
+      "reason": "identity_binding_refused",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "962d1a67-62bd-4722-9052-68f9e799b8ce"
+    },
+    {
+      "before_payload_sha256": "e5742bd16ea812df4110d66e4aab5fdc1cc339777ad399fb274125413dc640e5",
+      "detail": {
+        "current_setfile_sha256": "267aad2f39fab0973898cb4ef49b181aca34997148f53cbe59cdcb40db8a9e39",
+        "predecessor_setfile_sha256": "47f82e65bd12d450f7ab86038da3658e7baf4db0d7141cd4145cc39fada33d7f",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_1615",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "0b76d4ca-4a3f-46dd-99f7-6c28b07ad7d6",
+      "reason": "identity_binding_refused",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "235bf9ad-9d07-4f80-944d-18d956240ae2"
+    },
+    {
+      "before_payload_sha256": "bef0fe5282467e5258713a6deb25834e6eccc32879a29703f0108253e79ac79b",
+      "detail": {
+        "current_setfile_sha256": "6f5b452cdd16aa6e7beb01a51bdbd05294c541ab226f47a8318371bb182ab19e",
+        "predecessor_setfile_sha256": "82dc9813d527b856895f89a20488d4958c5cad2c89e7b056fe589c30c7182d2d",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_10134",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "e48b7bfe-6202-46d9-8e7f-7cb22f222aba",
+      "reason": "identity_binding_refused",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "4300c5ad-ad70-449b-9952-bfd9444ebf99"
+    },
+    {
+      "before_payload_sha256": "a8a0e48e976d36557af00d5df8f39b7207c6bb45baba7709fc958ced0c5b34da",
+      "detail": {
+        "ea_id": "QM5_12712",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": {
+          "reason": "source_ex5_sha256_missing"
+        },
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": {
+          "reason": "source_mq5_sha256_missing"
+        },
+        "source_setfile_identity_error": {
+          "reason": "source_setfile_sha256_missing"
+        }
+      },
+      "ea_id": "QM5_12712",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "1b9fa7a5-48a7-4e57-a699-9e55dfb0cb19",
+      "reason": "identity_binding_refused",
+      "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+      "work_item_id": "a17469d0-649f-4614-ad83-711c2b809114"
+    },
+    {
+      "before_payload_sha256": "d7cdfcb4ed81d4bc2c5ada3b9e8092df201214e5b7ab25f33cd28db132e99ef2",
+      "detail": {
+        "current_setfile_sha256": "6f8908fa5bf441f645f4951aa965811745e6c12ac2f79685d68ec0f10bf8ac59",
+        "predecessor_setfile_sha256": "3d65d81a65adf577dc143e4ce43b3456f1938cf50d746c9fa6708e1fcb4dcb11",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_1910",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "4ae2dfa0-5fef-46f7-8f0f-829987d8a488",
+      "reason": "identity_binding_refused",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "6a060ccb-1130-48dd-9507-064cf05963e9"
+    },
+    {
+      "before_payload_sha256": "8fca6bd29f4645fdac213a3283d627ec94da459b25f15f753a49852b84f3a02d",
+      "detail": {
+        "compile_work_item_id": "1fb4d6f0-c15d-4a10-9ff5-9fd56b5a5f4e",
+        "reason": "q08_compile_include_closure_unbound"
+      },
+      "ea_id": "QM5_41394",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "e2889696-fc4e-42af-b9cc-0548d5e8d85e",
+      "reason": "identity_binding_refused",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "f74cea03-d310-43ee-9e32-6bbdd81c2b76"
+    },
+    {
+      "before_payload_sha256": "872538bde3de6acafa978ca6cea668b3ce32f04b2d72fe8583b5c5f2f77b6da1",
+      "detail": {
+        "current_setfile_sha256": "84e99134664066a1c508c36ce1c366043c77918efe0f781d9ec8141d862853b5",
+        "predecessor_setfile_sha256": "8202004c23394963196ede606040f64e98ce001f259dcc11a046a4cfda167bca",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_12354",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "d374a221-ef9d-463c-bc1f-991407bbbc41",
+      "reason": "identity_binding_refused",
+      "symbol": "NDX.DWX",
+      "work_item_id": "ba75c59a-e638-425f-a9ad-e06493db0a9c"
+    },
+    {
+      "before_payload_sha256": "3d8f1e3fd9f939673452ddc8cc5d1d1e34638de5c3ff8acb8003765edc66151a",
+      "detail": {
+        "current_setfile_sha256": "012a45949e39ee3cdd6bbe595368a95c198ec8a50ef2fdef8bac5b61cb82a132",
+        "predecessor_setfile_sha256": "f75dadb887491d76ba79370b9942fc6cb96ce217c79e0bcf7f4c7322ddd96cfd",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_10692",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "73342e3b-4cf5-452b-b99a-b57aef426286",
+      "reason": "identity_binding_refused",
+      "symbol": "GDAXI.DWX",
+      "work_item_id": "443ad2eb-6a9e-4046-80c4-0468b16dcea8"
+    },
+    {
+      "before_payload_sha256": "ef94cc93a876f06ecce473f63aaef0bf6bac3a22601882bfd749361f054e5677",
+      "detail": {
+        "current_setfile_sha256": "424bd7680ddcd6cf70e54b28d80fa28657c98f6177d53cb1b5b813a2c26e5ae4",
+        "predecessor_setfile_sha256": "48efd1243b4490f56f2829bb8d71ce74198250bfc8e4e24cfc1e4dd65b9dec50",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_10127",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "bd1534b2-160b-446c-95a9-71ae178d46c5",
+      "reason": "identity_binding_refused",
+      "symbol": "NDX.DWX",
+      "work_item_id": "fba34963-564b-4169-b241-1c4156110b98"
+    },
+    {
+      "before_payload_sha256": "65a5282d0a2539b88c96badd9b81c7a68439c01e674ecab8e9998d20a3505b71",
+      "detail": {
+        "current_setfile_sha256": "0415d2e958c75152dfc8ce8d0f0d597d82f141d9590c62c9b4dce3b95ffd7049",
+        "predecessor_setfile_sha256": "37d36b46e9aa8769eebf3081525690a464478dca9a81658a48eee896f16350b2",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_10145",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "f7078946-630f-4cf5-a147-14f512007a16",
+      "reason": "identity_binding_refused",
+      "symbol": "GDAXI.DWX",
+      "work_item_id": "601a9fa9-211c-4a0c-acd3-93c188e7dc9a"
+    },
+    {
+      "before_payload_sha256": "fdad99c0704a4f47ca383e5c83d0ea37808d8bed4662dfdaf4e3108f3e7ae54b",
+      "detail": {
+        "current_setfile_sha256": "817ff5fcbf14275f803ee6fc60fa9c97bc37b0d8ba7d3c3520419dd26942e45d",
+        "predecessor_setfile_sha256": "444a25962b5dba9a1b26ece9ff7cb5a4a30595ea4c7de0396f1fcb4f35e7ddf7",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_10691",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "cf197dd4-9841-436c-997d-1e498fbfd620",
+      "reason": "identity_binding_refused",
+      "symbol": "NDX.DWX",
+      "work_item_id": "c297063b-2483-4cf0-baba-f4696fd3463d"
+    },
+    {
+      "before_payload_sha256": "c47562d3e769f02b95caad693b54c797719289c4f8eaf81b3f0e9d46fa998799",
+      "detail": {
+        "current_setfile_sha256": "3bbeb4f2597a2c43778676a0e5798ae8da64f6672cb9dc1043d8121f63e2aa0d",
+        "predecessor_setfile_sha256": "206596e7c6f39a1bc5e967857447b92a120bd05dc4413f54bc2be54d7947fa26",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_10947",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "49b48658-b03d-4d4c-b770-a62d35fd44c7",
+      "reason": "identity_binding_refused",
+      "symbol": "NDX.DWX",
+      "work_item_id": "47bea32e-976a-4ede-9246-8498e0f4c0d9"
+    },
+    {
+      "before_payload_sha256": "722e680e735929835785f1aa34151b4e8fb3f0be30779791acfca7469ac7d802",
+      "detail": {
+        "current_setfile_sha256": "168c277ea6a641f3eaf939dab20dcd9583568b403a2a7a3493fd98482305c2ec",
+        "predecessor_setfile_sha256": "df496424dd2fd91acaea028f64128be34c367bd55fc290b8206df041f38f69f5",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_10163",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "8bf4b45b-15c7-44f1-a567-1dba31af8154",
+      "reason": "identity_binding_refused",
+      "symbol": "GDAXI.DWX",
+      "work_item_id": "2d3da3de-6169-4d41-861f-99035151b187"
+    },
+    {
+      "before_payload_sha256": "40ec0fabd2bdbb314f2cdeb27901857d6d50d266e8cd1c3a75e27d4050e2499c",
+      "detail": {
+        "current_setfile_sha256": "93e71d3646d7d03e5c6252d964a7ba2c1c1316432840dce47e3786ab1a5e90a6",
+        "predecessor_setfile_sha256": "2cd441ec50c2c9d4ec3e77eb955aa13ddbb985c1945288dffe9f7fc3e7ec56cd",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_10145",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "33b16ab1-b3b9-4274-9c2a-91867699bcd7",
+      "reason": "identity_binding_refused",
+      "symbol": "NDX.DWX",
+      "work_item_id": "bdba95f1-9aed-4f2b-af7e-c0cf60407aa5"
+    },
+    {
+      "before_payload_sha256": "b3726de3af72752b3636dbf84fd62c3135936b70773c8ed97c851be0b0c439f9",
+      "detail": {
+        "current_setfile_sha256": "566ebf9c4861af23dcab7c21156fe1df419afe203f29ba60588fe674c89d19e3",
+        "predecessor_setfile_sha256": "c0709ac0bc520e7cd9b2ae3e3b2d59e9ea2105916b04b8493eddb027593217b7",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_12361",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "e799d79e-2b45-456b-8acb-b268d818fe0f",
+      "reason": "identity_binding_refused",
+      "symbol": "NDX.DWX",
+      "work_item_id": "2276786b-2a89-4f28-a2ed-ac5dd1b857cb"
+    },
+    {
+      "before_payload_sha256": "1082c539d31cf2c886ba915c298018f2e509b3d09f750c0e3f705755cccc9df7",
+      "detail": {
+        "current_setfile_sha256": "605eb684d9c74d6b8ece0892593e5ca0382b9b418270a2349932359a27dfc91e",
+        "predecessor_setfile_sha256": "e618821c1ddb82749bda72e8e1a560e90df03406a69477263387b8bc693783d3",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_12350",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "d3135fa3-a133-4ee7-95f7-252f919d0501",
+      "reason": "identity_binding_refused",
+      "symbol": "NDX.DWX",
+      "work_item_id": "0031f42d-65be-4c1d-ae45-bbaa67c071ca"
+    },
+    {
+      "before_payload_sha256": "2d553042dd118af25e8dc29197401e6e41ac6baadf9673d52d8cf5232ffe4de9",
+      "detail": {
+        "current_setfile_sha256": "5ea82593055b16470dd803fac88f2f90acde04c5ab9b8bfd94d2eb81ca6ad480",
+        "predecessor_setfile_sha256": "8cd072c7d5589a615da2dfcb2a4b3555b3617b5157f0b1798c928f432de70f5d",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_1551",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "b2481d6d-9031-4f79-9fee-fd06dd6b4b77",
+      "reason": "identity_binding_refused",
+      "symbol": "NDX.DWX",
+      "work_item_id": "3b320089-5553-486e-b824-5c7d1405886d"
+    },
+    {
+      "before_payload_sha256": "1c7af9f5b58e897b346641279813e0a08e42be475568a602b1df323ee5a71bd9",
+      "detail": {
+        "current_setfile_sha256": "26db71d009941dbef7fa9caa015382839ddd528cd8eb9bb41277858be4ff4276",
+        "predecessor_setfile_sha256": "d44a9f99c46d042d3baa08b8c993d43217cf9e8b673ab1a4c9b9dcbcd494c70a",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_12484",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "29305fbf-f7a9-4a82-8a78-4a4e7e8e1239",
+      "reason": "identity_binding_refused",
+      "symbol": "NDX.DWX",
+      "work_item_id": "dfb2f622-b7c0-4da3-a8ac-17825dde0cf9"
+    },
+    {
+      "before_payload_sha256": "22e03686073ecfec70a9f912bda2a4da8f3c07019a3ec93611d57ab35e47d29c",
+      "detail": {
+        "current_setfile_sha256": "446661163bcfd0f8cd607251ec7fa83693b2cff54f7a8cd9223202fd0a4f1a23",
+        "predecessor_setfile_sha256": "c33f54493eb0a0edeafd4213c48bc573ac007c485c909ebf4b42e3ca99de6963",
+        "reason": "q08_predecessor_setfile_identity_mismatch"
+      },
+      "ea_id": "QM5_10280",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "9a8d31a6-3238-410c-b85d-c6af1def0c5d",
+      "reason": "identity_binding_refused",
+      "symbol": "NDX.DWX",
+      "work_item_id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78"
+    },
+    {
+      "before_payload_sha256": "42edfc0a4f34d8439da400be5fe896685d718c43d51cc8441034bc702b1042ca",
+      "detail": {
+        "compile_work_item_id": "08aea615-971b-4fec-bb31-a9b8ff80cf1a",
+        "reason": "q08_compile_include_closure_unbound"
+      },
+      "ea_id": "QM5_10815",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "1a7d6630-f840-4987-8dda-d38a67d39526",
+      "reason": "identity_binding_refused",
+      "symbol": "GDAXI.DWX",
+      "work_item_id": "74718ef2-2e3c-4432-8f3b-07115b6ba632"
+    },
+    {
+      "before_payload_sha256": "d75ceb128bdb22416ca7dcb0f9cdb36b840c5a91b6df793892e7142df773ee72",
+      "detail": {
+        "ea_id": "QM5_13301",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": {
+          "reason": "source_ex5_sha256_missing"
+        },
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": {
+          "reason": "source_mq5_sha256_missing"
+        },
+        "source_setfile_identity_error": {
+          "reason": "source_setfile_sha256_missing"
+        }
+      },
+      "ea_id": "QM5_13301",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "e75520f9-8a84-4cc1-957a-d6c32d774a80",
+      "reason": "identity_binding_refused",
+      "symbol": "GDAXI.DWX",
+      "work_item_id": "f3132f22-11a8-48e4-8b11-39b4fcfc4e59"
+    },
+    {
+      "before_payload_sha256": "15103dd7012645a92efef19276acae25ddbe7020cefe0d4ab370f2f8a8fb5004",
+      "detail": {
+        "ea_id": "QM5_1567",
+        "reason": "q08_current_build_compile_provenance_unavailable",
+        "rejected_compile_records": [],
+        "source_ex5_identity_error": null,
+        "source_include_closure_identity_error": {
+          "reason": "source_include_closure_sha256_missing"
+        },
+        "source_mq5_identity_error": null,
+        "source_setfile_identity_error": {
+          "bindings": {
+            "artifact_identity": "2155958dbe60178bdc5dc5563d7457066908f23f9a5a1593fe09a547261478f2",
+            "column": "2155958dbe60178bdc5dc5563d7457066908f23f9a5a1593fe09a547261478f2",
+            "expected_setfile_sha256": "2e9347a132ed89218a293d03e1b6eb10abce2a74bec50190aa4c6039754fba58"
+          },
+          "reason": "source_setfile_sha256_conflict"
+        }
+      },
+      "ea_id": "QM5_1567",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "ceebbe72-4556-4fdb-8f4e-bb623ae22b41",
+      "reason": "identity_binding_refused",
+      "symbol": "EURUSD.DWX",
+      "work_item_id": "0c063694-2f89-4304-80c5-79a9d190f06a"
+    },
+    {
+      "before_payload_sha256": "3e2cc8115e267e0aae1925a7f2a6cc863ca1c2edd9db274301df0465ffee4790",
+      "detail": {
+        "compile_work_item_id": "1af3e3ce-ac8b-453e-89d6-c4c077c7971b",
+        "reason": "q08_compile_include_closure_unbound"
+      },
+      "ea_id": "QM5_41450",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "c5c82877-ad84-4c39-a700-0742e55eaea1",
+      "reason": "identity_binding_refused",
+      "symbol": "QM5_41450_XAU_XAG_NR2_BODY_RV_D1",
+      "work_item_id": "14b8d3fc-7b7f-4c41-8f57-fe636f442d08"
+    },
+    {
+      "before_payload_sha256": "e632a09264b61fcb593071ffe35726eafd5f6e23419ce57e36fcc5a7c2d4105c",
+      "detail": {
+        "bound_include_closure_sha256": "6de6e1667eaed3408ab6999556e8d13c1cf4ced89ead10a1f4c608ec9ac6efdf",
+        "compile_work_item_id": "34fb5dd8-ff8a-49c9-a26c-d85ddf35573c",
+        "current_include_closure_sha256": "7a3a71ea665415b7822c7f2995a0199b530dc3e2508b9180d2c0e6f47af23861",
+        "reason": "q08_compile_include_closure_not_current"
+      },
+      "ea_id": "QM5_41484",
+      "hold_code": "Q08_PROMOTION_BINDING_REFUSED",
+      "predecessor_work_item_id": "7716f4c7-7e60-4b48-9f1d-876ea2ce5d31",
+      "reason": "identity_binding_refused",
+      "symbol": "USDJPY.DWX",
+      "work_item_id": "1311d1e9-84d2-45e6-bf04-ea26b18a8bba"
+    }
+  ],
+  "refused_count": 47,
+  "rows": [],
+  "schema": "qm.q08-promotion-repair-journal/v1",
+  "task_id": "5de65240-a677-4b32-992b-62616ff44b42",
+  "terminal_rows_edited": 0,
+  "unchanged_count": 0,
+  "verdicts_edited": 0
+}
