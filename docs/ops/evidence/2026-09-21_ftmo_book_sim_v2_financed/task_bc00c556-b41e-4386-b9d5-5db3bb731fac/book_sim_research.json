@@ -1,0 +1,1211 @@
+{
+  "account_path_summary": {
+    "daily_loss_anchor": "Europe/Prague midnight balance; fixed 5% initial-equity cap",
+    "equity_proxy": "CONSERVATIVE_SIMULTANEOUS_ACTIVE_MAE_ENVELOPE_NOT_TICK_EXACT",
+    "maximum_loss_floor": "static 90% of initial equity",
+    "rows": 1784
+  },
+  "book_metrics": {
+    "BOOK_ACTIVE_DAYS": 0.867713,
+    "BOOK_CONCENTRATION": {
+      "book_risk_percent": 1.71875,
+      "risk_by_family_percent": {
+        "liquidity_breakout": 0.3125,
+        "outside_bar_trend": 0.3125,
+        "price_action_swing": 0.3125,
+        "rsi_mean_reversion": 0.3125,
+        "session_range_breakout": 0.15625,
+        "turtle_trend": 0.3125
+      },
+      "risk_by_symbol_percent": {
+        "GBPUSD.DWX": 0.3125,
+        "USDCAD.DWX": 0.3125,
+        "USDJPY.DWX": 0.15625,
+        "XAUUSD.DWX": 0.9375
+      },
+      "symbol_risk_hhi": 0.371901
+    },
+    "BOOK_COST_DRAG": {
+      "commission_usd": 9670.916696,
+      "slippage_stress_usd": 0.0,
+      "spread_stress_usd": 0.0,
+      "swap_usd": -12821.765625
+    },
+    "BOOK_COST_DRAG_USD_PER_DAY": 12.608006,
+    "BOOK_DAILY_LOSS_BREACH_PROB": 0.0,
+    "BOOK_EXPECTANCY": 0.091128,
+    "BOOK_EXPECTED_PROGRESS_USD_PER_DAY": 27.503667,
+    "BOOK_EXPECTED_TIME_TO_CHALLENGE_TARGET": {
+      "mean": 340.2,
+      "n": 4758,
+      "p10": 121.0,
+      "p50": 289.0,
+      "p90": 647.0
+    },
+    "BOOK_EXPECTED_TIME_TO_VERIFICATION_TARGET": {
+      "mean": 178.9,
+      "n": 4651,
+      "p10": 42.0,
+      "p50": 128.0,
+      "p90": 388.0
+    },
+    "BOOK_FINAL_BALANCE": 149066.542679,
+    "BOOK_LOWEST_EQUITY_MAE_PROXY": 95831.464236,
+    "BOOK_MAX_DD": -6262.431297,
+    "BOOK_MAX_DD_ABS_USD": 6262.431297,
+    "BOOK_MAX_LOSS_BREACH_PROB": 0.0202,
+    "BOOK_REALIZED_NET": 49066.542679,
+    "BOOK_RECOVERY_CENSORED": false,
+    "BOOK_RECOVERY_TIME_BD": 63,
+    "BOOK_R_PER_DAY": 0.108484,
+    "BOOK_TAIL_DEPENDENCE": {
+      "cluster_rule": "edge when correlation >=0.50 is corroborated by loss/tail overlap, loss and tail are both >=2x independence, or same-symbol position overlap is >=25% of smaller exposure",
+      "fail_together_clusters": [
+        [
+          "10403_XAUUSD_D1",
+          "10700_XAUUSD_H1",
+          "41219_XAUUSD_D1"
+        ]
+      ],
+      "max_abs_daily_correlation": 0.090624,
+      "max_loss_overlap_ratio": 2.831746,
+      "max_lower_tail_ratio": 10.421053,
+      "max_simultaneous_open_risk_usd_mae_proxy": 851.39,
+      "top_fail_together_pair": {
+        "business_days": 1784,
+        "common_family": false,
+        "common_news_window": true,
+        "common_session": true,
+        "common_symbol": true,
+        "daily_pnl_correlation": -0.084787,
+        "downside_correlation": -0.438988,
+        "left_id": "10403_XAUUSD_D1",
+        "loss_day_overlap_days": 5,
+        "loss_day_overlap_ratio_vs_independence": 2.831746,
+        "lower_tail_coexceed_days": 0,
+        "lower_tail_coexceed_ratio_vs_independence": 0.0,
+        "pair": "10403_XAUUSD_D1/41219_XAUUSD_D1",
+        "position_overlap_hours": 1805.47,
+        "position_overlap_share_of_smaller_exposure": 0.394734,
+        "proxy_notes": {
+          "direction_overlap": "same-side seconds divided by all raw pairwise overlap seconds",
+          "open_risk": "sum of scaled per-trade MAE magnitudes while both sleeves are open",
+          "position_overlap": "exact entry/close interval overlap from closed trades",
+          "tail": "bottom decile of each sleeve's strictly losing Prague close-days"
+        },
+        "right_id": "41219_XAUUSD_D1",
+        "same_direction_share_when_overlapping": 0.001994,
+        "same_symbol_entry_within_30m_share": 0.013889,
+        "simultaneous_open_risk_max_usd_mae_proxy": 432.38,
+        "symbols": "XAUUSD.DWX/XAUUSD.DWX",
+        "trade_day_overlap_days": 13,
+        "trade_day_overlap_ratio_vs_independence": 1.686446,
+        "worst_20_day_overlap": 0,
+        "worst_20_day_overlap_ratio_vs_independence": 0.0
+      }
+    },
+    "BOOK_TRADES_PER_DAY": 1.336323,
+    "BOOK_WORST_DAILY_LOSS_MAE_PROXY": -1055.914051,
+    "HISTORICAL_CHALLENGE_TARGET_FIRST_DAY": "2020-11-09",
+    "HISTORICAL_DAILY_LOSS_BREACH_DAYS": 0,
+    "HISTORICAL_MAX_LOSS_BREACH_DAYS": 0,
+    "TIME_WITH_NO_OPPORTUNITY": 0.132287,
+    "equity_proxy": "CONSERVATIVE_SIMULTANEOUS_ACTIVE_MAE_ENVELOPE_NOT_TICK_EXACT",
+    "margin_proxy_note": "sum(abs(notional) * configured margin_rate) while positions overlap",
+    "max_margin_proxy_usd": 8485.29,
+    "max_simultaneous_positions": 6,
+    "window": {
+      "business_days": 1784,
+      "end": "2025-11-21",
+      "start": "2019-01-22"
+    }
+  },
+  "dependence_summary": {
+    "cluster_rule": "edge when correlation >=0.50 is corroborated by loss/tail overlap, loss and tail are both >=2x independence, or same-symbol position overlap is >=25% of smaller exposure",
+    "fail_together_clusters": [
+      [
+        "10403_XAUUSD_D1",
+        "10700_XAUUSD_H1",
+        "41219_XAUUSD_D1"
+      ]
+    ],
+    "max_abs_daily_correlation": 0.090624,
+    "max_loss_overlap_ratio": 2.831746,
+    "max_lower_tail_ratio": 10.421053,
+    "max_simultaneous_open_risk_usd_mae_proxy": 851.39,
+    "top_fail_together_pair": {
+      "business_days": 1784,
+      "common_family": false,
+      "common_news_window": true,
+      "common_session": true,
+      "common_symbol": true,
+      "daily_pnl_correlation": -0.084787,
+      "downside_correlation": -0.438988,
+      "left_id": "10403_XAUUSD_D1",
+      "loss_day_overlap_days": 5,
+      "loss_day_overlap_ratio_vs_independence": 2.831746,
+      "lower_tail_coexceed_days": 0,
+      "lower_tail_coexceed_ratio_vs_independence": 0.0,
+      "pair": "10403_XAUUSD_D1/41219_XAUUSD_D1",
+      "position_overlap_hours": 1805.47,
+      "position_overlap_share_of_smaller_exposure": 0.394734,
+      "proxy_notes": {
+        "direction_overlap": "same-side seconds divided by all raw pairwise overlap seconds",
+        "open_risk": "sum of scaled per-trade MAE magnitudes while both sleeves are open",
+        "position_overlap": "exact entry/close interval overlap from closed trades",
+        "tail": "bottom decile of each sleeve's strictly losing Prague close-days"
+      },
+      "right_id": "41219_XAUUSD_D1",
+      "same_direction_share_when_overlapping": 0.001994,
+      "same_symbol_entry_within_30m_share": 0.013889,
+      "simultaneous_open_risk_max_usd_mae_proxy": 432.38,
+      "symbols": "XAUUSD.DWX/XAUUSD.DWX",
+      "trade_day_overlap_days": 13,
+      "trade_day_overlap_ratio_vs_independence": 1.686446,
+      "worst_20_day_overlap": 0,
+      "worst_20_day_overlap_ratio_vs_independence": 0.0
+    }
+  },
+  "financing": {
+    "book_evidence_eligible": false,
+    "financed_stream_root": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\fable_alt_rosters_20260918\\deployable2\\streams_fin_full\\QM\\q08_trades",
+    "label": "FINANCED",
+    "manifest": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\fable_alt_rosters_20260918\\deployable2\\manifest_fin_full.json",
+    "manifest_sha256": "0d4b845c1dc39cb3af09f00a6cd240a0e861b1d1ca74d1cf0e2452573d830633",
+    "research_only_reason": "TRUNCATED_STREAM_RESEARCH_ONLY",
+    "source": "FINANCED_STREAMS_QM_FINANCING_EMBEDDED"
+  },
+  "first_passage": {
+    "engine_schema": "qm.ftmo-first-passage/v2",
+    "engine_version": "2.1.0",
+    "input_manifest_sha256": "30002fe70aeb540ea3ed857b33f20260e5ccd022d7cd6b4eb2e3e873a0ad661b",
+    "method": "Pathwise chain over the SAME block-bootstrap sampler: Phase 1 (+10 %), Verification (+5 %) and the funded account each start on a fresh 100k balance anchor with a fresh static 90k Max-Loss floor and draw their own independent blocks. The funded stage has no profit target: it must reach the first reward-eligible day and survive the payout processing lag. End-to-end is counted per path, never as a product of marginals.",
+    "net_condition": {
+      "fee_refund_percent": 100.0,
+      "fee_source": "RULEPACK_LIST_FEE",
+      "fee_usd": 540.0,
+      "formula": "net_cash = split x funded_net_profit_at_payout + fee_refund - fee",
+      "funded_profit_at_payout_usd": {
+        "mean": 877.5,
+        "n": 4427,
+        "p10": 73.9,
+        "p50": 598.9,
+        "p90": 1989.2
+      },
+      "min_funded_profit_usd_for_net_positive": 0.0,
+      "net_cash_usd": {
+        "mean": 702.0,
+        "n": 4427,
+        "p10": 59.2,
+        "p50": 479.1,
+        "p90": 1591.3
+      },
+      "reward_split_percent": 80.0
+    },
+    "payout_frontier": {
+      "conditional_on_positive_net_payout": {
+        "business_days": {
+          "mean": 542.3,
+          "n": 4427,
+          "p10": 254.0,
+          "p50": 489.0,
+          "p90": 909.0
+        },
+        "calendar_days_5_over_7": {
+          "mean": 759.6,
+          "n": 4427,
+          "p10": 356.0,
+          "p50": 685.0,
+          "p90": 1273.0
+        },
+        "conditioning": "paths with a modeled positive net first payout only"
+      },
+      "interpretation": "Day marks and t80 are unconditional modeled market-path quantities. Unknown inter-phase administration, administrative rejection and actual bank-receipt lag are not assigned invented probabilities or durations.",
+      "objective": "minimum calendar time with full-chain positive-net-payout LCB >= 0.80",
+      "outcome_partition_unconditional": {
+        "funded_censored": {
+          "count": 220,
+          "probability": 0.044
+        },
+        "funded_daily_loss_breach": {
+          "count": 0,
+          "probability": 0.0
+        },
+        "funded_max_loss_breach": {
+          "count": 4,
+          "probability": 0.0008
+        },
+        "phase1_censored": {
+          "count": 141,
+          "probability": 0.0282
+        },
+        "phase1_daily_loss_breach": {
+          "count": 0,
+          "probability": 0.0
+        },
+        "phase1_max_loss_breach": {
+          "count": 101,
+          "probability": 0.0202
+        },
+        "positive_net_payout": {
+          "count": 4427,
+          "probability": 0.8854
+        },
+        "reward_not_net_positive": {
+          "count": 0,
+          "probability": 0.0
+        },
+        "verification_censored": {
+          "count": 19,
+          "probability": 0.0038
+        },
+        "verification_daily_loss_breach": {
+          "count": 0,
+          "probability": 0.0
+        },
+        "verification_max_loss_breach": {
+          "count": 88,
+          "probability": 0.0176
+        }
+      },
+      "payout_by_calendar_day": {
+        "30": {
+          "business_day_cutoff_5_over_7": 21,
+          "calendar_day": 30,
+          "credible_interval_90pct": {
+            "batch_size": 250,
+            "n_batches": 20,
+            "p05": 0.0,
+            "p50": 0.0,
+            "p95": 0.0
+          },
+          "lcb_90pct": 0.0,
+          "probability": 0.0
+        },
+        "45": {
+          "business_day_cutoff_5_over_7": 32,
+          "calendar_day": 45,
+          "credible_interval_90pct": {
+            "batch_size": 250,
+            "n_batches": 20,
+            "p05": 0.0,
+            "p50": 0.0,
+            "p95": 0.0
+          },
+          "lcb_90pct": 0.0,
+          "probability": 0.0
+        },
+        "60": {
+          "business_day_cutoff_5_over_7": 43,
+          "calendar_day": 60,
+          "credible_interval_90pct": {
+            "batch_size": 250,
+            "n_batches": 20,
+            "p05": 0.0,
+            "p50": 0.0,
+            "p95": 0.0
+          },
+          "lcb_90pct": 0.0,
+          "probability": 0.0
+        },
+        "90": {
+          "business_day_cutoff_5_over_7": 64,
+          "calendar_day": 90,
+          "credible_interval_90pct": {
+            "batch_size": 250,
+            "n_batches": 20,
+            "p05": 0.0,
+            "p50": 0.0,
+            "p95": 0.0
+          },
+          "lcb_90pct": 0.0,
+          "probability": 0.0
+        }
+      },
+      "reward_scenarios": [
+        {
+          "fee_paid_usd": 540.0,
+          "fee_refund_usd": 540.0,
+          "funded_gain_fraction": null,
+          "funded_profit_usd": "STRICTLY_POSITIVE_AMOUNT_OBSERVED_ON_PATH",
+          "net_cash_usd": "reward + fee_refund - fee; strictly positive under the bound 100% refund",
+          "payment_method_minimum_usd": null,
+          "reward_usd": "reward_split x observed positive funded profit",
+          "scenario": "ENGINE_FIRST_POSITIVE_NET_REWARD",
+          "status": "MODEL_THRESHOLD_ONLY_PAYMENT_METHOD_MINIMUM_UNBOUND"
+        },
+        {
+          "fee_paid_usd": 540.0,
+          "fee_refund_usd": 540.0,
+          "funded_gain_fraction": 0.005,
+          "funded_profit_usd": 500.0,
+          "net_cash_usd": 400.0,
+          "reward_usd": 400.0,
+          "scenario": "FUNDED_GAIN_0.5PCT"
+        },
+        {
+          "fee_paid_usd": 540.0,
+          "fee_refund_usd": 540.0,
+          "funded_gain_fraction": 0.01,
+          "funded_profit_usd": 1000.0,
+          "net_cash_usd": 800.0,
+          "reward_usd": 800.0,
+          "scenario": "FUNDED_GAIN_1PCT"
+        },
+        {
+          "fee_paid_usd": 540.0,
+          "fee_refund_usd": 540.0,
+          "funded_gain_fraction": 0.02,
+          "funded_profit_usd": 2000.0,
+          "net_cash_usd": 1600.0,
+          "reward_usd": 1600.0,
+          "scenario": "FUNDED_GAIN_2PCT"
+        }
+      ],
+      "schema": "qm.ftmo-payout-speed-frontier/v1",
+      "time_contract": {
+        "administrative_rejection_probability": null,
+        "bank_receipt_lag_calendar_days": null,
+        "calendar_mapping": "diagnostic 5/7 mapping; not an exact dated calendar path",
+        "challenge_to_verification_administration_calendar_days": null,
+        "funded_eligibility_calendar_days": 14,
+        "market_path_unit": "business days",
+        "payment_method_minimum_usd": null,
+        "payout_processing_business_days": 4,
+        "unmodeled_status": "UNRESOLVED_ADMINISTRATION_AND_BANK_RECEIPT",
+        "verification_to_funded_administration_calendar_days": null
+      },
+      "ultimate_positive_net_payout": {
+        "credible_interval_90pct": {
+          "batch_size": 250,
+          "n_batches": 20,
+          "p05": 0.8668,
+          "p50": 0.884,
+          "p95": 0.9042
+        },
+        "probability": 0.8854
+      },
+      "unconditional_t80": {
+        "business_day": 983,
+        "calendar_day_5_over_7": 1376,
+        "lcb_90pct": 0.8028,
+        "status": "REACHED_IN_MARKET_PATH_MODEL",
+        "target_lcb": 0.8
+      }
+    },
+    "probabilities": {
+      "P_CHALLENGE_PASS": 0.9516,
+      "P_END_TO_END_FIRST_PAYOUT": 0.8854,
+      "P_END_TO_END_FIRST_PAYOUT_PRODUCT_OF_MARGINALS": 0.8858,
+      "P_FIRST_NET_FTMO_PAYOUT": 0.8854,
+      "P_FIRST_NET_FTMO_PAYOUT_LCB": 0.8668,
+      "P_FTMO_ACCOUNT_SURVIVAL_TO_FIRST_REWARD": 0.9518,
+      "P_VERIFICATION_PASS_GIVEN_CHALLENGE": 0.9775
+    },
+    "sensitivity": [
+      {
+        "P_CHALLENGE_PASS": 0.9516,
+        "P_END_TO_END_FIRST_PAYOUT": 0.8854,
+        "P_FIRST_NET_FTMO_PAYOUT": 0.8854,
+        "P_FIRST_NET_FTMO_PAYOUT_LCB": 0.8668,
+        "P_FTMO_ACCOUNT_SURVIVAL_TO_FIRST_REWARD": 0.9518,
+        "P_VERIFICATION_PASS_GIVEN_CHALLENGE": 0.9775,
+        "cost_mult": 1.0,
+        "payout_frontier": {
+          "conditional_on_positive_net_payout": {
+            "business_days": {
+              "mean": 542.3,
+              "n": 4427,
+              "p10": 254.0,
+              "p50": 489.0,
+              "p90": 909.0
+            },
+            "calendar_days_5_over_7": {
+              "mean": 759.6,
+              "n": 4427,
+              "p10": 356.0,
+              "p50": 685.0,
+              "p90": 1273.0
+            },
+            "conditioning": "paths with a modeled positive net first payout only"
+          },
+          "interpretation": "Day marks and t80 are unconditional modeled market-path quantities. Unknown inter-phase administration, administrative rejection and actual bank-receipt lag are not assigned invented probabilities or durations.",
+          "objective": "minimum calendar time with full-chain positive-net-payout LCB >= 0.80",
+          "outcome_partition_unconditional": {
+            "funded_censored": {
+              "count": 220,
+              "probability": 0.044
+            },
+            "funded_daily_loss_breach": {
+              "count": 0,
+              "probability": 0.0
+            },
+            "funded_max_loss_breach": {
+              "count": 4,
+              "probability": 0.0008
+            },
+            "phase1_censored": {
+              "count": 141,
+              "probability": 0.0282
+            },
+            "phase1_daily_loss_breach": {
+              "count": 0,
+              "probability": 0.0
+            },
+            "phase1_max_loss_breach": {
+              "count": 101,
+              "probability": 0.0202
+            },
+            "positive_net_payout": {
+              "count": 4427,
+              "probability": 0.8854
+            },
+            "reward_not_net_positive": {
+              "count": 0,
+              "probability": 0.0
+            },
+            "verification_censored": {
+              "count": 19,
+              "probability": 0.0038
+            },
+            "verification_daily_loss_breach": {
+              "count": 0,
+              "probability": 0.0
+            },
+            "verification_max_loss_breach": {
+              "count": 88,
+              "probability": 0.0176
+            }
+          },
+          "payout_by_calendar_day": {
+            "30": {
+              "business_day_cutoff_5_over_7": 21,
+              "calendar_day": 30,
+              "credible_interval_90pct": {
+                "batch_size": 250,
+                "n_batches": 20,
+                "p05": 0.0,
+                "p50": 0.0,
+                "p95": 0.0
+              },
+              "lcb_90pct": 0.0,
+              "probability": 0.0
+            },
+            "45": {
+              "business_day_cutoff_5_over_7": 32,
+              "calendar_day": 45,
+              "credible_interval_90pct": {
+                "batch_size": 250,
+                "n_batches": 20,
+                "p05": 0.0,
+                "p50": 0.0,
+                "p95": 0.0
+              },
+              "lcb_90pct": 0.0,
+              "probability": 0.0
+            },
+            "60": {
+              "business_day_cutoff_5_over_7": 43,
+              "calendar_day": 60,
+              "credible_interval_90pct": {
+                "batch_size": 250,
+                "n_batches": 20,
+                "p05": 0.0,
+                "p50": 0.0,
+                "p95": 0.0
+              },
+              "lcb_90pct": 0.0,
+              "probability": 0.0
+            },
+            "90": {
+              "business_day_cutoff_5_over_7": 64,
+              "calendar_day": 90,
+              "credible_interval_90pct": {
+                "batch_size": 250,
+                "n_batches": 20,
+                "p05": 0.0,
+                "p50": 0.0,
+                "p95": 0.0
+              },
+              "lcb_90pct": 0.0,
+              "probability": 0.0
+            }
+          },
+          "reward_scenarios": [
+            {
+              "fee_paid_usd": 540.0,
+              "fee_refund_usd": 540.0,
+              "funded_gain_fraction": null,
+              "funded_profit_usd": "STRICTLY_POSITIVE_AMOUNT_OBSERVED_ON_PATH",
+              "net_cash_usd": "reward + fee_refund - fee; strictly positive under the bound 100% refund",
+              "payment_method_minimum_usd": null,
+              "reward_usd": "reward_split x observed positive funded profit",
+              "scenario": "ENGINE_FIRST_POSITIVE_NET_REWARD",
+              "status": "MODEL_THRESHOLD_ONLY_PAYMENT_METHOD_MINIMUM_UNBOUND"
+            },
+            {
+              "fee_paid_usd": 540.0,
+              "fee_refund_usd": 540.0,
+              "funded_gain_fraction": 0.005,
+              "funded_profit_usd": 500.0,
+              "net_cash_usd": 400.0,
+              "reward_usd": 400.0,
+              "scenario": "FUNDED_GAIN_0.5PCT"
+            },
+            {
+              "fee_paid_usd": 540.0,
+              "fee_refund_usd": 540.0,
+              "funded_gain_fraction": 0.01,
+              "funded_profit_usd": 1000.0,
+              "net_cash_usd": 800.0,
+              "reward_usd": 800.0,
+              "scenario": "FUNDED_GAIN_1PCT"
+            },
+            {
+              "fee_paid_usd": 540.0,
+              "fee_refund_usd": 540.0,
+              "funded_gain_fraction": 0.02,
+              "funded_profit_usd": 2000.0,
+              "net_cash_usd": 1600.0,
+              "reward_usd": 1600.0,
+              "scenario": "FUNDED_GAIN_2PCT"
+            }
+          ],
+          "schema": "qm.ftmo-payout-speed-frontier/v1",
+          "time_contract": {
+            "administrative_rejection_probability": null,
+            "bank_receipt_lag_calendar_days": null,
+            "calendar_mapping": "diagnostic 5/7 mapping; not an exact dated calendar path",
+            "challenge_to_verification_administration_calendar_days": null,
+            "funded_eligibility_calendar_days": 14,
+            "market_path_unit": "business days",
+            "payment_method_minimum_usd": null,
+            "payout_processing_business_days": 4,
+            "unmodeled_status": "UNRESOLVED_ADMINISTRATION_AND_BANK_RECEIPT",
+            "verification_to_funded_administration_calendar_days": null
+          },
+          "ultimate_positive_net_payout": {
+            "credible_interval_90pct": {
+              "batch_size": 250,
+              "n_batches": 20,
+              "p05": 0.8668,
+              "p50": 0.884,
+              "p95": 0.9042
+            },
+            "probability": 0.8854
+          },
+          "unconditional_t80": {
+            "business_day": 983,
+            "calendar_day_5_over_7": 1376,
+            "lcb_90pct": 0.8028,
+            "status": "REACHED_IN_MARKET_PATH_MODEL",
+            "target_lcb": 0.8
+          }
+        },
+        "slippage_usd_per_lot": 0.0
+      },
+      {
+        "P_CHALLENGE_PASS": 0.907,
+        "P_END_TO_END_FIRST_PAYOUT": 0.8202,
+        "P_FIRST_NET_FTMO_PAYOUT": 0.8202,
+        "P_FIRST_NET_FTMO_PAYOUT_LCB": 0.7916,
+        "P_FTMO_ACCOUNT_SURVIVAL_TO_FIRST_REWARD": 0.9432,
+        "P_VERIFICATION_PASS_GIVEN_CHALLENGE": 0.9588,
+        "cost_mult": 1.5,
+        "payout_frontier": {
+          "conditional_on_positive_net_payout": {
+            "business_days": {
+              "mean": 596.8,
+              "n": 4101,
+              "p10": 271.0,
+              "p50": 542.0,
+              "p90": 1007.0
+            },
+            "calendar_days_5_over_7": {
+              "mean": 835.9,
+              "n": 4101,
+              "p10": 380.0,
+              "p50": 759.0,
+              "p90": 1410.0
+            },
+            "conditioning": "paths with a modeled positive net first payout only"
+          },
+          "interpretation": "Day marks and t80 are unconditional modeled market-path quantities. Unknown inter-phase administration, administrative rejection and actual bank-receipt lag are not assigned invented probabilities or durations.",
+          "objective": "minimum calendar time with full-chain positive-net-payout LCB >= 0.80",
+          "outcome_partition_unconditional": {
+            "funded_censored": {
+              "count": 240,
+              "probability": 0.048
+            },
+            "funded_daily_loss_breach": {
+              "count": 0,
+              "probability": 0.0
+            },
+            "funded_max_loss_breach": {
+              "count": 7,
+              "probability": 0.0014
+            },
+            "phase1_censored": {
+              "count": 264,
+              "probability": 0.0528
+            },
+            "phase1_daily_loss_breach": {
+              "count": 0,
+              "probability": 0.0
+            },
+            "phase1_max_loss_breach": {
+              "count": 201,
+              "probability": 0.0402
+            },
+            "positive_net_payout": {
+              "count": 4101,
+              "probability": 0.8202
+            },
+            "reward_not_net_positive": {
+              "count": 0,
+              "probability": 0.0
+            },
+            "verification_censored": {
+              "count": 28,
+              "probability": 0.0056
+            },
+            "verification_daily_loss_breach": {
+              "count": 0,
+              "probability": 0.0
+            },
+            "verification_max_loss_breach": {
+              "count": 159,
+              "probability": 0.0318
+            }
+          },
+          "payout_by_calendar_day": {
+            "30": {
+              "business_day_cutoff_5_over_7": 21,
+              "calendar_day": 30,
+              "credible_interval_90pct": {
+                "batch_size": 250,
+                "n_batches": 20,
+                "p05": 0.0,
+                "p50": 0.0,
+                "p95": 0.0
+              },
+              "lcb_90pct": 0.0,
+              "probability": 0.0
+            },
+            "45": {
+              "business_day_cutoff_5_over_7": 32,
+              "calendar_day": 45,
+              "credible_interval_90pct": {
+                "batch_size": 250,
+                "n_batches": 20,
+                "p05": 0.0,
+                "p50": 0.0,
+                "p95": 0.0
+              },
+              "lcb_90pct": 0.0,
+              "probability": 0.0
+            },
+            "60": {
+              "business_day_cutoff_5_over_7": 43,
+              "calendar_day": 60,
+              "credible_interval_90pct": {
+                "batch_size": 250,
+                "n_batches": 20,
+                "p05": 0.0,
+                "p50": 0.0,
+                "p95": 0.0
+              },
+              "lcb_90pct": 0.0,
+              "probability": 0.0
+            },
+            "90": {
+              "business_day_cutoff_5_over_7": 64,
+              "calendar_day": 90,
+              "credible_interval_90pct": {
+                "batch_size": 250,
+                "n_batches": 20,
+                "p05": 0.0,
+                "p50": 0.0,
+                "p95": 0.0
+              },
+              "lcb_90pct": 0.0,
+              "probability": 0.0
+            }
+          },
+          "reward_scenarios": [
+            {
+              "fee_paid_usd": 540.0,
+              "fee_refund_usd": 540.0,
+              "funded_gain_fraction": null,
+              "funded_profit_usd": "STRICTLY_POSITIVE_AMOUNT_OBSERVED_ON_PATH",
+              "net_cash_usd": "reward + fee_refund - fee; strictly positive under the bound 100% refund",
+              "payment_method_minimum_usd": null,
+              "reward_usd": "reward_split x observed positive funded profit",
+              "scenario": "ENGINE_FIRST_POSITIVE_NET_REWARD",
+              "status": "MODEL_THRESHOLD_ONLY_PAYMENT_METHOD_MINIMUM_UNBOUND"
+            },
+            {
+              "fee_paid_usd": 540.0,
+              "fee_refund_usd": 540.0,
+              "funded_gain_fraction": 0.005,
+              "funded_profit_usd": 500.0,
+              "net_cash_usd": 400.0,
+              "reward_usd": 400.0,
+              "scenario": "FUNDED_GAIN_0.5PCT"
+            },
+            {
+              "fee_paid_usd": 540.0,
+              "fee_refund_usd": 540.0,
+              "funded_gain_fraction": 0.01,
+              "funded_profit_usd": 1000.0,
+              "net_cash_usd": 800.0,
+              "reward_usd": 800.0,
+              "scenario": "FUNDED_GAIN_1PCT"
+            },
+            {
+              "fee_paid_usd": 540.0,
+              "fee_refund_usd": 540.0,
+              "funded_gain_fraction": 0.02,
+              "funded_profit_usd": 2000.0,
+              "net_cash_usd": 1600.0,
+              "reward_usd": 1600.0,
+              "scenario": "FUNDED_GAIN_2PCT"
+            }
+          ],
+          "schema": "qm.ftmo-payout-speed-frontier/v1",
+          "time_contract": {
+            "administrative_rejection_probability": null,
+            "bank_receipt_lag_calendar_days": null,
+            "calendar_mapping": "diagnostic 5/7 mapping; not an exact dated calendar path",
+            "challenge_to_verification_administration_calendar_days": null,
+            "funded_eligibility_calendar_days": 14,
+            "market_path_unit": "business days",
+            "payment_method_minimum_usd": null,
+            "payout_processing_business_days": 4,
+            "unmodeled_status": "UNRESOLVED_ADMINISTRATION_AND_BANK_RECEIPT",
+            "verification_to_funded_administration_calendar_days": null
+          },
+          "ultimate_positive_net_payout": {
+            "credible_interval_90pct": {
+              "batch_size": 250,
+              "n_batches": 20,
+              "p05": 0.7916,
+              "p50": 0.82,
+              "p95": 0.8404
+            },
+            "probability": 0.8202
+          },
+          "unconditional_t80": {
+            "business_day": null,
+            "calendar_day_5_over_7": null,
+            "lcb_90pct": null,
+            "status": "NOT_REACHED",
+            "target_lcb": 0.8
+          }
+        },
+        "slippage_usd_per_lot": 2.0
+      }
+    ],
+    "stages": {
+      "funded": {
+        "conditional_on_reaching_stage": {
+          "n_paths_reaching": 4651,
+          "p_censored": 0.0473,
+          "p_daily_loss_breach": 0.0,
+          "p_max_loss_breach": 0.0009,
+          "p_survive_to_first_reward": 0.9518
+        },
+        "p_censored": 0.047,
+        "p_daily_loss_breach": 0.0,
+        "p_max_loss_breach": 0.001
+      },
+      "phase1": {
+        "p_censored": 0.0282,
+        "p_daily_loss_breach": 0.0,
+        "p_max_loss_breach": 0.0202,
+        "p_pass": 0.9516
+      },
+      "verification": {
+        "conditional_on_reaching_stage": {
+          "n_paths_reaching": 4758,
+          "p_censored": 0.004,
+          "p_daily_loss_breach": 0.0,
+          "p_max_loss_breach": 0.0185,
+          "p_pass": 0.9775
+        },
+        "p_censored": 0.0038,
+        "p_daily_loss_breach": 0.0,
+        "p_max_loss_breach": 0.0184,
+        "p_pass": 0.9778
+      }
+    },
+    "time_business_days": {
+      "end_to_end": {
+        "mean": 542.3,
+        "n": 4427,
+        "p10": 254.0,
+        "p50": 489.0,
+        "p90": 909.0
+      },
+      "first_payout": {
+        "mean": 23.4,
+        "n": 4427,
+        "p10": 15.0,
+        "p50": 15.0,
+        "p90": 43.0
+      },
+      "phase1_target": {
+        "mean": 340.2,
+        "n": 4758,
+        "p10": 121.0,
+        "p50": 289.0,
+        "p90": 647.0
+      },
+      "verification_target": {
+        "mean": 178.9,
+        "n": 4651,
+        "p10": 42.0,
+        "p50": 128.0,
+        "p90": 388.0
+      }
+    }
+  },
+  "generated_at_utc": "2026-09-21T19:00:00+00:00",
+  "input_manifest": {
+    "allow_truncated_streams": true,
+    "block_len": 20,
+    "cost": {
+      "margin_rate": 0.01,
+      "slippage_usd_per_lot_rt": 0.0,
+      "slippage_usd_per_lot_rt_by_symbol": {},
+      "spread_bps_rt": 0.0,
+      "spread_bps_rt_by_symbol": {}
+    },
+    "financing_label": "FINANCED",
+    "fixed_window": [
+      "2019-01-22",
+      "2025-11-21"
+    ],
+    "horizon": 1008,
+    "n_paths": 5000,
+    "provenance": {
+      "commission_model": "max(pct_rate_rt*notional_acct, flat_per_lot_rt*volume)",
+      "commission_registry": "C:\\QM\\repo\\framework\\registry\\live_commission.json",
+      "commission_registry_sha256": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197",
+      "financed_stream_root": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\fable_alt_rosters_20260918\\deployable2\\streams_fin_full\\QM\\q08_trades",
+      "financing_label": "FINANCED",
+      "financing_library": "C:\\QM\\repo\\tools\\strategy_farm\\swap\\financing_lib.py",
+      "financing_library_status": "FINANCED_STREAMS_QM_FINANCING_EMBEDDED",
+      "financing_manifest": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\fable_alt_rosters_20260918\\deployable2\\manifest_fin_full.json",
+      "financing_manifest_sha256": "0d4b845c1dc39cb3af09f00a6cd240a0e861b1d1ca74d1cf0e2452573d830633",
+      "financing_row_contract": "every TRADE_CLOSED row has qm_financing.status, financing_usd, units and nights; cent-rounded financing_usd equals swap",
+      "spread_slippage_stress": {
+        "margin_rate": 0.01,
+        "slippage_usd_per_lot_rt": 0.0,
+        "slippage_usd_per_lot_rt_by_symbol": {},
+        "spread_bps_rt": 0.0,
+        "spread_bps_rt_by_symbol": {}
+      }
+    },
+    "run_label": "TRUNCATED_STREAM_RESEARCH_ONLY",
+    "schema": "qm.ftmo-book-sim-input/v1",
+    "seed": 20260921,
+    "sleeves": [
+      {
+        "ea_id": 13213,
+        "family": "session_range_breakout",
+        "id": "13213_USDJPY_H1",
+        "label": "QM5_13213_balke-gmt3-range-breakout",
+        "magic": 132130000,
+        "news_profile": "PRE30_POST30_DXZ",
+        "risk_percent": 0.15625,
+        "role": "VELOCITY_SLEEVE",
+        "session": "TOKYO_LONDON_HANDOFF",
+        "slot": 0,
+        "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\fable_alt_rosters_20260918\\deployable2\\streams_fin_full\\QM\\q08_trades\\13213_USDJPY_DWX.jsonl",
+        "stream_sha256": "d4e8d8095a978aa0acdf0822ea8dfd97089aa94debf79cf720d0b054d461f03e",
+        "symbol": "USDJPY.DWX",
+        "timeframe": "H1"
+      },
+      {
+        "ea_id": 10706,
+        "family": "price_action_swing",
+        "id": "10706_GBPUSD_H1",
+        "label": "QM5_10706_tv-mon-ls",
+        "magic": 107060001,
+        "news_profile": "PRE30_POST30_DXZ",
+        "risk_percent": 0.3125,
+        "role": "GBP swing alpha",
+        "session": "MULTI_SESSION_SWING",
+        "slot": 1,
+        "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\fable_alt_rosters_20260918\\deployable2\\streams_fin_full\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "stream_sha256": "46e0768f645c0d272c03ac478a45f159439dda4c65147a07d683331bfb19d7ed",
+        "symbol": "GBPUSD.DWX",
+        "timeframe": "H1"
+      },
+      {
+        "ea_id": 10700,
+        "family": "liquidity_breakout",
+        "id": "10700_XAUUSD_H1",
+        "label": "QM5_10700_tv-liq-break",
+        "magic": 107000003,
+        "news_profile": "PRE30_POST30_DXZ",
+        "risk_percent": 0.3125,
+        "role": "Gold alpha",
+        "session": "MULTI_SESSION_SWING",
+        "slot": 3,
+        "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\fable_alt_rosters_20260918\\deployable2\\streams_fin_full\\QM\\q08_trades\\10700_XAUUSD_DWX.jsonl",
+        "stream_sha256": "5127da4d382185df83eb3f8c10eb90a247dc6a008f417cc30bb263b7f53fb12e",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "H1"
+      },
+      {
+        "ea_id": 11422,
+        "family": "outside_bar_trend",
+        "id": "11422_USDCAD_D1",
+        "label": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+        "magic": 114220004,
+        "news_profile": "PRE30_POST30_DXZ",
+        "risk_percent": 0.3125,
+        "role": "stabilizer",
+        "session": "MULTIDAY_D1",
+        "slot": 4,
+        "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\fable_alt_rosters_20260918\\deployable2\\streams_fin_full\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+        "stream_sha256": "2eddc16d02689caf0e4e4fc27f7dd421906d8a7263c4026dc623417811a9fcc9",
+        "symbol": "USDCAD.DWX",
+        "timeframe": "D1"
+      },
+      {
+        "ea_id": 10403,
+        "family": "turtle_trend",
+        "id": "10403_XAUUSD_D1",
+        "label": "QM5_10403_et-turtle20x",
+        "magic": 104030002,
+        "news_profile": "PRE30_POST30_DXZ",
+        "risk_percent": 0.3125,
+        "role": "Gold trend",
+        "session": "MULTIDAY_D1",
+        "slot": 2,
+        "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\fable_alt_rosters_20260918\\deployable2\\streams_fin_full\\QM\\q08_trades\\10403_XAUUSD_DWX.jsonl",
+        "stream_sha256": "c225c4d13c172bb3798b5c97f671759a61f0473270562344c4ee18f515b37689",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "D1"
+      },
+      {
+        "ea_id": 41219,
+        "family": "rsi_mean_reversion",
+        "id": "41219_XAUUSD_D1",
+        "label": "QM5_41219_cum-rsi2-commodity-requal8",
+        "magic": 412190000,
+        "news_profile": "PRE30_POST30_DXZ",
+        "risk_percent": 0.3125,
+        "role": "Gold mean-reversion",
+        "session": "MULTIDAY_D1",
+        "slot": 0,
+        "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\fable_alt_rosters_20260918\\deployable2\\streams_fin_full\\QM\\q08_trades\\41219_XAUUSD_DWX.jsonl",
+        "stream_sha256": "4a748771544a3faab68ecabcc2462eea9dec20b1dae760474921dc00cfaa17a7",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "D1"
+      }
+    ]
+  },
+  "input_manifest_sha256": "fc6c3b28cf3c589b2857d115698902fd49dc8aed004abb3adf27e6ed8a885330",
+  "label": "TRUNCATED_STREAM_RESEARCH_ONLY; FINANCED; real chronological trades; registry commission; qm_financing-bound embedded financing; floating equity is a conservative simultaneous-active-MAE proxy",
+  "run_label": "TRUNCATED_STREAM_RESEARCH_ONLY",
+  "schema": "qm.ftmo-book-sim/v1",
+  "sleeves": [
+    {
+      "additional_slippage_stress_usd": 0.0,
+      "additional_spread_stress_usd": 0.0,
+      "commission_sources": [
+        "REGISTRY_MAX_PCT_NOTIONAL_FLAT"
+      ],
+      "ea_id": 13213,
+      "entry_span_utc": [
+        "2019-01-24T08:02:22+00:00",
+        "2025-11-21T06:01:30+00:00"
+      ],
+      "family": "session_range_breakout",
+      "financing_label": "FINANCED",
+      "financing_library_status": "FINANCED_STREAMS_QM_FINANCING_EMBEDDED",
+      "id": "13213_USDJPY_H1",
+      "label": "QM5_13213_balke-gmt3-range-breakout",
+      "magic": 132130000,
+      "news_profile": "PRE30_POST30_DXZ",
+      "risk_percent": 0.15625,
+      "role": "VELOCITY_SLEEVE",
+      "session": "TOKYO_LONDON_HANDOFF",
+      "slot": 0,
+      "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\fable_alt_rosters_20260918\\deployable2\\streams_fin_full\\QM\\q08_trades\\13213_USDJPY_DWX.jsonl",
+      "stream_sha256": "d4e8d8095a978aa0acdf0822ea8dfd97089aa94debf79cf720d0b054d461f03e",
+      "swap_sources": [
+        "FINANCED_STREAM_QM_FINANCING:INTRADAY"
+      ],
+      "symbol": "USDJPY.DWX",
+      "timeframe": "H1",
+      "trades": 1322
+    },
+    {
+      "additional_slippage_stress_usd": 0.0,
+      "additional_spread_stress_usd": 0.0,
+      "commission_sources": [
+        "REGISTRY_MAX_PCT_NOTIONAL_FLAT"
+      ],
+      "ea_id": 10706,
+      "entry_span_utc": [
+        "2019-01-22T14:00:00+00:00",
+        "2025-11-19T05:00:00+00:00"
+      ],
+      "family": "price_action_swing",
+      "financing_label": "FINANCED",
+      "financing_library_status": "FINANCED_STREAMS_QM_FINANCING_EMBEDDED",
+      "id": "10706_GBPUSD_H1",
+      "label": "QM5_10706_tv-mon-ls",
+      "magic": 107060001,
+      "news_profile": "PRE30_POST30_DXZ",
+      "risk_percent": 0.3125,
+      "role": "GBP swing alpha",
+      "session": "MULTI_SESSION_SWING",
+      "slot": 1,
+      "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\fable_alt_rosters_20260918\\deployable2\\streams_fin_full\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+      "stream_sha256": "46e0768f645c0d272c03ac478a45f159439dda4c65147a07d683331bfb19d7ed",
+      "swap_sources": [
+        "FINANCED_STREAM_QM_FINANCING:INTRADAY",
+        "FINANCED_STREAM_QM_FINANCING:OVERNIGHT"
+      ],
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "H1",
+      "trades": 300
+    },
+    {
+      "additional_slippage_stress_usd": 0.0,
+      "additional_spread_stress_usd": 0.0,
+      "commission_sources": [
+        "REGISTRY_MAX_PCT_NOTIONAL_FLAT"
+      ],
+      "ea_id": 10700,
+      "entry_span_utc": [
+        "2019-02-06T14:00:00+00:00",
+        "2025-11-21T19:00:00+00:00"
+      ],
+      "family": "liquidity_breakout",
+      "financing_label": "FINANCED",
+      "financing_library_status": "FINANCED_STREAMS_QM_FINANCING_EMBEDDED",
+      "id": "10700_XAUUSD_H1",
+      "label": "QM5_10700_tv-liq-break",
+      "magic": 107000003,
+      "news_profile": "PRE30_POST30_DXZ",
+      "risk_percent": 0.3125,
+      "role": "Gold alpha",
+      "session": "MULTI_SESSION_SWING",
+      "slot": 3,
+      "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\fable_alt_rosters_20260918\\deployable2\\streams_fin_full\\QM\\q08_trades\\10700_XAUUSD_DWX.jsonl",
+      "stream_sha256": "5127da4d382185df83eb3f8c10eb90a247dc6a008f417cc30bb263b7f53fb12e",
+      "swap_sources": [
+        "FINANCED_STREAM_QM_FINANCING:INTRADAY",
+        "FINANCED_STREAM_QM_FINANCING:OVERNIGHT"
+      ],
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "H1",
+      "trades": 323
+    },
+    {
+      "additional_slippage_stress_usd": 0.0,
+      "additional_spread_stress_usd": 0.0,
+      "commission_sources": [
+        "REGISTRY_MAX_PCT_NOTIONAL_FLAT"
+      ],
+      "ea_id": 11422,
+      "entry_span_utc": [
+        "2019-01-25T21:55:21+00:00",
+        "2025-11-03T11:44:52+00:00"
+      ],
+      "family": "outside_bar_trend",
+      "financing_label": "FINANCED",
+      "financing_library_status": "FINANCED_STREAMS_QM_FINANCING_EMBEDDED",
+      "id": "11422_USDCAD_D1",
+      "label": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+      "magic": 114220004,
+      "news_profile": "PRE30_POST30_DXZ",
+      "risk_percent": 0.3125,
+      "role": "stabilizer",
+      "session": "MULTIDAY_D1",
+      "slot": 4,
+      "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\fable_alt_rosters_20260918\\deployable2\\streams_fin_full\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+      "stream_sha256": "2eddc16d02689caf0e4e4fc27f7dd421906d8a7263c4026dc623417811a9fcc9",
+      "swap_sources": [
+        "FINANCED_STREAM_QM_FINANCING:INTRADAY",
+        "FINANCED_STREAM_QM_FINANCING:OVERNIGHT"
+      ],
+      "symbol": "USDCAD.DWX",
+      "timeframe": "D1",
+      "trades": 175
+    },
+    {
+      "additional_slippage_stress_usd": 0.0,
+      "additional_spread_stress_usd": 0.0,
+      "commission_sources": [
+        "REGISTRY_MAX_PCT_NOTIONAL_FLAT"
+      ],
+      "ea_id": 10403,
+      "entry_span_utc": [
+        "2019-01-25T17:23:57+00:00",
+        "2025-10-20T22:57:23+00:00"
+      ],
+      "family": "turtle_trend",
+      "financing_label": "FINANCED",
+      "financing_library_status": "FINANCED_STREAMS_QM_FINANCING_EMBEDDED",
+      "id": "10403_XAUUSD_D1",
+      "label": "QM5_10403_et-turtle20x",
+      "magic": 104030002,
+      "news_profile": "PRE30_POST30_DXZ",
+      "risk_percent": 0.3125,
+      "role": "Gold trend",
+      "session": "MULTIDAY_D1",
+      "slot": 2,
+      "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\fable_alt_rosters_20260918\\deployable2\\streams_fin_full\\QM\\q08_trades\\10403_XAUUSD_DWX.jsonl",
+      "stream_sha256": "c225c4d13c172bb3798b5c97f671759a61f0473270562344c4ee18f515b37689",
+      "swap_sources": [
+        "FINANCED_STREAM_QM_FINANCING:INTRADAY",
+        "FINANCED_STREAM_QM_FINANCING:OVERNIGHT"
+      ],
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "D1",
+      "trades": 192
+    },
+    {
+      "additional_slippage_stress_usd": 0.0,
+      "additional_spread_stress_usd": 0.0,
+      "commission_sources": [
+        "REGISTRY_MAX_PCT_NOTIONAL_FLAT"
+      ],
+      "ea_id": 41219,
+      "entry_span_utc": [
+        "2019-01-22T01:01:01+00:00",
+        "2025-11-18T01:01:00+00:00"
+      ],
+      "family": "rsi_mean_reversion",
+      "financing_label": "FINANCED",
+      "financing_library_status": "FINANCED_STREAMS_QM_FINANCING_EMBEDDED",
+      "id": "41219_XAUUSD_D1",
+      "label": "QM5_41219_cum-rsi2-commodity-requal8",
+      "magic": 412190000,
+      "news_profile": "PRE30_POST30_DXZ",
+      "risk_percent": 0.3125,
+      "role": "Gold mean-reversion",
+      "session": "MULTIDAY_D1",
+      "slot": 0,
+      "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\fable_alt_rosters_20260918\\deployable2\\streams_fin_full\\QM\\q08_trades\\41219_XAUUSD_DWX.jsonl",
+      "stream_sha256": "4a748771544a3faab68ecabcc2462eea9dec20b1dae760474921dc00cfaa17a7",
+      "swap_sources": [
+        "FINANCED_STREAM_QM_FINANCING:INTRADAY",
+        "FINANCED_STREAM_QM_FINANCING:OVERNIGHT"
+      ],
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "D1",
+      "trades": 72
+    }
+  ],
+  "status": "OK",
+  "truncated_streams": []
+}
