@@ -369,3 +369,53 @@ def test_refused_repair_installs_typed_item_hold(tmp_path: Path) -> None:
     assert json.loads(hold["reason"])["refusal_reason"] == (
         "identity_binding_refused"
     )
+
+
+def test_refused_repair_is_noop_when_typed_hold_is_already_active(
+    tmp_path: Path,
+) -> None:
+    conn = sqlite3.connect(":memory:")
+    conn.row_factory = sqlite3.Row
+    conn.executescript(
+        """
+        CREATE TABLE work_items(
+          id TEXT PRIMARY KEY,status TEXT,verdict TEXT,claimed_by TEXT,
+          payload_json TEXT
+        );
+        CREATE TABLE work_item_supersedes(work_item_id TEXT);
+        CREATE TABLE work_item_holds(
+          work_item_id TEXT PRIMARY KEY,hold_code TEXT,reason TEXT,active INTEGER,
+          release_on_restart INTEGER,created_at TEXT,updated_at TEXT,
+          released_at TEXT,release_note TEXT
+        );
+        INSERT INTO work_items VALUES('q08','pending',NULL,NULL,'{"x":1}');
+        INSERT INTO work_item_holds VALUES(
+          'q08','Q08_PROMOTION_BINDING_REFUSED','original',1,0,
+          '2026-09-21T00:00:00Z','2026-09-21T00:00:00Z',NULL,NULL
+        );
+        """
+    )
+    item = {
+        "work_item_id": "q08",
+        "reason": "identity_binding_refused",
+        "detail": {"reason": "q08_current_build_compile_provenance_unavailable"},
+        "before_payload_raw": '{"x":1}',
+        "before_payload_sha256": q08_promotion_repair._sha256_text('{"x":1}'),
+    }
+
+    installed, detail = q08_promotion_repair._install_refusal_hold(
+        conn,
+        item,
+        task_id="second-task",
+        repair_reason="repeat repair",
+        journal_path=tmp_path / "journal.json",
+        now="2026-09-22T00:00:00Z",
+    )
+
+    assert installed is False
+    assert detail == {
+        "reason": "refusal_hold_already_active",
+        "existing_hold_code": q08_promotion_repair.REFUSAL_HOLD_CODE,
+    }
+    hold = conn.execute("SELECT reason,updated_at FROM work_item_holds").fetchone()
+    assert tuple(hold) == ("original", "2026-09-21T00:00:00Z")
