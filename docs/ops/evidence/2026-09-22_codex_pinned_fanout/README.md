@@ -144,3 +144,15 @@ concurrent pinned session refuse, so the effective parallelism stayed at 1. **Fi
 per task for pinned sessions (`orchestration:codex:<assigned_task_id>`) and unchanged for the task-agnostic single session;
 the exec-lease already guarantees one session per task. Tests: fan-out / lock / heartbeat suites green. Observation continues
 with cycle 2 (next controller start after the current one exits); rollback unchanged (`--max-sessions 1`).
+
+## Observation cycle 2 (2026-09-22T02:27:01Z) — controller started 2026-09-22T02:15:14Z with the per-task dedupe key (commit 4d69cf643b)
+
+| Slot | Leased task | State at 02:25Z |
+|---|---|---|
+| 2 | `7088da77` (harness v2) | running (live log 2.9 MB) |
+| 3 | `a36a5983` (news/time archive audit) | running (live log 0.66 MB) |
+| 4 | `5de65240` (Q08 promotion window fix) | running (live log 1.5 MB) |
+
+`spawn_leases`: three distinct `agent_task_exec:<task>` rows, one owner pid (8652), all renewed 02:25Z; no duplicate lease, no
+`ManagedCodexAlreadyRunning`, no unpinned prompt. **Three concurrent pinned Codex sessions confirmed** — the fan-out delivers the
+intended parallelism. Rollout complete; `--max-sessions 3` is the production setting, rollback unchanged.
