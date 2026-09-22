@@ -10,8 +10,12 @@ same grid at shift 1; skip if W < 0.4*ATR or W > 2.5*ATR; buy stop at RH (SL RL)
 OCO, no TP; trail SL to the min/max of the two last completed 60-min bars once open profit >= 1.0 * |entry-SL|;
 flat at the session flat time (first tick at/after it), pending orders cancelled then; framework Friday close
 21:00 server; framework news blackout (PRE30_POST30 high impact, strict symbol currencies) delays/blocks the
-placement tick only.  Fills on the M1 bar touching the level, at the level, zero spread; a bar touching BOTH
-edges scores a full loss at the stop (conservative).  Deterministic output (sorted keys, no timestamps).
+placement tick only.  Release attribution uses the separately governed native-calendar 08:30-ET audit so the
+known tester-CSV timestamp defect remains visible.  Harness v2 validates the pending pair against the first real-tick bid/ask at placement,
+including the governed custom-tester stop/freeze distance; one accepted leg is cancelled and scores no trade.
+Fills remain M1, but a gap through an entry or protective stop fills at the first available M1 open rather than
+at the stale level; a bar touching BOTH edges scores a full loss (conservative unknown ordering).  Deterministic
+output (sorted keys, no observation timestamps).
 """
 from __future__ import annotations
 
@@ -20,6 +24,7 @@ import bisect
 import calendar
 import csv
 import datetime as dt
+import hashlib
 import json
 import random
 import re
@@ -32,11 +37,22 @@ from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from hcc_m1_reader_0921 import read_year  # noqa: E402
+from velocity_execution_harness_v2_0922 import (  # noqa: E402
+    TickArchiveError,
+    infer_point_from_prices,
+    pending_stop_fill,
+    protective_stop_fill,
+    quotes_at_or_after,
+    tester_execution_spec,
+    validate_oco_placement,
+)
 
 RISK = 1000.0
 REPO = Path("C:/QM/repo")
 COMMISSION = json.load(open(REPO / "framework/registry/live_commission.json", encoding="utf-8"))
 NEWS_CSV = Path("D:/QM/data/news_calendar/news_calendar_2015_2025.csv")
+RELEASE_NATIVE_CSV = Path("D:/QM/mt5/T_Export/MQL5/Files/T_EXPORT_USD_HIGH_2018_2025_NATIVE.csv")
+RELEASE_AUDIT_DOC = REPO / "docs/ops/evidence/2026-09-05_news_calendar_timestamp_defect.md"
 CONTROL_REPORT = Path("D:/QM/reports/work_items/652e0768-ae51-45e4-a2cb-cd1e7c43afa7/QM5_41484/20260920_203244/raw/run_01/report.htm")
 NY = ZoneInfo("America/New_York")
 LON = ZoneInfo("Europe/London")
@@ -166,6 +182,34 @@ def load_news():
     return {c: sorted(v) for c, v in ev.items()}
 
 
+def load_release_anchors() -> list[int]:
+    """Native-calendar truth for USD high-impact releases scheduled at 08:30 ET.
+
+    This is attribution only.  Placement blackout continues to consume the
+    tester-bound CSV, including its documented historic timestamp defect, so
+    the rerun remains comparable to the governed Q02/Q04 evidence.
+    """
+    anchors = set()
+    with RELEASE_NATIVE_CSV.open(encoding="utf-8") as fh:
+        for row in csv.DictReader(fh):
+            if str(row.get("importance", "")).strip().lower() != "high":
+                continue
+            epoch = int(row["broker_time"])  # exporter label is documented: this is raw TRUE UTC
+            local = dt.datetime.fromtimestamp(epoch, UTC).astimezone(NY)
+            if (local.hour, local.minute, local.second) != (8, 30, 0):
+                continue
+            anchors.add(epoch)
+    return sorted(anchors)
+
+
+def file_sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def symbol_news_currencies(symbol: str):
     s = symbol.split(".")[0]
     if s in INDEX_NEWS_CCY:
@@ -196,6 +240,52 @@ def blackout_end(news, ccys, utc_t: int, pre=1800, post=1800):
                     moved = True
                 i += 1
     return None if t == utc_t else t
+
+
+def high_impact_at_anchor(release_anchors, utc_t: int, tolerance: int = 60) -> bool:
+    """Tag a placement whose economic anchor is a recorded high-impact release minute.
+
+    This is attribution only; it never changes placement or selection.  The tag
+    uses the governed native-calendar defect audit rather than the tester-bound
+    CSV.  Keeping attribution and blackout sources separate makes the known
+    historic timestamp defect visible without changing measured tester rules.
+    """
+    i = bisect.bisect_left(release_anchors, utc_t - tolerance)
+    return i < len(release_anchors) and release_anchors[i] <= utc_t + tolerance
+
+
+def placement_time(anchor_key, anchor: int, news, ccys):
+    """Replicate the placement cadence used by the measured mechanism.
+
+    The NY implementation runs on M30 new bars: after a blocked 15:30 anchor
+    it can retry once at 16:00, then its one-hour attempt window is closed.
+    The original A/B prescreen contract retains its continuous blackout-end
+    approximation because those are not the measured QM5_41485 M30 build.
+    """
+    if anchor_key == "C":
+        if blackout_end(news, ccys, utc_from_server(anchor)) is None:
+            return anchor, "on_time"
+        retry = anchor + 1800
+        if blackout_end(news, ccys, utc_from_server(retry)) is None:
+            return retry, "delayed"
+        return None, "blocked"
+    be = blackout_end(news, ccys, utc_from_server(anchor))
+    if be is None:
+        return anchor, "on_time"
+    placement = server_from_utc(be)
+    return (placement, "delayed") if placement < anchor + 3600 else (None, "blocked")
+
+
+def placement_epochs(anchor_key, anchor_spec, news, ccys):
+    """Unique placement epochs needed by all N cells for one symbol/anchor."""
+    out = set()
+    first, last = SEL[0] - dt.timedelta(days=3), VAL[1]
+    for day in day_list(anchor_spec, first, last):
+        anchor, _flat = anchor_times(anchor_spec, day)
+        placement, _state = placement_time(anchor_key, anchor, news, ccys)
+        if placement is not None:
+            out.add(placement)
+    return out
 
 
 # ----------------------------------------------------------------------------- cost
@@ -267,9 +357,10 @@ def friday_close_epoch(server_t: int):
     return calendar.timegm(dt.datetime(d.year, d.month, d.day, FRIDAY_CLOSE_HOUR_SERVER).timetuple())
 
 
-def simulate_cell(symbol, m1, times, grid, gkeys, atr, offset, anchor_spec, n_hours, news, ccys, conv):
-    """One cell -> list of trades + day-state counters."""
-    trades, states = [], defaultdict(int)
+def simulate_cell(symbol, m1, times, grid, gkeys, atr, offset, anchor_key, anchor_spec, n_hours, news, ccys, conv,
+                  placement_quotes, execution_spec, release_anchors, capture_events=False):
+    """One cell -> trades, day-state counters, and optional placement audit events."""
+    trades, states, events = [], defaultdict(int), []
     first, last = SEL[0] - dt.timedelta(days=3), VAL[1]
     nbars = len(times)
     for day in day_list(anchor_spec, first, last):
@@ -293,41 +384,54 @@ def simulate_cell(symbol, m1, times, grid, gkeys, atr, offset, anchor_spec, n_ho
         if w < MIN_MULT * a or w > MAX_MULT * a:
             states["atr_filtered"] += 1
             continue
-        placement = anchor
-        be = blackout_end(news, ccys, utc_from_server(anchor))
-        if be is not None:
-            placement = server_from_utc(be)
-            if placement >= anchor + 3600:
-                states["news_blocked"] += 1
-                continue
+        anchor_release = anchor_key == "C" and high_impact_at_anchor(release_anchors, utc_from_server(anchor))
+        placement, placement_state = placement_time(anchor_key, anchor, news, ccys)
+        if placement is None:
+            states["news_blocked"] += 1
+            if capture_events:
+                events.append({"day": day.isoformat(), "anchor_t": anchor, "placement_t": None,
+                               "status": "NEWS_BLOCKED", "release_anchor": anchor_release,
+                               "requested_buy": round(rh, 8), "requested_sell": round(rl, 8)})
+            continue
+        if placement_state == "delayed":
             states["news_delayed"] += 1
         j = bisect.bisect_left(times, placement)
         if j >= nbars or times[j] >= hard_end:
             states["no_bars"] += 1
             continue
-        # order validity at the placement tick (MT5 rejects a buy stop at/below the market and a sell stop
-        # at/above it; 13213 does not retry): a side whose level the market has already passed is not placed.
-        p_open = m1[j][1]
-        buy_ok, sell_ok = p_open < rh, p_open > rl
-        if not (buy_ok or sell_ok):
-            states["orders_invalid_at_placement"] += 1
+        decision = validate_oco_placement(rh, rl, placement_quotes.get(placement), execution_spec)
+        if capture_events:
+            events.append({"day": day.isoformat(), "anchor_t": anchor, "placement_t": placement,
+                           "status": decision.status, "release_anchor": anchor_release,
+                           "requested_buy": round(rh, 8), "requested_sell": round(rl, 8),
+                           "bid": decision.bid, "ask": decision.ask,
+                           "buy_ok": decision.buy_ok, "sell_ok": decision.sell_ok})
+        if decision.status == "UNKNOWN":
+            states["placement_unknown"] += 1
+            if anchor_release:
+                states["release_anchor_placement_unknown"] += 1
             continue
-        if not (buy_ok and sell_ok):
-            states["one_side_only"] += 1
+        if not decision.pair_accepted:
+            states["one_sided_send_cancelled" if decision.status == "CANCEL_NO_TRADE_ONE_SIDED"
+                   else "orders_invalid_at_placement"] += 1
+            if anchor_release:
+                states["release_anchor_cancel_no_trade"] += 1
+            continue
         # pending phase
         d = 0
         entry = None
         while j < nbars and times[j] < hard_end:
             _, o, h, l, c = m1[j]
-            hit_hi, hit_lo = (h >= rh) and buy_ok, (l <= rl) and sell_ok
-            if hit_hi and hit_lo:
-                d, entry, both = (1, rh, True)
+            buy_fill = pending_stop_fill(+1, rh, o, h, l)
+            sell_fill = pending_stop_fill(-1, rl, o, h, l)
+            if buy_fill is not None and sell_fill is not None:
+                d, entry, both = (1, buy_fill, True)
                 break
-            if hit_hi:
-                d, entry, both = (1, rh, False)
+            if buy_fill is not None:
+                d, entry, both = (1, buy_fill, False)
                 break
-            if hit_lo:
-                d, entry, both = (-1, rl, False)
+            if sell_fill is not None:
+                d, entry, both = (-1, sell_fill, False)
                 break
             j += 1
         if entry is None:
@@ -338,9 +442,20 @@ def simulate_cell(symbol, m1, times, grid, gkeys, atr, offset, anchor_spec, n_ho
         lots, nl = lot_and_notional(symbol, entry, w, rates)
         cost = commission_r(symbol, lots, nl)
         if both:
-            trades.append({"day": day, "dir": d, "entry": entry, "exit": entry - d * w, "gross_r": -1.0, "cost_r": cost,
-                           "net_r": -1.0 - cost, "hold_min": 0.0, "exit_kind": "both_edges_same_bar", "w": w})
+            stop_px = protective_stop_fill(d, rl if d > 0 else rh, m1[j][1], m1[j][2], m1[j][3])
+            exit_px = stop_px if stop_px is not None else entry - d * w
+            gross = d * (exit_px - entry) / w
+            trades.append({"day": day, "dir": d, "entry": entry, "exit": exit_px, "gross_r": gross, "cost_r": cost,
+                           "net_r": gross - cost, "hold_min": 0.0, "exit_kind": "both_edges_same_bar_unknown_order", "w": w,
+                           "requested_entry": rh if d > 0 else rl,
+                           "fill_t": fill_t, "exit_t": fill_t, "placement_t": placement,
+                           "placement_tick_msc": placement_quotes[placement].tick_time_msc,
+                           "placement_bid": decision.bid, "placement_ask": decision.ask,
+                           "release_anchor": anchor_release})
             states["trade"] += 1
+            states["both_edges_same_bar_unknown_order"] += 1
+            if anchor_release:
+                states["release_anchor_trade"] += 1
             continue
         sl = rl if d > 0 else rh
         jj = j + 1
@@ -356,11 +471,11 @@ def simulate_cell(symbol, m1, times, grid, gkeys, atr, offset, anchor_spec, n_ho
                 else:
                     exit_px, kind, exit_t = o, ("friday_close" if fri and hard_end == fri else "flat"), t
                 break
-            if d > 0 and l <= sl:
-                exit_px, kind, exit_t = sl, ("stop" if sl <= rl else "trail_stop"), t
-                break
-            if d < 0 and h >= sl:
-                exit_px, kind, exit_t = sl, ("stop" if sl >= rh else "trail_stop"), t
+            stop_fill = protective_stop_fill(d, sl, o, h, l)
+            if stop_fill is not None:
+                base_kind = "stop" if (d > 0 and sl <= rl) or (d < 0 and sl >= rh) else "trail_stop"
+                kind = base_kind + ("_gap_through" if abs(stop_fill - sl) > execution_spec.point * 1e-7 else "")
+                exit_px, exit_t = stop_fill, t
                 break
             # trailing (evaluated on the bar close; two last completed grid bars before this bar)
             moved = (c - entry) * d
@@ -378,9 +493,15 @@ def simulate_cell(symbol, m1, times, grid, gkeys, atr, offset, anchor_spec, n_ho
         gross = d * (exit_px - entry) / w
         trades.append({"day": day, "dir": d, "entry": entry, "exit": exit_px, "gross_r": gross, "cost_r": cost,
                        "net_r": gross - cost, "hold_min": (exit_t - fill_t) / 60.0, "exit_kind": kind, "w": w,
-                       "fill_t": fill_t, "exit_t": exit_t})
+                       "requested_entry": rh if d > 0 else rl,
+                       "fill_t": fill_t, "exit_t": exit_t, "placement_t": placement,
+                       "placement_tick_msc": placement_quotes[placement].tick_time_msc,
+                       "placement_bid": decision.bid, "placement_ask": decision.ask,
+                       "release_anchor": anchor_release})
         states["trade"] += 1
-    return trades, dict(states)
+        if anchor_release:
+            states["release_anchor_trade"] += 1
+    return trades, dict(states), events
 
 
 def bdays(a: dt.date, b: dt.date) -> int:
@@ -415,46 +536,82 @@ def period_stats(trades, a: dt.date, b: dt.date):
         per_year_n[str(d.year)] += 1
     holds = [t["hold_min"] for t in trades if a <= t["day"] <= b and t["hold_min"] > 0]
     kinds = defaultdict(int)
+    release_trades = []
     for t in trades:
         if a <= t["day"] <= b:
             kinds[t["exit_kind"]] += 1
+            if t.get("release_anchor"):
+                release_trades.append(t)
     return {"trades": n, "business_days": bd, "wins": sum(1 for _, r in sel if r > 0), "net_R": round(net, 3),
             "E_R": round(net / n, 4), "PF": round(gw / gl, 3) if gl > 0 else None, "density_per_bd": round(n / bd, 4),
             "R_per_bd": round(net / bd, 4), "worst_year_DD_R": round(worst_year_dd(sel), 2),
             "gross_E_R": round(sum(t["gross_r"] for t in trades if a <= t["day"] <= b) / n, 4),
             "cost_R_median": round(statistics.median([t["cost_r"] for t in trades if a <= t["day"] <= b]), 4),
             "hold_min_median": round(statistics.median(holds), 1) if holds else None,
+            "release_anchor_trades": len(release_trades),
+            "release_anchor_net_R": round(sum(t["net_r"] for t in release_trades), 3),
             "net_R_per_year": {y: round(v, 2) for y, v in sorted(per_year.items())},
             "trades_per_year": dict(sorted(per_year_n.items())), "exit_kinds": dict(sorted(kinds.items()))}
 
 
 def run_symbol(args):
-    symbol, news, conv = args
+    symbol, news, release_anchors, conv = args
     m1 = load_m1(symbol)
     if not m1:
         return symbol, {"error": "no_m1_history"}
     times = [r[0] for r in m1]
     ccys = symbol_news_currencies(symbol)
+    price_sample = [p for row in m1[:10000] for p in row[1:5]]
+    point = infer_point_from_prices(price_sample)
+    execution_spec = tester_execution_spec(symbol, point)
+    needed_epochs = set()
+    for anchor_key, anchor_spec in ANCHORS.items():
+        needed_epochs.update(placement_epochs(anchor_key, anchor_spec, news, ccys))
+    archive_error = None
+    try:
+        placement_quotes = quotes_at_or_after(symbol, needed_epochs)
+    except (TickArchiveError, OSError, ValueError) as exc:
+        # Fail closed.  A corrupt/unsupported archive is not permission to
+        # substitute a synthetic spread or the bid-only M1 open.
+        placement_quotes = {}
+        archive_error = f"{type(exc).__name__}: {exc}"
     grids = {}
     for off in (0, 1800):
         g = aggregate(m1, 3600, off)
         gkeys, atr = sma_atr(g)
         grids[off] = (g, gkeys, atr)
-    out = {"structural_validation": structural_check(m1), "news_currencies": ccys, "cells": {}, "sequences": {}, "sequences_val": {}}
+    out = {"structural_validation": structural_check(m1), "news_currencies": ccys, "cells": {}, "sequences": {},
+           "sequences_val": {}, "diagnostic_trades": {},
+           "execution_model": {"spec": execution_spec.to_dict(), "placement_epochs_requested": len(needed_epochs),
+                               "placement_quotes_found": len(placement_quotes), "tick_archive_error": archive_error}}
     for ak, spec in ANCHORS.items():
         g, gkeys, atr = grids[spec["grid_offset"]]
         for n in N_HOURS:
-            trades, states = simulate_cell(symbol, m1, times, g, gkeys, atr, spec["grid_offset"], spec, n, news, ccys, conv)
+            capture_events = symbol == "USDJPY.DWX" and ak == "C" and n in (2, 3)
+            trades, states, events = simulate_cell(symbol, m1, times, g, gkeys, atr, spec["grid_offset"], ak, spec, n,
+                                                    news, ccys, conv, placement_quotes, execution_spec, release_anchors,
+                                                    capture_events)
             key = f"{ak}{n}"
             out["cells"][key] = {"anchor": ak, "n_hours": n, "day_states": states,
                                  "selection": period_stats(trades, *SEL), "validation": period_stats(trades, *VAL)}
             out["sequences"][key] = [(t["day"].isoformat(), round(t["net_r"], 6)) for t in trades if SEL[0] <= t["day"] <= SEL[1]]
             out["sequences_val"][key] = [(t["day"].isoformat(), round(t["net_r"], 6)) for t in trades if VAL[0] <= t["day"] <= VAL[1]]
-            if symbol == "USDJPY.DWX" and key == "A3":
-                out["control_trades"] = [{"day": t["day"].isoformat(), "dir": t["dir"], "net_r": round(t["net_r"], 5),
-                                          "gross_r": round(t["gross_r"], 5), "hold_min": round(t["hold_min"], 1), "exit_kind": t["exit_kind"],
-                                          "fill_t": t.get("fill_t"), "exit_t": t.get("exit_t")}
-                                         for t in trades if SEL[0] <= t["day"] <= SEL[1]]
+            if symbol == "USDJPY.DWX" and key in ("A3", "C2", "C3"):
+                serial = [{"day": t["day"].isoformat(), "dir": t["dir"], "entry": round(t["entry"], 8),
+                           "requested_entry": round(t["requested_entry"], 8), "exit": round(t["exit"], 8),
+                           "w": round(t["w"], 8), "net_r": round(t["net_r"], 6),
+                           "gross_r": round(t["gross_r"], 6), "hold_min": round(t["hold_min"], 1),
+                           "exit_kind": t["exit_kind"], "placement_t": t.get("placement_t"),
+                           "placement_tick_msc": t.get("placement_tick_msc"),
+                           "placement_bid": t.get("placement_bid"), "placement_ask": t.get("placement_ask"),
+                           "fill_t": t.get("fill_t"), "exit_t": t.get("exit_t"),
+                           "release_anchor": bool(t.get("release_anchor"))}
+                          for t in trades if SEL[0] <= t["day"] <= VAL[1]]
+                out["diagnostic_trades"][key] = serial
+                if events:
+                    out.setdefault("diagnostic_placements", {})[key] = events
+                if key == "A3":
+                    out["control_trades"] = [t for t in serial if t["day"] <= SEL[1].isoformat()]
     return symbol, out
 
 
@@ -512,7 +669,9 @@ def parse_control_report(path: Path):
         elif cur is not None:
             net = d["profit"] + d["comm"] + cur["comm"]
             trades.append({"day": cur["t"].date(), "dir": 1 if cur["type"] == "buy" else -1, "net_r": net / RISK,
-                           "hold_min": (d["t"] - cur["t"]).total_seconds() / 60.0, "fill_t": cur["t"], "exit_t": d["t"], "comment": d["comment"]})
+                           "entry": cur["price"], "exit": d["price"],
+                           "hold_min": (d["t"] - cur["t"]).total_seconds() / 60.0, "fill_t": cur["t"],
+                           "exit_t": d["t"], "comment": d["comment"]})
             cur = None
     return trades
 
@@ -558,21 +717,23 @@ def main() -> int:
     a = ap.parse_args()
     symbols = ["USDJPY.DWX"] if a.control_only else (ALL_SYMBOLS if a.symbols == "ALL" else a.symbols.split(","))
     news = load_news()
+    release_anchors = load_release_anchors()
     conv = {}
     for pair in USD_PAIRS:
         g = aggregate(load_m1(pair), 3600)
         keys = sorted(g)
         conv[pair] = (keys, [g[k][3] for k in keys])
-    print(f"news currencies loaded: {len(news)}; conversion pairs: {len(conv)}", file=sys.stderr)
+    print(f"news currencies loaded: {len(news)}; native 08:30 ET release anchors: {len(release_anchors)}; "
+          f"conversion pairs: {len(conv)}", file=sys.stderr)
     results = {}
     if a.workers > 1 and len(symbols) > 1:
         with ProcessPoolExecutor(max_workers=a.workers) as ex:
-            for sym, res in ex.map(run_symbol, [(s, news, conv) for s in symbols]):
+            for sym, res in ex.map(run_symbol, [(s, news, release_anchors, conv) for s in symbols]):
                 results[sym] = res
                 print(f"done {sym}", file=sys.stderr)
     else:
         for s in symbols:
-            sym, res = run_symbol((s, news, conv))
+            sym, res = run_symbol((s, news, release_anchors, conv))
             results[sym] = res
             print(f"done {sym}", file=sys.stderr)
     # control
@@ -606,6 +767,15 @@ def main() -> int:
             val_ok = v["trades"] > 0 and v["E_R"] > 0 and (v["PF"] or 0) >= 1.05
             rec["passes_SEL_rule"] = sel_ok
             rec["passes_VAL_confirmation"] = bool(sel_ok and val_ok)
+            unknown_reasons = []
+            if cell["day_states"].get("placement_unknown", 0) > 0:
+                unknown_reasons.append("placement_tick_unknown")
+            if s.get("release_anchor_trades", 0) + v.get("release_anchor_trades", 0) > 0:
+                unknown_reasons.append("mandatory_news_blackout_unresolved")
+            execution_unknown = bool(unknown_reasons)
+            rec["prescreen_unknown_reasons"] = unknown_reasons
+            rec["prescreen_state"] = ("UNKNOWN" if execution_unknown else
+                                      "WORTH_MT5_TEST" if sel_ok and val_ok else "CLEAR_REJECT")
             if sel_ok:
                 nb = []
                 for m in N_HOURS:
@@ -613,23 +783,31 @@ def main() -> int:
                         c2 = res["cells"].get(f"{cell['anchor']}{m}")
                         nb.append(bool(c2 and c2["selection"]["trades"] > 0 and c2["selection"]["E_R"] > 0))
                 rec["family_consistent"] = all(nb)
-                if val_ok:
+                if val_ok and not execution_unknown:
                     survivors.append({"symbol": sym, "cell": key, "family_consistent": all(nb), "SEL": s, "VAL": v,
                                       "chance_pass_prob_SEL": p, "chance_pass_prob_VAL": pv, "chance_pass_prob_joint": pj})
     n_cells = sum(1 for c in cells.values() if c["selection"]["trades"] > 0)
     out = {
-        "schema": "qm.velocity-family-f1-sweep/v1",
+        "schema": "qm.velocity-family-f1-sweep/v2",
         "registration": "docs/research/velocity/VELOCITY_FAMILY_F1_SESSION_RANGE_SWEEP_2026-09-21.md",
         "script": "tools/strategy_farm/session_tools/velocity_family_f1_sweep_0921.py",
         "reader": "tools/strategy_farm/session_tools/hcc_m1_reader_0921.py",
+        "execution_module": "tools/strategy_farm/session_tools/velocity_execution_harness_v2_0922.py",
         "mechanism": "QM5_13213 Balke session-range breakout, replicated (see module docstring)",
         "anchors": {k: v["label"] for k, v in ANCHORS.items()}, "n_hours": list(N_HOURS),
         "selection_period": [SEL[0].isoformat(), SEL[1].isoformat()], "validation_period": [VAL[0].isoformat(), VAL[1].isoformat()],
         "risk_fixed": RISK, "commission_model": COMMISSION["model"], "commission_classes": COMMISSION["classes"],
         "point_values": {k: {"value": v[0], "currency": v[1], "source": v[2]} for k, v in POINT_VALUE.items()},
-        "spread_model": "zero (.DWX custom history carries no spread; XAUUSD FTMO-venue spread sensitivity: see H-V2 prescreen)",
-        "fill_model": "M1 bar touching the level fills at the level; both edges in one bar = full loss at the stop; trailing evaluated on M1 closes",
-        "news_model": "PRE30_POST30 high-impact (news_calendar_2015_2025.csv, UTC) on the strict symbol currencies; delays/blocks the placement tick only",
+        "spread_model": "real .tkc bid/ask at the placement tick; no synthetic fallback; M1 management after placement",
+        "placement_model": "both pending stops validated against Ask/Bid plus max(stops_level,freeze_level); one-sided send is cancelled/no-trade; missing tick/spec is UNKNOWN",
+        "fill_model": "M1 touch; gaps through pending/protective stops fill at the first available M1 open; both edges in one bar retain conservative unknown ordering; trailing evaluated on M1 closes",
+        "news_model": "PRE30_POST30 high-impact using the tester-bound news_calendar_2015_2025.csv on strict symbol currencies; delays/blocks placement only and intentionally preserves the measured tester calendar defect",
+        "release_tag_model": {"scope": "native MT5 USD high-impact 08:30 America/New_York attribution only",
+                              "source": str(RELEASE_NATIVE_CSV).replace("\\", "/"),
+                              "source_sha256": file_sha256(RELEASE_NATIVE_CSV),
+                              "authority_record": str(RELEASE_AUDIT_DOC.relative_to(REPO)).replace("\\", "/"),
+                              "authority_record_sha256": file_sha256(RELEASE_AUDIT_DOC),
+                              "unique_utc_anchors": len(release_anchors)},
         "selection_rule": {"SEL": "n>=300, E[R]>=+0.05R net, PF>=1.10, worst-year DD<=25R", "VAL": "E[R]>0, PF>=1.05 (confirmation only)",
                            "family_consistency": "neighbouring N cells of the same symbol/anchor have SEL E[R]>0"},
         "null": {"method": "centred circular block bootstrap (block 20 trades, 200 resamples, seed 20260921) of each cell's SEL net-R sequence; P(meets SEL rule)",
@@ -638,16 +816,25 @@ def main() -> int:
                  "expected_false_survivors_after_VAL": round(null_joint, 3),
                  "caveat": "cells of one symbol share days and ranges (neighbouring N, overlapping anchors) and are not independent; the sums are per-cell expectations, not a family-level test"},
         "observed": {"cells_passing_SEL_rule": sum(1 for c in cells.values() if c.get("passes_SEL_rule")),
-                     "survivors_after_VAL_confirmation": len(survivors),
-                     "survivors_family_consistent": sum(1 for s in survivors if s["family_consistent"])},
+                      "survivors_after_VAL_confirmation": len(survivors),
+                      "survivors_family_consistent": sum(1 for s in survivors if s["family_consistent"]),
+                      "prescreen_state_counts": {state: sum(1 for c in cells.values() if c.get("prescreen_state") == state)
+                                                 for state in ("CLEAR_REJECT", "WORTH_MT5_TEST", "UNKNOWN")}},
         "survivors": sorted(survivors, key=lambda s: (s["symbol"], s["cell"])),
         "control_cell": control,
+        "states": ["CLEAR_REJECT", "WORTH_MT5_TEST", "UNKNOWN"],
+        "unknown_policy": "placement facts unavailable/invalid or a native 08:30-ET high-impact release traded despite the mandatory blackout",
+        "economic_validation_forbidden": True,
         "symbols": {sym: {"structural_validation": res.get("structural_validation"), "news_currencies": res.get("news_currencies"),
+                          "execution_model": res.get("execution_model"),
                           "validation_label": ("harvest_validated" if sym in ("EURUSD.DWX", "GBPUSD.DWX") else
                                                "structural_validation_only" if sym.split(".")[0] in INDICES else "same_reader_same_format"),
                           "error": res.get("error")} for sym, res in sorted(results.items())},
         "cells": dict(sorted(cells.items())),
     }
+    if a.control_only:
+        out["diagnostic_trades"] = {"USDJPY.DWX": results.get("USDJPY.DWX", {}).get("diagnostic_trades", {})}
+        out["diagnostic_placements"] = {"USDJPY.DWX": results.get("USDJPY.DWX", {}).get("diagnostic_placements", {})}
     Path(a.out).write_text(json.dumps(out, indent=1, sort_keys=True, default=str) + "\n", encoding="utf-8", newline="\n")
     if control:
         print("CONTROL USDJPY A3:", json.dumps({k: control[k] for k in ("simulation", "tester_report", "days_common", "days_sim_only", "days_report_only", "same_direction_on_common_days", "net_R_diff_on_common_same_dir_days")}, indent=None))
@@ -661,7 +848,9 @@ def main() -> int:
             continue
         print(f'{c["symbol"]:<12}{c["cell"]:<5}{s["trades"]:>6}{s["density_per_bd"]:>6.2f}{s["E_R"]:>8.3f}{s["PF"] or 0:>7.2f}{s["worst_year_DD_R"]:>7.1f}{s["R_per_bd"]:>8.3f} | '
               f'{v.get("trades", 0):>6}{(v.get("E_R") if v.get("trades") else 0) or 0:>8.3f}{(v.get("PF") if v.get("trades") else 0) or 0:>7.2f}{(v.get("worst_year_DD_R") if v.get("trades") else 0) or 0:>7.1f}'
-              + ("  SURVIVOR" if c.get("passes_VAL_confirmation") else ("  sel-pass" if c.get("passes_SEL_rule") else "")))
+              + ("  UNKNOWN" if c.get("prescreen_state") == "UNKNOWN" else
+                 "  SURVIVOR" if c.get("prescreen_state") == "WORTH_MT5_TEST" else
+                 "  sel-pass" if c.get("passes_SEL_rule") else ""))
     return 0
 
 

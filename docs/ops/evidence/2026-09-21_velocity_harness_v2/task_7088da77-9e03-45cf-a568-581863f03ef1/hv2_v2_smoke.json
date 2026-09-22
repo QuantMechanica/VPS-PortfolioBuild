@@ -1,0 +1,320 @@
+{
+ "execution_module": "tools/strategy_farm/session_tools/velocity_execution_harness_v2_0922.py",
+ "hypotheses": {
+  "HV2": {
+   "commission_class_params": {
+    "flat_per_lot_rt": 0.0,
+    "pct_rate_rt": 5e-05
+   },
+   "commission_model": "max(pct_rate_rt*notional_acct, flat_per_lot_rt*volume)",
+   "hypothesis": "HV2",
+   "news_filter": "not applied (prescreen is pre-filter; the framework news blackout can only reduce density)",
+   "risk_fixed": 1000.0,
+   "selection_period": [
+    "2018-07-01",
+    "2022-12-31"
+   ],
+   "spec": {
+    "anchor": [
+     8,
+     30
+    ],
+    "cls": "commodity",
+    "contract": 100.0,
+    "failure_variant": false,
+    "flat": [
+     16,
+     0
+    ],
+    "tz": "America/New_York",
+    "window_min": 60
+   },
+   "spread_model": "zero (.DWX custom history carries no spread; live spread is an evidence GAP unless measured separately)",
+   "symbols": {
+    "XAUUSD.DWX": {
+     "cost_r": {
+      "at_median_selection_range_width_and_median_entry_price": 0.0183,
+      "median_entry_price": 1844.52,
+      "median_per_trade": 0.0179,
+      "median_selection_range_width": 5.05,
+      "p90_per_trade": 0.0284
+     },
+     "coverage": {
+      "days_per_year": {
+       "2018": 258,
+       "2019": 258,
+       "2020": 259,
+       "2021": 258,
+       "2022": 258,
+       "2023": 254,
+       "2024": 259,
+       "2025": 256
+      },
+      "first_day": "2018-01-02",
+      "last_day": "2025-12-31",
+      "m1_bars": 2819231
+     },
+     "day_states": {
+      "cap_excluded": 158,
+      "floor_excluded": 271,
+      "kind_B": 1129,
+      "no_range": 1,
+      "no_signal": 373,
+      "trade": 1129
+     },
+     "day_states_per_year": {
+      "2018": {
+       "cap_excluded": 12,
+       "floor_excluded": 15,
+       "kind_B": 73,
+       "no_signal": 30,
+       "trade": 73
+      },
+      "2019": {
+       "cap_excluded": 30,
+       "floor_excluded": 25,
+       "kind_B": 155,
+       "no_signal": 48,
+       "trade": 155
+      },
+      "2020": {
+       "cap_excluded": 18,
+       "floor_excluded": 43,
+       "kind_B": 145,
+       "no_signal": 53,
+       "trade": 145
+      },
+      "2021": {
+       "cap_excluded": 35,
+       "floor_excluded": 18,
+       "kind_B": 146,
+       "no_signal": 59,
+       "trade": 146
+      },
+      "2022": {
+       "cap_excluded": 22,
+       "floor_excluded": 17,
+       "kind_B": 163,
+       "no_signal": 56,
+       "trade": 163
+      },
+      "2023": {
+       "cap_excluded": 20,
+       "floor_excluded": 46,
+       "kind_B": 147,
+       "no_range": 1,
+       "no_signal": 40,
+       "trade": 147
+      },
+      "2024": {
+       "cap_excluded": 10,
+       "floor_excluded": 47,
+       "kind_B": 164,
+       "no_signal": 38,
+       "trade": 164
+      },
+      "2025": {
+       "cap_excluded": 11,
+       "floor_excluded": 60,
+       "kind_B": 136,
+       "no_signal": 49,
+       "trade": 136
+      }
+     },
+     "hold_min_A15_p50": 65.0,
+     "range_distribution_selection": {
+      "days": 1163,
+      "thin_range_floor_atr_mult": 0.85,
+      "w_atr_mult_p10_p50_p90": [
+       0.848,
+       1.33,
+       2.194
+      ],
+      "w_price_p10_p50_p90": [
+       2.312,
+       5.05,
+       9.482
+      ],
+      "wide_range_cap_atr_mult": 2.19
+     },
+     "range_distribution_validation": {
+      "days": 768,
+      "w_atr_mult_p10_p50_p90": [
+       0.726,
+       1.152,
+       1.907
+      ],
+      "w_price_p10_p50_p90": [
+       3.35,
+       6.525,
+       14.444
+      ]
+     },
+     "selection": {
+      "arms": {
+       "A15_ALL": {
+        "E_R": -0.0515,
+        "PF": 0.908,
+        "R_per_bd": -0.0299,
+        "density_per_bd": 0.5804,
+        "net_R": -35.091,
+        "net_R_per_year": {
+         "2018": 2.95,
+         "2019": -21.47,
+         "2020": -18.02,
+         "2021": 6.54,
+         "2022": -5.09
+        },
+        "trades": 682,
+        "wins": 278,
+        "worst_year_DD_R": 27.81
+       },
+       "A15_B": {
+        "E_R": -0.0515,
+        "PF": 0.908,
+        "R_per_bd": -0.0299,
+        "density_per_bd": 0.5804,
+        "net_R": -35.091,
+        "net_R_per_year": {
+         "2018": 2.95,
+         "2019": -21.47,
+         "2020": -18.02,
+         "2021": 6.54,
+         "2022": -5.09
+        },
+        "trades": 682,
+        "wins": 278,
+        "worst_year_DD_R": 27.81
+       },
+       "A20_ALL": {
+        "E_R": -0.047,
+        "PF": 0.919,
+        "R_per_bd": -0.0273,
+        "density_per_bd": 0.5804,
+        "net_R": -32.022,
+        "net_R_per_year": {
+         "2018": 8.8,
+         "2019": -21.37,
+         "2020": -26.53,
+         "2021": 14.22,
+         "2022": -7.14
+        },
+        "trades": 682,
+        "wins": 261,
+        "worst_year_DD_R": 29.12
+       },
+       "A20_B": {
+        "E_R": -0.047,
+        "PF": 0.919,
+        "R_per_bd": -0.0273,
+        "density_per_bd": 0.5804,
+        "net_R": -32.022,
+        "net_R_per_year": {
+         "2018": 8.8,
+         "2019": -21.37,
+         "2020": -26.53,
+         "2021": 14.22,
+         "2022": -7.14
+        },
+        "trades": 682,
+        "wins": 261,
+        "worst_year_DD_R": 29.12
+       }
+      },
+      "business_days": 1175,
+      "days_with_data": 1163,
+      "from": "2018-07-02",
+      "to": "2022-12-30"
+     },
+     "spread_sensitivity": {
+      "median_spread_points": 44.0,
+      "median_spread_price": 0.44,
+      "note": "one spread per round trip charged against the range-width stop; the harvest is 2026 FTMO venue data, the ranges are 2018-2025 .DWX data",
+      "p90_spread_points": 51.0,
+      "point_size": 0.01,
+      "rows": 100000,
+      "source": "D:/QM/reports/ftmo_spread_calibration/XAUUSD_FTMO_M1.jsonl",
+      "spread_R_at_median_selection_width": 0.0871,
+      "spread_R_at_median_validation_width": 0.0674,
+      "status": "MEASURED"
+     },
+     "validation": {
+      "arms": {
+       "A15_ALL": {
+        "E_R": 0.0377,
+        "PF": 1.07,
+        "R_per_bd": 0.0215,
+        "density_per_bd": 0.5716,
+        "net_R": 16.839,
+        "net_R_per_year": {
+         "2023": 9.24,
+         "2024": -10.17,
+         "2025": 17.76
+        },
+        "trades": 447,
+        "wins": 195,
+        "worst_year_DD_R": 19.62
+       },
+       "A15_B": {
+        "E_R": 0.0377,
+        "PF": 1.07,
+        "R_per_bd": 0.0215,
+        "density_per_bd": 0.5716,
+        "net_R": 16.839,
+        "net_R_per_year": {
+         "2023": 9.24,
+         "2024": -10.17,
+         "2025": 17.76
+        },
+        "trades": 447,
+        "wins": 195,
+        "worst_year_DD_R": 19.62
+       },
+       "A20_ALL": {
+        "E_R": 0.0286,
+        "PF": 1.049,
+        "R_per_bd": 0.0164,
+        "density_per_bd": 0.5716,
+        "net_R": 12.791,
+        "net_R_per_year": {
+         "2023": -2.51,
+         "2024": -5.37,
+         "2025": 20.67
+        },
+        "trades": 447,
+        "wins": 174,
+        "worst_year_DD_R": 23.18
+       },
+       "A20_B": {
+        "E_R": 0.0286,
+        "PF": 1.049,
+        "R_per_bd": 0.0164,
+        "density_per_bd": 0.5716,
+        "net_R": 12.791,
+        "net_R_per_year": {
+         "2023": -2.51,
+         "2024": -5.37,
+         "2025": 20.67
+        },
+        "trades": 447,
+        "wins": 174,
+        "worst_year_DD_R": 23.18
+       }
+      },
+      "business_days": 782,
+      "days_with_data": 769,
+      "from": "2023-01-03",
+      "to": "2025-12-31"
+     }
+    }
+   },
+   "validation_period": [
+    "2023-01-01",
+    "2025-12-31"
+   ]
+  }
+ },
+ "reader": "tools/strategy_farm/session_tools/hcc_m1_reader_0921.py",
+ "schema": "qm.velocity-hv-prescreen/v2",
+ "script": "tools/strategy_farm/session_tools/velocity_hv_prescreen_0921.py"
+}

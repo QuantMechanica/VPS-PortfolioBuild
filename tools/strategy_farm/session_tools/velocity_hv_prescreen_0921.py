@@ -11,8 +11,8 @@ Conventions (all deterministic, no timestamps in the output):
   summer). Economic anchors are mapped per date with ``zoneinfo`` (Europe/London, America/New_York)
   -> New York local -> server time; never a fixed UTC hour.
 * Shift-1 / closed-bar contract: a signal on M15 bar i uses only bars <= i (i is CLOSED when read);
-  the entry is the OPEN of the first M1 bar at/after the start of bar i+1. Stops/targets are
-  evaluated on M1 bars with the conservative same-bar rule (stop before target).
+  the entry is the OPEN of the first M1 bar at/after the start of bar i+1. Stops/targets use the
+  shared harness-v2 first-available M1 gap rule and the conservative same-bar rule (stop first).
 * H-V1 (EURUSD, GBPUSD): range = the four closed M15 bars in the 60 min before 08:00 Europe/London;
   entry window = the closed M15 bars starting in [08:00, 12:00) London; flat at 16:00 London.
   Precedence: the FIRST M15 bar in the window that trades outside the range decides the day -
@@ -43,6 +43,7 @@ from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from hcc_m1_reader_0921 import read_year  # noqa: E402
+from velocity_execution_harness_v2_0922 import protective_stop_fill, target_fill  # noqa: E402
 
 RISK = 1000.0
 COMMISSION = json.load(open("C:/QM/repo/framework/registry/live_commission.json", encoding="utf-8"))
@@ -204,20 +205,14 @@ def simulate_day(spec, m1, times, m15, atr_keys, atr, day: dt.date, floor_cap):
         jj = j
         while jj < len(times) and times[jj] < flat:
             _, o, h, l, c, *_ = m1[jj]
-            if d > 0:
-                if l <= stop:
-                    res = -1.0
-                    break
-                if h >= target:
-                    res = mult
-                    break
-            else:
-                if h >= stop:
-                    res = -1.0
-                    break
-                if l <= target:
-                    res = mult
-                    break
+            stop_px = protective_stop_fill(d, stop, o, h, l)
+            if stop_px is not None:
+                res = d * (stop_px - entry) / w
+                break
+            target_px = target_fill(d, target, o, h, l)
+            if target_px is not None:
+                res = d * (target_px - entry) / w
+                break
             jj += 1
         if res is None:
             # Time-stop exit at the CLOSE of the final closed bar before the flat time (2026-09-21 fix
@@ -382,7 +377,8 @@ def main() -> int:
     ap.add_argument("--emit-artifact-extracts", action="store_true")
     a = ap.parse_args()
     y0, y1 = (int(x) for x in a.years.split("-"))
-    full = {"schema": "qm.velocity-hv-prescreen/v1", "reader": "tools/strategy_farm/session_tools/hcc_m1_reader_0921.py",
+    full = {"schema": "qm.velocity-hv-prescreen/v2", "reader": "tools/strategy_farm/session_tools/hcc_m1_reader_0921.py",
+            "execution_module": "tools/strategy_farm/session_tools/velocity_execution_harness_v2_0922.py",
             "script": "tools/strategy_farm/session_tools/velocity_hv_prescreen_0921.py", "hypotheses": {}}
     for hyp in a.hyp.split(","):
         full["hypotheses"][hyp] = run(hyp, range(y0, y1 + 1))

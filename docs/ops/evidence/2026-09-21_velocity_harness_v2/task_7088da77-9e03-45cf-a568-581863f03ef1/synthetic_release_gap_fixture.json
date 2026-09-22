@@ -1,0 +1,71 @@
+{
+ "assertions": {
+  "all_gaps_use_first_m1_open": true,
+  "one_side_never_becomes_trade": true
+ },
+ "gap_rules": {
+  "buy_pending": {
+   "fill": 150.4,
+   "level": 150.0,
+   "m1_high": 150.6,
+   "m1_low": 150.3,
+   "m1_open": 150.4
+  },
+  "long_protective": {
+   "fill": 148.8,
+   "level": 149.0,
+   "m1_high": 149.0,
+   "m1_low": 148.6,
+   "m1_open": 148.8
+  },
+  "long_target": {
+   "fill": 151.3,
+   "level": 151.0,
+   "m1_high": 151.5,
+   "m1_low": 151.2,
+   "m1_open": 151.3
+  },
+  "sell_pending": {
+   "fill": 149.7,
+   "level": 150.0,
+   "m1_high": 149.8,
+   "m1_low": 149.5,
+   "m1_open": 149.7
+  },
+  "short_protective": {
+   "fill": 151.4,
+   "level": 151.0,
+   "m1_high": 151.6,
+   "m1_low": 151.2,
+   "m1_open": 151.4
+  }
+ },
+ "placement": {
+  "decision": {
+   "ask": 151.858,
+   "bid": 151.79,
+   "buy_ok": false,
+   "minimum_distance": 0.0,
+   "reason": "one_side_rejected_peer_cancelled",
+   "sell_ok": true,
+   "status": "CANCEL_NO_TRADE_ONE_SIDED"
+  },
+  "expected_status": "CANCEL_NO_TRADE_ONE_SIDED",
+  "quote": {
+   "ask": 151.858,
+   "bid": 151.79,
+   "requested_epoch": 1712763000,
+   "source_path": "synthetic://release-tick",
+   "spread": 0.06800000000001205,
+   "tick_time_msc": 1712763000593
+  },
+  "requested_buy_stop": 151.854,
+  "requested_sell_stop": 151.774
+ },
+ "release_anchor": {
+  "high_impact": true,
+  "local_time": "08:30",
+  "zone": "America/New_York"
+ },
+ "schema": "qm.velocity-harness-v2-synthetic-fixture/v1"
+}

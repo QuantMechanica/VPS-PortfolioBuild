@@ -564,3 +564,58 @@ unaffected because Tokyo-anchor days do not coincide with US releases; (2) the "
 (3) the harness needs tick-level placement validity (bid+ask+stop level), EA-identical fail-closed OCO, gap fills and
 release-day tagging before any further anchor sweep (Codex ticket 7088da77), after which this sweep is re-run under the same
 registration. H-V4 / QM5_41485 retired.
+
+## Revision 2 — harness v2 tick-level placement and gap correction (2026-09-22)
+
+Task `7088da77-9e03-45cf-a568-581863f03ef1` implemented the requested research-harness correction without changing the frozen
+mechanism, selection rule, card, EA, registry, factory, or pipeline state.  The shared execution module decodes the governed MT5
+`.tkc` archive, observes the first real bid/ask tick at placement, validates buy stops against Ask and sell stops against Bid plus
+the bound custom-tester stop/freeze distance, cancels a lone accepted peer as no-trade, and charges the first available M1 open
+when price gaps through a pending or protective stop.  Missing, corrupt, or inverted tick facts fail closed as `UNKNOWN`.
+
+The same registered SEL / VAL / null sweep was rerun across the 35-symbol universe.  There were 314 populated cells, 30 SEL-rule
+passes, and three `WORTH_MT5_TEST` survivors; state counts over all 315 cells were 148 `CLEAR_REJECT`, three `WORTH_MT5_TEST`, and
+164 `UNKNOWN`.  The high `UNKNOWN` count is intentional: v2 neither synthesizes spread nor permits a C-anchor cell to become a
+candidate when the native calendar proves that it traded through a mandatory 08:30 New York high-impact blackout.
+
+| v2 survivor | SEL n | SEL E[R] | SEL PF | VAL n | VAL E[R] | VAL PF |
+|---|---:|---:|---:|---:|---:|---:|
+| NZDJPY.DWX A2 | 970 | +0.0570 | 1.122 | 592 | +0.0286 | 1.065 |
+| USDJPY.DWX A3 | 893 | +0.0675 | 1.161 | 562 | +0.1066 | 1.248 |
+| USDJPY.DWX A4 | 821 | +0.0753 | 1.184 | 503 | +0.1360 | 1.332 |
+
+These are prescreen states only, not economic validation or pipeline verdicts.
+
+### USDJPY control and C2 / C3
+
+The USDJPY A3 control remains close in trade identity: harness 893 trades / +60.24R / PF 1.161 versus tester 888 / +46.64R /
+PF 1.122, with 880 common days and the same direction on 876 of them.  C2 and C3 cannot be survivors for two independent reasons:
+archived quotes on 2019-03-27 and 2020-12-08 have Bid greater than Ask, and the native calendar proves that their tester-bound
+news file allowed hundreds of mandatory release-anchor placements.  V2 reports both reasons and returns `UNKNOWN`.
+
+| cell | state | SEL n / E[R] / PF | VAL n / E[R] / PF | one-sided cancels | invalid-quote days |
+|---|---|---|---|---:|---:|
+| USDJPY C2 | `UNKNOWN` | 869 / +0.1856 / 1.409 | 559 / +0.0821 / 1.167 | 94 | 2 |
+| USDJPY C3 | `UNKNOWN` | 808 / +0.1518 / 1.369 | 528 / +0.0904 / 1.201 | 79 | 1 |
+
+The corrected C2 validation totals remain materially optimistic relative to Q04 and therefore cannot validate economics:
+
+| year | harness trades / net R / PF | Q04 trades / net R / PF | registered Q04 PF |
+|---|---|---|---:|
+| 2023 | 189 / +14.634 / 1.163 | 174 / +0.550 / 1.0059 | 1.004 |
+| 2024 | 170 / +10.082 / 1.130 | 148 / -23.456 / 0.7239 | 0.724 |
+| 2025 | 200 / +21.163 / 1.197 | 200 / -10.461 / 0.9157 | 0.916 |
+
+The golden ledger reconciles all 16 Q03 `ENTRY_REJECTED` days in 2024 to v2 one-sided cancellations.  It separately binds the
+complete native MT5 USD-high calendar export and tags 94 / 100 / 88 range-eligible 08:30 New York high-impact anchors in
+2023 / 2024 / 2025.  Only 23 / 37 / 10 were blocked by the measured tester CSV; 185 VAL placements were accepted, confirming
+that mandatory news blackout remains unresolved.  The ledger records 321 difficult-day comparisons and binds all three Q04
+reports by SHA-256.  A deterministic synthetic fixture proves one-sided release-tick cancellation and first-M1-price gap fills.
+This is a mechanics PASS and an economic-equivalence `UNKNOWN`; it confers no pipeline authority.  H-V4 / QM5_41485 retains permanent negative lineage
+`PRESCREEN_EXECUTION_MODEL_FALSE_POSITIVE`.
+
+Durable evidence:
+
+- `docs/ops/evidence/2026-09-20_velocity_book/harness_v2_golden_test.md`
+- `docs/ops/evidence/2026-09-21_velocity_harness_v2/task_7088da77-9e03-45cf-a568-581863f03ef1/README.md`
+- deterministic JSON and focused verification outputs in the same task-scoped evidence directory
