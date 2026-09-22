@@ -13,7 +13,11 @@
     "stale_ex5_sha256": "e9670141e89249aff7df44a10a2402e2103aa4cecf8d0a35a8cd6d6babedf108",
     "reviewed_task_worktree_compiled_ex5_sha256": "217ca85459769153e97b0e73e44a4ecc1fdb262369e1ab1aed0fda611ac7a53b",
     "governed_compile_status_before_repair": "REFUSED_EX5_ALREADY_PRESENT (plain enqueue-compile 2026-09-22T02:28Z)",
-    "evidence_source": "docs/ops/evidence/2026-09-22_ftmo_kill_switch_governed_initializer/task_d6189118-c2e7-4517-a914-049c89d19a75/{README.md,verification.json}"
+    "evidence_source": "docs/ops/evidence/2026-09-22_ftmo_kill_switch_governed_initializer/task_d6189118-c2e7-4517-a914-049c89d19a75/{README.md,verification.json}",
+    "stale_compile_ok_work_item_ids": [
+      "ed5f9b8f-8804-4678-8908-621aa97aa985"
+    ],
+    "stale_compile_ok_note": "COMPILE_OK 2026-09-01 without recorded include_closure_sha256; the shared includes changed at e93979c3eb (2026-09-22) -> stale closure registration narrows current_compile_ok for this EA"
   },
   "repair": {
     "current_mq5_sha256": "cd2a0ac6e3f4a677cbb30197e23eaeb8338f06f69d66341eeedfc45cb68746b3",

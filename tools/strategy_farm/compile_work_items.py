@@ -3583,7 +3583,7 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_41219_KS_INITIALIZER_REBUILD_AUTHORITY] 
         "docs/ops/evidence/2026-09-22_ftmo_kill_switch_governed_initializer/2026-09-22_qm5_41219_cum-rsi2-commodity-requal8_ks_initializer_rebuild_authority.json"
     ),
     "evidence_sha256": (
-        "ec63de4500472eb4d607cedf60eb0b2c65dbc3e1be8e9ce8aff6c32c279b8038"
+        "fe730e1221b16f27fd1bc57540001788d7aa42c0cdcda69ad9ad221c839cac27"
     ),
 }
 
@@ -3666,6 +3666,28 @@ STALE_INCLUDE_CLOSURE_REGISTRATIONS[QM5_41347_STALE_INCLUDE_CLOSURE_AUTHORITY_2]
     ),
     "evidence_sha256": (
         "b4c0cca56a08bd0ea907921afefd28946b30340f5071fb4f947bae9bd603f6b2"
+    ),
+}
+
+# Router ops_issue d6189118 (2026-09-22, Fable): the only QM5_41219 COMPILE_OK
+# (2026-09-01) carries no recorded include closure and predates the governed
+# FTMO kill-switch initializer change to the shared includes (e93979c3eb), so
+# classify_candidate still reports USABLE_CURRENT_COMPILE_VERDICT_EXISTS.
+# Narrow current_compile_ok for this EA only; the rebuild itself runs under the
+# KS_INITIALIZER_REBUILD_AUTHORITY packet (same evidence file).
+QM5_41219_KS_STALE_INCLUDE_CLOSURE_AUTHORITY = (
+    "router_ops_issue:d6189118-c2e7-4517-a914-049c89d19a75:QM5_41219:stale_include_closure"
+)
+STALE_INCLUDE_CLOSURE_REGISTRATIONS[QM5_41219_KS_STALE_INCLUDE_CLOSURE_AUTHORITY] = {
+    "ea_id": "41219",
+    "ea_label": "QM5_41219_cum-rsi2-commodity-requal8",
+    "source_sha256": "cd2a0ac6e3f4a677cbb30197e23eaeb8338f06f69d66341eeedfc45cb68746b3",
+    "stale_compile_ok_work_item_ids": ["ed5f9b8f-8804-4678-8908-621aa97aa985"],
+    "evidence_path": (
+        "docs/ops/evidence/2026-09-22_ftmo_kill_switch_governed_initializer/2026-09-22_qm5_41219_cum-rsi2-commodity-requal8_ks_initializer_rebuild_authority.json"
+    ),
+    "evidence_sha256": (
+        "fe730e1221b16f27fd1bc57540001788d7aa42c0cdcda69ad9ad221c839cac27"
     ),
 }
 
