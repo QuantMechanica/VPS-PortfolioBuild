@@ -1,0 +1,95 @@
+[
+  {
+    "updated": true,
+    "task_id": "d00d7571-74f4-45ea-b652-57fa439f7bd9",
+    "state": "TODO",
+    "artifact_path": "D:\\QM\\reports\\work_items\\b3482782-4fef-47ef-b7d0-34bb05b6c70b\\QM5_9241\\COMPILE_EA\\compile_evidence.json",
+    "verdict": "Authenticated COMPILE_OK and build_check PASS now present; independent source review 52728403 APPROVED. Complete actual Q01 smoke/hash-bound build artifact on this existing task and submit review; no redundant rebuild. For 36008 preserve existing Q02 18865d7c; no duplicate canary.",
+    "codex_review_task_id": null
+  },
+  {
+    "ea_id": 9241,
+    "compile": {
+      "id": "b3482782-4fef-47ef-b7d0-34bb05b6c70b",
+      "verdict": "COMPILE_OK",
+      "ex5_sha256": "1190ae3dae45cd4d14ff987c47da127620c1dc4a55adbfd2e598576708de8855",
+      "evidence_path": "D:\\QM\\reports\\work_items\\b3482782-4fef-47ef-b7d0-34bb05b6c70b\\QM5_9241\\COMPILE_EA\\compile_evidence.json"
+    }
+  },
+  {
+    "updated": true,
+    "task_id": "3c1da904-b03a-40d5-a1b3-c23e9ffad4b8",
+    "state": "TODO",
+    "artifact_path": "D:\\QM\\reports\\work_items\\00c3153c-2e36-4da3-80d7-d8b0a3bdc487\\QM5_36001\\COMPILE_EA\\compile_evidence.json",
+    "verdict": "Authenticated COMPILE_OK and build_check PASS now present; independent source review 52728403 APPROVED. Complete actual Q01 smoke/hash-bound build artifact on this existing task and submit review; no redundant rebuild. For 36008 preserve existing Q02 18865d7c; no duplicate canary.",
+    "codex_review_task_id": null
+  },
+  {
+    "ea_id": 36001,
+    "compile": {
+      "id": "00c3153c-2e36-4da3-80d7-d8b0a3bdc487",
+      "verdict": "COMPILE_OK",
+      "ex5_sha256": "f5548d620507be411fd4f205258541c5f9a7d525c3689565fd46f7c7b52eba6c",
+      "evidence_path": "D:\\QM\\reports\\work_items\\00c3153c-2e36-4da3-80d7-d8b0a3bdc487\\QM5_36001\\COMPILE_EA\\compile_evidence.json"
+    }
+  },
+  {
+    "updated": true,
+    "task_id": "019d50ff-a716-46a4-b097-c5c650dea63b",
+    "state": "TODO",
+    "artifact_path": "D:\\QM\\reports\\work_items\\1c80b184-1f62-4b93-a737-48ef26f0f13b\\QM5_36003\\COMPILE_EA\\compile_evidence.json",
+    "verdict": "Authenticated COMPILE_OK and build_check PASS now present; independent source review 52728403 APPROVED. Complete actual Q01 smoke/hash-bound build artifact on this existing task and submit review; no redundant rebuild. For 36008 preserve existing Q02 18865d7c; no duplicate canary.",
+    "codex_review_task_id": null
+  },
+  {
+    "ea_id": 36003,
+    "compile": {
+      "id": "1c80b184-1f62-4b93-a737-48ef26f0f13b",
+      "verdict": "COMPILE_OK",
+      "ex5_sha256": "77af06ab633af7ea72af9f528edb60fb489372accae657f700b92cdf9a81d815",
+      "evidence_path": "D:\\QM\\reports\\work_items\\1c80b184-1f62-4b93-a737-48ef26f0f13b\\QM5_36003\\COMPILE_EA\\compile_evidence.json"
+    }
+  },
+  {
+    "updated": true,
+    "task_id": "22225e01-3ed6-4a1f-8fca-b55655117d01",
+    "state": "TODO",
+    "artifact_path": "D:\\QM\\reports\\work_items\\467f5ea4-05b8-4a90-bb74-c02ae633b5d1\\QM5_36004\\COMPILE_EA\\compile_evidence.json",
+    "verdict": "Authenticated COMPILE_OK and build_check PASS now present; independent source review 52728403 APPROVED. Complete actual Q01 smoke/hash-bound build artifact on this existing task and submit review; no redundant rebuild. For 36008 preserve existing Q02 18865d7c; no duplicate canary.",
+    "codex_review_task_id": null
+  },
+  {
+    "ea_id": 36004,
+    "compile": {
+      "id": "467f5ea4-05b8-4a90-bb74-c02ae633b5d1",
+      "verdict": "COMPILE_OK",
+      "ex5_sha256": "c23fc4d06229fa172b95f779a6ddc961cc977791b2a91582b2d99808c80a21d7",
+      "evidence_path": "D:\\QM\\reports\\work_items\\467f5ea4-05b8-4a90-bb74-c02ae633b5d1\\QM5_36004\\COMPILE_EA\\compile_evidence.json"
+    }
+  },
+  {
+    "updated": true,
+    "task_id": "bab6e8bf-435d-4da2-a25f-1e651cb33960",
+    "state": "TODO",
+    "artifact_path": "D:\\QM\\reports\\work_items\\34293ad6-271c-4348-a509-5d8e1884f4f2\\QM5_36008\\COMPILE_EA\\compile_evidence.json",
+    "verdict": "Authenticated COMPILE_OK and build_check PASS now present; independent source review 52728403 APPROVED. Complete actual Q01 smoke/hash-bound build artifact on this existing task and submit review; no redundant rebuild. For 36008 preserve existing Q02 18865d7c; no duplicate canary.",
+    "codex_review_task_id": null
+  },
+  {
+    "ea_id": 36008,
+    "compile": {
+      "id": "34293ad6-271c-4348-a509-5d8e1884f4f2",
+      "verdict": "COMPILE_OK",
+      "ex5_sha256": "46701c2e2eb3f48bcbd1a188ca99e4fad4767dc5b24a1105f21e3b58bde0b423",
+      "evidence_path": "D:\\QM\\reports\\work_items\\34293ad6-271c-4348-a509-5d8e1884f4f2\\QM5_36008\\COMPILE_EA\\compile_evidence.json"
+    }
+  },
+  {
+    "updated": true,
+    "task_id": "751d8eb5-d9de-4cfe-85c6-27468c409078",
+    "state": "IN_PROGRESS",
+    "artifact_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-22_ftmo_recovery\\QM5_20078_card_clarification.md",
+    "verdict": "Codex interactive recovery resumes after designated G0 acceptance 6c5219a9. Implement exact amended approved card; registry complete.",
+    "codex_review_task_id": null
+  }
+]

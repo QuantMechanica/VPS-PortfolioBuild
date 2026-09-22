@@ -1,0 +1,50 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "task_id": "cd3b761c-54d4-4b71-ba7e-f60018df57d3",
+  "ea_id": "36008",
+  "ea_label": "QM5_36008_nnfx-gold-kama-vortex-supertrend",
+  "source_sha256": "54a9d8c51c90fb6f50c3547fdc83a36fde5dd6468105539fe99c5665d9003783",
+  "authority_basis": [
+    "decisions/2026-09-21_owner_ftmo_br_nnfx_research_intake.md",
+    "decisions/2026-09-21_owner_ftmo_full_throttle_research.md",
+    "OWNER interactive 2026-09-22: use available capacity on this authorized work"
+  ],
+  "mode": "exact_rebuild_registration",
+  "scope": "One governed COMPILE_EA for this exact source; no gate verdict, live, portfolio or worker-reload approval.",
+  "findings": [
+    "Old review rework already present in source; existing EX5 has no authenticated COMPILE_OK.",
+    "14 current input sets regenerated; binary build_hash remains pending until compile.",
+    "QM5_36008 repeated partial after failed BE repaired; other three strategy sources unchanged."
+  ],
+  "baseline_file_records": [
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\QM5_36008_nnfx-gold-kama-vortex-supertrend.ex5",
+      "sha256": "a800cd130c9532c4f117310ed29916d4cbc7e920fd66f64a51165346679943e2",
+      "bytes": 396472
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\QM5_36008_nnfx-gold-kama-vortex-supertrend.mq5",
+      "sha256": "359b802234f98e78c85067ecc0623b879bb9a2cd318a10fc15dfcfd5ba99f9e4",
+      "bytes": 23498
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\sets\\QM5_36008_nnfx-gold-kama-vortex-supertrend_XAUUSD.DWX_D1_backtest.set",
+      "sha256": "8b9ffa53fcee8dd0f4d30976d520e524ca8715c10be05e72bb70a18a6e8e6145",
+      "bytes": 1537
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\sets\\QM5_36008_nnfx-gold-kama-vortex-supertrend_XTIUSD.DWX_D1_backtest.set",
+      "sha256": "2d6e3ebbd9aa0d968072641de280ffcd2a385b69248c0a4dfc66610d5bbdaa3d",
+      "bytes": 1537
+    }
+  ],
+  "historical_compile_predecessors": [],
+  "existing_q02_work_items": [
+    "18865d7c-baba-43d3-8327-2ffc2896a1f3"
+  ],
+  "old_review": "docs/ops/evidence/2026-08-24_greview_36008.md",
+  "validation": "Four existing EA regression suites plus TP1 retry regression: 27 passed. Current card hardening failures/warnings: zero in all four suites.",
+  "claims_not_evidence": "Card win rate, PF and pass-rate figures are unverified and not used.",
+  "created_at_utc": "2026-09-22T05:35:46.747211+00:00",
+  "byte_contract": "EA-local .gitattributes pins LF; only 36008 strategy logic changes."
+}

@@ -1,0 +1,58 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "task_id": "cd3b761c-54d4-4b71-ba7e-f60018df57d3",
+  "ea_id": "36004",
+  "ea_label": "QM5_36004_nnfx-alma-qqe-volume-flow-sniper",
+  "source_sha256": "8b292c0e88e6f3b509775bb94e4f2ed677da4639275f1ab529e07db4eb88abf8",
+  "authority_basis": [
+    "decisions/2026-09-21_owner_ftmo_br_nnfx_research_intake.md",
+    "decisions/2026-09-21_owner_ftmo_full_throttle_research.md",
+    "OWNER interactive 2026-09-22: use available capacity on this authorized work"
+  ],
+  "mode": "exact_rebuild_registration",
+  "scope": "One governed COMPILE_EA for this exact source; no gate verdict, live, portfolio or worker-reload approval.",
+  "findings": [
+    "Old review rework already present in source; existing EX5 has no authenticated COMPILE_OK.",
+    "14 current input sets regenerated; binary build_hash remains pending until compile.",
+    "QM5_36008 repeated partial after failed BE repaired; other three strategy sources unchanged."
+  ],
+  "baseline_file_records": [
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper.ex5",
+      "sha256": "a83f0c2b2088079e028605e414fae6f98b4e91ad5500bfab22f1b3b7e34896d4",
+      "bytes": 395564
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper.mq5",
+      "sha256": "9e96605967610e93d8bfbfef264578faea11fcde05cfd865b6e4edbd09753a4e",
+      "bytes": 25941
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper\\sets\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper_AUDUSD.DWX_D1_backtest.set",
+      "sha256": "3f232107d859db1b73ed311557f0dbdb4a39e3481a0ed29e978a015179cd6141",
+      "bytes": 1394
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper\\sets\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper_EURUSD.DWX_D1_backtest.set",
+      "sha256": "da0d4f369a5ab2ad928bb36ebd49048c31162a01d358d98a33b25f7e4a75e43f",
+      "bytes": 1394
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper\\sets\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper_USDCAD.DWX_D1_backtest.set",
+      "sha256": "88b08019a3116c793893db508d5e4d81fb5571b91a5509e6aba745707f0054ca",
+      "bytes": 1394
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper\\sets\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper_USDCHF.DWX_D1_backtest.set",
+      "sha256": "17ebc3b0001a4affa1a14e77f56f8ba0b2b7abdec9146cef32be4c3b1ec9b412",
+      "bytes": 1394
+    }
+  ],
+  "historical_compile_predecessors": [],
+  "existing_q02_work_items": [],
+  "old_review": "docs/ops/evidence/2026-08-24_greview_36004.md",
+  "validation": "Four existing EA regression suites plus TP1 retry regression: 27 passed. Current card hardening failures/warnings: zero in all four suites.",
+  "claims_not_evidence": "Card win rate, PF and pass-rate figures are unverified and not used.",
+  "created_at_utc": "2026-09-22T05:35:46.746209+00:00",
+  "byte_contract": "EA-local .gitattributes pins LF; only 36008 strategy logic changes."
+}

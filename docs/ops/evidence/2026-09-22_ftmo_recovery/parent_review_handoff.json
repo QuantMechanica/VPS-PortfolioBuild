@@ -1,0 +1,18 @@
+[
+  {
+    "updated": true,
+    "task_id": "cd3b761c-54d4-4b71-ba7e-f60018df57d3",
+    "state": "REVIEW",
+    "artifact_path": "C:/QM/repo/docs/research/ftmo_intake/2026-09-21_br_nnfx/results/N-RECOVERY.md",
+    "verdict": "Recovery delivered with exact compile/source/binary evidence, prior rejection/duplicate dispositions, independent source reviews, tests and preserved original follow-on tasks. Six total COMPILE_OK/build_check PASS; actual governed smoke/current build/intake and economics explicitly outstanding. No economic survivor or fast 80% payout claim. POC implementation review bb697211 remains explicit dependency. See artifact and docs/ops/evidence/2026-09-22_ftmo_recovery/README.md.",
+    "codex_review_task_id": null
+  },
+  {
+    "updated": true,
+    "task_id": "df1cae9b-76c7-4020-b732-9c2be501584d",
+    "state": "REVIEW",
+    "artifact_path": "C:/QM/repo/docs/research/ftmo_intake/2026-09-21_br_nnfx/results/R-RECOVERY.md",
+    "verdict": "Recovery delivered with exact compile/source/binary evidence, prior rejection/duplicate dispositions, independent source reviews, tests and preserved original follow-on tasks. Six total COMPILE_OK/build_check PASS; actual governed smoke/current build/intake and economics explicitly outstanding. No economic survivor or fast 80% payout claim. POC implementation review bb697211 remains explicit dependency. See artifact and docs/ops/evidence/2026-09-22_ftmo_recovery/README.md.",
+    "codex_review_task_id": null
+  }
+]

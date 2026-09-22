@@ -1,0 +1,58 @@
+{
+  "schema": "qm.retest-raw-reachability/v1",
+  "year": 2019,
+  "source_sha256": "e84883844a12834263429e91121e7af9bca984eb66f24c33aec87421c753510a",
+  "source_commit": "41c271b988",
+  "reader_sha256": "85a486767fafe0dfe4a3e1b4b177b2ca2f6939d3271a0a7abd4b1f8be1e14145",
+  "scope": "Raw entry reachability only; not trades, PF, edge or payout probability",
+  "assumptions": [
+    "M1 aggregated into broker-clock H1 buckets; one observed M1 or more per bucket",
+    "ATR proxy is 14-bar simple mean true range; native MT5 parity still required",
+    "entry bid=ask=next observed H1 open; no spread/cost/news/open-position suppression or price rounding",
+    "no terminal or history mutation; no 2020-2025 files opened; no parameter search"
+  ],
+  "symbols": [
+    {
+      "symbol": "EURUSD.DWX",
+      "history_path": "D:\\QM\\mt5\\T2\\Bases\\Custom\\history\\EURUSD.DWX\\2019.hcc",
+      "history_sha256": "f0aa5d4e6eec1d91eb27cee31796eaa7571338b4784a5d07a69c77a033d8073b",
+      "m1_rows": 369459,
+      "duplicate_minutes": 0,
+      "h1_bars": 6225,
+      "hours_with_60_minutes": 5123,
+      "raw_buy_signals": 65,
+      "raw_sell_signals": 72,
+      "qualified_engulfings": 571,
+      "first_signal_broker_epoch": 1546567200,
+      "last_signal_broker_epoch": 1576836000
+    },
+    {
+      "symbol": "GBPUSD.DWX",
+      "history_path": "D:\\QM\\mt5\\T2\\Bases\\Custom\\history\\GBPUSD.DWX\\2019.hcc",
+      "history_sha256": "24ff51ad8ffaaf8c56b0773f7935cf9dfa33d840e1f5c33c1460c0eb059466d0",
+      "m1_rows": 370271,
+      "duplicate_minutes": 0,
+      "h1_bars": 6225,
+      "hours_with_60_minutes": 5603,
+      "raw_buy_signals": 61,
+      "raw_sell_signals": 58,
+      "qualified_engulfings": 555,
+      "first_signal_broker_epoch": 1546527600,
+      "last_signal_broker_epoch": 1577743200
+    },
+    {
+      "symbol": "XAUUSD.DWX",
+      "history_path": "D:\\QM\\mt5\\T2\\Bases\\Custom\\history\\XAUUSD.DWX\\2019.hcc",
+      "history_sha256": "a69c30615629c0fae0f18fd58bc04aafe473ceaa305f0e99b2915d567420deef",
+      "m1_rows": 353326,
+      "duplicate_minutes": 0,
+      "h1_bars": 5904,
+      "hours_with_60_minutes": 5368,
+      "raw_buy_signals": 60,
+      "raw_sell_signals": 37,
+      "qualified_engulfings": 518,
+      "first_signal_broker_epoch": 1546970400,
+      "last_signal_broker_epoch": 1577466000
+    }
+  ]
+}

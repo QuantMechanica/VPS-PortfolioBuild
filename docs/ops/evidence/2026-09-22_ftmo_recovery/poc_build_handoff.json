@@ -1,0 +1,8 @@
+{
+  "updated": true,
+  "task_id": "751d8eb5-d9de-4cfe-85c6-27468c409078",
+  "state": "BLOCKED",
+  "artifact_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-22_ftmo_recovery\\compile_success_summary.json",
+  "verdict": "Real COMPILE_OK 17501e85 and build_check PASS, 7 presets, 33 boundary assertions PASS. Await independent implementation/TP-news adjudication bb697211, then resume THIS build for governed Q01 smoke and hash-bound build artifact; no redundant compile. Source commit cfa03950b0. Compile is not an economic PASS.",
+  "codex_review_task_id": null
+}

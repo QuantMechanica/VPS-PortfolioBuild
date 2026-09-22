@@ -1,0 +1,50 @@
+{
+  "started_at": "2026-09-22T07:28:38.939810+00:00",
+  "apply": true,
+  "worker_sha256": "2ea9f516f30e93d5748f8826cb0cd18378592358b6f4c08a9a5428eeda5a0f87",
+  "session_id": 1,
+  "reloaded": [
+    {
+      "terminal": "T2",
+      "old_pid": 5608,
+      "old_created": 1789999830.5016427,
+      "new_pid": 16884,
+      "starter_exit": 0,
+      "at_utc": "2026-09-22T07:28:55.405812+00:00"
+    },
+    {
+      "terminal": "T5",
+      "old_pid": 9064,
+      "old_created": 1789999830.5155418,
+      "new_pid": 19152,
+      "starter_exit": 0,
+      "at_utc": "2026-09-22T07:31:32.325985+00:00"
+    },
+    {
+      "terminal": "T3",
+      "old_pid": 11296,
+      "old_created": 1789999830.507825,
+      "new_pid": 20332,
+      "starter_exit": 0,
+      "at_utc": "2026-09-22T07:34:09.096945+00:00"
+    },
+    {
+      "terminal": "T8",
+      "old_pid": 16880,
+      "old_created": 1789999846.3013685,
+      "new_pid": 15192,
+      "starter_exit": 0,
+      "at_utc": "2026-09-22T07:36:45.709982+00:00"
+    },
+    {
+      "terminal": "T1",
+      "old_pid": 16992,
+      "old_created": 1789999830.4947116,
+      "new_pid": 20252,
+      "starter_exit": 0,
+      "at_utc": "2026-09-22T07:39:23.007663+00:00"
+    }
+  ],
+  "pending": [],
+  "finished_at": "2026-09-22T07:39:23.008906+00:00"
+}

@@ -1,0 +1,8 @@
+{
+  "updated": true,
+  "task_id": "751d8eb5-d9de-4cfe-85c6-27468c409078",
+  "state": "TODO",
+  "artifact_path": "D:\\QM\\reports\\work_items\\17501e85-c8d5-4379-a8f8-95f73a284626\\QM5_20078\\COMPILE_EA\\compile_evidence.json",
+  "verdict": "Independent implementation review bb697211 now APPROVED by Fable at 09:29:42Z. Stale review hold cleared. Authenticated COMPILE_OK 17501e85/build_check PASS; continue governed actual Q01 smoke and current build artifact, no redundant compile or Q02 before admission.",
+  "codex_review_task_id": null
+}

@@ -1,0 +1,126 @@
+{
+  "build_check_exit_code": 0,
+  "build_check_output_tail": "build_check.compile_guard={\"claimed_terminal\": \"T9\", \"ok\": true, \"pipeline_hint\": \"python tools/strategy_farm/farmctl.py enqueue-compile <EA label>\", \"pipeline_work_item_id\": \"34293ad6-271c-4348-a509-5d8e1884f4f2\", \"retry_attempted\": false, \"running_terminals\": [], \"schema_version\": \"qm.include-mirror-guard/v1\"}\nbuild_check.compile.target=C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\QM5_36008_nnfx-gold-kama-vortex-supertrend.mq5\ncompile_one.result=PASS\ncompile_one.reason_class=OK\ncompile_one.errors=0\ncompile_one.warnings=0\ncompile_one.metaeditor_exit_code=1\ncompile_one.include_sync_root=\ncompile_one.include_sync_targets=D:\\QM\\mt5\\T9\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\62611A7492286AC58551265C585B8217\\MQL5\\Include\ncompile_one.include_sync_deferred_targets=C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\23F4CC3F82E1F778FB3B989B9A7959AF\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\28E47E87AA76CCE760DDF8997279C02D\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\2A75F04AEFC0DD58D685C4B1FBE49B9B\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\4DB55D150BE7C77D719910E6167F98D9\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\5BC264D6982E3750B5E72ADD672A4CB1\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\66ACF1DA5F8EF8F636BD62E87A1E0EAE\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\838D42D8C9CA97A8C8A40FAE3BFC3C4C\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\A343A0E8FFAA491AD235EAB1FFC20C67\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\AC9F706B929ADCFBE60C8EDA2C379CFC\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\AE0A37E2EC2BC870ED414E4143BA21BF\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\BAAC8BF158EA0E0000BD124AA5FD8744\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\CB9B94F4E9CF990046A9B3E8E1ED9444\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\E082C3FA2B8AF7675CA9E80BEEFDB6FC\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\FC8706F6EB4F26C35F2BD4B6DA170EF6\\MQL5\\Include\ncompile_one.include_mirror_mutex=D:\\QM\\strategy_farm\\state\\locks\\include_mirror.lock\ncompile_one.include_mirror_atomic_replace=True\ncompile_one.compile_profile_stdlib_source=D:\\QM\\mt5\\T9\\MQL5\\Include\ncompile_one.compile_profile_stdlib_missing=\ncompile_one.compile_profile_stdlib_repair={\"atomic_replace\":true,\"files_per_target\":{\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\62611A7492286AC58551265C585B8217\\\\MQL5\\\\Include\":0,\"D:\\\\QM\\\\mt5\\\\T9\\\\MQL5\\\\Include\":0},\"mismatched_before\":{\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\62611A7492286AC58551265C585B8217\\\\MQL5\\\\Include\":[],\"D:\\\\QM\\\\mt5\\\\T9\\\\MQL5\\\\Include\":[]},\"missing_before\":{\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\62611A7492286AC58551265C585B8217\\\\MQL5\\\\Include\":[],\"D:\\\\QM\\\\mt5\\\\T9\\\\MQL5\\\\Include\":[]},\"project_source_root\":\"C:\\\\QM\\\\repo\\\\framework\\\\include\",\"required_relative_paths\":[\"Object.mqh\",\"Trade/Trade.mqh\"],\"source_root\":\"D:\\\\QM\\\\mt5\\\\T9\\\\MQL5\\\\Include\",\"stdlib_file_count\":263,\"target_roots\":[\"D:\\\\QM\\\\mt5\\\\T9\\\\MQL5\\\\Include\",\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\62611A7492286AC58551265C585B8217\\\\MQL5\\\\Include\"],\"verified_after\":true}\ncompile_one.compile_work_item_id=34293ad6-271c-4348-a509-5d8e1884f4f2\ncompile_one.claimed_terminal=T9\ncompile_one.log=C:\\QM\\repo\\framework\\build\\compile\\20260922_062725\\QM5_36008_nnfx-gold-kama-vortex-supertrend.compile.log\ncompile_one.summary=D:\\QM\\reports\\compile\\20260922_062725\\summary.csv\ncompile_one.ex5=C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\QM5_36008_nnfx-gold-kama-vortex-supertrend.ex5\nbuild_check.live_news_ea_sources=1\nbuild_check.live_news_contracts=1\nbuild_check.symbol_literal_sources=0\nbuild_check.symbol_literal_occurrences=0\nbuild_check.non_chart_market_data_sources=1\nbuild_check.report=D:\\QM\\reports\\framework\\21\\build_check_20260922_062723.json\nbuild_check.result=PASS\nbuild_check.failures=0\nbuild_check.warnings=0\n",
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260922_062723.json",
+  "build_check_result": "PASS",
+  "candidate_recheck": {
+    "active_magic_row_count": 2,
+    "bound_setfile_hashes": [],
+    "build_task_binding": {
+      "authorized": false,
+      "build_task_id": null,
+      "contract_version": "qm.compile-ea-build-task-binding/v1",
+      "reason": "BUILD_TASK_BINDING_NOT_REQUESTED",
+      "requested": false
+    },
+    "build_task_binding_authorized": false,
+    "compile_work_items_module_current_disk_mtime_ns": 1790055599187888100,
+    "compile_work_items_module_loaded_mtime_ns": 1790055599187888100,
+    "compile_work_items_module_path": "C:\\QM\\repo\\tools\\strategy_farm\\compile_work_items.py",
+    "compile_work_items_module_stale": false,
+    "current_compile_ok_work_item_ids": [],
+    "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend",
+    "ea_id": "QM5_36008",
+    "ea_label": "QM5_36008_nnfx-gold-kama-vortex-supertrend",
+    "eligible": true,
+    "force_rebuild_authorized": false,
+    "force_rebuild_waived_reasons": [],
+    "include_closure_sha256": "2d9d6f227407bc29d7706013b7f5b3d7692a5a6b53c391fd14d94b10a2d54eb6",
+    "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\QM5_36008_nnfx-gold-kama-vortex-supertrend.mq5",
+    "mq5_sha256": "54a9d8c51c90fb6f50c3547fdc83a36fde5dd6468105539fe99c5665d9003783",
+    "numeric_ea_id": "36008",
+    "reason": "ELIGIBLE",
+    "reasons": [],
+    "sanctioned_predecessor_ids": [],
+    "sibling_rebind_authorized": false,
+    "sibling_rebind_contract_version": null,
+    "sibling_rebind_current_setfile_path": null,
+    "sibling_rebind_current_setfile_sha256": null,
+    "sibling_rebind_findings": [],
+    "sibling_rebind_historical_setfiles": [],
+    "source_repair_artifact_bindings": [
+      {
+        "path": "docs/ops/evidence/2026-09-22_ftmo_recovery/QM5_36008_compile_authority.json",
+        "sha256": "e8ba10570ca1abd6d0848effb5ed67fa4058b21e70d29c102f3ed70b08aee422"
+      }
+    ],
+    "source_repair_authority": "router_ops_issue:cd3b761c-54d4-4b71-ba7e-f60018df57d3:QM5_36008",
+    "source_repair_authorized": true,
+    "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+    "source_repair_predecessor_work_item_ids": [],
+    "source_repair_registry_mtime_ns": 1789997338863163500,
+    "source_repair_registry_path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\compile_fail_repair_authorities.v1.json",
+    "source_repair_stale_open_work_item_ids": [],
+    "source_repair_superseded_predecessor_work_item_ids": [],
+    "source_repair_waived_reasons": [
+      "EX5_ALREADY_PRESENT",
+      "WORK_ITEMS_EXIST"
+    ],
+    "stale_include_closure_work_item_ids": [],
+    "symbols": [
+      "XAUUSD.DWX",
+      "XTIUSD.DWX"
+    ],
+    "timeframe": {
+      "candidates": [
+        "D1"
+      ],
+      "source": "existing_setfiles",
+      "timeframe": "D1"
+    },
+    "unsupported_symbols": []
+  },
+  "claim_admission_commit_headroom_gb": null,
+  "claim_admission_commit_reserved_gb": null,
+  "claim_admission_effective_commit_headroom_gb": null,
+  "claim_admission_mode": null,
+  "compile_errors": "0",
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260922_062725\\QM5_36008_nnfx-gold-kama-vortex-supertrend.compile.log",
+  "compile_profile_stdlib_missing": "",
+  "compile_profile_stdlib_repair": "{\"atomic_replace\":true,\"files_per_target\":{\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\62611A7492286AC58551265C585B8217\\\\MQL5\\\\Include\":0,\"D:\\\\QM\\\\mt5\\\\T9\\\\MQL5\\\\Include\":0},\"mismatched_before\":{\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\62611A7492286AC58551265C585B8217\\\\MQL5\\\\Include\":[],\"D:\\\\QM\\\\mt5\\\\T9\\\\MQL5\\\\Include\":[]},\"missing_before\":{\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\62611A7492286AC58551265C585B8217\\\\MQL5\\\\Include\":[],\"D:\\\\QM\\\\mt5\\\\T9\\\\MQL5\\\\Include\":[]},\"project_source_root\":\"C:\\\\QM\\\\repo\\\\framework\\\\include\",\"required_relative_paths\":[\"Object.mqh\",\"Trade/Trade.mqh\"],\"source_root\":\"D:\\\\QM\\\\mt5\\\\T9\\\\MQL5\\\\Include\",\"stdlib_file_count\":263,\"target_roots\":[\"D:\\\\QM\\\\mt5\\\\T9\\\\MQL5\\\\Include\",\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\62611A7492286AC58551265C585B8217\\\\MQL5\\\\Include\"],\"verified_after\":true}",
+  "compile_profile_stdlib_source": "D:\\QM\\mt5\\T9\\MQL5\\Include",
+  "compile_reason_class": "OK",
+  "compile_result": "PASS",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260922_062725\\summary.csv",
+  "compile_warnings": "0",
+  "completed_at": "2026-09-22T06:28:10+00:00",
+  "ea_id": "QM5_36008",
+  "ea_label": "QM5_36008_nnfx-gold-kama-vortex-supertrend",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\QM5_36008_nnfx-gold-kama-vortex-supertrend.ex5",
+  "ex5_sha256": "46701c2e2eb3f48bcbd1a188ca99e4fad4767dc5b24a1105f21e3b58bde0b423",
+  "failure_classes": [],
+  "include_mirror_atomic_replace": true,
+  "include_mirror_mutex": "D:\\QM\\strategy_farm\\state\\locks\\include_mirror.lock",
+  "include_sync_deferred_targets": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\23F4CC3F82E1F778FB3B989B9A7959AF\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\28E47E87AA76CCE760DDF8997279C02D\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\2A75F04AEFC0DD58D685C4B1FBE49B9B\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\4DB55D150BE7C77D719910E6167F98D9\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\5BC264D6982E3750B5E72ADD672A4CB1\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\66ACF1DA5F8EF8F636BD62E87A1E0EAE\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\838D42D8C9CA97A8C8A40FAE3BFC3C4C\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\A343A0E8FFAA491AD235EAB1FFC20C67\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\AC9F706B929ADCFBE60C8EDA2C379CFC\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\AE0A37E2EC2BC870ED414E4143BA21BF\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\BAAC8BF158EA0E0000BD124AA5FD8744\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\CB9B94F4E9CF990046A9B3E8E1ED9444\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\E082C3FA2B8AF7675CA9E80BEEFDB6FC\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\FC8706F6EB4F26C35F2BD4B6DA170EF6\\MQL5\\Include",
+  "include_sync_targets": "D:\\QM\\mt5\\T9\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\62611A7492286AC58551265C585B8217\\MQL5\\Include",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\QM5_36008_nnfx-gold-kama-vortex-supertrend.mq5",
+  "mq5_sha256": "54a9d8c51c90fb6f50c3547fdc83a36fde5dd6468105539fe99c5665d9003783",
+  "no_gate_verdict": true,
+  "phase": "COMPILE_EA",
+  "running_terminals_at_worker_start": [],
+  "schema_version": "qm.compile-ea-evidence/v1",
+  "setfile_count": 2,
+  "setfile_generation": [
+    {
+      "exit_code": 0,
+      "output_tail": "{\n    \"status\":  \"ok\",\n    \"ea\":  \"QM5_36008_nnfx-gold-kama-vortex-supertrend\",\n    \"env\":  \"backtest\",\n    \"symbol\":  \"XAUUSD.DWX\",\n    \"tf\":  \"D1\",\n    \"card_path\":  \"C:\\\\QM\\\\repo\\\\strategy-seeds\\\\cards\\\\QM5_36008_nnfx-gold-kama-vortex-supertrend.md\",\n    \"setfile_path\":  \"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\\\sets\\\\QM5_36008_nnfx-gold-kama-vortex-supertrend_XAUUSD.DWX_D1_backtest.set\",\n    \"setfile_sha256\":  \"bb9bffce1c6f6a963fae79dcd84298ff9a71223bf01eba7d1c93aa59003c7b6c\"\n}\n",
+      "setfile_exists": true,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\sets\\QM5_36008_nnfx-gold-kama-vortex-supertrend_XAUUSD.DWX_D1_backtest.set",
+      "setfile_sha256": "bb9bffce1c6f6a963fae79dcd84298ff9a71223bf01eba7d1c93aa59003c7b6c",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "exit_code": 0,
+      "output_tail": "{\n    \"status\":  \"ok\",\n    \"ea\":  \"QM5_36008_nnfx-gold-kama-vortex-supertrend\",\n    \"env\":  \"backtest\",\n    \"symbol\":  \"XTIUSD.DWX\",\n    \"tf\":  \"D1\",\n    \"card_path\":  \"C:\\\\QM\\\\repo\\\\strategy-seeds\\\\cards\\\\QM5_36008_nnfx-gold-kama-vortex-supertrend.md\",\n    \"setfile_path\":  \"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\\\sets\\\\QM5_36008_nnfx-gold-kama-vortex-supertrend_XTIUSD.DWX_D1_backtest.set\",\n    \"setfile_sha256\":  \"2112cbc6f028347a668bd68c01937c233fffff2e24f18ed86f393a7eca3313f3\"\n}\n",
+      "setfile_exists": true,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\sets\\QM5_36008_nnfx-gold-kama-vortex-supertrend_XTIUSD.DWX_D1_backtest.set",
+      "setfile_sha256": "2112cbc6f028347a668bd68c01937c233fffff2e24f18ed86f393a7eca3313f3",
+      "symbol": "XTIUSD.DWX"
+    }
+  ],
+  "started_at": "2026-09-22T06:27:15+00:00",
+  "success": true,
+  "terminal_claim": "T9",
+  "verdict_taxonomy": "artifact",
+  "work_item_id": "34293ad6-271c-4348-a509-5d8e1884f4f2"
+}

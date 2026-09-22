@@ -1,0 +1,170 @@
+[
+  {
+    "ok": true,
+    "mode": "apply",
+    "batch_form": false,
+    "input_metadata": {
+      "from_file": null,
+      "from_file_sha256": null,
+      "requested_count": 1
+    },
+    "requested_count": 1,
+    "eligible_count": 1,
+    "enqueued_count": 1,
+    "activation_held_count": 1,
+    "idempotent_open_count": 0,
+    "refused_count": 0,
+    "enqueued": [
+      {
+        "work_item_id": "5f2e60ea-2438-4d50-b08f-ad020f99f0a1",
+        "ea_id": "QM5_36001",
+        "ea_label": "QM5_36001_nnfx-classic-mcginley-ssl-wae",
+        "symbol_count": 5,
+        "timeframe": {
+          "timeframe": "D1",
+          "source": "existing_setfiles",
+          "candidates": [
+            "D1"
+          ]
+        },
+        "status": "pending",
+        "compiled": false,
+        "failed": false,
+        "failure_classes": [],
+        "activation_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING"
+      }
+    ],
+    "idempotent_open": [],
+    "refused": [],
+    "candidate_classification": null,
+    "no_gate_verdict": true,
+    "source_repair_authority": "router_ops_issue:cd3b761c-54d4-4b71-ba7e-f60018df57d3:QM5_36001",
+    "build_task_id": null
+  },
+  {
+    "ok": true,
+    "mode": "apply",
+    "batch_form": false,
+    "input_metadata": {
+      "from_file": null,
+      "from_file_sha256": null,
+      "requested_count": 1
+    },
+    "requested_count": 1,
+    "eligible_count": 1,
+    "enqueued_count": 1,
+    "activation_held_count": 1,
+    "idempotent_open_count": 0,
+    "refused_count": 0,
+    "enqueued": [
+      {
+        "work_item_id": "d04e9c6e-2faf-42ee-8196-b9102249df80",
+        "ea_id": "QM5_36003",
+        "ea_label": "QM5_36003_nnfx-hull-ma-zerolag-macd-stc",
+        "symbol_count": 3,
+        "timeframe": {
+          "timeframe": "D1",
+          "source": "existing_setfiles",
+          "candidates": [
+            "D1"
+          ]
+        },
+        "status": "pending",
+        "compiled": false,
+        "failed": false,
+        "failure_classes": [],
+        "activation_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING"
+      }
+    ],
+    "idempotent_open": [],
+    "refused": [],
+    "candidate_classification": null,
+    "no_gate_verdict": true,
+    "source_repair_authority": "router_ops_issue:cd3b761c-54d4-4b71-ba7e-f60018df57d3:QM5_36003",
+    "build_task_id": null
+  },
+  {
+    "ok": true,
+    "mode": "apply",
+    "batch_form": false,
+    "input_metadata": {
+      "from_file": null,
+      "from_file_sha256": null,
+      "requested_count": 1
+    },
+    "requested_count": 1,
+    "eligible_count": 1,
+    "enqueued_count": 1,
+    "activation_held_count": 1,
+    "idempotent_open_count": 0,
+    "refused_count": 0,
+    "enqueued": [
+      {
+        "work_item_id": "955c2542-d6ba-4c56-bbf4-f280a758022e",
+        "ea_id": "QM5_36004",
+        "ea_label": "QM5_36004_nnfx-alma-qqe-volume-flow-sniper",
+        "symbol_count": 4,
+        "timeframe": {
+          "timeframe": "D1",
+          "source": "existing_setfiles",
+          "candidates": [
+            "D1"
+          ]
+        },
+        "status": "pending",
+        "compiled": false,
+        "failed": false,
+        "failure_classes": [],
+        "activation_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING"
+      }
+    ],
+    "idempotent_open": [],
+    "refused": [],
+    "candidate_classification": null,
+    "no_gate_verdict": true,
+    "source_repair_authority": "router_ops_issue:cd3b761c-54d4-4b71-ba7e-f60018df57d3:QM5_36004",
+    "build_task_id": null
+  },
+  {
+    "ok": true,
+    "mode": "apply",
+    "batch_form": false,
+    "input_metadata": {
+      "from_file": null,
+      "from_file_sha256": null,
+      "requested_count": 1
+    },
+    "requested_count": 1,
+    "eligible_count": 1,
+    "enqueued_count": 1,
+    "activation_held_count": 1,
+    "idempotent_open_count": 0,
+    "refused_count": 0,
+    "enqueued": [
+      {
+        "work_item_id": "34293ad6-271c-4348-a509-5d8e1884f4f2",
+        "ea_id": "QM5_36008",
+        "ea_label": "QM5_36008_nnfx-gold-kama-vortex-supertrend",
+        "symbol_count": 2,
+        "timeframe": {
+          "timeframe": "D1",
+          "source": "existing_setfiles",
+          "candidates": [
+            "D1"
+          ]
+        },
+        "status": "pending",
+        "compiled": false,
+        "failed": false,
+        "failure_classes": [],
+        "activation_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING"
+      }
+    ],
+    "idempotent_open": [],
+    "refused": [],
+    "candidate_classification": null,
+    "no_gate_verdict": true,
+    "source_repair_authority": "router_ops_issue:cd3b761c-54d4-4b71-ba7e-f60018df57d3:QM5_36008",
+    "build_task_id": null
+  }
+]

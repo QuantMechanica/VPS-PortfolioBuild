@@ -1,0 +1,53 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "task_id": "cd3b761c-54d4-4b71-ba7e-f60018df57d3",
+  "ea_id": "36003",
+  "ea_label": "QM5_36003_nnfx-hull-ma-zerolag-macd-stc",
+  "source_sha256": "df2e5bccf65e5332ccb5a3a1ed16bfbc1ab4c5388002e42f28b132f3b69b139c",
+  "authority_basis": [
+    "decisions/2026-09-21_owner_ftmo_br_nnfx_research_intake.md",
+    "decisions/2026-09-21_owner_ftmo_full_throttle_research.md",
+    "OWNER interactive 2026-09-22: use available capacity on this authorized work"
+  ],
+  "mode": "exact_rebuild_registration",
+  "scope": "One governed COMPILE_EA for this exact source; no gate verdict, live, portfolio or worker-reload approval.",
+  "findings": [
+    "Old review rework already present in source; existing EX5 has no authenticated COMPILE_OK.",
+    "14 current input sets regenerated; binary build_hash remains pending until compile.",
+    "QM5_36008 repeated partial after failed BE repaired; other three strategy sources unchanged."
+  ],
+  "baseline_file_records": [
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc.ex5",
+      "sha256": "baffb41f8b8af18990919b622acf8c27d5c98a4543dc2c9160f7b020a1a3be47",
+      "bytes": 394876
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc.mq5",
+      "sha256": "b2c11e33bcee1314a9d68d22ea5324a27471a35fe5cdf8feca8507c9cf4e7f7f",
+      "bytes": 31824
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc\\sets\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc_EURUSD.DWX_D1_backtest.set",
+      "sha256": "441b229efccac8b914d1e96f82d905ff2b1fdbab8bbb5806fd9153e6dd0a8a25",
+      "bytes": 1402
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc\\sets\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc_GBPUSD.DWX_D1_backtest.set",
+      "sha256": "c682c941237d8559dbcd82b5ac2b8f622e90cb1780f506abcea6284ba651662e",
+      "bytes": 1402
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc\\sets\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc_XAUUSD.DWX_D1_backtest.set",
+      "sha256": "85816e40bebe4099e58d4a584b54d12a4a9a53746de308786b89776fe40c4e36",
+      "bytes": 1402
+    }
+  ],
+  "historical_compile_predecessors": [],
+  "existing_q02_work_items": [],
+  "old_review": "docs/ops/evidence/2026-08-24_greview_36003.md",
+  "validation": "Four existing EA regression suites plus TP1 retry regression: 27 passed. Current card hardening failures/warnings: zero in all four suites.",
+  "claims_not_evidence": "Card win rate, PF and pass-rate figures are unverified and not used.",
+  "created_at_utc": "2026-09-22T05:35:46.745206+00:00",
+  "byte_contract": "EA-local .gitattributes pins LF; only 36008 strategy logic changes."
+}

@@ -1,0 +1,42 @@
+{
+  "ok": true,
+  "mode": "apply",
+  "batch_form": false,
+  "input_metadata": {
+    "from_file": null,
+    "from_file_sha256": null,
+    "requested_count": 1
+  },
+  "requested_count": 1,
+  "eligible_count": 1,
+  "enqueued_count": 1,
+  "activation_held_count": 1,
+  "idempotent_open_count": 0,
+  "refused_count": 0,
+  "enqueued": [
+    {
+      "work_item_id": "b3482782-4fef-47ef-b7d0-34bb05b6c70b",
+      "ea_id": "QM5_9241",
+      "ea_label": "QM5_9241_mql5-engulf-retest",
+      "symbol_count": 3,
+      "timeframe": {
+        "timeframe": "H1",
+        "source": "existing_setfiles",
+        "candidates": [
+          "H1"
+        ]
+      },
+      "status": "pending",
+      "compiled": false,
+      "failed": false,
+      "failure_classes": [],
+      "activation_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING"
+    }
+  ],
+  "idempotent_open": [],
+  "refused": [],
+  "candidate_classification": null,
+  "no_gate_verdict": true,
+  "source_repair_authority": null,
+  "build_task_id": null
+}

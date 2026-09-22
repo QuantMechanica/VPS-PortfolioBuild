@@ -1,0 +1,744 @@
+{
+  "schema": "qm.ftmo-recovery-census/v1",
+  "at_utc": "2026-09-22T05:30:59.226999+00:00",
+  "rows": [
+    {
+      "ea_id": 9241,
+      "cards": {
+        "cards_approved": [
+          {
+            "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9241_mql5-engulf-retest.md",
+            "sha256": "d6f86b735bd7e4b0bd67cfd2007060618514f8376c310d65787d68da70f4d9c5",
+            "bytes": 4741
+          }
+        ],
+        "cards_rejected": []
+      },
+      "files": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_9241_mql5-engulf-retest\\QM5_9241_mql5-engulf-retest.mq5",
+          "sha256": "71a5ca2142d25158fad051ca839beee1f928d907257bc0831d94f0bf555466b1",
+          "bytes": 4082
+        }
+      ],
+      "active_magic": [],
+      "agent_tasks": [
+        {
+          "id": "d00d7571-74f4-45ea-b652-57fa439f7bd9",
+          "task_type": "build_ea",
+          "state": "BLOCKED",
+          "priority": 30,
+          "required_capabilities_json": "[]",
+          "assigned_agent": null,
+          "budget_class": "standard",
+          "parent_id": null,
+          "artifact_path": "C:/QM/repo/docs/ops/evidence/2026-08-24_codex_build_preflight_qm5_9234_9241_9251_9252_9254.md",
+          "verdict": "PARK (n/a): legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision",
+          "payload_json": "{\"backlog_disposition_journal\":[{\"at_utc\":\"2026-09-12T05:34:06+00:00\",\"decision\":\"OWNER-DEC-BACKLOG-20260912\",\"from_state\":\"BLOCKED\",\"previous_assigned_agent\":\"codex\",\"why\":\"rework QM5_9241\"}],\"codex_model_tier\":\"sol\",\"codex_reasoning_effort\":\"high\",\"decision_bound_agent\":\"codex\",\"ea_id\":\"9241\",\"orchestrator_deprioritised\":{\"at\":\"2026-08-22T19:11:52.081150+00:00\",\"by\":\"claude-orchestrator\",\"from_priority\":50,\"reason\":\"registry precondition missing (no_active_magic_rows); build is structurally guaranteed to refuse. Reversible: restore priority once task 8d1d903f re-registers and allocates. No row deleted.\",\"to_priority\":10,\"tracking_task\":\"8d1d903f-39cc-461f-ab90-7b932ce62fee\"},\"quota_gate\":{\"agent\":\"codex\",\"allowed\":true,\"decided_at\":\"2026-08-24T01:53:42+00:00\",\"enforced\":true,\"hard_exhaustion\":false,\"invocation\":{\"model\":\"gpt-5.6-sol\",\"reasoning_effort\":\"max\",\"selection_reason\":\"max_class_contract_failclosed_decision_rootcause_or_adjudication\"},\"metrics\":null,\"policy_schema\":\"qm.agent_quota_gate.v1\",\"priority\":10,\"reason\":\"owner_burn_authorization_active:OWNER burn authorization active until 2026-08-25T00:00:00+00:00 (CODEX_BURN_AUTHORIZED.flag)\",\"state_status\":\"burn_bypass\",\"task_class\":\"build\",\"task_type\":\"build_ea\",\"tier_escalation\":null,\"violations\":[]},\"required_capabilities\":[],\"review_close_state\":\"RECYCLE\",\"review_close_verdict\":\"batch adjudication 2026-07-19 (Claude, wf_11f17900 verified): No .ex5, no SPEC.md, no registry row for 9241; only bare .mq5 present\",\"review_closed_at\":\"2026-07-19T17:31:43+00:00\",\"rework_note\":\"Re-queued rework (OWNER 2026-09-12): the previous close text explains the defect; fix source to match the approved card, compile via COMPILE_EA only, tests, RESULT line.\",\"routed_at\":\"2026-08-24T01:53:41+00:00\",\"router_decision_bound_hold\":{\"agent\":\"codex\",\"held_at\":\"2026-09-15T01:37:26+00:00\",\"invalid_pin\":false,\"raw\":\"codex\",\"schema\":\"qm.router_decision_bound_hold.v1\"},\"router_skipped_blocked_task_count\":1,\"slug\":\"mql5-engulf-retest\",\"target_agent_profile\":\"codex\"}",
+          "created_at": "2026-07-10T04:14:49.103395+00:00",
+          "updated_at": "2026-09-15T16:55:20+00:00",
+          "required_skills_json": "[]"
+        }
+      ],
+      "engine_tasks": [],
+      "work_items": []
+    },
+    {
+      "ea_id": 12038,
+      "cards": {
+        "cards_approved": [],
+        "cards_rejected": [
+          {
+            "path": "D:\\QM\\strategy_farm\\artifacts\\cards_rejected\\QM5_12038_ru-poc-retest-vol.md",
+            "sha256": "7805e8a037651ae42718d6dd01054fe5180874b9f4a782504fa96f128d352ec1",
+            "bytes": 1632
+          }
+        ]
+      },
+      "files": [],
+      "active_magic": [],
+      "agent_tasks": [],
+      "engine_tasks": [],
+      "work_items": []
+    },
+    {
+      "ea_id": 20078,
+      "cards": {
+        "cards_approved": [
+          {
+            "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_20078_volume-profile-poc-retest-intraday.md",
+            "sha256": "bf15b26f77ca9ba9b878dd91a94d1d0c68655f0e410346b021c06cdf9fe8c9ed",
+            "bytes": 12675
+          }
+        ],
+        "cards_rejected": []
+      },
+      "files": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20078_volume-profile-poc-retest-intraday\\QM5_20078_volume-profile-poc-retest-intraday.mq5",
+          "sha256": "a945b71bb552f2c52d158b69ed0d6b6b9096589b64951b3d7de6bbe3f3502b3a",
+          "bytes": 4085
+        }
+      ],
+      "active_magic": [],
+      "agent_tasks": [
+        {
+          "id": "076262b3-9fc8-4d24-a25e-58cbc6e563d4",
+          "task_type": "build_ea",
+          "state": "FAILED",
+          "priority": 50,
+          "required_capabilities_json": "[]",
+          "assigned_agent": "codex",
+          "budget_class": "standard",
+          "parent_id": null,
+          "artifact_path": "D:\\QM\\strategy_farm\\artifacts\\builds\\QM5_20078_volume-profile-poc-retest-intraday_076262b3-9fc8-4d24-a25e-58cbc6e563d4.json",
+          "verdict": "ARCHIVED (OWNER-DEC-BACKLOG-20260912) from BLOCKED: duplicate rework of QM5_20078 (kept 751d8eb5)",
+          "payload_json": "{\"blocked_retest\":{\"blocking_condition_still_true\":true,\"campaign\":\"630535e0-a371-4613-9c68-c8a8d608093a\",\"evidence\":{\"active_magic_rows\":0,\"card_pools\":[\"cards_approved\"],\"ea_directories\":1,\"ex5_files\":0,\"mq5_files\":1,\"registry_statuses\":{\"active\":1},\"setfiles\":0,\"spec_files\":0,\"work_items_later_done\":0,\"work_items_open\":0,\"work_items_total\":0},\"owner\":\"Registry Operator\",\"reason\":\"Live state has an approved card and MQ5 source but no active magic rows, no EX5, no SPEC, no backtest setfiles, and no work items. The prior fabricated-build blocker therefore remains real, although source now exists.\",\"tested_at\":\"2026-08-21T18:09:27+00:00\",\"unblock_action\":\"Confirm the approved card is authoritative, allocate exact card symbols with the governed allocator, regenerate and verify the resolver, then assign Development a complete Q01 compile/setfile/SPEC/build-check pass followed by Codex review. Run the already-gated filter before any enqueue.\"},\"ea_id\":\"20078\",\"required_capabilities\":[],\"routed_at\":\"2026-07-27T07:16:23+00:00\",\"slug\":\"volume-profile-poc-retest-intraday\",\"target_agent_profile\":\"codex\"}",
+          "created_at": "2026-07-25T23:30:30.362567+00:00",
+          "updated_at": "2026-09-12T05:34:14+00:00",
+          "required_skills_json": "[]"
+        },
+        {
+          "id": "751d8eb5-d9de-4cfe-85c6-27468c409078",
+          "task_type": "build_ea",
+          "state": "BLOCKED",
+          "priority": 30,
+          "required_capabilities_json": "[\"code\"]",
+          "assigned_agent": null,
+          "budget_class": "standard",
+          "parent_id": null,
+          "artifact_path": "C:/QM/repo/docs/ops/evidence/751d8eb5_qm5_20078_build_preflight_2026-08-24.md",
+          "verdict": "PARK (n/a): legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision",
+          "payload_json": "{\"backlog_disposition_journal\":[{\"at_utc\":\"2026-09-12T05:34:06+00:00\",\"decision\":\"OWNER-DEC-BACKLOG-20260912\",\"from_state\":\"BLOCKED\",\"previous_assigned_agent\":\"codex\",\"why\":\"rework QM5_20078\"}],\"codex_model_tier\":\"sol\",\"codex_reasoning_effort\":\"high\",\"decision_bound_agent\":\"codex\",\"ea_id\":\"20078\",\"orchestrator_deprioritised\":{\"at\":\"2026-08-22T19:11:52.081150+00:00\",\"by\":\"claude-orchestrator\",\"from_priority\":50,\"reason\":\"registry precondition missing (no_active_magic_rows); build is structurally guaranteed to refuse. Reversible: restore priority once task 8d1d903f re-registers and allocates. No row deleted.\",\"to_priority\":10,\"tracking_task\":\"8d1d903f-39cc-461f-ab90-7b932ce62fee\"},\"quota_gate\":{\"agent\":\"codex\",\"allowed\":true,\"decided_at\":\"2026-08-24T03:57:19+00:00\",\"enforced\":true,\"hard_exhaustion\":false,\"invocation\":{\"model\":\"gpt-5.6-sol\",\"reasoning_effort\":\"max\",\"selection_reason\":\"recycle_escalated_exactly_one:high_to_max;base=high;high_class_ordinary_code_build_or_evidence_tooling\"},\"metrics\":null,\"policy_schema\":\"qm.agent_quota_gate.v1\",\"priority\":10,\"reason\":\"owner_burn_authorization_active:OWNER burn authorization active until 2026-08-25T00:00:00+00:00 (CODEX_BURN_AUTHORIZED.flag)\",\"state_status\":\"burn_bypass\",\"task_class\":\"build\",\"task_type\":\"build_ea\",\"tier_escalation\":{\"agent\":\"codex\",\"base_tier\":\"high\",\"capped\":true,\"disposition\":\"escalated_exactly_one\",\"new_recycle\":true,\"previous_handled_recycle_count\":0,\"prior_run_tier\":\"high\",\"recycle_count\":1,\"schema\":\"qm.quota_tier_escalation.v1\",\"selected_tier\":\"max\"},\"violations\":[]},\"quota_tier_escalation\":{\"agent\":\"codex\",\"base_tier\":\"high\",\"capped\":true,\"disposition\":\"escalated_exactly_one\",\"new_recycle\":true,\"previous_handled_recycle_count\":0,\"prior_run_tier\":\"high\",\"recycle_count\":1,\"schema\":\"qm.quota_tier_escalation.v1\",\"selected_tier\":\"max\"},\"recycle_count\":1,\"recycle_count_recorded_at_review\":\"2026-08-16T21:23:21+00:00\",\"required_capabilities\":[\"code\"],\"review_close_state\":\"RECYCLE\",\"review_close_verdict\":\"CLAUDE REVIEW RECYCLE - not built. Battery findings: no_ex5; no_backtest_setfile; no_magic_row. The task sat in REVIEW without a deliverable, so there is nothing to approve. Recycled to the build lane under the governed sequence: create the EA DIRECTORY first, then allocate the magic rows in magic_numbers.csv, then regenerate the resolver (update_magic_resolver.py keeps only rows whose EA directory exists, which is why the directory comes first), verify nothing was dropped, then build the source from the approved card, then compile strict. The canonical registry is CLEAN as of 2026-08-16 22:00 local, so the 'dirty canonical registry transaction' that deferred a batch of these at 09:32 no longer applies - re-check it at claim time rather than inheriting the stale verdict.\",\"review_closed_at\":\"2026-08-16T21:23:21+00:00\",\"rework_note\":\"Re-queued rework (OWNER 2026-09-12): the previous close text explains the defect; fix source to match the approved card, compile via COMPILE_EA only, tests, RESULT line.\",\"routed_at\":\"2026-08-24T03:57:19+00:00\",\"router_decision_bound_hold\":{\"agent\":\"codex\",\"held_at\":\"2026-09-15T01:37:26+00:00\",\"invalid_pin\":false,\"raw\":\"codex\",\"schema\":\"qm.router_decision_bound_hold.v1\"},\"router_skipped_blocked_task_count\":1,\"slug\":\"volume-profile-poc-retest-intraday\",\"target_agent_profile\":\"codex\"}",
+          "created_at": "2026-08-10T13:33:17+00:00",
+          "updated_at": "2026-09-15T16:57:03+00:00",
+          "required_skills_json": "[]"
+        }
+      ],
+      "engine_tasks": [],
+      "work_items": []
+    },
+    {
+      "ea_id": 11963,
+      "cards": {
+        "cards_approved": [],
+        "cards_rejected": [
+          {
+            "path": "D:\\QM\\strategy_farm\\artifacts\\cards_rejected\\QM5_11963_nnfx-mcginley-tdfi.md",
+            "sha256": "6f35f972412a80ce327733b3d23ee3d8244a3f5af590336f242efd17afb53897",
+            "bytes": 1795
+          }
+        ]
+      },
+      "files": [],
+      "active_magic": [],
+      "agent_tasks": [],
+      "engine_tasks": [],
+      "work_items": []
+    },
+    {
+      "ea_id": 11964,
+      "cards": {
+        "cards_approved": [],
+        "cards_rejected": [
+          {
+            "path": "D:\\QM\\strategy_farm\\artifacts\\cards_rejected\\QM5_11964_nnfx-supercycle-surge.md",
+            "sha256": "fe7660c0c91db839b89c3ec69bf68ee0ca620a251184c44c4056fb8012a4ed11",
+            "bytes": 2004
+          }
+        ]
+      },
+      "files": [],
+      "active_magic": [],
+      "agent_tasks": [],
+      "engine_tasks": [],
+      "work_items": []
+    },
+    {
+      "ea_id": 11965,
+      "cards": {
+        "cards_approved": [],
+        "cards_rejected": [
+          {
+            "path": "D:\\QM\\strategy_farm\\artifacts\\cards_rejected\\QM5_11965_nnfx-algotrade-pro.md",
+            "sha256": "697c650c0326d1f809a2b1e1e61e024f0ab56adce972545045728ef4162275fc",
+            "bytes": 1832
+          }
+        ]
+      },
+      "files": [],
+      "active_magic": [],
+      "agent_tasks": [],
+      "engine_tasks": [],
+      "work_items": []
+    },
+    {
+      "ea_id": 36001,
+      "cards": {
+        "cards_approved": [
+          {
+            "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_36001_nnfx-classic-mcginley-ssl-wae.md",
+            "sha256": "97a33b4ecb4937cbe6f08cd01764fc08df9dcf0754af9e9ce61dc01bf6681e0e",
+            "bytes": 10372
+          }
+        ],
+        "cards_rejected": []
+      },
+      "files": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36001_nnfx-classic-mcginley-ssl-wae\\QM5_36001_nnfx-classic-mcginley-ssl-wae.ex5",
+          "sha256": "5b463d9138ee8ad1d31566ac0093b127932965facfde75c09f184c683f789a61",
+          "bytes": 395494
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36001_nnfx-classic-mcginley-ssl-wae\\QM5_36001_nnfx-classic-mcginley-ssl-wae.mq5",
+          "sha256": "60214c63db0cd86f789f199a96651386b57ec8501ae2a7e1ca4eddebe4e004c7",
+          "bytes": 22570
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36001_nnfx-classic-mcginley-ssl-wae\\sets\\QM5_36001_nnfx-classic-mcginley-ssl-wae_AUDUSD.DWX_D1_backtest.set",
+          "sha256": "3483f02540effe711d954198effd3eb9b1a2ea308838d376126b96b865cc90cb",
+          "bytes": 1491
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36001_nnfx-classic-mcginley-ssl-wae\\sets\\QM5_36001_nnfx-classic-mcginley-ssl-wae_EURUSD.DWX_D1_backtest.set",
+          "sha256": "55006d1db035e7540740a9df440378c6f3bfb1f09d89db6d4f9ddc797556edf0",
+          "bytes": 1491
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36001_nnfx-classic-mcginley-ssl-wae\\sets\\QM5_36001_nnfx-classic-mcginley-ssl-wae_GBPUSD.DWX_D1_backtest.set",
+          "sha256": "dcc9c190fab352c756e5ae17cb03763860a43edd6fec60437b78151cfc89677f",
+          "bytes": 1491
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36001_nnfx-classic-mcginley-ssl-wae\\sets\\QM5_36001_nnfx-classic-mcginley-ssl-wae_USDCAD.DWX_D1_backtest.set",
+          "sha256": "335d67ccb0db6d0ac5d645ac79276b8c0213d3a1f8770b4ff743632f02cb20cd",
+          "bytes": 1491
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36001_nnfx-classic-mcginley-ssl-wae\\sets\\QM5_36001_nnfx-classic-mcginley-ssl-wae_USDJPY.DWX_D1_backtest.set",
+          "sha256": "09d9f9e3a959c0b7295f1db0c1d9ca457c46efedb6570dbc2ed011bdf51bcd91",
+          "bytes": 1491
+        }
+      ],
+      "active_magic": [
+        {
+          "ea_id": "36001",
+          "ea_slug": "nnfx-classic-mcginley-ssl-wae",
+          "symbol_slot": "0",
+          "symbol": "EURUSD.DWX",
+          "magic": "360010000",
+          "reserved_at": "2026-08-17T20:50:00Z",
+          "reserved_by": "Gemini",
+          "status": "active"
+        },
+        {
+          "ea_id": "36001",
+          "ea_slug": "nnfx-classic-mcginley-ssl-wae",
+          "symbol_slot": "1",
+          "symbol": "GBPUSD.DWX",
+          "magic": "360010001",
+          "reserved_at": "2026-08-17T20:50:00Z",
+          "reserved_by": "Gemini",
+          "status": "active"
+        },
+        {
+          "ea_id": "36001",
+          "ea_slug": "nnfx-classic-mcginley-ssl-wae",
+          "symbol_slot": "2",
+          "symbol": "AUDUSD.DWX",
+          "magic": "360010002",
+          "reserved_at": "2026-08-17T20:50:00Z",
+          "reserved_by": "Gemini",
+          "status": "active"
+        },
+        {
+          "ea_id": "36001",
+          "ea_slug": "nnfx-classic-mcginley-ssl-wae",
+          "symbol_slot": "3",
+          "symbol": "USDJPY.DWX",
+          "magic": "360010003",
+          "reserved_at": "2026-08-17T20:50:00Z",
+          "reserved_by": "Gemini",
+          "status": "active"
+        },
+        {
+          "ea_id": "36001",
+          "ea_slug": "nnfx-classic-mcginley-ssl-wae",
+          "symbol_slot": "4",
+          "symbol": "USDCAD.DWX",
+          "magic": "360010004",
+          "reserved_at": "2026-08-17T20:50:00Z",
+          "reserved_by": "Gemini",
+          "status": "active"
+        }
+      ],
+      "agent_tasks": [
+        {
+          "id": "3c1da904-b03a-40d5-a1b3-c23e9ffad4b8",
+          "task_type": "build_ea",
+          "state": "TODO",
+          "priority": 30,
+          "required_capabilities_json": "[\"code\"]",
+          "assigned_agent": null,
+          "budget_class": "standard",
+          "parent_id": null,
+          "artifact_path": "docs/ops/evidence/2026-08-24_greview_36001.md",
+          "verdict": "REWORK requeued (OWNER-DEC-BACKLOG-20260912) from RECYCLE: rework QM5_36001",
+          "payload_json": "{\"backlog_disposition_journal\":[{\"at_utc\":\"2026-09-12T05:34:06+00:00\",\"decision\":\"OWNER-DEC-BACKLOG-20260912\",\"from_state\":\"RECYCLE\",\"previous_assigned_agent\":\"gemini\",\"why\":\"rework QM5_36001\"}],\"blocked_backlog_journal\":[{\"at_utc\":\"2026-09-12T05:48:29+00:00\",\"class\":\"LEGACY_RESEARCH\",\"from_state\":\"TODO\",\"previous_assigned_agent\":null,\"previous_verdict\":\"REWORK requeued (OWNER-DEC-BACKLOG-20260912) from RECYCLE: rework QM5_36001\",\"previous_verdict_sha256\":\"3f939ff8df13d942a4532eb02eb39642a19ebcfba8e4d161e4075976cba03098\",\"reason\":\"legacy_agy_recycle_requeue_corrected_to_archive\",\"schema\":\"qm.blocked-agent-task-disposition/v1\",\"to_state\":\"FAILED\"},{\"at_utc\":\"2026-09-12T05:50:20+00:00\",\"class\":\"LEGACY_REQUEUE_RESTORE\",\"from_state\":\"FAILED\",\"previous_assigned_agent\":null,\"previous_verdict\":\"REWORK requeued (OWNER-DEC-BACKLOG-20260912) from RECYCLE: rework QM5_36001\",\"previous_verdict_sha256\":\"3f939ff8df13d942a4532eb02eb39642a19ebcfba8e4d161e4075976cba03098\",\"reason\":\"restore_concurrent_scope_update_2026_09_12_05_34_48Z\",\"schema\":\"qm.blocked-agent-task-disposition/v1\",\"to_state\":\"TODO\"}],\"codex_model_tier\":\"sol\",\"codex_reasoning_effort\":\"high\",\"decision_bound_agent\":\"codex\",\"ea_id\":\"36001\",\"recycle_count\":1,\"recycle_count_recorded_at_review\":\"2026-08-24T11:58:26+00:00\",\"required_capabilities\":[\"code\"],\"review_close_state\":\"RECYCLE\",\"review_close_verdict\":\"RECYCLE: current EX5 is pre-remediation/stale and build_gate_hardening D2 rejects missing explicit 2.0/2.5/5.0 limit inputs; fix, regenerate sets, then recompile via governed COMPILE_EA.\",\"review_closed_at\":\"2026-08-24T11:58:26+00:00\",\"rework_note\":\"Re-queued rework (OWNER 2026-09-12): the previous close text explains the defect; fix source to match the approved card, compile via COMPILE_EA only, tests, RESULT line.\",\"routed_at\":\"2026-08-23T11:37:37+00:00\",\"router_decision_bound_hold\":{\"agent\":\"codex\",\"held_at\":\"2026-09-22T05:02:23+00:00\",\"invalid_pin\":false,\"raw\":\"codex\",\"schema\":\"qm.router_decision_bound_hold.v1\"},\"router_skipped_blocked_task_count\":4,\"slug\":\"nnfx-classic-mcginley-ssl-wae\",\"target_agent_profile\":\"codex\"}",
+          "created_at": "2026-08-17T17:03:25+00:00",
+          "updated_at": "2026-09-12T05:50:20+00:00",
+          "required_skills_json": "[]"
+        },
+        {
+          "id": "d47d0803-00ea-4832-905a-d5436728784f",
+          "task_type": "review_ea",
+          "state": "FAILED",
+          "priority": 51,
+          "required_capabilities_json": "[\"code\",\"review\"]",
+          "assigned_agent": "codex",
+          "budget_class": "standard",
+          "parent_id": "3c1da904-b03a-40d5-a1b3-c23e9ffad4b8",
+          "artifact_path": "docs/ops/evidence/2026-08-23_rework-36001.md",
+          "verdict": "ARCHIVED (OWNER-DEC-BACKLOG-20260912) from RECYCLE: recycle_count=2 (failed verification twice)",
+          "payload_json": "{\"card_id\":null,\"ea_id\":\"36001\",\"quota_gate\":{\"agent\":\"codex\",\"allowed\":true,\"decided_at\":\"2026-08-18T14:02:54+00:00\",\"enforced\":true,\"hard_exhaustion\":false,\"invocation\":{\"model\":\"gpt-5.6-sol\",\"reasoning_effort\":\"max\",\"selection_reason\":\"max_class_contract_failclosed_decision_rootcause_or_adjudication\"},\"metrics\":{\"five_hour_used_pct\":null,\"pace_diff_points\":14.799999999999997,\"weekly_elapsed_pct\":77.2,\"weekly_used_pct\":92.0},\"policy_schema\":\"qm.agent_quota_gate.v1\",\"priority\":51,\"reason\":\"within_class_thresholds\",\"state_status\":\"fresh\",\"task_class\":\"ops_review\",\"task_type\":\"review_ea\",\"tier_escalation\":null,\"violations\":[]},\"reason\":\"codex_review_required_for_gemini_code\",\"recycle_count\":2,\"recycle_count_recorded_at_review\":\"2026-08-24T14:47:39+00:00\",\"required_capabilities\":[\"code\",\"review\"],\"review_close_state\":\"RECYCLE\",\"review_close_verdict\":\"RECYCLE (Orchestrator-Close Claude 2026-08-24, unabhaengige Sonnet-Verifikation): Evidence-stated MQ5 SHA256 (756D0E69) does not match committed source (3a77cdff LF). Concrete provenance drift; correct/rebind. Source edits and unwired check otherwise pass. Hinweis: bei reiner Hash-Provenienz-Drift ist der Rework eng \\u0097 Hash gegen committete Bytes regenerieren und im governed Compile binden, kein Voll-Redo.\",\"review_closed_at\":\"2026-08-24T14:47:39+00:00\",\"routed_at\":\"2026-08-18T14:02:54+00:00\",\"source_agent\":\"gemini\",\"source_artifact_path\":\"docs/ops/evidence/3c1da904_qm5_36001_build_ea_result_2026-08-17.md\",\"source_execution_backend\":\"agy\",\"source_task_id\":\"3c1da904-b03a-40d5-a1b3-c23e9ffad4b8\",\"source_task_type\":\"build_ea\",\"source_verdict\":\"PASS: Built and verified QM5_36001 (nnfx-classic-mcginley-ssl-wae), compiled 0 errors 0 warnings, guardrails and spec PASS\"}",
+          "created_at": "2026-08-17T20:54:31+00:00",
+          "updated_at": "2026-09-12T05:34:20+00:00",
+          "required_skills_json": "[\"code-review\",\"gemini-output-review\"]"
+        },
+        {
+          "id": "2a6ee952-e292-4ace-a5d8-01c6340da256",
+          "task_type": "review_ea",
+          "state": "FAILED",
+          "priority": 51,
+          "required_capabilities_json": "[\"code\",\"review\"]",
+          "assigned_agent": "claude",
+          "budget_class": "standard",
+          "parent_id": "3c1da904-b03a-40d5-a1b3-c23e9ffad4b8",
+          "artifact_path": "docs/ops/evidence/2026-08-23_review_36001.md",
+          "verdict": "ARCHIVED (OWNER-DEC-BACKLOG-20260912) from RECYCLE: duplicate rework of QM5_36001 (kept 3c1da904)",
+          "payload_json": "{\"card_id\":null,\"ea_id\":\"36001\",\"quota_gate\":{\"agent\":\"claude\",\"allowed\":true,\"decided_at\":\"2026-08-23T11:57:17+00:00\",\"enforced\":true,\"hard_exhaustion\":false,\"invocation\":{\"model\":\"sonnet\",\"reasoning_effort\":null,\"selection_reason\":\"sonnet_default_deliberate_opus_only\"},\"metrics\":{\"five_hour_used_pct\":52.0,\"pace_diff_points\":10.200000000000003,\"weekly_elapsed_pct\":36.8,\"weekly_used_pct\":47.0},\"policy_schema\":\"qm.agent_quota_gate.v1\",\"priority\":51,\"reason\":\"within_class_thresholds\",\"state_status\":\"fresh\",\"task_class\":\"ops_review\",\"task_type\":\"review_ea\",\"tier_escalation\":null,\"violations\":[]},\"reason\":\"codex_review_required_for_gemini_code\",\"recycle_count\":1,\"recycle_count_recorded_at_review\":\"2026-08-23T18:41:16+00:00\",\"required_capabilities\":[\"code\",\"review\"],\"review_close_state\":\"RECYCLE\",\"review_close_verdict\":\"RECYCLE: source card-faithful, all 6 findings resolved, 0 dead inputs, framework-conformant; but tracked .ex5 (5b463d9) is the pre-remediation binary (== commit 2ad86abe7), NOT hash-bound to remediated source 03be79d0 \\u2014 no valid COMPILE_OK. Route governed COMPILE_EA build for fresh ex5 + smoke, then re-review before Q02.\",\"review_closed_at\":\"2026-08-23T18:41:16+00:00\",\"routed_at\":\"2026-08-23T11:57:17+00:00\",\"source_agent\":\"gemini\",\"source_artifact_path\":\"D:/QM/strategy_farm/artifacts/builds/3c1da904-b03a-40d5-a1b3-c23e9ffad4b8.json\",\"source_execution_backend\":\"agy\",\"source_task_id\":\"3c1da904-b03a-40d5-a1b3-c23e9ffad4b8\",\"source_task_type\":\"build_ea\",\"source_verdict\":\"REMEDIATED_AWAITING_CODEX_REVIEW\"}",
+          "created_at": "2026-08-23T11:53:55+00:00",
+          "updated_at": "2026-09-12T05:34:19+00:00",
+          "required_skills_json": "[\"code-review\",\"gemini-output-review\"]"
+        }
+      ],
+      "engine_tasks": [],
+      "work_items": []
+    },
+    {
+      "ea_id": 36003,
+      "cards": {
+        "cards_approved": [
+          {
+            "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc.md",
+            "sha256": "2b6678f1898ccd7968a5ba1507a1316fbba8f49246875519cfb633c8c6197801",
+            "bytes": 10102
+          }
+        ],
+        "cards_rejected": []
+      },
+      "files": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc.ex5",
+          "sha256": "baffb41f8b8af18990919b622acf8c27d5c98a4543dc2c9160f7b020a1a3be47",
+          "bytes": 394876
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc.mq5",
+          "sha256": "b2c11e33bcee1314a9d68d22ea5324a27471a35fe5cdf8feca8507c9cf4e7f7f",
+          "bytes": 31824
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc\\sets\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc_EURUSD.DWX_D1_backtest.set",
+          "sha256": "441b229efccac8b914d1e96f82d905ff2b1fdbab8bbb5806fd9153e6dd0a8a25",
+          "bytes": 1402
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc\\sets\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc_GBPUSD.DWX_D1_backtest.set",
+          "sha256": "c682c941237d8559dbcd82b5ac2b8f622e90cb1780f506abcea6284ba651662e",
+          "bytes": 1402
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc\\sets\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc_XAUUSD.DWX_D1_backtest.set",
+          "sha256": "85816e40bebe4099e58d4a584b54d12a4a9a53746de308786b89776fe40c4e36",
+          "bytes": 1402
+        }
+      ],
+      "active_magic": [
+        {
+          "ea_id": "36003",
+          "ea_slug": "nnfx-hull-ma-zerolag-macd-stc",
+          "symbol_slot": "0",
+          "symbol": "EURUSD.DWX",
+          "magic": "360030000",
+          "reserved_at": "2026-08-17T21:06:00Z",
+          "reserved_by": "Gemini",
+          "status": "active"
+        },
+        {
+          "ea_id": "36003",
+          "ea_slug": "nnfx-hull-ma-zerolag-macd-stc",
+          "symbol_slot": "1",
+          "symbol": "GBPUSD.DWX",
+          "magic": "360030001",
+          "reserved_at": "2026-08-17T21:06:00Z",
+          "reserved_by": "Gemini",
+          "status": "active"
+        },
+        {
+          "ea_id": "36003",
+          "ea_slug": "nnfx-hull-ma-zerolag-macd-stc",
+          "symbol_slot": "2",
+          "symbol": "XAUUSD.DWX",
+          "magic": "360030002",
+          "reserved_at": "2026-08-17T21:06:00Z",
+          "reserved_by": "Gemini",
+          "status": "active"
+        }
+      ],
+      "agent_tasks": [
+        {
+          "id": "019d50ff-a716-46a4-b097-c5c650dea63b",
+          "task_type": "build_ea",
+          "state": "TODO",
+          "priority": 30,
+          "required_capabilities_json": "[\"code\"]",
+          "assigned_agent": null,
+          "budget_class": "standard",
+          "parent_id": null,
+          "artifact_path": "docs/ops/evidence/2026-08-24_greview_36003.md",
+          "verdict": "REWORK requeued (OWNER-DEC-BACKLOG-20260912) from RECYCLE: rework QM5_36003",
+          "payload_json": "{\"backlog_disposition_journal\":[{\"at_utc\":\"2026-09-12T05:34:06+00:00\",\"decision\":\"OWNER-DEC-BACKLOG-20260912\",\"from_state\":\"RECYCLE\",\"previous_assigned_agent\":\"gemini\",\"why\":\"rework QM5_36003\"}],\"blocked_backlog_journal\":[{\"at_utc\":\"2026-09-12T05:48:29+00:00\",\"class\":\"LEGACY_RESEARCH\",\"from_state\":\"TODO\",\"previous_assigned_agent\":null,\"previous_verdict\":\"REWORK requeued (OWNER-DEC-BACKLOG-20260912) from RECYCLE: rework QM5_36003\",\"previous_verdict_sha256\":\"79603584959de6cd148142dbc33333bffccc65e73d13b3884e8861121f15a05f\",\"reason\":\"legacy_agy_recycle_requeue_corrected_to_archive\",\"schema\":\"qm.blocked-agent-task-disposition/v1\",\"to_state\":\"FAILED\"},{\"at_utc\":\"2026-09-12T05:50:20+00:00\",\"class\":\"LEGACY_REQUEUE_RESTORE\",\"from_state\":\"FAILED\",\"previous_assigned_agent\":null,\"previous_verdict\":\"REWORK requeued (OWNER-DEC-BACKLOG-20260912) from RECYCLE: rework QM5_36003\",\"previous_verdict_sha256\":\"79603584959de6cd148142dbc33333bffccc65e73d13b3884e8861121f15a05f\",\"reason\":\"restore_concurrent_scope_update_2026_09_12_05_34_48Z\",\"schema\":\"qm.blocked-agent-task-disposition/v1\",\"to_state\":\"TODO\"}],\"codex_model_tier\":\"sol\",\"codex_reasoning_effort\":\"high\",\"decision_bound_agent\":\"codex\",\"ea_id\":\"36003\",\"recycle_count\":1,\"recycle_count_recorded_at_review\":\"2026-08-24T12:01:22+00:00\",\"required_capabilities\":[\"code\"],\"review_close_state\":\"RECYCLE\",\"review_close_verdict\":\"RECYCLE: add D10 ArraySize guards, wire the card's 3-tick slippage cap, regenerate current-key setfiles, then recompile via governed COMPILE_EA and bind fresh MQ5/EX5 hashes.\",\"review_closed_at\":\"2026-08-24T12:01:22+00:00\",\"rework_note\":\"Re-queued rework (OWNER 2026-09-12): the previous close text explains the defect; fix source to match the approved card, compile via COMPILE_EA only, tests, RESULT line.\",\"routed_at\":\"2026-08-23T11:27:55+00:00\",\"router_decision_bound_hold\":{\"agent\":\"codex\",\"held_at\":\"2026-09-22T05:02:23+00:00\",\"invalid_pin\":false,\"raw\":\"codex\",\"schema\":\"qm.router_decision_bound_hold.v1\"},\"router_skipped_blocked_task_count\":1,\"slug\":\"nnfx-hull-ma-zerolag-macd-stc\",\"target_agent_profile\":\"codex\"}",
+          "created_at": "2026-08-17T17:03:25+00:00",
+          "updated_at": "2026-09-12T05:50:20+00:00",
+          "required_skills_json": "[]"
+        },
+        {
+          "id": "b4c223a0-818d-444d-bb7d-1336da8abdd2",
+          "task_type": "review_ea",
+          "state": "FAILED",
+          "priority": 51,
+          "required_capabilities_json": "[\"code\",\"review\"]",
+          "assigned_agent": "codex",
+          "budget_class": "standard",
+          "parent_id": "019d50ff-a716-46a4-b097-c5c650dea63b",
+          "artifact_path": "docs/ops/evidence/2026-08-23_rework-36003.md",
+          "verdict": "ARCHIVED (OWNER-DEC-BACKLOG-20260912) from BLOCKED: duplicate rework of QM5_36003 (kept 019d50ff)",
+          "payload_json": "{\"card_id\":null,\"ea_id\":\"36003\",\"quota_gate\":{\"agent\":\"codex\",\"allowed\":true,\"decided_at\":\"2026-08-18T14:02:54+00:00\",\"enforced\":true,\"hard_exhaustion\":false,\"invocation\":{\"model\":\"gpt-5.6-sol\",\"reasoning_effort\":\"max\",\"selection_reason\":\"max_class_contract_failclosed_decision_rootcause_or_adjudication\"},\"metrics\":{\"five_hour_used_pct\":null,\"pace_diff_points\":14.799999999999997,\"weekly_elapsed_pct\":77.2,\"weekly_used_pct\":92.0},\"policy_schema\":\"qm.agent_quota_gate.v1\",\"priority\":51,\"reason\":\"within_class_thresholds\",\"state_status\":\"fresh\",\"task_class\":\"ops_review\",\"task_type\":\"review_ea\",\"tier_escalation\":null,\"violations\":[]},\"reason\":\"codex_review_required_for_gemini_code\",\"recycle_count\":1,\"recycle_count_recorded_at_review\":\"2026-08-21T07:49:09+00:00\",\"required_capabilities\":[\"code\",\"review\"],\"review_close_state\":\"RECYCLE\",\"review_close_verdict\":\"CLAUDE CLOSE 2026-08-21: RECYCLE -- ZeroLag EMA wrong formula; 50% TP1+runner collapsed to full-position TP; strict build FAIL (raw iClose) [tags: card-drift, runner-lifecycle-missing, strict-build-fa\",\"review_closed_at\":\"2026-08-21T07:49:09+00:00\",\"routed_at\":\"2026-08-18T14:02:54+00:00\",\"source_agent\":\"gemini\",\"source_artifact_path\":\"docs/ops/evidence/019d50ff_qm5_36003_build_ea_result_2026-08-17.md\",\"source_execution_backend\":\"agy\",\"source_task_id\":\"019d50ff-a716-46a4-b097-c5c650dea63b\",\"source_task_type\":\"build_ea\",\"source_verdict\":\"PASS: build, compile, spec, guardrails verified; set in REVIEW for mandatory Codex review\"}",
+          "created_at": "2026-08-17T21:06:56+00:00",
+          "updated_at": "2026-09-12T05:34:18+00:00",
+          "required_skills_json": "[\"code-review\",\"gemini-output-review\"]"
+        },
+        {
+          "id": "c8791ede-3188-4a25-8777-c755e0c71bd4",
+          "task_type": "review_ea",
+          "state": "FAILED",
+          "priority": 51,
+          "required_capabilities_json": "[\"code\",\"review\"]",
+          "assigned_agent": "claude",
+          "budget_class": "standard",
+          "parent_id": "019d50ff-a716-46a4-b097-c5c650dea63b",
+          "artifact_path": "docs/ops/evidence/2026-08-23_review_QM5_36003.md",
+          "verdict": "ARCHIVED (OWNER-DEC-BACKLOG-20260912) from RECYCLE: duplicate rework of QM5_36003 (kept 019d50ff)",
+          "payload_json": "{\"card_id\":null,\"ea_id\":\"36003\",\"quota_gate\":{\"agent\":\"claude\",\"allowed\":true,\"decided_at\":\"2026-08-23T11:37:36+00:00\",\"enforced\":true,\"hard_exhaustion\":false,\"invocation\":{\"model\":\"sonnet\",\"reasoning_effort\":null,\"selection_reason\":\"sonnet_default_deliberate_opus_only\"},\"metrics\":{\"five_hour_used_pct\":45.0,\"pace_diff_points\":9.5,\"weekly_elapsed_pct\":36.5,\"weekly_used_pct\":46.0},\"policy_schema\":\"qm.agent_quota_gate.v1\",\"priority\":51,\"reason\":\"within_class_thresholds\",\"state_status\":\"fresh\",\"task_class\":\"ops_review\",\"task_type\":\"review_ea\",\"tier_escalation\":null,\"violations\":[]},\"reason\":\"codex_review_required_for_gemini_code\",\"recycle_count\":1,\"recycle_count_recorded_at_review\":\"2026-08-23T18:43:12+00:00\",\"required_capabilities\":[\"code\",\"review\"],\"review_close_state\":\"RECYCLE\",\"review_close_verdict\":\"RECYCLE: source ce115153 is card-faithful/clean (no dead inputs, framework-conformant) but build/compile/setfile chain covers 197a2c09/baffb41f only (ex5 Aug-17 pre-fix, compile record Aug-17); no fresh compile against on-disk source -> Q02 would test wrong binary. Recompile+regen setfiles+refresh artifact, then resubmit.\",\"review_closed_at\":\"2026-08-23T18:43:12+00:00\",\"routed_at\":\"2026-08-23T11:37:36+00:00\",\"source_agent\":\"gemini\",\"source_artifact_path\":\"artifacts/builds/019d50ff-a716-46a4-b097-c5c650dea63b.json\",\"source_execution_backend\":\"agy\",\"source_task_id\":\"019d50ff-a716-46a4-b097-c5c650dea63b\",\"source_task_type\":\"build_ea\",\"source_verdict\":\"SOURCE_READY_REMEDIATED: all codex findings addressed; strict static gates PASS; ready for codex review\"}",
+          "created_at": "2026-08-23T11:31:22+00:00",
+          "updated_at": "2026-09-12T05:34:19+00:00",
+          "required_skills_json": "[\"code-review\",\"gemini-output-review\"]"
+        }
+      ],
+      "engine_tasks": [
+        {
+          "id": "b3b7bf51-a5fa-406b-bfeb-0283ca68ba81",
+          "kind": "build_ea",
+          "status": "failed",
+          "source_id": null,
+          "card_id": "QM5_36003",
+          "payload_json": "{\"attempt_count\": 3, \"build_attempt_token\": null, \"build_dispatch\": {\"agent\": \"codex\", \"lease_id\": \"76e2f320def64783a0b8f7f0b6df7edc\", \"live_log\": \"D:\\\\QM\\\\strategy_farm\\\\logs\\\\codex_build_b3b7bf51-a5fa-406b-bfeb-0283ca68ba81.live.log\", \"pid\": 36616, \"started_at\": \"2026-08-28T21:02:09+00:00\"}, \"build_generation\": 0, \"build_recorded_at\": \"2026-08-29T05:12:30+00:00\", \"build_result_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\builds\\\\b3b7bf51-a5fa-406b-bfeb-0283ca68ba81.attempt_0.attempt_1.attempt_2.json\", \"build_result_sha256\": \"9b6a19da61d91e858af8d8b798b72764ccc7ee25ddf8aedcec07bcf0134ed7fa\", \"card_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_approved\\\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc.md\", \"codex_result\": {\"blocked_reason\": \"build_check.result=FAIL LIVE_FACTORY_AD_HOC_COMPILE_REFUSED: terminal64 processes are alive; ad-hoc build_check compile was refused and no retry was attempted\", \"build_check_passed\": false, \"compile_succeeded\": false, \"ea_dir\": \"framework/EAs/QM5_36003_nnfx-hull-ma-zerolag-macd-stc\", \"ea_id\": \"QM5_36003\", \"ex5_path\": null, \"fail_code\": \"compile_error\", \"magic_base\": 360030000, \"mq5_path\": \"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc\\\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc.mq5\", \"open_questions\": [\"The card does not specify the ZeroLag MACD signal period; the conventional fixed value 9 was used.\", \"The card gives STC 23,50,10 but no smoothing constant; a fixed 0.50 two-stage STC smoothing factor was used.\", \"The card does not define BetterVol HIGH; it was read literally as closed-bar tick volume greater than the mean of the prior 20 D1 bars.\", \"The card does not specify typical hold time and gives conflicting frequency priors (25 per symbol versus 80-160 overall); SPEC.md records both for Q02 measurement.\", \"The mandated QM_HMA helper documents an approximation that omits the final WMA pass, while the card prints the exact HMA formula.\", \"The 2% realized-loss entry anchor is captured from account balance on the first tick of each broker day and resets on an intraday EA restart because no restart-persistent realized-PnL hook is exposed.\", \"The card's 5% total-drawdown stop is mapped to the shared kill-switch portfolio drawdown signal threshold; the hook-only skeleton exposes no persistent initial-equity baseline.\", \"The card's three-tick slippage tolerance is not exposed by QM_EntryRequest and remains framework-owned.\", \"update_magic_resolver.py refused to write because unrelated active EA IDs 1001, 1015, and 1016 have no materialized directories; the unchanged resolver matches the current magic_numbers.csv SHA256 and contains all three exact QM5_36003 rows.\", \"The specified G: company-reference drive was not mounted; the build used the embedded handoff contract plus the repository V5 design and staged Q01 mirror.\"], \"setfiles_generated\": [], \"smoke_report_path\": null, \"smoke_result\": \"build_check_failed\", \"spec_md_path\": \"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc\\\\SPEC.md\", \"symbols_registered\": [\"EURUSD.DWX\", \"GBPUSD.DWX\", \"XAUUSD.DWX\"], \"task_id\": \"b3b7bf51-a5fa-406b-bfeb-0283ca68ba81\"}, \"codex_review_rework\": false, \"ea_dir\": \"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_36003_nnfx-hull-ma-zerolag-macd-stc\", \"ea_id\": \"QM5_36003\", \"fail_code\": \"compile_error\", \"frontmatter\": {\"card_schema_version\": \"2\", \"created\": \"2026-08-15\", \"created_by\": \"Research+Development\", \"ea_id\": \"QM5_36003\", \"expected_dd_pct\": \"18\", \"expected_pf\": \"1.35\", \"expected_trade_frequency\": \"80-160 high-conviction trades per year\", \"expected_trades_per_year_per_symbol\": \"25\", \"g0_approval_reasoning\": \"R1 PASS documented source per card citation; R2 PASS closed-form mechanical rules; R3 PASS DWX-native data; R4 PASS no ML. Source PF/winrate claims ignored as unevidenced (evidence over claims); conservative priors set.\", \"g0_status\": \"APPROVED\", \"hard_rules_at_risk\": \"[slippage_during_news, spread_expansion]\", \"last_updated\": \"2026-08-15\", \"markets\": \"[forex]\", \"ml_required\": \"false\", \"modules_used\": \"[no_trade, trade_entry, trade_management, trade_close]\", \"period\": \"D1\", \"pipeline_phase\": \"G0\", \"primary_target_symbols\": \"[EURUSD.DWX]\", \"r1_track_record\": \"PASS\", \"r2_mechanical\": \"PASS\", \"r3_data_available\": \"PASS\", \"r4_ml_forbidden\": \"PASS\", \"risk_class\": \"low\", \"single_symbol_only\": \"false\", \"slug\": \"nnfx-hull-ma-zerolag-macd-stc\", \"source_authors\": \"VP (No Nonsense Forex)\", \"source_citation\": \"No Nonsense Forex High-Speed Indicator Combination Suite.\", \"source_id\": \"nnfx-hull-ma-zerolag-macd-stc-official-source\", \"status\": \"APPROVED\", \"strategy_id\": \"QM5-36003-NNFX-HULL-MA-ZEROLAG-MACD-STC-2026\", \"strategy_mechanic\": \"nnfx-hull-ma-zerolag-macd-stc-quantitative-production-blueprint\", \"strategy_type_flags\": \"[forex, d1, production-ready, fixed-risk, g0-pass]\", \"target_modules\": \"[Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal]\", \"target_symbols\": \"[EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX]\", \"timeframe\": \"D1\", \"timeframes\": \"[D1]\", \"type\": \"strategy\", \"variant_id\": \"QM5-36003-NNFX-HULL-MA-ZEROLAG-MACD-STC-2026_D1\"}, \"last_blocked_reason\": \"\", \"prebuild_warnings\": [\"r_gate_body_rows_missing\"], \"prompt_path\": \"D:\\\\QM\\\\strategy_farm\\\\queue\\\\codex_build_b3b7bf51-a5fa-406b-bfeb-0283ca68ba81.md\", \"recorded_during_factory_off_override\": false, \"slug\": \"nnfx-hull-ma-zerolag-macd-stc\", \"final_failure\": \"permanent_blocked_retries_exhausted\", \"failed_at\": \"2026-09-01T23:43:39.263824Z\"}",
+          "created_at": "2026-08-23T16:19:48+00:00",
+          "updated_at": "2026-09-01T23:43:39.263824Z"
+        }
+      ],
+      "work_items": []
+    },
+    {
+      "ea_id": 36004,
+      "cards": {
+        "cards_approved": [
+          {
+            "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper.md",
+            "sha256": "5efa1df56fed0c8dc6cf963458f5bafbd60f0b4226d75b509a2ca6822afc1410",
+            "bytes": 10068
+          }
+        ],
+        "cards_rejected": []
+      },
+      "files": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper.ex5",
+          "sha256": "a83f0c2b2088079e028605e414fae6f98b4e91ad5500bfab22f1b3b7e34896d4",
+          "bytes": 395564
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper.mq5",
+          "sha256": "9e96605967610e93d8bfbfef264578faea11fcde05cfd865b6e4edbd09753a4e",
+          "bytes": 25941
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper\\sets\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper_AUDUSD.DWX_D1_backtest.set",
+          "sha256": "3f232107d859db1b73ed311557f0dbdb4a39e3481a0ed29e978a015179cd6141",
+          "bytes": 1394
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper\\sets\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper_EURUSD.DWX_D1_backtest.set",
+          "sha256": "da0d4f369a5ab2ad928bb36ebd49048c31162a01d358d98a33b25f7e4a75e43f",
+          "bytes": 1394
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper\\sets\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper_USDCAD.DWX_D1_backtest.set",
+          "sha256": "88b08019a3116c793893db508d5e4d81fb5571b91a5509e6aba745707f0054ca",
+          "bytes": 1394
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper\\sets\\QM5_36004_nnfx-alma-qqe-volume-flow-sniper_USDCHF.DWX_D1_backtest.set",
+          "sha256": "17ebc3b0001a4affa1a14e77f56f8ba0b2b7abdec9146cef32be4c3b1ec9b412",
+          "bytes": 1394
+        }
+      ],
+      "active_magic": [
+        {
+          "ea_id": "36004",
+          "ea_slug": "nnfx-alma-qqe-volume-flow-sniper",
+          "symbol_slot": "0",
+          "symbol": "EURUSD.DWX",
+          "magic": "360040000",
+          "reserved_at": "2026-08-17T21:15:00Z",
+          "reserved_by": "Gemini",
+          "status": "active"
+        },
+        {
+          "ea_id": "36004",
+          "ea_slug": "nnfx-alma-qqe-volume-flow-sniper",
+          "symbol_slot": "1",
+          "symbol": "AUDUSD.DWX",
+          "magic": "360040001",
+          "reserved_at": "2026-08-17T21:15:00Z",
+          "reserved_by": "Gemini",
+          "status": "active"
+        },
+        {
+          "ea_id": "36004",
+          "ea_slug": "nnfx-alma-qqe-volume-flow-sniper",
+          "symbol_slot": "2",
+          "symbol": "USDCAD.DWX",
+          "magic": "360040002",
+          "reserved_at": "2026-08-17T21:15:00Z",
+          "reserved_by": "Gemini",
+          "status": "active"
+        },
+        {
+          "ea_id": "36004",
+          "ea_slug": "nnfx-alma-qqe-volume-flow-sniper",
+          "symbol_slot": "3",
+          "symbol": "USDCHF.DWX",
+          "magic": "360040003",
+          "reserved_at": "2026-08-17T21:15:00Z",
+          "reserved_by": "Gemini",
+          "status": "active"
+        }
+      ],
+      "agent_tasks": [
+        {
+          "id": "22225e01-3ed6-4a1f-8fca-b55655117d01",
+          "task_type": "build_ea",
+          "state": "TODO",
+          "priority": 30,
+          "required_capabilities_json": "[\"code\"]",
+          "assigned_agent": null,
+          "budget_class": "standard",
+          "parent_id": null,
+          "artifact_path": "docs/ops/evidence/2026-08-24_greview_36004.md",
+          "verdict": "REWORK requeued (OWNER-DEC-BACKLOG-20260912) from RECYCLE: rework QM5_36004",
+          "payload_json": "{\"backlog_disposition_journal\":[{\"at_utc\":\"2026-09-12T05:34:06+00:00\",\"decision\":\"OWNER-DEC-BACKLOG-20260912\",\"from_state\":\"RECYCLE\",\"previous_assigned_agent\":\"gemini\",\"why\":\"rework QM5_36004\"}],\"blocked_backlog_journal\":[{\"at_utc\":\"2026-09-12T05:48:29+00:00\",\"class\":\"LEGACY_RESEARCH\",\"from_state\":\"TODO\",\"previous_assigned_agent\":null,\"previous_verdict\":\"REWORK requeued (OWNER-DEC-BACKLOG-20260912) from RECYCLE: rework QM5_36004\",\"previous_verdict_sha256\":\"84d277193b12b855c7561de2864b6e188ffa41bfa519897e9c5a9ab73c9fdd2b\",\"reason\":\"legacy_agy_recycle_requeue_corrected_to_archive\",\"schema\":\"qm.blocked-agent-task-disposition/v1\",\"to_state\":\"FAILED\"},{\"at_utc\":\"2026-09-12T05:50:20+00:00\",\"class\":\"LEGACY_REQUEUE_RESTORE\",\"from_state\":\"FAILED\",\"previous_assigned_agent\":null,\"previous_verdict\":\"REWORK requeued (OWNER-DEC-BACKLOG-20260912) from RECYCLE: rework QM5_36004\",\"previous_verdict_sha256\":\"84d277193b12b855c7561de2864b6e188ffa41bfa519897e9c5a9ab73c9fdd2b\",\"reason\":\"restore_concurrent_scope_update_2026_09_12_05_34_48Z\",\"schema\":\"qm.blocked-agent-task-disposition/v1\",\"to_state\":\"TODO\"}],\"codex_model_tier\":\"sol\",\"codex_reasoning_effort\":\"high\",\"decision_bound_agent\":\"codex\",\"ea_id\":\"36004\",\"recycle_count\":1,\"recycle_count_recorded_at_review\":\"2026-08-24T11:50:28+00:00\",\"required_capabilities\":[\"code\"],\"review_close_state\":\"RECYCLE\",\"review_close_verdict\":\"RECYCLE: stale pre-remediation EX5 plus loss-limit hardening failures, drifting TP1/card-exit deviations, invalid default risk mode, unbounded QQE buffer, and unbound slippage; fix source then recompile via governed COMPILE_EA with hash-bound identity.\",\"review_closed_at\":\"2026-08-24T11:50:28+00:00\",\"rework_note\":\"Re-queued rework (OWNER 2026-09-12): the previous close text explains the defect; fix source to match the approved card, compile via COMPILE_EA only, tests, RESULT line.\",\"routed_at\":\"2026-08-23T11:37:36+00:00\",\"router_decision_bound_hold\":{\"agent\":\"codex\",\"held_at\":\"2026-09-22T05:02:23+00:00\",\"invalid_pin\":false,\"raw\":\"codex\",\"schema\":\"qm.router_decision_bound_hold.v1\"},\"router_skipped_blocked_task_count\":8,\"slug\":\"nnfx-alma-qqe-volume-flow-sniper\",\"target_agent_profile\":\"codex\"}",
+          "created_at": "2026-08-17T17:03:25+00:00",
+          "updated_at": "2026-09-12T05:50:20+00:00",
+          "required_skills_json": "[]"
+        },
+        {
+          "id": "80b2cb2a-07fc-4aa6-9df3-81aab754a622",
+          "task_type": "review_ea",
+          "state": "FAILED",
+          "priority": 51,
+          "required_capabilities_json": "[\"code\",\"review\"]",
+          "assigned_agent": "codex",
+          "budget_class": "standard",
+          "parent_id": "22225e01-3ed6-4a1f-8fca-b55655117d01",
+          "artifact_path": "docs/ops/evidence/2026-08-23_rework-36004.md",
+          "verdict": "ARCHIVED (OWNER-DEC-BACKLOG-20260912) from RECYCLE: recycle_count=2 (failed verification twice)",
+          "payload_json": "{\"card_id\":null,\"ea_id\":\"36004\",\"quota_gate\":{\"agent\":\"codex\",\"allowed\":true,\"decided_at\":\"2026-08-18T14:02:54+00:00\",\"enforced\":true,\"hard_exhaustion\":false,\"invocation\":{\"model\":\"gpt-5.6-sol\",\"reasoning_effort\":\"max\",\"selection_reason\":\"max_class_contract_failclosed_decision_rootcause_or_adjudication\"},\"metrics\":{\"five_hour_used_pct\":null,\"pace_diff_points\":14.799999999999997,\"weekly_elapsed_pct\":77.2,\"weekly_used_pct\":92.0},\"policy_schema\":\"qm.agent_quota_gate.v1\",\"priority\":51,\"reason\":\"within_class_thresholds\",\"state_status\":\"fresh\",\"task_class\":\"ops_review\",\"task_type\":\"review_ea\",\"tier_escalation\":null,\"violations\":[]},\"reason\":\"codex_review_required_for_gemini_code\",\"recycle_count\":2,\"recycle_count_recorded_at_review\":\"2026-08-24T14:45:54+00:00\",\"required_capabilities\":[\"code\",\"review\"],\"review_close_state\":\"RECYCLE\",\"review_close_verdict\":\"RECYCLE (Orchestrator-Close Claude 2026-08-24, unabhaengige Sonnet-Verifikation): Setfile build_hash and evidence claim source SHA 08be2b66, but committed .mq5 hashes to 8b292c0e (LF). Concrete provenance drift; rebind against committed bytes. Source remediation and unwired check otherwise clean. Hinweis: bei reiner Hash-Provenienz-Drift ist der Rework eng \\u0097 Hash gegen committete Bytes regenerieren und im governed Compile binden, kein Voll-Redo.\",\"review_closed_at\":\"2026-08-24T14:45:54+00:00\",\"routed_at\":\"2026-08-18T14:02:54+00:00\",\"source_agent\":\"gemini\",\"source_artifact_path\":\"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\builds\\\\22225e01-3ed6-4a1f-8fca-b55655117d01.json\",\"source_execution_backend\":\"agy\",\"source_task_id\":\"22225e01-3ed6-4a1f-8fca-b55655117d01\",\"source_task_type\":\"build_ea\",\"source_verdict\":\"Built QM5_36004, compile and build_check passed, setfiles generated, deferred_p2_smoke\"}",
+          "created_at": "2026-08-17T21:24:20+00:00",
+          "updated_at": "2026-09-12T05:34:20+00:00",
+          "required_skills_json": "[\"code-review\",\"gemini-output-review\"]"
+        },
+        {
+          "id": "af9af332-6c97-4abd-a319-4373c82e0844",
+          "task_type": "review_ea",
+          "state": "FAILED",
+          "priority": 51,
+          "required_capabilities_json": "[\"code\",\"review\"]",
+          "assigned_agent": "claude",
+          "budget_class": "standard",
+          "parent_id": "22225e01-3ed6-4a1f-8fca-b55655117d01",
+          "artifact_path": "docs/ops/evidence/2026-08-23_review_QM5_36004.md",
+          "verdict": "ARCHIVED (OWNER-DEC-BACKLOG-20260912) from BLOCKED: duplicate rework of QM5_36004 (kept 22225e01)",
+          "payload_json": "{\"card_id\":null,\"ea_id\":\"36004\",\"quota_gate\":{\"agent\":\"claude\",\"allowed\":true,\"decided_at\":\"2026-08-23T11:57:17+00:00\",\"enforced\":true,\"hard_exhaustion\":false,\"invocation\":{\"model\":\"sonnet\",\"reasoning_effort\":null,\"selection_reason\":\"sonnet_default_deliberate_opus_only\"},\"metrics\":{\"five_hour_used_pct\":52.0,\"pace_diff_points\":10.200000000000003,\"weekly_elapsed_pct\":36.8,\"weekly_used_pct\":47.0},\"policy_schema\":\"qm.agent_quota_gate.v1\",\"priority\":51,\"reason\":\"within_class_thresholds\",\"state_status\":\"fresh\",\"task_class\":\"ops_review\",\"task_type\":\"review_ea\",\"tier_escalation\":null,\"violations\":[]},\"reason\":\"codex_review_required_for_gemini_code\",\"required_capabilities\":[\"code\",\"review\"],\"review_close_state\":\"BLOCKED\",\"review_close_verdict\":\"Source remediation verified clean (6/7 findings fixed, no dead inputs, card-faithful, framework-conformant); BLOCKED on stale .ex5 (byte-identical to rejected pre-remediation binary; needs governed off-window compile+smoke) and mandatory Codex acceptance gate for Gemini code.\",\"review_closed_at\":\"2026-08-23T18:40:22+00:00\",\"routed_at\":\"2026-08-23T11:57:17+00:00\",\"source_agent\":\"gemini\",\"source_artifact_path\":\"D:/QM/strategy_farm/artifacts/builds/22225e01-3ed6-4a1f-8fca-b55655117d01.json\",\"source_execution_backend\":\"agy\",\"source_task_id\":\"22225e01-3ed6-4a1f-8fca-b55655117d01\",\"source_task_type\":\"build_ea\",\"source_verdict\":\"REMEDIATED_AWAITING_CODEX_REVIEW\"}",
+          "created_at": "2026-08-23T11:54:00+00:00",
+          "updated_at": "2026-09-12T05:34:16+00:00",
+          "required_skills_json": "[\"code-review\",\"gemini-output-review\"]"
+        }
+      ],
+      "engine_tasks": [],
+      "work_items": []
+    },
+    {
+      "ea_id": 36008,
+      "cards": {
+        "cards_approved": [
+          {
+            "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_36008_nnfx-gold-kama-vortex-supertrend.md",
+            "sha256": "1f3911fc6f38705b5a068a759a2d70d84f95a75d0fc961bff1596f542ee4f692",
+            "bytes": 10184
+          }
+        ],
+        "cards_rejected": []
+      },
+      "files": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\QM5_36008_nnfx-gold-kama-vortex-supertrend.ex5",
+          "sha256": "a800cd130c9532c4f117310ed29916d4cbc7e920fd66f64a51165346679943e2",
+          "bytes": 396472
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\QM5_36008_nnfx-gold-kama-vortex-supertrend.mq5",
+          "sha256": "359b802234f98e78c85067ecc0623b879bb9a2cd318a10fc15dfcfd5ba99f9e4",
+          "bytes": 23498
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\sets\\QM5_36008_nnfx-gold-kama-vortex-supertrend_XAUUSD.DWX_D1_backtest.set",
+          "sha256": "8b9ffa53fcee8dd0f4d30976d520e524ca8715c10be05e72bb70a18a6e8e6145",
+          "bytes": 1537
+        },
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\sets\\QM5_36008_nnfx-gold-kama-vortex-supertrend_XTIUSD.DWX_D1_backtest.set",
+          "sha256": "2d6e3ebbd9aa0d968072641de280ffcd2a385b69248c0a4dfc66610d5bbdaa3d",
+          "bytes": 1537
+        }
+      ],
+      "active_magic": [
+        {
+          "ea_id": "36008",
+          "ea_slug": "nnfx-gold-kama-vortex-supertrend",
+          "symbol_slot": "0",
+          "symbol": "XAUUSD.DWX",
+          "magic": "360080000",
+          "reserved_at": "2026-08-17",
+          "reserved_by": "Gemini",
+          "status": "active"
+        },
+        {
+          "ea_id": "36008",
+          "ea_slug": "nnfx-gold-kama-vortex-supertrend",
+          "symbol_slot": "1",
+          "symbol": "XTIUSD.DWX",
+          "magic": "360080001",
+          "reserved_at": "2026-08-17",
+          "reserved_by": "Gemini",
+          "status": "active"
+        }
+      ],
+      "agent_tasks": [
+        {
+          "id": "bab6e8bf-435d-4da2-a25f-1e651cb33960",
+          "task_type": "build_ea",
+          "state": "TODO",
+          "priority": 30,
+          "required_capabilities_json": "[\"code\"]",
+          "assigned_agent": null,
+          "budget_class": "standard",
+          "parent_id": null,
+          "artifact_path": "docs/ops/evidence/2026-08-24_greview_36008.md",
+          "verdict": "REWORK requeued (OWNER-DEC-BACKLOG-20260912) from RECYCLE: rework QM5_36008",
+          "payload_json": "{\"backlog_disposition_journal\":[{\"at_utc\":\"2026-09-12T05:34:06+00:00\",\"decision\":\"OWNER-DEC-BACKLOG-20260912\",\"from_state\":\"RECYCLE\",\"previous_assigned_agent\":\"gemini\",\"why\":\"rework QM5_36008\"}],\"blocked_backlog_journal\":[{\"at_utc\":\"2026-09-12T05:48:29+00:00\",\"class\":\"LEGACY_RESEARCH\",\"from_state\":\"TODO\",\"previous_assigned_agent\":null,\"previous_verdict\":\"REWORK requeued (OWNER-DEC-BACKLOG-20260912) from RECYCLE: rework QM5_36008\",\"previous_verdict_sha256\":\"bc66f5b6bade2537feae90eff841c1ed1bb8e1a666683dd8d5230d0f423c985c\",\"reason\":\"legacy_agy_recycle_requeue_corrected_to_archive\",\"schema\":\"qm.blocked-agent-task-disposition/v1\",\"to_state\":\"FAILED\"},{\"at_utc\":\"2026-09-12T05:50:20+00:00\",\"class\":\"LEGACY_REQUEUE_RESTORE\",\"from_state\":\"FAILED\",\"previous_assigned_agent\":null,\"previous_verdict\":\"REWORK requeued (OWNER-DEC-BACKLOG-20260912) from RECYCLE: rework QM5_36008\",\"previous_verdict_sha256\":\"bc66f5b6bade2537feae90eff841c1ed1bb8e1a666683dd8d5230d0f423c985c\",\"reason\":\"restore_concurrent_scope_update_2026_09_12_05_34_48Z\",\"schema\":\"qm.blocked-agent-task-disposition/v1\",\"to_state\":\"TODO\"}],\"codex_model_tier\":\"sol\",\"codex_reasoning_effort\":\"high\",\"decision_bound_agent\":\"codex\",\"ea_id\":\"36008\",\"recycle_count\":1,\"recycle_count_recorded_at_review\":\"2026-08-24T11:38:29+00:00\",\"required_capabilities\":[\"code\"],\"review_close_state\":\"RECYCLE\",\"review_close_verdict\":\"RECYCLE: card-required TP1/BE/runner, loss limits, protective ordering, and 3-tick slippage are missing; stale EX5 must be recompiled via governed COMPILE_EA after remediation.\",\"review_closed_at\":\"2026-08-24T11:38:29+00:00\",\"rework_note\":\"Re-queued rework (OWNER 2026-09-12): the previous close text explains the defect; fix source to match the approved card, compile via COMPILE_EA only, tests, RESULT line.\",\"routed_at\":\"2026-08-23T11:57:18+00:00\",\"router_decision_bound_hold\":{\"agent\":\"codex\",\"held_at\":\"2026-09-22T05:02:23+00:00\",\"invalid_pin\":false,\"raw\":\"codex\",\"schema\":\"qm.router_decision_bound_hold.v1\"},\"router_skipped_blocked_task_count\":12,\"slug\":\"nnfx-gold-kama-vortex-supertrend\",\"target_agent_profile\":\"codex\"}",
+          "created_at": "2026-08-17T17:03:25+00:00",
+          "updated_at": "2026-09-12T05:50:20+00:00",
+          "required_skills_json": "[]"
+        },
+        {
+          "id": "c57623a2-30ff-4264-9839-f7093e815695",
+          "task_type": "review_ea",
+          "state": "PASSED",
+          "priority": 51,
+          "required_capabilities_json": "[\"code\",\"review\"]",
+          "assigned_agent": "codex",
+          "budget_class": "standard",
+          "parent_id": "bab6e8bf-435d-4da2-a25f-1e651cb33960",
+          "artifact_path": "docs/ops/evidence/2026-08-23_rework-36008.md",
+          "verdict": "APPROVED (Orchestrator-Close Claude 2026-08-24, unabhaengige Sonnet-Verifikation inkl. Hash-/Unwired-Input-Check): Implementation defects (WAE asymmetry, per-tick KAMA, unauthorized Vortex exit, missing rails) are repaired with clean static gates and a fully-wired 40-input surface. Only residual is the interlock-gated compile+smoke plus CRLF hash revalidation. Residual: governed OFF-Fenster-Compile+Smoke; CRLF/LF-Setfile-Hash-Bindung dort revalidieren.",
+          "payload_json": "{\"card_id\":null,\"ea_id\":\"36008\",\"exit_reconciliations\":[{\"from_state\":\"APPROVED\",\"reason\":\"approved_accepted_terminal\",\"reconciled_at\":\"2026-09-12T04:55:15+00:00\",\"to_state\":\"PASSED\",\"work_identity_key\":\"agent_task:bab6e8bf-435d-4da2-a25f-1e651cb33960\"}],\"quota_gate\":{\"agent\":\"codex\",\"allowed\":true,\"decided_at\":\"2026-08-18T14:38:17+00:00\",\"enforced\":true,\"hard_exhaustion\":false,\"invocation\":{\"model\":\"gpt-5.6-sol\",\"reasoning_effort\":\"max\",\"selection_reason\":\"max_class_contract_failclosed_decision_rootcause_or_adjudication\"},\"metrics\":{\"five_hour_used_pct\":null,\"pace_diff_points\":14.5,\"weekly_elapsed_pct\":77.5,\"weekly_used_pct\":92.0},\"policy_schema\":\"qm.agent_quota_gate.v1\",\"priority\":51,\"reason\":\"within_class_thresholds\",\"state_status\":\"fresh\",\"task_class\":\"ops_review\",\"task_type\":\"review_ea\",\"tier_escalation\":null,\"violations\":[]},\"reason\":\"codex_review_required_for_gemini_code\",\"recycle_count\":1,\"recycle_count_recorded_at_review\":\"2026-08-21T07:49:12+00:00\",\"required_capabilities\":[\"code\",\"review\"],\"review_close_state\":\"APPROVED\",\"review_close_verdict\":\"APPROVED (Orchestrator-Close Claude 2026-08-24, unabhaengige Sonnet-Verifikation inkl. Hash-/Unwired-Input-Check): Implementation defects (WAE asymmetry, per-tick KAMA, unauthorized Vortex exit, missing rails) are repaired with clean static gates and a fully-wired 40-input surface. Only residual is the interlock-gated compile+smoke plus CRLF hash revalidation. Residual: governed OFF-Fenster-Compile+Smoke; CRLF/LF-Setfile-Hash-Bindung dort revalidieren.\",\"review_closed_at\":\"2026-08-24T14:42:53+00:00\",\"routed_at\":\"2026-08-18T14:38:17+00:00\",\"source_agent\":\"gemini\",\"source_artifact_path\":\"D:/QM/strategy_farm/artifacts/build_results/QM5_36008_nnfx-gold-kama-vortex-supertrend_build_result.json\",\"source_execution_backend\":\"agy\",\"source_task_id\":\"bab6e8bf-435d-4da2-a25f-1e651cb33960\",\"source_task_type\":\"build_ea\",\"source_verdict\":\"PASS: MQL5 implementation of NNFX commodity stack compiled cleanly with 0 errors 0 warnings, build_check PASS\",\"work_identity\":{\"agent_task_chain\":[\"c57623a2-30ff-4264-9839-f7093e815695\",\"bab6e8bf-435d-4da2-a25f-1e651cb33960\"],\"ea_id\":\"36008\",\"entity_id\":\"c57623a2-30ff-4264-9839-f7093e815695\",\"entity_kind\":\"agent_task\",\"linked_work_item_id\":null,\"parent_agent_task_id\":\"bab6e8bf-435d-4da2-a25f-1e651cb33960\",\"retry_ordinal\":1,\"root_agent_task_id\":\"bab6e8bf-435d-4da2-a25f-1e651cb33960\",\"root_work_item_id\":null,\"schema_version\":\"qm.work_identity.v1\",\"stable_key\":\"agent_task:bab6e8bf-435d-4da2-a25f-1e651cb33960\",\"work_item_retry_chain\":[]}}",
+          "created_at": "2026-08-17T21:53:05+00:00",
+          "updated_at": "2026-09-12T04:55:15+00:00",
+          "required_skills_json": "[\"code-review\",\"gemini-output-review\"]"
+        },
+        {
+          "id": "b92a7b1b-ee6c-4e1c-85f7-6d37e1c747ee",
+          "task_type": "review_ea",
+          "state": "FAILED",
+          "priority": 51,
+          "required_capabilities_json": "[\"code\",\"review\"]",
+          "assigned_agent": "claude",
+          "budget_class": "standard",
+          "parent_id": "bab6e8bf-435d-4da2-a25f-1e651cb33960",
+          "artifact_path": "docs/ops/evidence/2026-08-23_review_36008.md",
+          "verdict": "ARCHIVED (OWNER-DEC-BACKLOG-20260912) from RECYCLE: duplicate rework of QM5_36008 (kept bab6e8bf)",
+          "payload_json": "{\"card_id\":null,\"ea_id\":\"36008\",\"quota_gate\":{\"agent\":\"claude\",\"allowed\":true,\"decided_at\":\"2026-08-23T12:08:11+00:00\",\"enforced\":true,\"hard_exhaustion\":false,\"invocation\":{\"model\":\"sonnet\",\"reasoning_effort\":null,\"selection_reason\":\"sonnet_default_deliberate_opus_only\"},\"metrics\":{\"five_hour_used_pct\":52.0,\"pace_diff_points\":10.200000000000003,\"weekly_elapsed_pct\":36.8,\"weekly_used_pct\":47.0},\"policy_schema\":\"qm.agent_quota_gate.v1\",\"priority\":51,\"reason\":\"within_class_thresholds\",\"state_status\":\"fresh\",\"task_class\":\"ops_review\",\"task_type\":\"review_ea\",\"tier_escalation\":null,\"violations\":[]},\"reason\":\"codex_review_required_for_gemini_code\",\"recycle_count\":1,\"recycle_count_recorded_at_review\":\"2026-08-23T18:41:05+00:00\",\"required_capabilities\":[\"code\",\"review\"],\"review_close_state\":\"RECYCLE\",\"review_close_verdict\":\"RECYCLE: entry faithful & framework-clean, but 3 confirmed defects \\u2014 TP1/BE/runner lifecycle collapsed to single exit (req.tp=0, empty ManageOpenPosition), killswitch not wired to card 2.5/5.0%, OnTick gates exits behind NoTradeFilter. Remediate per 36001/36004 template.\",\"review_closed_at\":\"2026-08-23T18:41:05+00:00\",\"routed_at\":\"2026-08-23T12:08:10+00:00\",\"source_agent\":\"gemini\",\"source_artifact_path\":\"D:/QM/strategy_farm/artifacts/build_results/QM5_36008_nnfx-gold-kama-vortex-supertrend_build_result.json\",\"source_execution_backend\":\"agy\",\"source_task_id\":\"bab6e8bf-435d-4da2-a25f-1e651cb33960\",\"source_task_type\":\"build_ea\",\"source_verdict\":\"DRAFT_READY_FOR_CODEX_REVIEW\"}",
+          "created_at": "2026-08-23T12:06:59+00:00",
+          "updated_at": "2026-09-12T05:34:19+00:00",
+          "required_skills_json": "[\"code-review\",\"gemini-output-review\"]"
+        }
+      ],
+      "engine_tasks": [],
+      "work_items": [
+        {
+          "id": "18865d7c-baba-43d3-8327-2ffc2896a1f3",
+          "kind": "backtest",
+          "phase": "Q02",
+          "ea_id": "QM5_36008",
+          "symbol": "XAUUSD.DWX",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\sets\\QM5_36008_nnfx-gold-kama-vortex-supertrend_XAUUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "verdict": null,
+          "attempt_count": 0,
+          "parent_task_id": null,
+          "evidence_path": null,
+          "claimed_by": null,
+          "payload_json": "{\"claimed_at_iso\": \"2026-09-20T16:53:09+00:00\", \"claimed_by_worker_pid\": 16480, \"commit_reservation_class\": \"ordinary\", \"commit_reservation_gb\": 8.0, \"commit_reservation_until_utc\": \"2026-09-20T16:58:09+00:00\", \"custom_history_archive_admission\": {\"activation_sha256\": \"61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e\", \"manifest_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\ops\\\\custom_history_custom_history_variant_a_20260809\\\\archive_manifest_owner_approved.json\", \"manifest_sha256\": \"fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06\", \"selected_archive_rows\": 108, \"selected_symbols\": [\"XAUUSD.DWX\"], \"status\": \"ACTIVE\"}, \"custom_history_copy_on_claim\": {\"activation_sha256\": \"61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e\", \"already_private_file_count\": 108, \"copied_file_count\": 0, \"ignored_non_custom_symbols\": [], \"manifest_sha256\": \"fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06\", \"prepared_cache_file_count\": 0, \"prestage_token_sha256\": null, \"receipt_file_sha256\": \"a62f3a86ce33400525287552056b4be11bed508d9ec67b7db004295dc6317f2a\", \"receipt_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\ops\\\\custom_history_copy_on_claim\\\\18865d7c-baba-43d3-8327-2ffc2896a1f3_T1.json\", \"receipt_sha256\": \"24167389072be2cf164eca254854abc33c73c91d77a8e54722b7b86f82369fd1\", \"required\": true, \"selected_file_count\": 108, \"status\": \"PASS_PRIVATIZED\", \"symbols\": [\"XAUUSD.DWX\"], \"terminal\": \"T1\"}, \"custom_history_post_copy_audit_sha256\": \"543f0f94e8ea896e53878d8eaf30418fa6c821563f6a07356c810eb9d4170c11\", \"custom_history_pre_copy_audit_sha256\": \"543f0f94e8ea896e53878d8eaf30418fa6c821563f6a07356c810eb9d4170c11\", \"dispatch_ex5_verified_at\": \"2026-09-20T16:53:10+00:00\", \"enqueued_at_utc\": \"2026-09-20T16:52:58+00:00\", \"enqueued_by\": \"claude_sweep_enqueue_2026-06-10.never_tested\", \"expected_ex5_path\": \"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\\\QM5_36008_nnfx-gold-kama-vortex-supertrend.ex5\", \"expected_ex5_sha256\": \"a800cd130c9532c4f117310ed29916d4cbc7e920fd66f64a51165346679943e2\", \"from_year\": 2017, \"history_first_year\": 2017, \"history_last_year\": 2025, \"host_symbol\": \"XAUUSD.DWX\", \"host_timeframe\": \"D1\", \"priority_track\": true, \"q02_fanout_canary\": true, \"q02_fanout_canary_index\": 1, \"q02_fanout_policy\": \"qm-q02-canary-fanout/v1\", \"requested_from_year\": 2017, \"requested_to_year\": 2022, \"staged_ex5\": {\"binding_source\": \"canonical_ex5_at_dispatch\", \"copied\": true, \"copy_source_path\": \"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\\\QM5_36008_nnfx-gold-kama-vortex-supertrend.ex5\", \"destination_path\": \"D:\\\\QM\\\\mt5\\\\T1\\\\MQL5\\\\Experts\\\\QM\\\\QM5_36008_nnfx-gold-kama-vortex-supertrend.ex5\", \"pre_run_sha256\": \"a800cd130c9532c4f117310ed29916d4cbc7e920fd66f64a51165346679943e2\", \"preexisting_destination_sha256\": null, \"prestage_adopted\": false, \"prestage_cache_fallback\": false, \"prestage_token_sha256\": null, \"required_sha256\": \"a800cd130c9532c4f117310ed29916d4cbc7e920fd66f64a51165346679943e2\", \"restaged\": true, \"source_path\": \"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_36008_nnfx-gold-kama-vortex-supertrend\\\\QM5_36008_nnfx-gold-kama-vortex-supertrend.ex5\", \"source_sha256\": \"a800cd130c9532c4f117310ed29916d4cbc7e920fd66f64a51165346679943e2\", \"verified\": true}, \"terminal\": \"T1\", \"to_year\": 2022}",
+          "created_at": "2026-09-20T16:52:58+00:00",
+          "updated_at": "2026-09-20T16:53:30+00:00",
+          "verdict_taxonomy_stored": "open",
+          "clean_status_stored": "pending",
+          "gate_contract_version": "v4",
+          "ex5_sha256": "a800cd130c9532c4f117310ed29916d4cbc7e920fd66f64a51165346679943e2",
+          "setfile_sha256": null,
+          "mq5_sha256": null,
+          "include_closure_sha256": null,
+          "build_id": null,
+          "data_window_start": null,
+          "data_window_end": null,
+          "news_calendar_sha256": null,
+          "verdict_taxonomy": null,
+          "sh3_enforced": 1
+        }
+      ]
+    }
+  ]
+}

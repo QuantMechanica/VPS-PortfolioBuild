@@ -1,0 +1,9 @@
+{
+  "status": "SOURCE_READY_COMPILE_PENDING",
+  "ea_id": "QM5_9241",
+  "mq5_sha256": "e84883844a12834263429e91121e7af9bca984eb66f24c33aec87421c753510a",
+  "tested_before_restart": "3 pytest tests passed; extracted actual MQL predicate and entry bodies exercised through syntax-only C# translation: 19 assertions",
+  "test_limit": "Logic harness is not MetaEditor or MT5; no economic result",
+  "card_conventions": "SPEC.md discloses wick invalidation, wick/range ratio and first-retest consumption for independent fidelity review",
+  "poc_card_sha256": "bf15b26f77ca9ba9b878dd91a94d1d0c68655f0e410346b021c06cdf9fe8c9ed"
+}

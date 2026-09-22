@@ -1,0 +1,61 @@
+{
+  "at_utc": "2026-09-22T08:13:30.186152+00:00",
+  "source_commit": "cfa03950b07013b1b18683b3e4c0c9a69e65d58c",
+  "files": [
+    {
+      "path": "framework/EAs/QM5_20078_volume-profile-poc-retest-intraday/.gitattributes",
+      "sha256": "75998f736e347c71f53cf11a4179b2676eebc229e9106eecf738cb4ae3b9014e"
+    },
+    {
+      "path": "framework/EAs/QM5_20078_volume-profile-poc-retest-intraday/QM5_20078_volume-profile-poc-retest-intraday.mq5",
+      "sha256": "6a902810b1ae3a3aa29391d74f66b872f8aa0cc688afae7d8088d9304103774d"
+    },
+    {
+      "path": "framework/EAs/QM5_20078_volume-profile-poc-retest-intraday/SPEC.md",
+      "sha256": "a3c2e69a6403679148290d6701428e42835e8bd3868fac74b18de5cb937f778b"
+    },
+    {
+      "path": "framework/EAs/QM5_20078_volume-profile-poc-retest-intraday/docs/strategy_card.md",
+      "sha256": "b586c7b85a1321d114be5029ae6fc61cd93485c48dd4d2c5a4574b3475c4fc6c"
+    },
+    {
+      "path": "framework/EAs/QM5_20078_volume-profile-poc-retest-intraday/sets/QM5_20078_volume-profile-poc-retest-intraday_EURUSD.DWX_M15_backtest.set",
+      "sha256": "8aabd810f3e8545c32f6dd3a5463c404c4fc90ed7e19bc69eb35d60464346b73"
+    },
+    {
+      "path": "framework/EAs/QM5_20078_volume-profile-poc-retest-intraday/sets/QM5_20078_volume-profile-poc-retest-intraday_GBPUSD.DWX_M15_backtest.set",
+      "sha256": "2b32074f459594da09e049503a22b11c52affe69442f4d243fb39de33ce97b7f"
+    },
+    {
+      "path": "framework/EAs/QM5_20078_volume-profile-poc-retest-intraday/sets/QM5_20078_volume-profile-poc-retest-intraday_GDAXI.DWX_M15_backtest.set",
+      "sha256": "6d6547876000e447a8225b8945692c083c5cb283f890b9be635de17a00527da4"
+    },
+    {
+      "path": "framework/EAs/QM5_20078_volume-profile-poc-retest-intraday/sets/QM5_20078_volume-profile-poc-retest-intraday_NDX.DWX_M15_backtest.set",
+      "sha256": "6783725a713a4bad8cda68d998dd06d764c024e7a7aa95b15ffd07bd6220ff72"
+    },
+    {
+      "path": "framework/EAs/QM5_20078_volume-profile-poc-retest-intraday/sets/QM5_20078_volume-profile-poc-retest-intraday_USDJPY.DWX_M15_backtest.set",
+      "sha256": "c0f445a9edc437539ea7f04fb1805102847bb888dadcf44b3804e183dce4ae53"
+    },
+    {
+      "path": "framework/EAs/QM5_20078_volume-profile-poc-retest-intraday/sets/QM5_20078_volume-profile-poc-retest-intraday_WS30.DWX_M15_backtest.set",
+      "sha256": "05dc5c087c151ff1196230206e176e6b34f6f6ad4a388b9a3d4cc4363e1b29b7"
+    },
+    {
+      "path": "framework/EAs/QM5_20078_volume-profile-poc-retest-intraday/sets/QM5_20078_volume-profile-poc-retest-intraday_XAUUSD.DWX_M15_backtest.set",
+      "sha256": "11de307a97eb8485fc66dc1fdb8664cbb9dbe541c004eae86155f24bc519bd85"
+    },
+    {
+      "path": "tools/strategy_farm/tests/test_qm5_20078_poc.py",
+      "sha256": "db929f92a8cd8d257fc7d5051f7f555e12a60f88c5d20b2a1754a82ad1593eba"
+    }
+  ],
+  "checks": [
+    "33 executable boundary assertions PASS",
+    "2 pytest tests PASS",
+    "SPEC PASS",
+    "guardrails PASS",
+    "hardening 0 failures 0 warnings"
+  ]
+}

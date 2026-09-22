@@ -1,0 +1,68 @@
+[
+  {
+    "key": "FTMO_NNFX_RETEST_REVIEW_ROLLOUT_20260922",
+    "result": {
+      "enqueued": true,
+      "task_id": "52728403-ca11-4170-8c0c-6130c900c536",
+      "task_type": "ops_issue",
+      "state": "TODO"
+    }
+  },
+  {
+    "key": "FTMO_POC_STOP_CARD_CLARIFICATION_20260922",
+    "result": {
+      "enqueued": true,
+      "task_id": "6c5219a9-ed29-4e82-acd0-ca949571271f",
+      "task_type": "ops_issue",
+      "state": "TODO"
+    }
+  },
+  {
+    "updated": true,
+    "task_id": "3c1da904-b03a-40d5-a1b3-c23e9ffad4b8",
+    "state": "BLOCKED",
+    "artifact_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-22_ftmo_recovery\\README.md",
+    "verdict": "Source/presets prepared and tested; exact COMPILE_EA queued with reviewed worker rollout hold. Await real compile/smoke; resume this existing task after reviewer-controlled rollout. No Build PASS claimed.",
+    "codex_review_task_id": null
+  },
+  {
+    "updated": true,
+    "task_id": "019d50ff-a716-46a4-b097-c5c650dea63b",
+    "state": "BLOCKED",
+    "artifact_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-22_ftmo_recovery\\README.md",
+    "verdict": "Source/presets prepared and tested; exact COMPILE_EA queued with reviewed worker rollout hold. Await real compile/smoke; resume this existing task after reviewer-controlled rollout. No Build PASS claimed.",
+    "codex_review_task_id": null
+  },
+  {
+    "updated": true,
+    "task_id": "22225e01-3ed6-4a1f-8fca-b55655117d01",
+    "state": "BLOCKED",
+    "artifact_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-22_ftmo_recovery\\README.md",
+    "verdict": "Source/presets prepared and tested; exact COMPILE_EA queued with reviewed worker rollout hold. Await real compile/smoke; resume this existing task after reviewer-controlled rollout. No Build PASS claimed.",
+    "codex_review_task_id": null
+  },
+  {
+    "updated": true,
+    "task_id": "bab6e8bf-435d-4da2-a25f-1e651cb33960",
+    "state": "BLOCKED",
+    "artifact_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-22_ftmo_recovery\\README.md",
+    "verdict": "Source/presets prepared and tested; exact COMPILE_EA queued with reviewed worker rollout hold. Await real compile/smoke; resume this existing task after reviewer-controlled rollout. No Build PASS claimed.",
+    "codex_review_task_id": null
+  },
+  {
+    "updated": true,
+    "task_id": "d00d7571-74f4-45ea-b652-57fa439f7bd9",
+    "state": "BLOCKED",
+    "artifact_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-22_ftmo_recovery\\README.md",
+    "verdict": "Source/presets prepared and tested; exact COMPILE_EA queued with reviewed worker rollout hold. Await real compile/smoke; resume this existing task after reviewer-controlled rollout. No Build PASS claimed.",
+    "codex_review_task_id": null
+  },
+  {
+    "updated": true,
+    "task_id": "751d8eb5-d9de-4cfe-85c6-27468c409078",
+    "state": "BLOCKED",
+    "artifact_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-22_ftmo_recovery\\QM5_20078_card_clarification.md",
+    "verdict": "Magic allocation resolved (7 rows PASS). REAL_BLOCKER: approved card contradicts itself on BUY stop minimum price versus closer distance. Concrete symmetric equation/examples submitted to designated G0 review; resume this same task on durable amendment.",
+    "codex_review_task_id": null
+  }
+]

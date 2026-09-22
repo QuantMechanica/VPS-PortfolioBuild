@@ -1,0 +1,20 @@
+[
+  {
+    "ea_id": 9241,
+    "old_sha256": "ad24f85b021d125ddfaf21acc25da766b29ccdec3b05fc8910c314fe9743b53e",
+    "restored_committed_sha256": "e84883844a12834263429e91121e7af9bca984eb66f24c33aec87421c753510a",
+    "reason": "worktree exactly matched pre-recovery BASE; committed HEAD equals authenticated canonical source"
+  },
+  {
+    "ea_id": 36008,
+    "old_sha256": "574431cfdea9473266f2cef2572ce0db1f1748c20ea4ec06aeb38b32a0da9256",
+    "restored_committed_sha256": "54a9d8c51c90fb6f50c3547fdc83a36fde5dd6468105539fe99c5665d9003783",
+    "reason": "worktree exactly matched pre-recovery BASE; committed HEAD equals authenticated canonical source"
+  },
+  {
+    "path": "framework/EAs/QM5_36008_nnfx-gold-kama-vortex-supertrend/SPEC.md",
+    "old_sha256": "ba7c6ec74c58a79faca908aa5e7af34e09186e1ba75481c29c946ab0d54b45c4",
+    "restored_committed_sha256": "026e9c4a9d19a27659f9a7b256240f10a7e24093abba10befbf48b340dbc5741",
+    "reason": "exact pre-recovery BASE; HEAD equals canonical"
+  }
+]
