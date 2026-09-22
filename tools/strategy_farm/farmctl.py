@@ -25956,6 +25956,445 @@ def record_q01_smoke_successor(
     }
 
 
+# ---------------------------------------------------------------------------
+# General governed Q01 smoke dispatch route (ops_issue task 7267e593, filed by
+# the reconciliation of task ea8b4312 on 2026-09-22).
+#
+# ``q01_basket_smoke_recovery.py`` is the only existing code that APPENDS a
+# pending ``q01_smoke`` work item, and it is hard-scoped by a literal
+# ``TARGETS`` tuple to three specific basket EAs, each bound to its own fixed
+# ``review_task_id`` in the legacy ``tasks``/``ea_review`` pipeline.
+# ``record_q01_smoke_successor`` above only AUTHENTICATES an already-terminal
+# ``q01_smoke`` row against a legacy ``tasks`` build record; it cannot create
+# one, and that legacy record does not exist for EAs built through the newer
+# ``agent_tasks`` capability-router pipeline (task_type='build_ea').
+#
+# ``append_q01_smoke_work_item`` is the general route: given an EA id, a
+# target chart symbol, the ``agent_tasks`` build task id, and the exact
+# COMPILE_EA compile-evidence path, it re-derives the expected mq5/ex5/setfile
+# identity from that terminal COMPILE_OK evidence, re-hashes the CURRENT repo
+# artifacts to prove nothing drifted since compile, verifies the build task is
+# bound to that exact evidence path (the "build-task binding"), and appends
+# exactly one pending ``q01_smoke`` work item under the existing
+# ``qm.q01.worker_bound_basket_smoke.v1`` contract for the resident T1-T10
+# worker to claim. No EA/symbol is hard-coded; every identity is read from the
+# governed compile evidence and the build task row. Fails closed on any
+# mismatch and never fabricates a result.
+#
+# NOTE (documented, not fixed here — out of this route's bounded scope): once
+# a worker finishes such a row PASS, ``record_q01_smoke_successor`` and
+# ``_latest_build_smoke_result`` still only look at the legacy ``tasks`` table
+# for Q02 admission, which an ``agent_tasks``-originated build never populates.
+# Closing that admission-side gap is a separate, independently reviewable
+# change and is left as a follow-up.
+# ---------------------------------------------------------------------------
+
+Q01_SMOKE_DISPATCH_ROUTE_VERSION = "qm.q01-smoke-dispatch/v1"
+Q01_SMOKE_DISPATCH_DEFAULT_FROM_DATE = "2024.01.01"
+Q01_SMOKE_DISPATCH_DEFAULT_TO_DATE = "2024.12.31"
+Q01_SMOKE_DISPATCH_MIN_TRADES = 1
+# agent_tasks states that make a build ineligible as a smoke-dispatch anchor:
+# a failed/recycled/blocked/ops-fix build is not a live candidate to smoke-test.
+_Q01_SMOKE_DISPATCH_DISQUALIFIED_BUILD_STATES = frozenset(
+    {"FAILED", "RECYCLE", "BLOCKED", "OPS_FIX_REQUIRED"}
+)
+
+
+def _q01_smoke_dispatch_work_item_id(
+    ea_id: str, symbol: str, build_task_id: str, compile_work_item_id: str
+) -> str:
+    return str(
+        uuid.uuid5(
+            uuid.NAMESPACE_URL,
+            "qm:q01-smoke-dispatch:"
+            f"{ea_id}:{symbol}:{build_task_id}:{compile_work_item_id}",
+        )
+    )
+
+
+def _authenticate_q01_smoke_dispatch(
+    conn: sqlite3.Connection,
+    *,
+    ea_id: str,
+    symbol: str,
+    build_task_id: str,
+    compile_evidence_path: str,
+    from_date: str,
+    to_date: str,
+) -> dict[str, Any]:
+    """Read-only authentication for a new Q01 smoke dispatch. Never mutates state."""
+    ea_id = str(ea_id or "").strip()
+    symbol = str(symbol or "").strip()
+    build_task_id = str(build_task_id or "").strip()
+    if not re.match(r"^QM5_\d+$", ea_id):
+        return {"ok": False, "reason": "ea_id_malformed", "detail": ea_id}
+    if not symbol:
+        return {"ok": False, "reason": "symbol_missing"}
+    if not build_task_id:
+        return {"ok": False, "reason": "build_task_id_missing"}
+    if not _valid_ymd_date(from_date) or not _valid_ymd_date(to_date) or from_date > to_date:
+        return {
+            "ok": False,
+            "reason": "q01_smoke_dispatch_window_invalid",
+            "detail": f"from_date={from_date!r} to_date={to_date!r}",
+        }
+
+    evidence_path = Path(str(compile_evidence_path))
+    if not evidence_path.is_file():
+        return {
+            "ok": False,
+            "reason": "compile_evidence_not_found",
+            "detail": str(evidence_path),
+        }
+    compile_evidence_sha256 = _sha256_file(evidence_path)
+    try:
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError) as exc:
+        return {"ok": False, "reason": "compile_evidence_unreadable", "detail": str(exc)}
+    if not isinstance(evidence, dict):
+        return {"ok": False, "reason": "compile_evidence_not_an_object"}
+
+    compile_rows = [
+        dict(row)
+        for row in conn.execute(
+            "SELECT * FROM work_items WHERE kind='compile' AND phase='COMPILE_EA' AND ea_id=?",
+            (ea_id,),
+        ).fetchall()
+        if _normpath_key(row["evidence_path"] or "") == _normpath_key(str(evidence_path))
+    ]
+    if not compile_rows:
+        return {
+            "ok": False,
+            "reason": "compile_work_item_not_found",
+            "detail": f"no COMPILE_EA work_item for ea_id={ea_id} with evidence_path={evidence_path}",
+        }
+    if len(compile_rows) > 1:
+        return {
+            "ok": False,
+            "reason": "compile_work_item_ambiguous",
+            "detail": [row["id"] for row in compile_rows],
+        }
+    compile_row = compile_rows[0]
+    if str(compile_row.get("status") or "") != "done" or str(compile_row.get("verdict") or "") != "COMPILE_OK":
+        return {
+            "ok": False,
+            "reason": "compile_not_ok",
+            "detail": f"status/verdict={compile_row.get('status')!r}/{compile_row.get('verdict')!r}",
+        }
+    compile_work_item_id = str(compile_row["id"])
+
+    if str(evidence.get("ea_id") or "") != ea_id:
+        return {
+            "ok": False,
+            "reason": "compile_evidence_ea_id_mismatch",
+            "detail": f"evidence.ea_id={evidence.get('ea_id')!r} != {ea_id!r}",
+        }
+    if evidence.get("success") is not True or str(evidence.get("compile_result") or "") != "PASS":
+        return {
+            "ok": False,
+            "reason": "compile_evidence_not_success",
+            "detail": f"success={evidence.get('success')!r} compile_result={evidence.get('compile_result')!r}",
+        }
+
+    setfile_entries = evidence.get("setfile_generation")
+    setfile_entries = setfile_entries if isinstance(setfile_entries, list) else []
+    chosen_setfile: dict[str, Any] | None = None
+    available_symbols: list[str] = []
+    for entry in setfile_entries:
+        if not isinstance(entry, dict):
+            continue
+        entry_symbol = str(entry.get("symbol") or "").strip()
+        available_symbols.append(entry_symbol)
+        if entry_symbol.upper() == symbol.upper() and entry.get("setfile_exists") is True:
+            chosen_setfile = entry
+            break
+    if chosen_setfile is None:
+        return {
+            "ok": False,
+            "reason": "symbol_not_in_compile_evidence",
+            "detail": f"symbol={symbol!r} not among {available_symbols!r}",
+        }
+
+    sealed = {
+        "ex5": str(evidence.get("ex5_sha256") or "").strip().lower(),
+        "mq5": str(evidence.get("mq5_sha256") or "").strip().lower(),
+        "setfile": str(chosen_setfile.get("setfile_sha256") or "").strip().lower(),
+    }
+    row_sealed = {
+        "ex5": str(compile_row.get("ex5_sha256") or "").strip().lower(),
+        "mq5": str(compile_row.get("mq5_sha256") or "").strip().lower(),
+    }
+    if not all(sealed.values()):
+        return {"ok": False, "reason": "compile_evidence_hash_missing", "detail": sealed}
+    if row_sealed["ex5"] and row_sealed["ex5"] != sealed["ex5"]:
+        return {"ok": False, "reason": "compile_evidence_ex5_hash_mismatch_row",
+                "detail": {"evidence": sealed["ex5"], "work_item": row_sealed["ex5"]}}
+    if row_sealed["mq5"] and row_sealed["mq5"] != sealed["mq5"]:
+        return {"ok": False, "reason": "compile_evidence_mq5_hash_mismatch_row",
+                "detail": {"evidence": sealed["mq5"], "work_item": row_sealed["mq5"]}}
+
+    artifact_paths = {
+        "ex5": str(evidence.get("ex5_path") or ""),
+        "mq5": str(evidence.get("mq5_path") or ""),
+        "setfile": str(chosen_setfile.get("setfile_path") or ""),
+    }
+    current: dict[str, str] = {}
+    for kind, path_value in artifact_paths.items():
+        if not path_value:
+            return {"ok": False, "reason": "compile_evidence_artifact_path_missing", "detail": kind}
+        cur = _sha256_path_current(Path(path_value))
+        if cur is None:
+            return {"ok": False, "reason": "compile_artifact_missing", "detail": f"{kind}: {path_value}"}
+        current[kind] = cur.lower()
+    mismatches = [
+        f"{kind}: sealed={sealed[kind]} != current={current[kind]}"
+        for kind in ("ex5", "mq5", "setfile")
+        if sealed[kind] != current[kind]
+    ]
+    if mismatches:
+        return {
+            "ok": False,
+            "reason": "artifact_drift_since_compile",
+            "detail": "; ".join(mismatches),
+        }
+
+    try:
+        build_row = conn.execute(
+            "SELECT id,task_type,state,artifact_path FROM agent_tasks WHERE id=?",
+            (build_task_id,),
+        ).fetchone()
+    except sqlite3.OperationalError as exc:
+        return {"ok": False, "reason": "agent_tasks_table_missing", "detail": str(exc)}
+    if build_row is None:
+        return {"ok": False, "reason": "build_task_not_found", "detail": build_task_id}
+    build_row = dict(build_row)
+    if str(build_row.get("task_type") or "") != "build_ea":
+        return {
+            "ok": False,
+            "reason": "build_task_type_mismatch",
+            "detail": build_row.get("task_type"),
+        }
+    if str(build_row.get("state") or "") in _Q01_SMOKE_DISPATCH_DISQUALIFIED_BUILD_STATES:
+        return {
+            "ok": False,
+            "reason": "build_task_state_disqualified",
+            "detail": build_row.get("state"),
+        }
+    if _normpath_key(build_row.get("artifact_path") or "") != _normpath_key(str(evidence_path)):
+        return {
+            "ok": False,
+            "reason": "build_task_artifact_path_mismatch",
+            "detail": {
+                "build_task_artifact_path": build_row.get("artifact_path"),
+                "compile_evidence_path": str(evidence_path),
+            },
+        }
+
+    return {
+        "ok": True,
+        "ea_id": ea_id,
+        "symbol": symbol,
+        "build_task_id": build_task_id,
+        "build_task_state": build_row.get("state"),
+        "compile_work_item_id": compile_work_item_id,
+        "compile_evidence_path": str(evidence_path),
+        "compile_evidence_sha256": compile_evidence_sha256,
+        "setfile_path": artifact_paths["setfile"],
+        "expected_ex5_sha256": sealed["ex5"],
+        "expected_mq5_sha256": sealed["mq5"],
+        "expected_setfile_sha256": sealed["setfile"],
+        "from_date": from_date,
+        "to_date": to_date,
+    }
+
+
+def append_q01_smoke_work_item(
+    root: Path,
+    *,
+    ea_id: str,
+    symbol: str,
+    build_task_id: str,
+    compile_evidence_path: str,
+    from_date: str | None = None,
+    to_date: str | None = None,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    """Append exactly one governed, worker-bound ``q01_smoke`` work item.
+
+    Generalizes ``q01_basket_smoke_recovery.py`` beyond its literal ``TARGETS``
+    tuple: every identity (EA, symbol, artifact hashes) is re-derived from a
+    named terminal COMPILE_OK compile-evidence file and cross-checked against
+    the current repo bytes and the requesting ``agent_tasks`` build row, so no
+    EA is special-cased in code. Idempotent on an exact repeat of the same
+    (ea_id, symbol, build_task_id, compile_work_item_id) identity; fails closed
+    on any hash/binding mismatch or a pre-existing pending/active row for the
+    same (ea_id, symbol) under a different identity.
+    """
+    init_db(root)
+    from_date = str(from_date or Q01_SMOKE_DISPATCH_DEFAULT_FROM_DATE).strip()
+    to_date = str(to_date or Q01_SMOKE_DISPATCH_DEFAULT_TO_DATE).strip()
+    now = utc_now()
+
+    with connect(root) as conn:
+        auth = _authenticate_q01_smoke_dispatch(
+            conn,
+            ea_id=ea_id,
+            symbol=symbol,
+            build_task_id=build_task_id,
+            compile_evidence_path=compile_evidence_path,
+            from_date=from_date,
+            to_date=to_date,
+        )
+    if not auth.get("ok"):
+        return {"appended": False, **auth}
+
+    work_item_id = _q01_smoke_dispatch_work_item_id(
+        auth["ea_id"], auth["symbol"], auth["build_task_id"], auth["compile_work_item_id"]
+    )
+    payload = {
+        "q01_smoke_contract": Q01_SMOKE_WORK_ITEM_CONTRACT,
+        "dispatch_route": "farmctl.append_q01_smoke_work_item",
+        "dispatch_route_version": Q01_SMOKE_DISPATCH_ROUTE_VERSION,
+        "smoke_mode": True,
+        "q01_min_trades": Q01_SMOKE_DISPATCH_MIN_TRADES,
+        "from_date": auth["from_date"],
+        "to_date": auth["to_date"],
+        "window_source": "farmctl.append_q01_smoke_work_item",
+        "diagnostic_single_window": True,
+        "build_task_id": auth["build_task_id"],
+        "build_task_kind": "agent_tasks",
+        "compile_work_item_id": auth["compile_work_item_id"],
+        "compile_evidence_path": auth["compile_evidence_path"],
+        "compile_evidence_sha256": auth["compile_evidence_sha256"],
+        "expected_ex5_sha256": auth["expected_ex5_sha256"],
+        "expected_mq5_sha256": auth["expected_mq5_sha256"],
+        "expected_setfile_sha256": auth["expected_setfile_sha256"],
+        "priority_reason": "governed_q01_smoke_dispatch_route",
+        "priority_track": True,
+    }
+
+    if dry_run:
+        return {
+            "appended": False,
+            "dry_run": True,
+            "would_append": True,
+            "authenticated": True,
+            "work_item_id": work_item_id,
+            **auth,
+        }
+
+    def _insert_transaction() -> dict[str, Any]:
+        with connect(root) as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            existing = conn.execute(
+                "SELECT * FROM work_items WHERE id=?", (work_item_id,)
+            ).fetchone()
+            if existing is not None:
+                try:
+                    existing_payload = json.loads(existing["payload_json"] or "{}")
+                except (json.JSONDecodeError, TypeError):
+                    existing_payload = {}
+                immutable = {
+                    "kind": existing["kind"],
+                    "phase": existing["phase"],
+                    "ea_id": existing["ea_id"],
+                    "symbol": existing["symbol"],
+                    "setfile_path": _normpath_key(existing["setfile_path"]),
+                    "contract": existing_payload.get("q01_smoke_contract"),
+                    "build_task_id": existing_payload.get("build_task_id"),
+                    "compile_work_item_id": existing_payload.get("compile_work_item_id"),
+                    "expected_ex5_sha256": existing_payload.get("expected_ex5_sha256"),
+                    "expected_setfile_sha256": existing_payload.get("expected_setfile_sha256"),
+                }
+                expected = {
+                    "kind": Q01_SMOKE_WORK_ITEM_KIND,
+                    "phase": "Q01",
+                    "ea_id": auth["ea_id"],
+                    "symbol": auth["symbol"],
+                    "setfile_path": _normpath_key(auth["setfile_path"]),
+                    "contract": Q01_SMOKE_WORK_ITEM_CONTRACT,
+                    "build_task_id": auth["build_task_id"],
+                    "compile_work_item_id": auth["compile_work_item_id"],
+                    "expected_ex5_sha256": auth["expected_ex5_sha256"],
+                    "expected_setfile_sha256": auth["expected_setfile_sha256"],
+                }
+                if immutable != expected:
+                    conn.rollback()
+                    raise RuntimeError(
+                        f"deterministic work-item collision for {work_item_id}: "
+                        f"observed={immutable} expected={expected}"
+                    )
+                conn.rollback()
+                return {
+                    "appended": False,
+                    "already_applied": True,
+                    "work_item_id": work_item_id,
+                    "status": existing["status"],
+                    **auth,
+                }
+            conflict = conn.execute(
+                """
+                SELECT id, status FROM work_items
+                WHERE kind=? AND ea_id=? AND symbol=? AND status IN ('pending','active')
+                """,
+                (Q01_SMOKE_WORK_ITEM_KIND, auth["ea_id"], auth["symbol"]),
+            ).fetchone()
+            if conflict is not None:
+                conn.rollback()
+                return {
+                    "appended": False,
+                    "reason": "q01_smoke_already_pending_for_target",
+                    "detail": {"work_item_id": conflict["id"], "status": conflict["status"]},
+                    **auth,
+                }
+            conn.execute(
+                """
+                INSERT INTO work_items(
+                    id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
+                    payload_json,created_at,updated_at,gate_contract_version,
+                    ex5_sha256,setfile_sha256,mq5_sha256
+                ) VALUES(?, ?, 'Q01', ?, ?, ?, 'pending', 0, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    work_item_id,
+                    Q01_SMOKE_WORK_ITEM_KIND,
+                    auth["ea_id"],
+                    auth["symbol"],
+                    auth["setfile_path"],
+                    json.dumps(payload, sort_keys=True),
+                    now,
+                    now,
+                    ACTIVE_GATE_CONTRACT_VERSION,
+                    auth["expected_ex5_sha256"],
+                    auth["expected_setfile_sha256"],
+                    auth["expected_mq5_sha256"],
+                ),
+            )
+            event(
+                conn,
+                "work_item",
+                work_item_id,
+                "q01_smoke_dispatch_enqueued",
+                {
+                    "contract": Q01_SMOKE_WORK_ITEM_CONTRACT,
+                    "ea_id": auth["ea_id"],
+                    "symbol": auth["symbol"],
+                    "build_task_id": auth["build_task_id"],
+                    "compile_work_item_id": auth["compile_work_item_id"],
+                    "dispatch_route_version": Q01_SMOKE_DISPATCH_ROUTE_VERSION,
+                },
+            )
+            conn.commit()
+            return {
+                "appended": True,
+                "work_item_id": work_item_id,
+                "status": "pending",
+                **auth,
+            }
+
+    return _with_sqlite_write_retry(_insert_transaction)
+
+
 PRIORITY_TRACK_MARK_LOG = Path(r"D:/QM/reports/state/priority_track_marks.jsonl")
 
 
@@ -39481,6 +39920,28 @@ def build_parser() -> argparse.ArgumentParser:
     rec_smoke_succ.add_argument("--smoke-work-item-id", required=True)
     rec_smoke_succ.add_argument("--dry-run", action="store_true", help="Authenticate and print the plan without writing")
 
+    append_q01_smoke = sub.add_parser(
+        "append-q01-smoke-work-item",
+        help=(
+            "Append exactly one governed, worker-bound q01_smoke work item for an "
+            "arbitrary EA/symbol, re-deriving identity from a named terminal COMPILE_OK "
+            "compile-evidence file and the requesting agent_tasks build row (no TARGETS "
+            "hard-coding; generalizes q01_basket_smoke_recovery.py)"
+        ),
+    )
+    append_q01_smoke.add_argument("--ea-id", required=True, help="e.g. QM5_9241")
+    append_q01_smoke.add_argument("--symbol", required=True, help="e.g. EURUSD.DWX")
+    append_q01_smoke.add_argument(
+        "--build-task-id", required=True, help="agent_tasks build_ea task id bound to the compile evidence"
+    )
+    append_q01_smoke.add_argument(
+        "--compile-evidence-path", required=True,
+        help="Exact path to the terminal COMPILE_EA work item's compile_evidence.json",
+    )
+    append_q01_smoke.add_argument("--from-date", help="YYYY.MM.DD; default 2024.01.01")
+    append_q01_smoke.add_argument("--to-date", help="YYYY.MM.DD; default 2024.12.31")
+    append_q01_smoke.add_argument("--dry-run", action="store_true", help="Authenticate and print the plan without writing")
+
     release_hold = sub.add_parser(
         "release-hold",
         help="Release exactly one active work_item_holds row under the factory mutation lock (CAS + backup + append-only ledger/events); never changes work_items status/verdict/payload",
@@ -39990,7 +40451,9 @@ _STATE_MUTATING_COMMANDS = frozenset({
 def _command_mutates_state(args: argparse.Namespace) -> bool:
     if args.command == "bind-q09-plan":
         return not bool(getattr(args, "dry_run", False))
-    if args.command in {"record-q01-smoke-successor", "release-hold", "mark-priority-track"}:
+    if args.command in {
+        "record-q01-smoke-successor", "append-q01-smoke-work-item", "release-hold", "mark-priority-track",
+    }:
         return not bool(getattr(args, "dry_run", False))
     if args.command == "enqueue-compile":
         return bool(args.apply or (not args.from_file and not args.repair_successor_of))
@@ -40185,6 +40648,17 @@ def main(argv: list[str] | None = None) -> int:
             root,
             args.build_task_id,
             args.smoke_work_item_id,
+            dry_run=args.dry_run,
+        ))
+    elif args.command == "append-q01-smoke-work-item":
+        print_json(append_q01_smoke_work_item(
+            root,
+            ea_id=args.ea_id,
+            symbol=args.symbol,
+            build_task_id=args.build_task_id,
+            compile_evidence_path=args.compile_evidence_path,
+            from_date=args.from_date,
+            to_date=args.to_date,
             dry_run=args.dry_run,
         ))
     elif args.command == "release-hold":
