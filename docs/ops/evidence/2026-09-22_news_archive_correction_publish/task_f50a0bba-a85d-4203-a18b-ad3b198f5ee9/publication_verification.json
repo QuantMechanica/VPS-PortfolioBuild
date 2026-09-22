@@ -1,0 +1,48 @@
+{
+  "schema_version": "qm.q09-calendar-publication-verification/v1",
+  "task_id": "f50a0bba-a85d-4203-a18b-ad3b198f5ee9",
+  "decision_id": "FABLE-DEC-NEWS-ARCHIVE-DST-CORRECTION-20260922",
+  "publication_reason": "APPROVED_CORRECTION",
+  "parent": {
+    "bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+    "events_path": "D:\\QM\\data\\news_calendar\\q09_bundles\\q09cal-20150101-20260809-0bb19b5bb9790b76\\events.csv",
+    "events_size_bytes": 4453290,
+    "events_sha256": "86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1",
+    "manifest_sha256": "b204d1ab9fe40fe32afc254ae4284ed6c1df112829df07483912e5ed54527461",
+    "preserved_byte_identical": true
+  },
+  "successor": {
+    "bundle_id": "q09cal-20150101-20260809-3d44f107363359bb",
+    "events_path": "D:\\QM\\data\\news_calendar\\q09_bundles\\q09cal-20150101-20260809-3d44f107363359bb\\events.csv",
+    "events_size_bytes": 4453290,
+    "events_sha256": "7a3243cf14d3ac6786423a48dd50317eed155d9c5360ba1067c55355f9618522",
+    "manifest_sha256": "50e16cfbb8ebdf56093cbae8f05d0972f666c257c8034bd6cdcb393e679c2015",
+    "publisher_receipt_sha256": "7abe608b9977a8a5393ba1ea0a0e609e5fc0f1e7adef79dba514ee0bbb05527f",
+    "row_count": 48245,
+    "corrected_row_count": 82
+  },
+  "file_common_provisioning": [
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q09_news\\q09cal-20150101-20260809-3d44f107363359bb\\events.csv",
+      "size_bytes": 4453290,
+      "sha256": "7a3243cf14d3ac6786423a48dd50317eed155d9c5360ba1067c55355f9618522"
+    },
+    {
+      "path": "C:\\Windows\\System32\\config\\systemprofile\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q09_news\\q09cal-20150101-20260809-3d44f107363359bb\\events.csv",
+      "size_bytes": 4453290,
+      "sha256": "7a3243cf14d3ac6786423a48dd50317eed155d9c5360ba1067c55355f9618522"
+    },
+    {
+      "path": "C:\\Users\\QMDev1\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q09_news\\q09cal-20150101-20260809-3d44f107363359bb\\events.csv",
+      "size_bytes": 4453290,
+      "sha256": "7a3243cf14d3ac6786423a48dd50317eed155d9c5360ba1067c55355f9618522"
+    },
+    {
+      "path": "C:\\Users\\QMDev2\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q09_news\\q09cal-20150101-20260809-3d44f107363359bb\\events.csv",
+      "size_bytes": 4453290,
+      "sha256": "7a3243cf14d3ac6786423a48dd50317eed155d9c5360ba1067c55355f9618522"
+    }
+  ],
+  "active_file_overwritten": false,
+  "live_news_filter_changed": false
+}

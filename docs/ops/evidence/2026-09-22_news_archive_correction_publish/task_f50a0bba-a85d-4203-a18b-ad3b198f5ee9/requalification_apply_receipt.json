@@ -1,0 +1,591 @@
+{
+  "applied_at_utc": "2026-09-22T06:50:01.589912+00:00",
+  "backup": {
+    "cap_receipt": null,
+    "identity": {
+      "schema_version": 1404071,
+      "source_mtime_ns": 1790056833631221700,
+      "source_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "source_size": 1371267072,
+      "source_wal_size": 3452592
+    },
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_q09_calendar_requalification_20260922T064928Z_44726e76.sqlite",
+    "reused": false,
+    "reused_from_sidecar": null,
+    "sha256": "3224b606984ba7c8bf726604648fd76445c9d5905ce7b194d261ea9248cba671"
+  },
+  "binding_failure_count": 56,
+  "binding_failures": [
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "591322ff-0a3c-44e7-bc88-5aca9cbd79aa",
+      "successor_work_item_id": "8054426f-3c29-5cfd-9a28-2cc4dcc1835b"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "afbcaf57-8389-4abf-92f9-76eb1e2e303b",
+      "successor_work_item_id": "7a5ec85a-9829-5f98-9a4c-9052efbd7135"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "dbd984be-792d-4759-a5ac-bfd75b423917",
+      "successor_work_item_id": "9f8d827a-3b0a-5583-9ac8-c1520e9557c2"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "a49c9730-82ab-4e06-998c-480f355d24a0",
+      "successor_work_item_id": "e4d69adf-a869-50a6-8a48-b071fada2487"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "01c42ad6-168e-4808-bec5-b9b34f365a2f",
+      "successor_work_item_id": "3f5e4a06-d166-5d13-9415-f70f6258afcf"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "e4fabf66-d902-45bf-9ffd-12e3289d172c",
+      "successor_work_item_id": "583b4862-4545-52da-a9a0-8ec73cd4c40b"
+    },
+    {
+      "error": "RunnerError: Q08 baseline MQ5 vintage mismatch: expected b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15, got 3307ae62ce1e7b10625ccaa9b7e2cfd7ea2581eb3e2d66d0f4170e499d4b6155",
+      "source_work_item_id": "4fc0db48-71b8-4868-800e-7dccb8eaf012",
+      "successor_work_item_id": "6743a249-0c3c-5be6-824d-ab49d6e477d5"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "f7264187-3b88-4216-8d0b-c6e2b9ee20ab",
+      "successor_work_item_id": "2293dd66-4b52-5d7f-8f9e-1bd5c9a2dad7"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "5ea4c77d-6758-4b1c-8693-300aa5789198",
+      "successor_work_item_id": "db76b66e-5d2a-5831-82f2-678857d3c513"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "79e825cc-a806-49ac-9bc4-96d4c83c915d",
+      "successor_work_item_id": "9b65175e-efc1-5684-bae6-78e4f98e7fd5"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "9885b7e5-8b82-4f1e-8c51-33f77555a164",
+      "successor_work_item_id": "1141b34f-9353-567c-9ec9-f56bf363f8b8"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "b5acfce7-8605-45c1-ad81-bb96ec187709",
+      "successor_work_item_id": "0631d760-89e0-575b-98a1-9156ed1bb13f"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "c37f832c-403e-4cb7-b964-0cfafe08615e",
+      "successor_work_item_id": "d4a58034-5d57-5c3e-bbca-f3ed22e96188"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "ef27d75d-8f81-409c-9f68-df690ad4a404",
+      "successor_work_item_id": "4f2c59a7-b910-59e9-b251-130277350871"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "c6188029-8e0e-47d4-a442-6a588ee03a93",
+      "successor_work_item_id": "8e186627-e3e7-593c-8a01-b8ce13341437"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "564c7e0e-9f1f-446b-918a-1a2cb9d1ab0f",
+      "successor_work_item_id": "9dbade9b-56bc-5cd2-9a2a-c9b5f558a2d7"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "8f2c850c-1cac-4e57-8fd9-6c82500c73fb",
+      "successor_work_item_id": "10d79dfe-28fe-5781-89dd-254314da4da7"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "a114165d-9c44-4bba-bdf3-0a2abeb3f001",
+      "successor_work_item_id": "f8144dbd-eb94-5257-b6d9-220f1ccb8b7f"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "2c2d77b4-786a-4b47-b8ac-1f3eba932b0e",
+      "successor_work_item_id": "d9d2f08f-6776-5c22-a034-1af36334bc78"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "6d95572d-5820-4c74-a423-be049291e145",
+      "successor_work_item_id": "dc58bfac-3c2a-566d-8771-13058e4ba9f0"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "c279f5bb-f731-409f-bef0-5e2aae6cdfae",
+      "successor_work_item_id": "61083e2a-a39d-5f43-83e0-58a6eae8f1c9"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "0fc6a10b-99f7-4804-8a96-433be21b8cea",
+      "successor_work_item_id": "9e7d4534-7c5c-5cbf-8e79-d8ee682074f5"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "867c6b25-182f-4f10-863c-654d38299b37",
+      "successor_work_item_id": "1aad70be-5221-5348-bef8-fbaf6ecee065"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "5b2336e2-b279-4373-b4ef-8457dd2fb4ac",
+      "successor_work_item_id": "8c0a9f69-78e1-521e-b859-d072ab35993c"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "66af966d-f123-4f8c-be21-27354394cee9",
+      "successor_work_item_id": "cb14a2e9-eaf6-5dbb-af30-90510dfdd32b"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "f78bf4ca-46c0-492b-a33f-3c5a0dc47a6f",
+      "successor_work_item_id": "db4d9121-4ddf-56ca-bd26-5975658e54b5"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "ac59fa26-b13a-4846-a6d8-c413f528f30b",
+      "successor_work_item_id": "4e5106a3-daa5-5aa4-a5df-366f13ac4467"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "ee4ff9b4-41a3-4e74-b5ec-de548ed47113",
+      "successor_work_item_id": "d68bf031-fabf-50ca-b417-6821e6dce8c3"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "a0694aa0-633f-4346-87a5-3f2f78627669",
+      "successor_work_item_id": "4ae19bdc-5a5e-5109-b07f-6e3275ec64f3"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "2b397652-43e4-43a6-af53-c12ebb016819",
+      "successor_work_item_id": "5d86b70e-afd9-52c0-a7eb-781c8ccf4be8"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "cbcd9c0e-a191-4050-9d0e-fa9e667bcdf9",
+      "successor_work_item_id": "9a2a3a83-95b3-52c3-a0b1-47ca86171aaf"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "6797ed1c-597a-4d44-82f9-7379d45b5e06",
+      "successor_work_item_id": "6f2b0263-3348-527b-9615-3f4f82b7a245"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "f625d9aa-da34-44bb-aa9f-0eda284f3f32",
+      "successor_work_item_id": "c088ff8d-a6f4-54c6-80f7-da137675ff7e"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "a6e2cc8b-7b7b-4e64-9764-4cf39046dd1c",
+      "successor_work_item_id": "32c37076-f99b-51da-bf6e-165a3382ef3f"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "e40e9e82-9ab8-4b03-95bd-70897c2d1489",
+      "successor_work_item_id": "6c4a8a9c-ec48-50ca-ba59-23370ceae157"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "a909ee18-9f16-4706-967e-daa080b6f720",
+      "successor_work_item_id": "07c1e140-ebf2-5e6d-a1ec-ec4281364609"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "bdfeef30-7105-4ab4-984e-b2acb147f05b",
+      "successor_work_item_id": "d99af5d5-5f2b-52e6-aa72-4897e23cf9e8"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "a8a43e7e-6ff1-4cbf-abc2-0b5ac02edbf6",
+      "successor_work_item_id": "fbf98dd2-377b-50f7-8413-6eef29518d9d"
+    },
+    {
+      "error": "RunnerError: Q08 baseline MQ5 vintage mismatch: expected b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15, got 3307ae62ce1e7b10625ccaa9b7e2cfd7ea2581eb3e2d66d0f4170e499d4b6155",
+      "source_work_item_id": "23282266-7853-411f-936f-4c84675682a1",
+      "successor_work_item_id": "0753f13f-156f-577c-82e0-83a7cecb4c2b"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "f763928d-efea-4f8f-a76d-e169eb5ea1f4",
+      "successor_work_item_id": "de48134f-81c3-5d94-b48c-cf6cdd77dbe4"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "bdae4b44-1cf8-43ff-91de-abf6735242b2",
+      "successor_work_item_id": "6eb19588-3036-5087-9028-a619205963aa"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "d9349f83-3880-4c28-a9a8-ac2d46bf8eba",
+      "successor_work_item_id": "527bb21f-2a99-5f4f-b86d-4b5a5d5351f4"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "a9ee0789-b83d-4361-bac4-f6395e0ba908",
+      "successor_work_item_id": "3beef4a0-2e1e-5bff-951e-0539c9fff6cb"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "dc1879ad-3cde-42c9-8a7b-148f80121f61",
+      "successor_work_item_id": "d56319d5-6fe1-523b-a986-cdc73bdf719d"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "e5ae0c16-e542-4585-a134-416664993ea0",
+      "successor_work_item_id": "f37c7810-9dbb-5773-8233-a5c8b898f9ff"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "b8ea96a9-b9e4-44b1-9005-abe192af8a51",
+      "successor_work_item_id": "dc1a7d42-9761-5b77-853f-a072e2a163b2"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "07b94980-e03d-4c69-9ea9-350228d5429c",
+      "successor_work_item_id": "fbb627b4-54e1-58a7-bb95-138b9431eb64"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "409ec700-7bd6-4d27-b9eb-11614f6d5bca",
+      "successor_work_item_id": "38dd4b4e-e552-5a28-8230-2d048ddd318d"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "e84c4ff8-f66d-4ed7-b800-567b8be42e2c",
+      "successor_work_item_id": "ca76db6d-b664-5ab6-b5a8-31e0841a2647"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "f6b96aff-ac0e-44fa-819e-58d0246e4796",
+      "successor_work_item_id": "e01d7871-8a27-5d33-8755-18fcc53247e0"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "7b569f11-a28c-4099-9cae-60a4929dff2b",
+      "successor_work_item_id": "7c465db4-59f3-518a-b27c-f3e1e8fc2265"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "064d148e-e3d5-4b42-bffa-b46bb15c07d7",
+      "successor_work_item_id": "44d8e9bd-81e7-5a87-9e6c-724ea00fc771"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "a7ffe0c2-e0dc-4548-8de6-b91f4dbe39ee",
+      "successor_work_item_id": "51505fa1-77d6-54af-a39e-920aeac97b9f"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "7d24d056-822b-42a5-bba3-50e7d9f92713",
+      "successor_work_item_id": "78da1804-ec78-53e9-860d-112100020333"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "6a4b9ee9-8ebb-40ad-a18d-e43d024a3c0d",
+      "successor_work_item_id": "8bc9440e-eb1e-5d87-a667-3492c1480ad8"
+    },
+    {
+      "error": "RunnerError: Q09 include closure source vintage mismatch: include closure source inventory/hash mismatch",
+      "source_work_item_id": "8bd4a1be-63fc-48f1-8b06-eaf77c32010f",
+      "successor_work_item_id": "36b89de7-1d56-50b9-9008-4400871f78d2"
+    }
+  ],
+  "bound_canonical_count": 2,
+  "bound_canonical_work_item_ids": [
+    "a9be953a-dfff-5912-9c2c-31d3f993fd0e",
+    "f0ac7712-7b96-5724-a819-1d8d688a26f6"
+  ],
+  "build_failure_count": 0,
+  "build_failures": {},
+  "calendar_pin": {
+    "bundle_id": "q09cal-20150101-20260809-3d44f107363359bb",
+    "content_sha256": "7a3243cf14d3ac6786423a48dd50317eed155d9c5360ba1067c55355f9618522",
+    "decision_id": "FABLE-DEC-NEWS-ARCHIVE-DST-CORRECTION-20260922",
+    "historical_contracts_preserved": true,
+    "hypothesis": "Correcting the 82 proven one-hour-early USD releases removes false blackout timing without changing any Q10 selection threshold.",
+    "manifest_sha256": "50e16cfbb8ebdf56093cbae8f05d0972f666c257c8034bd6cdcb393e679c2015",
+    "parent_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+    "parent_content_sha256": "86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1",
+    "publication_reason": "APPROVED_CORRECTION",
+    "requalification_required_for_parent_bound_rows": true,
+    "schema": "qm.q09-calendar-pin-contract/v2"
+  },
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "existing_count": 0,
+  "existing_work_item_ids": [],
+  "held_count": 110,
+  "held_work_item_ids": [
+    "0631d760-89e0-575b-98a1-9156ed1bb13f",
+    "0753f13f-156f-577c-82e0-83a7cecb4c2b",
+    "07c1e140-ebf2-5e6d-a1ec-ec4281364609",
+    "0db7a689-f4a9-52ab-b07d-d5e952cf2789",
+    "10d79dfe-28fe-5781-89dd-254314da4da7",
+    "1141b34f-9353-567c-9ec9-f56bf363f8b8",
+    "13611d33-1b81-5c58-8631-34ddbb5dcc09",
+    "14b8fb56-d65e-5418-8fef-c893600b5cfa",
+    "150c3681-a810-5af7-bae6-40fe9aea35c5",
+    "1aad70be-5221-5348-bef8-fbaf6ecee065",
+    "20f0f8e7-0ce9-5581-ab02-406709609071",
+    "2293dd66-4b52-5d7f-8f9e-1bd5c9a2dad7",
+    "2a0525cf-a9c4-5725-a64b-3f8864337911",
+    "2a2006ee-410b-5b21-b835-ebeb88c26a5f",
+    "2b81b43d-b36c-5efa-b233-f6a785db02ec",
+    "3296a701-88dd-5074-bb7e-607c758df8f7",
+    "32c37076-f99b-51da-bf6e-165a3382ef3f",
+    "36b89de7-1d56-50b9-9008-4400871f78d2",
+    "38dd4b4e-e552-5a28-8230-2d048ddd318d",
+    "3beef4a0-2e1e-5bff-951e-0539c9fff6cb",
+    "3ecf969c-9a14-5312-87d7-b0d2b5323995",
+    "3f5e4a06-d166-5d13-9415-f70f6258afcf",
+    "3f75c21e-814d-52f1-a3ce-6d33ba8b18ea",
+    "4270ea98-75ff-5cf8-8374-d716840e5a53",
+    "44d8e9bd-81e7-5a87-9e6c-724ea00fc771",
+    "48b47500-8c00-5b4c-b0ba-de583887c59c",
+    "4945956d-a104-587f-988e-ea82edb39582",
+    "4a87a360-3dd4-56f5-9550-14f4f096d813",
+    "4ae19bdc-5a5e-5109-b07f-6e3275ec64f3",
+    "4e5106a3-daa5-5aa4-a5df-366f13ac4467",
+    "4f2c59a7-b910-59e9-b251-130277350871",
+    "51505fa1-77d6-54af-a39e-920aeac97b9f",
+    "527bb21f-2a99-5f4f-b86d-4b5a5d5351f4",
+    "5633fba9-7555-51df-9edb-37d20fc75891",
+    "583b4862-4545-52da-a9a0-8ec73cd4c40b",
+    "5c4a8b3a-3e7e-56d7-a5a6-56953e1f7ab0",
+    "5d211ca1-eec8-5c8c-b644-63c4a18093c9",
+    "5d86b70e-afd9-52c0-a7eb-781c8ccf4be8",
+    "61083e2a-a39d-5f43-83e0-58a6eae8f1c9",
+    "622a9241-c859-506e-904e-ae307276ad41",
+    "62822077-d418-5081-9f0e-e3a0f706e4c7",
+    "6743a249-0c3c-5be6-824d-ab49d6e477d5",
+    "6c4a8a9c-ec48-50ca-ba59-23370ceae157",
+    "6e71e416-a5e7-54a9-962b-8e5ea0706d8a",
+    "6eb19588-3036-5087-9028-a619205963aa",
+    "6f2b0263-3348-527b-9615-3f4f82b7a245",
+    "73392265-8eba-5daa-b90b-bca29bd18f9f",
+    "74db4ead-a83b-5cc9-a628-6c6be3d53ca0",
+    "780fd682-21fb-5c6b-9915-056a0053e42f",
+    "78981e3c-e16b-5dff-b706-ed16f6d5f52c",
+    "78da1804-ec78-53e9-860d-112100020333",
+    "7a5ec85a-9829-5f98-9a4c-9052efbd7135",
+    "7b744422-1e4f-5a53-aee7-87c3e0f5e02a",
+    "7b782aee-98fb-5a54-9ac3-a37469cfb032",
+    "7ba90e34-9d19-54aa-bf96-85d91780c717",
+    "7c465db4-59f3-518a-b27c-f3e1e8fc2265",
+    "8054426f-3c29-5cfd-9a28-2cc4dcc1835b",
+    "868d013b-3383-5492-beb9-9ad835620ada",
+    "8bc9440e-eb1e-5d87-a667-3492c1480ad8",
+    "8c0a9f69-78e1-521e-b859-d072ab35993c",
+    "8e186627-e3e7-593c-8a01-b8ce13341437",
+    "934b7de0-5b46-5735-8bf5-97793a6df20d",
+    "9692cafa-8d83-5aa6-9b17-2a394cb6f848",
+    "969a0a8e-ac0a-55b6-8833-8e99b8193e17",
+    "97ff05e4-266d-5e2d-a4e8-9845cdb04775",
+    "9a2a3a83-95b3-52c3-a0b1-47ca86171aaf",
+    "9aa070ea-2940-5d27-8780-5b245e7c7795",
+    "9b65175e-efc1-5684-bae6-78e4f98e7fd5",
+    "9c9ec8dc-f95b-5888-87c1-acb8903690f1",
+    "9dbade9b-56bc-5cd2-9a2a-c9b5f558a2d7",
+    "9e335c7d-5a45-5cef-b05f-695a2d7883f8",
+    "9e7d4534-7c5c-5cbf-8e79-d8ee682074f5",
+    "9f8d827a-3b0a-5583-9ac8-c1520e9557c2",
+    "a0616ecc-ccc1-59f3-816d-9e984a795685",
+    "a2b634b2-847a-584d-a7c7-2aa71752b40f",
+    "a81b590e-48bd-5a88-9ea3-6b74a43894a8",
+    "ad6a0956-0401-5b49-ac58-1085f249afb5",
+    "af8a61a4-9cf0-50ce-a406-eb1b7b078c12",
+    "b93d9905-cec4-53d3-9645-023f0e6c26ce",
+    "c088ff8d-a6f4-54c6-80f7-da137675ff7e",
+    "c0acd8e6-311e-54de-9e17-ef3c217c242a",
+    "c95f0fc4-8bdf-5e1c-ab20-8f752083dbb6",
+    "ca76db6d-b664-5ab6-b5a8-31e0841a2647",
+    "cb14a2e9-eaf6-5dbb-af30-90510dfdd32b",
+    "cc64d684-2f8d-560d-915e-930c1d743857",
+    "d4a58034-5d57-5c3e-bbca-f3ed22e96188",
+    "d5630e31-5caf-5096-a5ab-204e71d0da11",
+    "d56319d5-6fe1-523b-a986-cdc73bdf719d",
+    "d68bf031-fabf-50ca-b417-6821e6dce8c3",
+    "d7bcd5b0-9a37-529d-b389-aafb4797c4e4",
+    "d99af5d5-5f2b-52e6-aa72-4897e23cf9e8",
+    "d9d2f08f-6776-5c22-a034-1af36334bc78",
+    "db4d9121-4ddf-56ca-bd26-5975658e54b5",
+    "db76b66e-5d2a-5831-82f2-678857d3c513",
+    "dc1a7d42-9761-5b77-853f-a072e2a163b2",
+    "dc58bfac-3c2a-566d-8771-13058e4ba9f0",
+    "de48134f-81c3-5d94-b48c-cf6cdd77dbe4",
+    "e01d7871-8a27-5d33-8755-18fcc53247e0",
+    "e3352478-8f07-5b0e-802a-47f6504c92cb",
+    "e4d69adf-a869-50a6-8a48-b071fada2487",
+    "e8789458-a4e1-5fed-a9b0-fb9945d3f58a",
+    "eb529a5c-0b07-5c42-bd15-40f7a579ceff",
+    "eed4a56a-cad3-5287-af5c-e2745cf867c1",
+    "f070ca6b-01a8-5e1f-98a9-0c90629132cf",
+    "f37c7810-9dbb-5773-8233-a5c8b898f9ff",
+    "f753f4a6-a8a4-5c82-b36a-28f5d027064a",
+    "f8144dbd-eb94-5257-b6d9-220f1ccb8b7f",
+    "fa82ae5f-ad29-5bff-971f-674b1016a1af",
+    "fbb627b4-54e1-58a7-bb95-138b9431eb64",
+    "fbf98dd2-377b-50f7-8413-6eef29518d9d"
+  ],
+  "inserted_count": 125,
+  "inserted_work_item_ids": [
+    "63e33f82-3f39-570d-8b48-f7bd9690067e",
+    "3296a701-88dd-5074-bb7e-607c758df8f7",
+    "2a2006ee-410b-5b21-b835-ebeb88c26a5f",
+    "8ad01f11-cda9-535e-8702-cc7b90a27c80",
+    "8f443a9d-4e7a-5144-82fe-5adf4ac0fb38",
+    "78981e3c-e16b-5dff-b706-ed16f6d5f52c",
+    "7b782aee-98fb-5a54-9ac3-a37469cfb032",
+    "3ecf969c-9a14-5312-87d7-b0d2b5323995",
+    "5633fba9-7555-51df-9edb-37d20fc75891",
+    "3f75c21e-814d-52f1-a3ce-6d33ba8b18ea",
+    "622a9241-c859-506e-904e-ae307276ad41",
+    "4270ea98-75ff-5cf8-8374-d716840e5a53",
+    "14b8fb56-d65e-5418-8fef-c893600b5cfa",
+    "c95f0fc4-8bdf-5e1c-ab20-8f752083dbb6",
+    "4d235637-34b7-54b1-be56-37f3aee0ba44",
+    "d7bcd5b0-9a37-529d-b389-aafb4797c4e4",
+    "5c4a8b3a-3e7e-56d7-a5a6-56953e1f7ab0",
+    "9aa070ea-2940-5d27-8780-5b245e7c7795",
+    "a0616ecc-ccc1-59f3-816d-9e984a795685",
+    "82eebef5-a3b4-5e86-bef4-39542882d445",
+    "8054426f-3c29-5cfd-9a28-2cc4dcc1835b",
+    "7a5ec85a-9829-5f98-9a4c-9052efbd7135",
+    "a9be953a-dfff-5912-9c2c-31d3f993fd0e",
+    "f0ac7712-7b96-5724-a819-1d8d688a26f6",
+    "9f8d827a-3b0a-5583-9ac8-c1520e9557c2",
+    "20f0f8e7-0ce9-5581-ab02-406709609071",
+    "2a0525cf-a9c4-5725-a64b-3f8864337911",
+    "e4d69adf-a869-50a6-8a48-b071fada2487",
+    "3f5e4a06-d166-5d13-9415-f70f6258afcf",
+    "583b4862-4545-52da-a9a0-8ec73cd4c40b",
+    "48b47500-8c00-5b4c-b0ba-de583887c59c",
+    "6743a249-0c3c-5be6-824d-ab49d6e477d5",
+    "74db4ead-a83b-5cc9-a628-6c6be3d53ca0",
+    "73392265-8eba-5daa-b90b-bca29bd18f9f",
+    "2293dd66-4b52-5d7f-8f9e-1bd5c9a2dad7",
+    "eed4a56a-cad3-5287-af5c-e2745cf867c1",
+    "13611d33-1b81-5c58-8631-34ddbb5dcc09",
+    "db76b66e-5d2a-5831-82f2-678857d3c513",
+    "ad6a0956-0401-5b49-ac58-1085f249afb5",
+    "9b65175e-efc1-5684-bae6-78e4f98e7fd5",
+    "1141b34f-9353-567c-9ec9-f56bf363f8b8",
+    "9c9ec8dc-f95b-5888-87c1-acb8903690f1",
+    "934b7de0-5b46-5735-8bf5-97793a6df20d",
+    "0631d760-89e0-575b-98a1-9156ed1bb13f",
+    "eb529a5c-0b07-5c42-bd15-40f7a579ceff",
+    "e8789458-a4e1-5fed-a9b0-fb9945d3f58a",
+    "af8a61a4-9cf0-50ce-a406-eb1b7b078c12",
+    "7b744422-1e4f-5a53-aee7-87c3e0f5e02a",
+    "d4a58034-5d57-5c3e-bbca-f3ed22e96188",
+    "0db7a689-f4a9-52ab-b07d-d5e952cf2789",
+    "411ca1fb-2985-5cdb-9cc5-6c7968f20ec0",
+    "4f2c59a7-b910-59e9-b251-130277350871",
+    "8e186627-e3e7-593c-8a01-b8ce13341437",
+    "9e335c7d-5a45-5cef-b05f-695a2d7883f8",
+    "9692cafa-8d83-5aa6-9b17-2a394cb6f848",
+    "6e71e416-a5e7-54a9-962b-8e5ea0706d8a",
+    "9dbade9b-56bc-5cd2-9a2a-c9b5f558a2d7",
+    "f753f4a6-a8a4-5c82-b36a-28f5d027064a",
+    "10d79dfe-28fe-5781-89dd-254314da4da7",
+    "f8144dbd-eb94-5257-b6d9-220f1ccb8b7f",
+    "d9d2f08f-6776-5c22-a034-1af36334bc78",
+    "a81b590e-48bd-5a88-9ea3-6b74a43894a8",
+    "dc58bfac-3c2a-566d-8771-13058e4ba9f0",
+    "61083e2a-a39d-5f43-83e0-58a6eae8f1c9",
+    "9e7d4534-7c5c-5cbf-8e79-d8ee682074f5",
+    "1aad70be-5221-5348-bef8-fbaf6ecee065",
+    "8c0a9f69-78e1-521e-b859-d072ab35993c",
+    "d87d5b55-ad77-5f4b-af8e-c839706430c6",
+    "cb14a2e9-eaf6-5dbb-af30-90510dfdd32b",
+    "db4d9121-4ddf-56ca-bd26-5975658e54b5",
+    "4e5106a3-daa5-5aa4-a5df-366f13ac4467",
+    "d68bf031-fabf-50ca-b417-6821e6dce8c3",
+    "4ae19bdc-5a5e-5109-b07f-6e3275ec64f3",
+    "d1cddd70-1d85-5b14-977e-92055409340d",
+    "5d86b70e-afd9-52c0-a7eb-781c8ccf4be8",
+    "9a2a3a83-95b3-52c3-a0b1-47ca86171aaf",
+    "eb579220-9447-5f80-bf60-ce463d2165a1",
+    "6f2b0263-3348-527b-9615-3f4f82b7a245",
+    "c088ff8d-a6f4-54c6-80f7-da137675ff7e",
+    "32c37076-f99b-51da-bf6e-165a3382ef3f",
+    "6c4a8a9c-ec48-50ca-ba59-23370ceae157",
+    "07c1e140-ebf2-5e6d-a1ec-ec4281364609",
+    "d99af5d5-5f2b-52e6-aa72-4897e23cf9e8",
+    "fa82ae5f-ad29-5bff-971f-674b1016a1af",
+    "fbf98dd2-377b-50f7-8413-6eef29518d9d",
+    "02e14c54-e00c-59f0-9ad6-1b7eb2f999ef",
+    "49fd3c0a-42e5-5125-8ec4-2be994219fb1",
+    "0753f13f-156f-577c-82e0-83a7cecb4c2b",
+    "d5630e31-5caf-5096-a5ab-204e71d0da11",
+    "c0acd8e6-311e-54de-9e17-ef3c217c242a",
+    "b93d9905-cec4-53d3-9645-023f0e6c26ce",
+    "de48134f-81c3-5d94-b48c-cf6cdd77dbe4",
+    "cc64d684-2f8d-560d-915e-930c1d743857",
+    "6eb19588-3036-5087-9028-a619205963aa",
+    "e3352478-8f07-5b0e-802a-47f6504c92cb",
+    "4945956d-a104-587f-988e-ea82edb39582",
+    "527bb21f-2a99-5f4f-b86d-4b5a5d5351f4",
+    "71e1b124-17e3-5cf7-b2c4-a2a42bf7e3c2",
+    "3beef4a0-2e1e-5bff-951e-0539c9fff6cb",
+    "150c3681-a810-5af7-bae6-40fe9aea35c5",
+    "d56319d5-6fe1-523b-a986-cdc73bdf719d",
+    "f37c7810-9dbb-5773-8233-a5c8b898f9ff",
+    "780fd682-21fb-5c6b-9915-056a0053e42f",
+    "4a87a360-3dd4-56f5-9550-14f4f096d813",
+    "f070ca6b-01a8-5e1f-98a9-0c90629132cf",
+    "dc1a7d42-9761-5b77-853f-a072e2a163b2",
+    "fbb627b4-54e1-58a7-bb95-138b9431eb64",
+    "38dd4b4e-e552-5a28-8230-2d048ddd318d",
+    "56078096-91c5-544b-a6ba-8d3e5566bc94",
+    "a2b634b2-847a-584d-a7c7-2aa71752b40f",
+    "ca76db6d-b664-5ab6-b5a8-31e0841a2647",
+    "969a0a8e-ac0a-55b6-8833-8e99b8193e17",
+    "e01d7871-8a27-5d33-8755-18fcc53247e0",
+    "7ba90e34-9d19-54aa-bf96-85d91780c717",
+    "97ff05e4-266d-5e2d-a4e8-9845cdb04775",
+    "7c465db4-59f3-518a-b27c-f3e1e8fc2265",
+    "44d8e9bd-81e7-5a87-9e6c-724ea00fc771",
+    "51505fa1-77d6-54af-a39e-920aeac97b9f",
+    "78da1804-ec78-53e9-860d-112100020333",
+    "2b81b43d-b36c-5efa-b233-f6a785db02ec",
+    "5d211ca1-eec8-5c8c-b644-63c4a18093c9",
+    "868d013b-3383-5492-beb9-9ad835620ada",
+    "62822077-d418-5081-9f0e-e3a0f706e4c7",
+    "8bc9440e-eb1e-5d87-a667-3492c1480ad8",
+    "36b89de7-1d56-50b9-9008-4400871f78d2"
+  ],
+  "replacement_identity_blocked_count": 3,
+  "replacement_identity_blocked_source_ids": [
+    "152f3b45-acea-4930-9583-d13548c40fac",
+    "42e4b18c-4f1b-4c3f-8129-1265fa42dd7b",
+    "9416f0ce-ede3-457e-bf9a-5ed9f892e177"
+  ],
+  "runnable_diagnostic_count": 13,
+  "runnable_diagnostic_work_item_ids": [
+    "63e33f82-3f39-570d-8b48-f7bd9690067e",
+    "8ad01f11-cda9-535e-8702-cc7b90a27c80",
+    "8f443a9d-4e7a-5144-82fe-5adf4ac0fb38",
+    "4d235637-34b7-54b1-be56-37f3aee0ba44",
+    "82eebef5-a3b4-5e86-bef4-39542882d445",
+    "411ca1fb-2985-5cdb-9cc5-6c7968f20ec0",
+    "d87d5b55-ad77-5f4b-af8e-c839706430c6",
+    "d1cddd70-1d85-5b14-977e-92055409340d",
+    "eb579220-9447-5f80-bf60-ce463d2165a1",
+    "02e14c54-e00c-59f0-9ad6-1b7eb2f999ef",
+    "49fd3c0a-42e5-5125-8ec4-2be994219fb1",
+    "71e1b124-17e3-5cf7-b2c4-a2a42bf7e3c2",
+    "56078096-91c5-544b-a6ba-8d3e5566bc94"
+  ],
+  "schema_version": "qm.q09-calendar-requalification-apply/v1",
+  "source_preservation_verified": true,
+  "stable_plan_sha256": "fc71284dc419a25549aad464bcadcc733ea6b384c509cbb9a324aaa8f0befe68",
+  "task_id": "f50a0bba-a85d-4203-a18b-ad3b198f5ee9"
+}
