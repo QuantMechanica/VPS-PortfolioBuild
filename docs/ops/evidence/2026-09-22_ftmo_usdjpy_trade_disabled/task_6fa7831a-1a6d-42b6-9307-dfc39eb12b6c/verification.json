@@ -1,0 +1,268 @@
+{
+  "artifact_sha256": {
+    "README.md": "4f47f35866531e39218facf3f0c425f76aaa6bac8bad9652c1010ad0db9ccd12",
+    "capture.json": "c27c8a1eb6c2ead00bdd1f041d435bb3bc269024992276333e705272a2c7d017",
+    "collect_read_only.py": "54804dc7cfb7f6f895b36b36c5f79486d006b05449e93d9b69b404698e9040e6",
+    "source_intake_router.json": "e9465c2267fbfce34aee1ef16023bee8aa7a0cc6ad12d7eff8ab388c02108ccd",
+    "verify.py": "04f63cd164660b2080d223f5ffa9537840b9c97c0c5a56e6361eda4547f1aca0"
+  },
+  "checks": [
+    {
+      "detail": "6fa7831a-1a6d-42b6-9307-dfc39eb12b6c",
+      "name": "task_binding",
+      "pass": true
+    },
+    {
+      "detail": {
+        "autotrading_toggle": false,
+        "order_check": false,
+        "order_modify_or_cancel": false,
+        "order_send": false,
+        "symbol_select": false,
+        "terminal_control": false,
+        "terminal_launch": false,
+        "terminal_restart": false,
+        "trade_call": false
+      },
+      "name": "collector_authorization_all_false",
+      "pass": true
+    },
+    {
+      "detail": {
+        "build": 6182,
+        "connected": true,
+        "data_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850",
+        "terminal_trade_allowed": true,
+        "tradeapi_disabled": false
+      },
+      "name": "terminal_connected_and_trade_capable",
+      "pass": true
+    },
+    {
+      "detail": {
+        "account_trade_allowed": false,
+        "account_trade_expert": true
+      },
+      "name": "account_level_trade_disabled",
+      "pass": true
+    },
+    {
+      "detail": {
+        "EURUSD": "EURUSD",
+        "GBPUSD": "GBPUSD",
+        "USDCAD": "USDCAD",
+        "USDJPY": "USDJPY",
+        "XAUUSD": "XAUUSD",
+        "XTIUSD": "USOIL.cash"
+      },
+      "name": "all_requested_symbols_present",
+      "pass": true
+    },
+    {
+      "detail": {
+        "EURUSD": {
+          "expiration": 0,
+          "mode": "SYMBOL_TRADE_MODE_FULL",
+          "start": 0
+        },
+        "GBPUSD": {
+          "expiration": 0,
+          "mode": "SYMBOL_TRADE_MODE_FULL",
+          "start": 0
+        },
+        "USDCAD": {
+          "expiration": 0,
+          "mode": "SYMBOL_TRADE_MODE_FULL",
+          "start": 0
+        },
+        "USDJPY": {
+          "expiration": 0,
+          "mode": "SYMBOL_TRADE_MODE_FULL",
+          "start": 0
+        },
+        "XAUUSD": {
+          "expiration": 0,
+          "mode": "SYMBOL_TRADE_MODE_FULL",
+          "start": 0
+        },
+        "XTIUSD": {
+          "expiration": 0,
+          "mode": "SYMBOL_TRADE_MODE_FULL",
+          "start": 0
+        }
+      },
+      "name": "all_symbols_full_with_zero_lifecycle_bounds",
+      "pass": true
+    },
+    {
+      "detail": "two USDJPY entries accepted at 06:00 broker on the preceding day",
+      "name": "same_anchor_prior_success",
+      "pass": true
+    },
+    {
+      "detail": "two USDJPY entries rejected at 06:00 broker",
+      "name": "incident_two_10017_rejects",
+      "pass": true
+    },
+    {
+      "detail": {
+        "546985040": "2026-09-21T23:02:05Z",
+        "546985290": "2026-09-21T23:02:05Z"
+      },
+      "name": "xau_cross_symbol_cancellations",
+      "pass": true
+    },
+    {
+      "detail": {
+        "deals": [
+          {
+            "comment": "CLOSED_BY_FTMO",
+            "deal_type": 1,
+            "entry": 1,
+            "magic": 0,
+            "order": 547007430,
+            "position_id": 546002503,
+            "price": 1.40329,
+            "profit": 122.71,
+            "reason": 0,
+            "symbol": "USDCAD",
+            "ticket": 524247545,
+            "time": {
+              "europe_berlin": "2026-09-22T01:02:06+02:00",
+              "inferred_utc": "2026-09-21T23:02:06Z",
+              "raw_epoch": 1790042526,
+              "server_wall_time": "2026-09-22T02:02:06"
+            },
+            "volume": 1.02
+          }
+        ],
+        "orders": [
+          {
+            "comment": "CLOSED_BY_FTMO",
+            "magic": 0,
+            "order_type": 1,
+            "position_id": 546002503,
+            "price_open": 1.40329,
+            "reason": 0,
+            "state": 4,
+            "state_label": "ORDER_STATE_FILLED",
+            "symbol": "USDCAD",
+            "ticket": 547007430,
+            "time_done": {
+              "europe_berlin": "2026-09-22T01:02:06+02:00",
+              "inferred_utc": "2026-09-21T23:02:06Z",
+              "raw_epoch": 1790042526,
+              "server_wall_time": "2026-09-22T02:02:06"
+            },
+            "time_expiration": null,
+            "time_setup": {
+              "europe_berlin": "2026-09-22T01:02:06+02:00",
+              "inferred_utc": "2026-09-21T23:02:06Z",
+              "raw_epoch": 1790042526,
+              "server_wall_time": "2026-09-22T02:02:06"
+            },
+            "volume_current": 0.0,
+            "volume_initial": 1.02
+          }
+        ]
+      },
+      "name": "ftmo_forced_usdcad_close",
+      "pass": true
+    },
+    {
+      "detail": {
+        "broker_utc_offset_seconds": 10800,
+        "ea_ts_broker": "2026-09-22T06:00:00",
+        "ea_ts_utc": "2026-09-22T03:00:00.156Z",
+        "finding": "Journal 05:00 is 03:00Z and 06:00 FTMO server time; it is not 05:00 server time.",
+        "journal_clock": "Europe/Berlin local time (UTC+02 on 2026-09-22)"
+      },
+      "name": "clock_binding_utc_plus_3",
+      "pass": true
+    },
+    {
+      "detail": {
+        "alarms": [
+          "ea_errors:['QM5_13213_ea-13213.log:BROKER_TRADE_DISABLED', 'QM5_13213_ea-13213.log:BROKER_TRADE_DISABLED']"
+        ],
+        "checked_at_utc": "2026-09-22T05:49:54Z",
+        "effective_state": "RUNNING",
+        "equity": 100053.41,
+        "file": {
+          "bytes": 16517,
+          "path": "D:\\QM\\reports\\state\\ftmo_trial_pulse.json",
+          "sha256": "7885a78ae4021ab4c0cb57dacb274d8009948305cae337ff9411cc83c5c49c12"
+        },
+        "open_positions": 0,
+        "pending_orders": 0,
+        "terminal_up": true,
+        "verdict": "ALARM"
+      },
+      "name": "pulse_alarm_matches_incident",
+      "pass": true
+    },
+    {
+      "detail": {
+        "adapter": "generic",
+        "adapter_state": "ROUTER_ONLY",
+        "lead_status": "DEFERRED:SOURCE_POLICY",
+        "next_action": "Use already-governed local FTMO source records; do not fetch through another source-intake adapter.",
+        "reason": "generic runtime retrieval is disabled until a cryptographic OWNER authorization verifier exists",
+        "status": "PERMISSION_REQUIRED",
+        "url": "https://ftmo.com/wp-json/ftmo/symbols"
+      },
+      "name": "source_router_policy_enforced",
+      "pass": true
+    },
+    {
+      "detail": {
+        "mt5_read_calls": [
+          "account_info",
+          "history_deals_get",
+          "history_orders_get",
+          "initialize",
+          "orders_get",
+          "positions_get",
+          "shutdown",
+          "symbol_info",
+          "terminal_info"
+        ],
+        "prohibited_calls": []
+      },
+      "name": "collector_call_surface_read_only",
+      "pass": true
+    },
+    {
+      "detail": {
+        "already_running_before_initialize": true,
+        "executable": "C:\\Program Files\\FTMO Global Markets MT5 Terminal\\terminal64.exe",
+        "pid": 11756,
+        "same_pid_after_capture": true
+      },
+      "name": "already_running_process_guard_observed",
+      "pass": true
+    },
+    {
+      "detail": {
+        "docs/ftmo/genesis/SUNDAY_LAUNCH_RUNBOOK_2026-09-27.md": "a20b8080a15e6c0801ef49956b33091e870a3ce79258870babfd0eea54ce1295",
+        "docs/ops/evidence/2026-09-06_ftmo_demo_account_terms.md": "6d6c7bdd43b690db44d1fac8e64fcb515c2db0d79ae6f12de00e7f5bbcb2e753",
+        "docs/ops/evidence/ftmo_fetch_20260918/cand_symbols.html": "103d7486d307d28588e4bae7849d062d944834e557fd01b8ddf6ae1cf756d684",
+        "framework/EAs/QM5_13213_balke-gmt3-range-breakout/QM5_13213_balke-gmt3-range-breakout.mq5": "ea3920720c4f71ebe2ed4266075e51bc0fad67b261ebf15ef6335a9c68584448",
+        "framework/EAs/QM5_13213_balke-gmt3-range-breakout/SPEC.md": "dfe0730c8f3f43844b400a011faa6489479eecb11d133a515c3a548ed3ebc436"
+      },
+      "name": "bound_source_hashes",
+      "pass": true
+    },
+    {
+      "detail": "README contains verdict, scope boundary, and Sunday consequence",
+      "name": "report_declares_classification_and_no_card_change",
+      "pass": true
+    }
+  ],
+  "checks_passed": 17,
+  "checks_total": 17,
+  "classification": "ACCOUNT_WIDE",
+  "schema": "qm.ftmo-trade-disabled-verification/v1",
+  "task_id": "6fa7831a-1a6d-42b6-9307-dfc39eb12b6c",
+  "verdict": "PASS"
+}
