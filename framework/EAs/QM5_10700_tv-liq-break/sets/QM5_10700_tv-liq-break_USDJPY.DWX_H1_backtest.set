@@ -3,16 +3,16 @@
 ; ea_id:        10700
 ; ea_slug:      tv-liq-break
 ; ea_version:   v5.0
-; set_version:  s20260903-001
+; set_version:  s20260922-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   1caa639d0bac7190bf542a560d2429e8f33c22033a7132a77d55f0d26a78406a
+; build_hash:   7ef418ea6d89fff08330ca8e3e581c99c18b3b52ce7f657e674928beccbaad00
 ; author:       Development
-; date:         2026-09-03
+; date:         2026-09-22
 ;==========================================================
 qm_ea_id=10700
 qm_magic_slot_offset=2

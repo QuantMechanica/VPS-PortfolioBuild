@@ -3,16 +3,16 @@
 ; ea_id:        10700
 ; ea_slug:      tv-liq-break
 ; ea_version:   v5.0
-; set_version:  s20260903-001
+; set_version:  s20260922-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   69febbde9d0c1659c4bc8e9783f077b3386344e5a1976c7a6a571310155e23f9
+; build_hash:   f3da0ba500883971dc6dcb6982bbd1e46688bf6ac0922c6cd377cd8f353d3824
 ; author:       Development
-; date:         2026-09-03
+; date:         2026-09-22
 ;==========================================================
 qm_ea_id=10700
 qm_magic_slot_offset=3
