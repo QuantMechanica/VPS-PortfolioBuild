@@ -1,0 +1,18 @@
+{
+  "active_hold_count": 47,
+  "active_hold_set_sha256": "d34145b2723520da62d405c48bed87ba20840d1e49155b29027739d794cbc36d",
+  "candidate_count": 47,
+  "candidate_refusal_set_sha256": "ed79b63a8e55af85d0c1b4ec87ebe4d29eaf3b52adfdf1894a4d70ff19daac11",
+  "eligible_rebind_count": 0,
+  "refusal_counts": {
+    "q08_compile_include_closure_not_current": 1,
+    "q08_compile_include_closure_unbound": 7,
+    "q08_current_build_compile_provenance_unavailable": 16,
+    "q08_current_execution_binding_refused": 1,
+    "q08_predecessor_setfile_identity_mismatch": 22
+  },
+  "schema": "qm.q08-unbound-promotion-stable-state/v1",
+  "scope": "pending_unclaimed_unsuperseded_q08_rows_with_promoted_from_work_item_and_incomplete_four_part_identity",
+  "task_id": "92b2e527-0191-4541-9f00-30ff55f0402c",
+  "unheld_candidate_count": 0
+}
