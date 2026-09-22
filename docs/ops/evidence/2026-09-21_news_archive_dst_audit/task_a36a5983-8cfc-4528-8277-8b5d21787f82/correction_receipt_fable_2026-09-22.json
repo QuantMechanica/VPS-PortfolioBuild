@@ -1,0 +1,19 @@
+{
+  "schema": "qm.news-archive-correction-receipt/v1",
+  "decision_id": "FABLE-DEC-NEWS-ARCHIVE-DST-CORRECTION-20260922",
+  "approved_by": "Fable (Orchestrator) under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917 pipeline-contract authority, section 68A versioned-contract discipline",
+  "approved_at": "2026-09-22T03:28:52Z",
+  "reason": "82 high-impact USD rows in the sealed Q09 calendar are stored exactly 60 minutes early (batch DST normalisation defect, confirmed row-by-row against the native MT5 export for 52 of 82); a live news filter built on them would lift the blackout one hour before the release for those rows",
+  "correction_reason": "APPROVED_CORRECTION: add +60 minutes to datetime (and the derived hour) for exactly the 82 rows in affected_rows.csv; parent sealed hash 86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1 preserved; candidate hash 7a3243cf14d3ac6786423a48dd50317eed155d9c5360ba1067c55355f9618522; the separate -16/-17-hour population is NOT covered by this receipt",
+  "publication_reason": "APPROVED_CORRECTION",
+  "parent_manifest": "sealed Q09 calendar q09cal-20150101-20260809-0bb19b5bb9790b76",
+  "proposal": "docs/ops/evidence/2026-09-21_news_archive_dst_audit/task_a36a5983-8cfc-4528-8277-8b5d21787f82/proposed_archive/manifest.proposed.json",
+  "requalification": "existing 143 hash-bound Q09/Q10 verdicts stay immutable; the 128 directly exposed rows get append-only Q10_NEWS/Q09 reruns against the successor hash, roster first (13213, 10706, 10700, 11422, 10403, 41219, then 11708, 12710/41488, 20266/41489), then the rest by book relevance; verdict deltas are reported, never overwritten",
+  "constraints": [
+    "WhatIf plan must pass before publish",
+    "no sealed archive edited in place",
+    "no live terminal or FILE_COMMON calendar change outside the governed publisher",
+    "the live EA news filter never reads the backtest archive (framework principle 8)"
+  ],
+  "task": "a36a5983-8cfc-4528-8277-8b5d21787f82"
+}
