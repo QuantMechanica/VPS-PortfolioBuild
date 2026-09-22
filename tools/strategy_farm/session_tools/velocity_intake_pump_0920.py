@@ -79,7 +79,17 @@ def main() -> int:
     status = janitor._git_status()
     receipted = janitor._receipted_tracked_ex5(status)
     if receipted and not a.dry_run:
-        out["committed_ex5"] = janitor._commit_receipted_tracked_ex5(status)
+        try:
+            out["committed_ex5"] = janitor._commit_receipted_tracked_ex5(status)
+        except subprocess.CalledProcessError as exc:
+            # The EX5 commit guard refused (e.g. a binary whose compiled mq5 no longer matches the
+            # working tree, 2026-09-22 QM5_36008/9241 during the OWNER-interactive recovery). Never
+            # let that abort canary seeding / release: unstage what the janitor staged and go on.
+            out["committed_ex5"] = []
+            out["committed_ex5_error"] = f"EX5_COMMIT_GUARD_REFUSED rc={exc.returncode}"
+            subprocess.run(["git", "reset", "-q", "--", *[p for p in receipted if isinstance(p, str)]],
+                           cwd=str(REPO), capture_output=True, text=True)
+            print(f"WARN commit step refused, continuing: {out['committed_ex5_error']}", file=sys.stderr)
     else:
         out["committed_ex5"] = receipted
 
