@@ -262,6 +262,7 @@ def test_q09_enqueue_installs_explicit_plan_hold_before_row_is_claimable(tmp_pat
         }
     payload = json.loads(row[0])
     assert payload["q09_activation_state"] == farmctl.Q09_ACTIVATION_AWAITING_PLAN
+    assert payload["q09_calendar_pin_contract"] == farmctl.q09_calendar_pin.payload_binding()
     assert tuple(hold) == (schema.ACTIVATION_HOLD_CODE, 1, 0)
     assert q09_id not in claimable
 
@@ -953,7 +954,7 @@ def test_q09_autopilot_uses_approved_contract_v3_semantics(tmp_path: Path) -> No
     assert kwargs["ex5_path"] == ex5
     assert Path(kwargs["output_root"]).name == "q09_contract_v3"
     assert kwargs["calendar_common_relative_path"] == (
-        "QM/q09_news/q09cal-20150101-20260809-0bb19b5bb9790b76/events.csv"
+        "QM/q09_news/q09cal-20150101-20260809-3d44f107363359bb/events.csv"
     )
     assert {key: kwargs[key] for key in farmctl.Q09_AUTOPILOT_WINDOWS} == (
         farmctl.Q09_AUTOPILOT_WINDOWS

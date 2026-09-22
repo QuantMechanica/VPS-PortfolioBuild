@@ -29,6 +29,7 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 import farmctl  # noqa: E402
+import q09_calendar_pin as calendar_pin  # noqa: E402
 import q09_news_contract as contract  # noqa: E402
 import q09_news_runner as q09  # noqa: E402
 
@@ -42,13 +43,8 @@ PRESET_ROOT = T_LIVE_ROOT / "MQL5" / "Presets"
 LIVE_EXPERT_ROOT = T_LIVE_ROOT / "MQL5" / "Experts" / "Live EAs"
 PROFILE_ROOT = T_LIVE_ROOT / "MQL5" / "Profiles" / "Charts" / "DarwinexZero_V2_LiveOps"
 LIVE_PULSE = Path(r"D:\QM\reports\state\live_book_pulse.json")
-CALENDAR_MANIFEST = Path(
-    r"D:\QM\data\news_calendar\q09_bundles"
-    r"\q09cal-20150101-20260809-0bb19b5bb9790b76\manifest.json"
-)
-CALENDAR_COMMON_PATH = (
-    "QM/q09_news/q09cal-20150101-20260809-0bb19b5bb9790b76/events.csv"
-)
+CALENDAR_MANIFEST = calendar_pin.MANIFEST_PATH
+CALENDAR_COMMON_PATH = calendar_pin.COMMON_RELATIVE_PATH
 ALLOWED_TERMINALS = ("T1", "T2", "T3", "T4", "T5")
 AVOID_TERMINALS = ("T6", "T7", "T8", "T9", "T10")
 INDEX_SYMBOLS = frozenset({"NDX", "SP500", "GDAXI"})
@@ -381,7 +377,7 @@ def prepare_campaign(task_id: str) -> dict[str, Any]:
         raise BackfillError("router task id is required")
     pulse = validate_live_pulse()
     calendar_bundle = json.loads(CALENDAR_MANIFEST.read_text(encoding="utf-8"))
-    if calendar_bundle.get("bundle_id") != "q09cal-20150101-20260809-0bb19b5bb9790b76":
+    if calendar_bundle.get("bundle_id") != calendar_pin.BUNDLE_ID:
         raise BackfillError("required calendar bundle is not present")
     rows: list[dict[str, Any]] = []
     with farmctl.connect(FARM_ROOT) as connection:
@@ -545,6 +541,7 @@ def enqueue_campaign(campaign: dict[str, Any]) -> dict[str, Any]:
                 existing.append(row["work_item_id"])
                 continue
             payload = {
+                "q09_calendar_pin_contract": calendar_pin.payload_binding(),
                 "diagnostic_non_admission": True,
                 "diagnostic_contract": q09.DIAGNOSTIC_CONTRACT,
                 "diagnostic_campaign_id": CAMPAIGN_ID,
@@ -1171,6 +1168,7 @@ def enqueue_transient_generation_rerun(
     now_iso = now.isoformat()
     launch_hold = binding_launch_hold(now, launch_not_before_utc)
     rerun_payload = {
+        "q09_calendar_pin_contract": calendar_pin.payload_binding(),
         "diagnostic_non_admission": True,
         "diagnostic_contract": q09.DIAGNOSTIC_CONTRACT,
         "diagnostic_campaign_id": CAMPAIGN_ID,
@@ -1434,6 +1432,7 @@ def enqueue_append_only_rerun(
     now_iso = now.isoformat()
     launch_hold = binding_launch_hold(now, launch_not_before_utc)
     payload = {
+        "q09_calendar_pin_contract": calendar_pin.payload_binding(),
         "diagnostic_non_admission": True,
         "diagnostic_contract": q09.DIAGNOSTIC_CONTRACT,
         "diagnostic_campaign_id": CAMPAIGN_ID,
@@ -1850,6 +1849,7 @@ def _enqueue_fresh_build_rerun(
 
     now_iso = datetime.now(timezone.utc).isoformat()
     payload = {
+        "q09_calendar_pin_contract": calendar_pin.payload_binding(),
         "diagnostic_non_admission": True,
         "diagnostic_contract": q09.DIAGNOSTIC_CONTRACT,
         "diagnostic_campaign_id": CAMPAIGN_ID,
@@ -1983,7 +1983,7 @@ def _enqueue_fresh_build_rerun(
         "fresh_mq5_sha256": source_assessment["mq5_sha256"],
         "calendar_manifest_path": str(CALENDAR_MANIFEST.resolve()),
         "calendar_manifest_sha256": sha256_file(CALENDAR_MANIFEST),
-        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "calendar_bundle_id": calendar_pin.BUNDLE_ID,
         "source_anchor_path": str(source_anchor_path),
         "source_anchor_sha256": sha256_file(source_anchor_path),
         "anchor_path": str(anchor_path),
@@ -2088,7 +2088,7 @@ def enqueue_fresh_build_reruns(
         "source_ranks": [row["source_rank"] for row in rows],
         "cell_count_per_sleeve": 40,
         "seeds": list(contract.SEEDS),
-        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "calendar_bundle_id": calendar_pin.BUNDLE_ID,
         "allowed_terminals": list(ALLOWED_TERMINALS),
         "avoided_terminals": list(AVOID_TERMINALS),
         "max_simultaneous_diagnostics": 5,
