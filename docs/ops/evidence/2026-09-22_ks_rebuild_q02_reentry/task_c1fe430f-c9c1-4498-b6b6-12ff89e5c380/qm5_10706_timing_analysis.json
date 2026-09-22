@@ -1,0 +1,115 @@
+{
+  "schema": "qm.ks-rebuild-q02-reentry-10706-analysis/v1",
+  "task_id": "c1fe430f-c9c1-4498-b6b6-12ff89e5c380",
+  "ea_id": "QM5_10706",
+  "selected_predecessor_binding": {
+    "work_item_id": "7cf004b7-f4cf-42cb-80cc-d5c98f119ce4",
+    "phase": "Q02",
+    "status": "done",
+    "verdict": "PASS",
+    "setfile_role": "D2G6_ABLATION_02",
+    "setfile_path": "framework/EAs/QM5_10706_tv-mon-ls/sets/QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest_ablation_02.set",
+    "binding_verdict": "NOT_BINDABLE_FROM_DURABLE_EVIDENCE",
+    "farmctl_refusal": "source_ex5_sha256_missing",
+    "missing_fields": [
+      "work_items.ex5_sha256",
+      "payload.expected_ex5_sha256",
+      "payload.expected_current_ex5_sha256",
+      "payload.artifact_identity.ex5_sha256"
+    ],
+    "retained_artifacts": {
+      "summary_sha256": "ed7ab662a61047bcd2e9ccfced02c83f0cc161dd9f8f4ee43b28cd12ecdc0a6f",
+      "report_gz_sha256": "1e3535e9a69b8f03da4bd25a1bae120360177131b22fda03f411cf056e00e8c4",
+      "tester_ini_sha256": "a05efa831d39a12b148e91e5eee0a3c5743ae1c6da4f3e6851eeb9a6cc39b10c",
+      "binary_digest_present": false
+    },
+    "contemporaneous_binary_inference": {
+      "classification": "INFERENCE_ONLY_NOT_A_GOVERNED_BINDING",
+      "pre_run_repository_candidate_sha256": "01e34b2059de6ed505d445ce9fcbac7da0eb10d51e5cbcbbd18d38a968916078",
+      "post_run_commit_candidate_sha256": "2f461f6b7a6d9b81d633ba553bb1ffddd773a2be34193675f399258f5fae7dd3",
+      "build_mtime_utc": "2026-07-16T20:39:26.082725+00:00",
+      "q02_started_at_utc": "2026-07-16T20:39:26+00:00",
+      "reason_not_usable": "Matching mtimes make the post-run candidate plausible but do not prove which bytes T7 loaded. Backfilling either digest would manufacture identity evidence."
+    }
+  },
+  "d2g6_legitimate_preset": {
+    "manifest_path": "docs/ops/evidence/2026-09-18_ftmo_demo_book_v3_D2g6/sets/manifest.json",
+    "manifest_sha256": "62efe535e71794542bbccf163237f40819f708e6a9c1cb8d5e56587bc3107f57",
+    "source_role": "SEALED_BASELINE_STRATEGY_PARAMETERS",
+    "source_path": "framework/EAs/QM5_10706_tv-mon-ls/sets/QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest_ablation_02.set",
+    "source_sha256_at_package_seal": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49",
+    "strategy_identity_sha256": "8182d0ff0af37cc27bcc26b4750d2cfd294dc76d8641ad42a9b15e62d6e71dc5",
+    "live_output_path": "QM5_10706_GBPUSD_H1_live_trial.set",
+    "live_output_sha256_at_package_seal": "31c37ec30421a51d7938ebfe911ef13e6615c678d0727ded9def09cb5cd1d140",
+    "package_ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+    "q10_news_seal_work_item_id": "9c7db9b2-c594-4b50-8006-f891f7b5c44b",
+    "conclusion": "The selected D2g6 strategy preset is ablation-02. The base preset is only a diagnostic control and cannot substitute for selected-preset identity evidence."
+  },
+  "base_control_reproduction": {
+    "basis": "Existing governed Model=4 tester outputs were re-parsed; no terminal was started.",
+    "predecessor_work_item_id": "bb234ab2-499b-4cfe-8de1-d2ef52be6a27",
+    "predecessor_ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+    "predecessor_mq5_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+    "rebuilt_work_item_id": "972a6d85-d5d0-4a5b-92d6-2a138adbc08d",
+    "rebuilt_ex5_sha256": "c9bf8e83963255eda114787892f8a4edba2584b2282d3c8297ea30b3332e8885",
+    "rebuilt_mq5_sha256": "c932fdd800548a7dae4c39d910c3726491e46b506c5ee60ba1abef523c78bf1e",
+    "proof_path": "docs/ops/evidence/2026-09-22_ks_rebuild_q02_reentry/task_38385b96-7145-40d3-9952-349ddbc6e38f/identity_equivalence/QM5_10706__QM5_10706/GBPUSD.DWX/proof.json",
+    "proof_sha256": "54d4f59f1b759d74f63b0af10a00d411339089f90d0f07b91176b331bb33e297",
+    "proof_verdict": "NOT_EQUIVALENT",
+    "deal_rows": 303,
+    "entry_rows": 151,
+    "exit_rows": 151,
+    "time_shifted_rows": 1,
+    "entry_time_shifts": 0,
+    "exit_time_shifts": 1,
+    "delta_seconds_distribution": {"3": 1},
+    "non_time_field_mismatch_count": 0,
+    "shifted_deal": {
+      "index_zero_based": 14,
+      "deal": "15",
+      "direction": "out",
+      "type": "buy",
+      "entry_deal": "14",
+      "entry_time_both": "2018.09.11 13:00:00",
+      "original_exit_time": "2018.09.12 13:03:44",
+      "rebuilt_exit_time": "2018.09.12 13:03:47",
+      "delta_seconds": 3,
+      "volume_both": "2",
+      "price_both": "1.30294",
+      "profit_both": "98.00",
+      "comment_both": "sl 1.30293"
+    }
+  },
+  "mechanism": {
+    "timer_driven_entry": false,
+    "timer_facts": [
+      "QM_FrameworkInit arms EventSetTimer(1) only when MQL_TESTER == 0.",
+      "QM_FrameworkOnTimer calls only FTMO broker-day refresh and chart-UI refresh; it does not call Strategy_EntrySignal, Strategy_ManageOpenPosition, or a trade operation.",
+      "QM5_10706 evaluates entries only from OnTick after QM_IsNewBar(PERIOD_H1)."
+    ],
+    "identified_event_path": "BREAK_EVEN_STOP_MODIFY_THEN_STOP_TRIGGER",
+    "source_change": {
+      "commit": "2a7647ae9db4dcb7bbfd4415cb6c57f9e57dc189",
+      "summary": "Added the side_ok market-side/stops-level guard to MON_SWEEP_BE_LOCK. The predecessor source SHA maps to the parent state; the rebuilt source SHA maps to this guarded state.",
+      "live_trade_lifecycle_capable": true
+    },
+    "rebuilt_log": {
+      "path": "D:/QM/reports/work_items/972a6d85-d5d0-4a5b-92d6-2a138adbc08d/QM5_10706/20260922_052843/raw/run_01/20260922.log",
+      "sha256": "2453a43b40a7f7899592ab9125750da120d269185871f20e9a66a4e325ad7685",
+      "position_modified": "2018.09.12 13:03:45; ticket 14; SL 1.30293",
+      "stop_triggered": "2018.09.12 13:03:47; deal 15"
+    },
+    "conclusion": "The new guard delayed installation of the same break-even stop until a later qualifying tick; the stop then fired two seconds after modification and three seconds after the predecessor exit."
+  },
+  "economic_and_live_consequence": {
+    "observed_replay": "ECONOMIC_NULL_FOR_THIS_ONE_BASE_CONTROL_REPLAY_ONLY: price, volume, commission, swap, per-deal profit, balance, and total net PnL are exact.",
+    "general_live_consequence": "NOT_ECONOMICALLY_NULL_AS_A_MECHANICS_CHANGE: later stop installation can leave a position exposed for additional ticks and can change whether, when, and at what price it exits under a different live tick path.",
+    "entry_consequence": "No entry can fire from OnTimer; all 151 entry times were exact."
+  },
+  "disposition": {
+    "selected_requalification": "NOT_ENQUEUED",
+    "base_control_identity_verdict": "NOT_EQUIVALENT",
+    "equivalent_timing_proposal_applicable_to_this_pair": false,
+    "required_path": "Run a fresh selected-preset Q02 for the rebuilt identity through a governed seed path that does not invent the missing historical EX5 hash, then run its own Q03-Q10 chain unless Fable ratifies a contract that this pair actually satisfies."
+  }
+}

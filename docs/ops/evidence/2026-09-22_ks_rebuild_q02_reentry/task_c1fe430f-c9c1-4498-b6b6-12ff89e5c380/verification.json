@@ -1,0 +1,67 @@
+{
+  "schema": "qm.ks-rebuild-q02-reentry-verification/v1",
+  "task_id": "c1fe430f-c9c1-4498-b6b6-12ff89e5c380",
+  "qm5_10403": {
+    "canonical_pre_patch_dry_run": {
+      "eligible": false,
+      "reason": "parameter_change_provenance_not_authenticated",
+      "rejected_binding_reason": "binding_registrations_missing"
+    },
+    "supplemental_authority_direct_check": {
+      "result": "PASS",
+      "schema": "qm.q02-parameter-change-authority/v2",
+      "mode": "supplemental_exact_registration",
+      "detail": "parameter_change_provenance_authenticated"
+    },
+    "tests": {
+      "command": "python -m pytest tools/strategy_farm/tests/test_q02_post_binding_requalification.py -q",
+      "passed": 11,
+      "failed": 0
+    },
+    "append_only_q02": "NOT_RUN_PATCH_NOT_IN_CANONICAL_CHECKOUT",
+    "identity_proof": "NOT_RUN_NO_SUCCESSOR_Q02",
+    "identity_verdict": "NOT_AVAILABLE"
+  },
+  "qm5_10706": {
+    "selected_predecessor_dry_run": {
+      "eligible": false,
+      "reason": "source_ex5_sha256_missing",
+      "work_item_id": "7cf004b7-f4cf-42cb-80cc-d5c98f119ce4"
+    },
+    "base_control_proof_verification": {
+      "proof_sha256": "54d4f59f1b759d74f63b0af10a00d411339089f90d0f07b91176b331bb33e297",
+      "verdict": "NOT_EQUIVALENT"
+    },
+    "deal_comparison": {
+      "deal_rows": 303,
+      "entry_rows": 151,
+      "exit_rows": 151,
+      "time_shifted_rows": 1,
+      "entry_time_shifts": 0,
+      "exit_time_shifts": 1,
+      "delta_seconds_distribution": {"3": 1},
+      "non_time_field_mismatches": 0
+    },
+    "mechanism_check": {
+      "timer_driven_entry": false,
+      "identified_path": "MON_SWEEP_BE_LOCK modify timing followed by SL exit",
+      "rebuilt_modify_time": "2018.09.12 13:03:45",
+      "rebuilt_exit_time": "2018.09.12 13:03:47",
+      "source_change_commit": "2a7647ae9db4dcb7bbfd4415cb6c57f9e57dc189"
+    },
+    "proposal": {
+      "path": "equivalent_timing_proposal_v1.json",
+      "status": "PROPOSAL_ONLY",
+      "candidate_result": "REFUSED_BY_PROPOSAL",
+      "proof_contract_changed": false
+    }
+  },
+  "safety": {
+    "canonical_repo_written": false,
+    "terminal_started": false,
+    "autotrading_changed": false,
+    "t_live_changed": false,
+    "pipeline_verdict_changed": false,
+    "historical_work_item_changed": false
+  }
+}

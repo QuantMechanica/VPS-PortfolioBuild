@@ -1,0 +1,46 @@
+{
+  "schema": "qm.q02-parameter-change-supplement/v1",
+  "registration_id": "router_ops_issue:c1fe430f-c9c1-4498-b6b6-12ff89e5c380:QM5_10403",
+  "router_task_id": "c1fe430f-c9c1-4498-b6b6-12ff89e5c380",
+  "owner_authority": "OWNER-DEC-FTMO-FINAL-MEGA-20260921 section U priority 1 and section J identity doctrine; OWNER-DEC-IDENTITY-EQUIVALENCE-20260913",
+  "source_repair_authority": "router_ops_issue:d6189118-c2e7-4517-a914-049c89d19a75:QM5_10403",
+  "ea_id": "10403",
+  "ea_label": "QM5_10403_et-turtle20x",
+  "current_mq5_sha256": "65d4c206ad9d6ad2c8230a309714d1a900a1bc707b54dc96bc4e7fb107b8bae5",
+  "current_ex5_sha256": "88ba0eabc37de54d717a86158e472fd7175878f0c61b0f19467fa9f914ee4d87",
+  "compile_predecessor": {
+    "work_item_id": "98873ebc-8231-4eb5-850a-e7f00d9b3598",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "evidence_path": "D:/QM/reports/work_items/98873ebc-8231-4eb5-850a-e7f00d9b3598/QM5_10403/COMPILE_EA/compile_evidence.json",
+    "evidence_sha256": "b4803818dce63536b88a23d0e1d422f89c9d0f2f5e4cf4985fb4f13d72ec2ef1",
+    "frozen_authority_binding": {
+      "path": "docs/ops/evidence/2026-09-22_ftmo_kill_switch_governed_initializer/2026-09-22_qm5_10403_et-turtle20x_ks_initializer_rebuild_authority.json",
+      "sha256": "065a0cd3fc1ff399b84bff94738584891b612d271412f432a016e36a3015383f"
+    }
+  },
+  "q02_predecessor": {
+    "work_item_id": "d02bec84-87fe-43a9-94d4-2795ec46cea7",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "source_setfile_sha256": "9a6fab053d3814077a015eb9f3a864a0c8a703fbe220ae03e74da195960f4c72",
+    "current_setfile_path": "framework/EAs/QM5_10403_et-turtle20x/sets/QM5_10403_et-turtle20x_XAUUSD.DWX_D1_backtest.set",
+    "current_setfile_sha256": "61c7fe83c7c175b53e43e54901ce80636319cdb23ecb49ea345f6949177e1f3c",
+    "parameter_diff": [
+      {"key": "qm_ea_id", "change": "added", "before": null, "after": "10403"},
+      {"key": "qm_filter_news_enabled", "change": "removed", "before": "1", "after": null},
+      {"key": "qm_filter_news_mode", "change": "removed", "before": "3", "after": null},
+      {"key": "qm_filter_regime_bear_return_pct", "change": "removed", "before": "2.0", "after": null},
+      {"key": "qm_filter_regime_bull_return_pct", "change": "removed", "before": "2.0", "after": null},
+      {"key": "qm_filter_regime_enabled", "change": "removed", "before": "0", "after": null},
+      {"key": "qm_filter_regime_lookback_bars", "change": "removed", "before": "100", "after": null},
+      {"key": "qm_filter_volatility_atr_period", "change": "removed", "before": "14", "after": null},
+      {"key": "qm_filter_volatility_compression_ratio", "change": "removed", "before": "0.75", "after": null},
+      {"key": "qm_filter_volatility_enabled", "change": "removed", "before": "0", "after": null},
+      {"key": "qm_filter_volatility_expansion_ratio", "change": "removed", "before": "1.25", "after": null},
+      {"key": "qm_filter_volatility_lookback_bars", "change": "removed", "before": "50", "after": null}
+    ]
+  },
+  "strategy_mechanics_changed_by_setfile_migration": false,
+  "scope": "Authenticate only this exact completed compile plus this exact Q02 predecessor-to-current setfile migration. The registration grants one append-only requalify-q02 successor and no verdict, pipeline, live, portfolio, cross-EA, or proof-contract authority."
+}
