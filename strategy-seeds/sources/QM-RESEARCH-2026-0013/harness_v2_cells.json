@@ -1,0 +1,100 @@
+{
+  "bound_artifacts": [
+    {
+      "commit": "252d6de23596ce4415dec6f3d815f89cf9174c5e",
+      "path": "docs/ops/evidence/2026-09-21_velocity_harness_v2/task_7088da77-9e03-45cf-a568-581863f03ef1/velocity_family_f1_sweep_v2.json",
+      "sha256": "82aba390d2774b7e242e9a42bf00c22b971721ffd2ad1223b57896a50c9f83bb"
+    },
+    {
+      "commit": "252d6de23596ce4415dec6f3d815f89cf9174c5e",
+      "path": "docs/ops/evidence/2026-09-21_velocity_harness_v2/task_7088da77-9e03-45cf-a568-581863f03ef1/golden_comparison.json",
+      "sha256": "9a8376e31130812fa26287a9041a3d5eb4414b5bee7a818c29c2d8fbabe60e40"
+    },
+    {
+      "commit": "252d6de23596ce4415dec6f3d815f89cf9174c5e",
+      "path": "docs/ops/evidence/2026-09-21_velocity_harness_v2/task_7088da77-9e03-45cf-a568-581863f03ef1/README.md",
+      "sha256": "5aa321128cb492a6155fcb7342835c4b504edb21661cd136534fda985bfc4cb4"
+    },
+    {
+      "commit": "845f9a556dd04785be4a84bbba6b554fa1a913b0",
+      "path": "docs/ops/evidence/2026-09-22_harness_v2_mt5_falsification/task_0ad35f22-de1e-4bca-9341-4de2fbb7a535/cell_input_mapping.json",
+      "sha256": "e1644457bfde05eb4a0c03c7fe2ca7bc83dd80124444e66b5c5f3d9ce6319da1"
+    }
+  ],
+  "cells": [
+    {
+      "anchor_clock": "GMT3_EQUIVALENT",
+      "cell": "A2",
+      "flat": "18:00",
+      "grid_offset_minutes": 0,
+      "harness_selection": {
+        "expectancy_r": 0.057,
+        "profit_factor": 1.122,
+        "trades": 970,
+        "worst_year_drawdown_r": 21.0
+      },
+      "magic_slot": 1,
+      "range_bars": 2,
+      "range_end": "06:00",
+      "range_start": "04:00",
+      "symbol": "NZDJPY.DWX"
+    },
+    {
+      "anchor_clock": "GMT3_EQUIVALENT",
+      "cell": "A3",
+      "flat": "18:00",
+      "grid_offset_minutes": 0,
+      "harness_selection": {
+        "expectancy_r": 0.0675,
+        "profit_factor": 1.161,
+        "trades": 893,
+        "worst_year_drawdown_r": 21.87
+      },
+      "magic_slot": 0,
+      "range_bars": 3,
+      "range_end": "06:00",
+      "range_start": "03:00",
+      "symbol": "USDJPY.DWX"
+    },
+    {
+      "anchor_clock": "GMT3_EQUIVALENT",
+      "cell": "A4",
+      "flat": "18:00",
+      "grid_offset_minutes": 0,
+      "harness_selection": {
+        "expectancy_r": 0.0753,
+        "profit_factor": 1.184,
+        "trades": 821,
+        "worst_year_drawdown_r": 18.56
+      },
+      "magic_slot": 0,
+      "range_bars": 4,
+      "range_end": "06:00",
+      "range_start": "02:00",
+      "symbol": "USDJPY.DWX"
+    }
+  ],
+  "common_inputs": {
+    "PORTFOLIO_WEIGHT": 1,
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "qm_news_compliance": 1,
+    "qm_news_stale_max_hours": 336,
+    "qm_news_temporal": 3,
+    "strategy_atr_period": 14,
+    "strategy_max_range_atr_mult": 2.5,
+    "strategy_min_range_atr_mult": 0.4,
+    "strategy_news_retry_window_minutes": 60,
+    "strategy_range_scan_bars": 36,
+    "strategy_trail_trigger_r": 1.0
+  },
+  "harness_summary": {
+    "defined_cells": 315,
+    "populated_cells": 314,
+    "review_disposition": "MECHANICS_PASS_ECONOMIC_EQUIVALENCE_UNKNOWN",
+    "worth_mt5_test_cells": 3
+  },
+  "schema": "qm.harness-v2-research-instrument-source/v1",
+  "selection_period": "2018-07-02..2022-12-30",
+  "tester_period": "2018-07-02..2022-12-31"
+}

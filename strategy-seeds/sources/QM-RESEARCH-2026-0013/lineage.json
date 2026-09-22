@@ -1,0 +1,45 @@
+{
+  "discovery_sample": {
+    "dataset_ids": [
+      "dwx_custom_history_m1_35_symbols_2018-2025"
+    ],
+    "instruments": [
+      "NZDJPY.DWX",
+      "USDJPY.DWX"
+    ],
+    "period": "2018-07-02..2022-12-30"
+  },
+  "mechanization": {
+    "build_delta": "New neutral research identity; genuine anchor clock/start/end/flat/grid/range inputs; three frozen cell presets",
+    "codex_implementable": true,
+    "negative_lineage": "QM5_41485 PRESCREEN_EXECUTION_MODEL_FALSE_POSITIVE remains unchanged",
+    "parent_ea": "QM5_13213",
+    "spec_section": "source.md#mechanical-specification"
+  },
+  "parent_version_id": null,
+  "preregistration": {
+    "cell_mapping": "docs/ops/evidence/2026-09-22_harness_v2_mt5_falsification/task_0ad35f22-de1e-4bca-9341-4de2fbb7a535/cell_input_mapping.json",
+    "comparison_contract": "source.md#golden-comparison-contract",
+    "tester_period": "2018-07-02..2022-12-31"
+  },
+  "research_id": "QM-RESEARCH-2026-0013",
+  "revision_history": [
+    {
+      "date": "2026-09-22",
+      "note": "Reviewed synthesis of the harness-v2 golden test for a separate MT5 research instrument; no economic promotion.",
+      "version": 1
+    }
+  ],
+  "schema": "qm.research-lineage/v1",
+  "validation_sample": {
+    "dataset_ids": [
+      "dwx_custom_history_m1_35_symbols_2018-2025"
+    ],
+    "instruments": [
+      "NZDJPY.DWX",
+      "USDJPY.DWX"
+    ],
+    "period": "2023-01-01..2025-12-31"
+  },
+  "version": 1
+}

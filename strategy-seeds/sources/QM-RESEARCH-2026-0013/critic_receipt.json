@@ -1,0 +1,49 @@
+{
+  "bound_review_commit": "252d6de23596ce4415dec6f3d815f89cf9174c5e",
+  "bound_review_sha256": "5aa321128cb492a6155fcb7342835c4b504edb21661cd136534fda985bfc4cb4",
+  "chain_id": "HARNESS-V2-RESEARCH-INSTRUMENT-20260922",
+  "critic_fallback_used": false,
+  "critic_seat_final": {
+    "model": "gpt-5.6-sol",
+    "vendor": "openai"
+  },
+  "critic_verdict": "MECHANICS_PASS_ECONOMIC_EQUIVALENCE_UNKNOWN; approve only a separate MT5 falsification instrument and frozen Q02 cells; no candidacy, pipeline, roster, or live verdict",
+  "cross_vendor": true,
+  "finding_counts": {
+    "blocking_for_instrument_build": 0,
+    "economic_unknown": 3,
+    "worth_mt5_test": 3
+  },
+  "generated_at_utc": "2026-09-22T04:14:19Z",
+  "plan": {
+    "creator": {
+      "model": "claude-fable-5-1",
+      "vendor": "anthropic"
+    },
+    "critic": {
+      "model": "gpt-5.6-sol",
+      "vendor": "openai"
+    }
+  },
+  "receipt_path": "docs/ops/evidence/2026-09-21_velocity_harness_v2/task_7088da77-9e03-45cf-a568-581863f03ef1/README.md",
+  "repo_write": false,
+  "schema": "qm.agent-chain.receipt/v1",
+  "scope_drift": false,
+  "stages": [
+    {
+      "note": "Fable-authored session-range family source and frozen mechanical lineage.",
+      "role": "creator",
+      "task_id": "fable-velocity-hv4-20260921"
+    },
+    {
+      "note": "Codex v2 review bound real placement facts, OCO cancellation, gap behavior and native news tags; mechanics PASS, economic equivalence UNKNOWN.",
+      "role": "critic",
+      "task_id": "7088da77-9e03-45cf-a568-581863f03ef1"
+    },
+    {
+      "note": "Codex packaged the reviewed result as a neutral instrument source without extending the economic claim.",
+      "role": "source_synthesis",
+      "task_id": "955537dd-63d2-4f84-a1b1-c4d2499b78c4"
+    }
+  ]
+}
