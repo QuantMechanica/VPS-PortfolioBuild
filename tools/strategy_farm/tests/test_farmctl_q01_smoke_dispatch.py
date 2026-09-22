@@ -15,6 +15,10 @@ import json
 from pathlib import Path
 
 from tools.strategy_farm import farmctl
+from tools.strategy_farm.setfile_build_hash import (
+    PENDING_BUILD_HASH_LINE,
+    authenticate_setfile_build_hash_transition,
+)
 
 EA_ID = "QM5_90001"
 SYMBOL = "EURUSD.DWX"
@@ -25,7 +29,58 @@ def _sha_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def _seed(tmp_path: Path, *, build_state: str = "TODO", artifact_path_override: str | None = None):
+def _generated_setfile_bytes(*, risk_fixed: str = "1000") -> bytes:
+    lines = [
+        ";==========================================================",
+        "; QM5 Set File",
+        "; ea_id:        90001",
+        "; ea_slug:      synthetic-smoke-dispatch",
+        "; ea_version:   v5.0",
+        "; set_version:  v1",
+        f"; symbol:       {SYMBOL}",
+        "; timeframe:    H1",
+        "; environment:  backtest",
+        "; magic_slot:   0",
+        "; risk_mode:    FIXED",
+        "; portfolio_weight: 1",
+        PENDING_BUILD_HASH_LINE,
+        "; author:       Development",
+        "; date:         2026-09-22",
+        ";==========================================================",
+        "qm_ea_id=90001",
+        "qm_magic_slot_offset=0",
+        f"RISK_FIXED={risk_fixed}",
+        "RISK_PERCENT=0",
+        "PORTFOLIO_WEIGHT=1",
+        "strategy_period=14",
+    ]
+    return ("\n".join(lines) + "\n").encode("utf-8")
+
+
+def _build_check_stamp(generated: bytes) -> bytes:
+    lines = generated.decode("utf-8").splitlines()
+    normalized = ("\r\n".join(lines) + "\r\n").encode("utf-8")
+    stamp = _sha_bytes(normalized)
+    lines[lines.index(PENDING_BUILD_HASH_LINE)] = f"; build_hash:   {stamp}"
+    return ("\r\n".join(lines) + "\r\n").encode("utf-8")
+
+
+def _authenticated_ex5_restamp(generated: bytes, ex5_sha256: str) -> bytes:
+    lines = generated.decode("utf-8").splitlines()
+    lines[lines.index(PENDING_BUILD_HASH_LINE)] = (
+        f"; build_hash:   {ex5_sha256}"
+    )
+    return ("\n".join(lines) + "\n").encode("utf-8")
+
+
+def _seed(
+    tmp_path: Path,
+    *,
+    build_state: str = "TODO",
+    artifact_path_override: str | None = None,
+    final_lifecycle_evidence: bool = False,
+    authenticated_ex5_restamp: bool = False,
+):
     root = tmp_path / "farm"
     farmctl.init_db(root)
     now = farmctl.utc_now()
@@ -37,7 +92,40 @@ def _seed(tmp_path: Path, *, build_state: str = "TODO", artifact_path_override: 
     setf = ea_dir / "sets" / f"{EA_ID}_synthetic-smoke-dispatch_{SYMBOL}_H1_backtest.set"
     mq5.write_bytes(b"// mq5 source bytes\n")
     ex5.write_bytes(b"\x00EX5-COMPILED-BYTES\x01")
-    setf.write_bytes(b"RISK_FIXED=1000\nRISK_PERCENT=0\n")
+    generated_setfile = _generated_setfile_bytes()
+    build_check_setfile = _build_check_stamp(generated_setfile)
+    final_setfile = (
+        _authenticated_ex5_restamp(
+            generated_setfile, _sha_bytes(ex5.read_bytes())
+        )
+        if authenticated_ex5_restamp
+        else build_check_setfile
+    )
+    setf.write_bytes(final_setfile)
+    transition = authenticate_setfile_build_hash_transition(
+        _sha_bytes(generated_setfile), build_check_setfile
+    )
+    assert transition["ok"] is True
+
+    setfile_generation = {
+        "symbol": SYMBOL,
+        "setfile_path": str(setf),
+        # Historical evidence captured the generator hash. New producer
+        # evidence seals final bytes and preserves this value separately.
+        "setfile_sha256": (
+            _sha_bytes(build_check_setfile)
+            if final_lifecycle_evidence
+            else _sha_bytes(generated_setfile)
+        ),
+        "setfile_exists": True,
+        "exit_code": 0,
+    }
+    if final_lifecycle_evidence:
+        setfile_generation.update({
+            "generated_setfile_sha256": _sha_bytes(generated_setfile),
+            "setfile_sha256_after_build_check": _sha_bytes(final_setfile),
+            "build_hash_transition": transition,
+        })
 
     compile_work_item_id = "5f5f5f5f-1111-4000-8000-000000000099"
     evidence_dir = root / "reports" / "work_items" / compile_work_item_id / EA_ID / "COMPILE_EA"
@@ -51,15 +139,7 @@ def _seed(tmp_path: Path, *, build_state: str = "TODO", artifact_path_override: 
         "mq5_sha256": _sha_bytes(mq5.read_bytes()),
         "success": True,
         "compile_result": "PASS",
-        "setfile_generation": [
-            {
-                "symbol": SYMBOL,
-                "setfile_path": str(setf),
-                "setfile_sha256": _sha_bytes(setf.read_bytes()),
-                "setfile_exists": True,
-                "exit_code": 0,
-            }
-        ],
+        "setfile_generation": [setfile_generation],
     }
     evidence_path.write_text(json.dumps(evidence, indent=2, sort_keys=True), encoding="utf-8")
 
@@ -118,6 +198,9 @@ def _seed(tmp_path: Path, *, build_state: str = "TODO", artifact_path_override: 
         "ex5": ex5,
         "mq5": mq5,
         "setf": setf,
+        "generated_setfile": generated_setfile,
+        "build_check_setfile": build_check_setfile,
+        "final_setfile": final_setfile,
         "compile_work_item_id": compile_work_item_id,
     }
 
@@ -155,6 +238,16 @@ def test_happy_path_appends_pending_work_item(tmp_path: Path) -> None:
     assert payload["from_date"] == farmctl.Q01_SMOKE_DISPATCH_DEFAULT_FROM_DATE
     assert payload["to_date"] == farmctl.Q01_SMOKE_DISPATCH_DEFAULT_TO_DATE
     assert payload["window_source"] == "farmctl.append_q01_smoke_work_item"
+    assert payload["expected_setfile_sha256"] == _sha_bytes(art["final_setfile"])
+    assert payload["setfile_binding_mode"] == "historical_pre_stamp_exact_transition"
+    receipt = Path(payload["setfile_binding_receipt_path"])
+    assert receipt.is_file()
+    assert _sha_bytes(receipt.read_bytes()) == payload["setfile_binding_receipt_sha256"]
+    receipt_doc = json.loads(receipt.read_text(encoding="utf-8"))
+    assert receipt_doc["historical_compile_evidence_rewritten"] is False
+    assert receipt_doc["setfile_binding_provenance"]["transition"][
+        "input_assignments_unchanged"
+    ] is True
 
 
 def test_dry_run_never_writes(tmp_path: Path) -> None:
@@ -165,6 +258,7 @@ def test_dry_run_never_writes(tmp_path: Path) -> None:
     with farmctl.connect(root) as conn:
         n = conn.execute("SELECT COUNT(*) FROM work_items").fetchone()[0]
     assert n == 1  # only the seeded compile row
+    assert not Path(res["setfile_binding_receipt_path"]).exists()
 
 
 def test_idempotent_on_exact_repeat(tmp_path: Path) -> None:
@@ -223,6 +317,68 @@ def test_refuses_on_ex5_drift_since_compile(tmp_path: Path) -> None:
     res = _append(root, art)
     assert res["appended"] is False
     assert res["reason"] == "artifact_drift_since_compile"
+
+
+def test_refuses_changed_setfile_input_even_when_restamped(tmp_path: Path) -> None:
+    root, art = _seed(tmp_path)
+    # A self-consistent new build_hash cannot authenticate a changed strategy
+    # or risk input against the historical generator seal.
+    art["setf"].write_bytes(
+        _build_check_stamp(_generated_setfile_bytes(risk_fixed="999"))
+    )
+    res = _append(root, art)
+    assert res["appended"] is False
+    assert res["reason"] == "artifact_drift_since_compile"
+    assert res["detail"]["transition_refusal"]["reason"] == (
+        "generated_setfile_bytes_not_exact_preimage"
+    )
+
+
+def test_accepts_new_post_build_lifecycle_evidence(tmp_path: Path) -> None:
+    root, art = _seed(tmp_path, final_lifecycle_evidence=True)
+    res = _append(root, art)
+    assert res["appended"] is True, res
+    assert res["setfile_binding_provenance"]["mode"] == (
+        "compile_evidence_final_hash"
+    )
+    with farmctl.connect(root) as conn:
+        row = conn.execute(
+            "SELECT setfile_sha256,payload_json FROM work_items WHERE id=?",
+            (res["work_item_id"],),
+        ).fetchone()
+    payload = json.loads(row["payload_json"])
+    assert row["setfile_sha256"] == _sha_bytes(art["final_setfile"])
+    assert payload["expected_setfile_sha256"] == row["setfile_sha256"]
+
+
+def test_accepts_historical_evidence_with_exact_ex5_restamp(tmp_path: Path) -> None:
+    root, art = _seed(tmp_path, authenticated_ex5_restamp=True)
+    res = _append(root, art)
+    assert res["appended"] is True, res
+    assert res["setfile_binding_provenance"]["mode"] == (
+        "historical_pre_stamp_exact_transition"
+    )
+    assert res["setfile_binding_provenance"]["transition"][
+        "transition_mode"
+    ] == "authenticated_ex5_hash_restamp"
+
+
+def test_accepts_new_lifecycle_then_exact_ex5_restamp(tmp_path: Path) -> None:
+    root, art = _seed(
+        tmp_path,
+        final_lifecycle_evidence=True,
+        authenticated_ex5_restamp=True,
+    )
+    res = _append(root, art)
+    assert res["appended"] is True, res
+    provenance = res["setfile_binding_provenance"]
+    assert provenance["mode"] == "compile_final_to_authenticated_ex5_restamp"
+    assert provenance["compile_final_setfile_sha256"] == _sha_bytes(
+        art["build_check_setfile"]
+    )
+    assert provenance["transition"]["transition_mode"] == (
+        "authenticated_ex5_hash_restamp"
+    )
 
 
 def test_refuses_when_build_task_artifact_path_does_not_bind(tmp_path: Path) -> None:

@@ -155,6 +155,17 @@ except ModuleNotFoundError:
         from process_identity import get_process_identity  # script-style import (sys.path = tools/strategy_farm)
 
 try:
+    from setfile_build_hash import (
+        SETFILE_BUILD_HASH_TRANSITION_SCHEMA,
+        authenticate_setfile_build_hash_transition_path,
+    )
+except ModuleNotFoundError:
+    from tools.strategy_farm.setfile_build_hash import (
+        SETFILE_BUILD_HASH_TRANSITION_SCHEMA,
+        authenticate_setfile_build_hash_transition_path,
+    )
+
+try:
     from raw_mq5_quarantine import check_source_path as check_raw_mq5_source_path
 except ModuleNotFoundError:
     from tools.strategy_farm.raw_mq5_quarantine import (
@@ -25981,15 +25992,16 @@ def record_q01_smoke_successor(
 # governed compile evidence and the build task row. Fails closed on any
 # mismatch and never fabricates a result.
 #
-# NOTE (documented, not fixed here — out of this route's bounded scope): once
-# a worker finishes such a row PASS, ``record_q01_smoke_successor`` and
-# ``_latest_build_smoke_result`` still only look at the legacy ``tasks`` table
-# for Q02 admission, which an ``agent_tasks``-originated build never populates.
-# Closing that admission-side gap is a separate, independently reviewable
-# change and is left as a follow-up.
+# Historical compile evidence may carry the generator's pre-build-check hash.
+# The dispatcher accepts that evidence only through the exact reversible
+# gen_setfile -> build_check transition proof and writes a separate append-only
+# receipt.  It never edits the historical evidence or trusts arbitrary current
+# bytes.  Agent-task admission is implemented separately below the legacy
+# successor path so each change remains independently reviewable.
 # ---------------------------------------------------------------------------
 
 Q01_SMOKE_DISPATCH_ROUTE_VERSION = "qm.q01-smoke-dispatch/v1"
+Q01_SETFILE_BINDING_RECEIPT_VERSION = "qm.q01-setfile-binding-receipt/v1"
 Q01_SMOKE_DISPATCH_DEFAULT_FROM_DATE = "2024.01.01"
 Q01_SMOKE_DISPATCH_DEFAULT_TO_DATE = "2024.12.31"
 Q01_SMOKE_DISPATCH_MIN_TRADES = 1
@@ -26010,6 +26022,69 @@ def _q01_smoke_dispatch_work_item_id(
             f"{ea_id}:{symbol}:{build_task_id}:{compile_work_item_id}",
         )
     )
+
+
+def _q01_setfile_binding_receipt(
+    root: Path,
+    work_item_id: str,
+    auth: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Build a deterministic append-only receipt for the dispatch identity."""
+    path = (
+        root
+        / "artifacts"
+        / "receipts"
+        / "q01_setfile_bindings"
+        / f"{work_item_id}.json"
+    )
+    document = {
+        "schema": Q01_SETFILE_BINDING_RECEIPT_VERSION,
+        "work_item_id": work_item_id,
+        "ea_id": auth["ea_id"],
+        "symbol": auth["symbol"],
+        "build_task_id": auth["build_task_id"],
+        "compile_work_item_id": auth["compile_work_item_id"],
+        "compile_evidence_path": auth["compile_evidence_path"],
+        "compile_evidence_sha256": auth["compile_evidence_sha256"],
+        "setfile_path": auth["setfile_path"],
+        "artifact_identity": {
+            "mq5_sha256": auth["expected_mq5_sha256"],
+            "ex5_sha256": auth["expected_ex5_sha256"],
+            "setfile_sha256": auth["expected_setfile_sha256"],
+        },
+        "setfile_binding_provenance": auth["setfile_binding_provenance"],
+        "historical_compile_evidence_rewritten": False,
+    }
+    receipt_bytes = (
+        json.dumps(document, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+    return {
+        "path": str(path),
+        "sha256": hashlib.sha256(receipt_bytes).hexdigest(),
+        "document": document,
+        "bytes": receipt_bytes,
+    }
+
+
+def _write_append_only_receipt(path: Path, expected_bytes: bytes) -> bool:
+    """Create one receipt, or prove an existing receipt is byte-identical."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with path.open("xb") as handle:
+            handle.write(expected_bytes)
+            handle.flush()
+            os.fsync(handle.fileno())
+        return True
+    except FileExistsError:
+        try:
+            current = path.read_bytes()
+        except OSError as exc:
+            raise RuntimeError(
+                f"setfile_binding_receipt_unreadable:{path}:{exc}"
+            ) from exc
+        if current != expected_bytes:
+            raise RuntimeError(f"setfile_binding_receipt_conflict:{path}")
+        return False
 
 
 def _authenticate_q01_smoke_dispatch(
@@ -26115,10 +26190,13 @@ def _authenticate_q01_smoke_dispatch(
             "detail": f"symbol={symbol!r} not among {available_symbols!r}",
         }
 
+    evidence_setfile_sha = str(
+        chosen_setfile.get("setfile_sha256") or ""
+    ).strip().lower()
     sealed = {
         "ex5": str(evidence.get("ex5_sha256") or "").strip().lower(),
         "mq5": str(evidence.get("mq5_sha256") or "").strip().lower(),
-        "setfile": str(chosen_setfile.get("setfile_sha256") or "").strip().lower(),
+        "setfile": evidence_setfile_sha,
     }
     row_sealed = {
         "ex5": str(compile_row.get("ex5_sha256") or "").strip().lower(),
@@ -26146,6 +26224,134 @@ def _authenticate_q01_smoke_dispatch(
         if cur is None:
             return {"ok": False, "reason": "compile_artifact_missing", "detail": f"{kind}: {path_value}"}
         current[kind] = cur.lower()
+    # New compile evidence seals the post-build-check setfile and retains the
+    # generator hash plus an exact transition receipt. Historical v1 evidence
+    # sealed only the generator bytes; authenticate that exact LF/pending ->
+    # CRLF/stamped transition instead of rewriting evidence or trusting the
+    # current file merely because build_check once returned PASS.
+    stored_transition = chosen_setfile.get("build_hash_transition")
+    generated_sha = str(
+        chosen_setfile.get("generated_setfile_sha256") or ""
+    ).strip().lower()
+    setfile_binding_provenance: dict[str, Any]
+    if current["setfile"] == evidence_setfile_sha:
+        if not generated_sha or not isinstance(stored_transition, dict):
+            return {
+                "ok": False,
+                "reason": "setfile_transition_provenance_missing",
+                "detail": (
+                    "final setfile hash is present but compile evidence does not "
+                    "carry generated_setfile_sha256 + build_hash_transition"
+                ),
+            }
+        transition = authenticate_setfile_build_hash_transition_path(
+            generated_sha,
+            Path(artifact_paths["setfile"]),
+            expected_ex5_sha256=sealed["ex5"],
+        )
+        if transition.get("ok") is not True:
+            return {
+                "ok": False,
+                "reason": "setfile_transition_recheck_failed",
+                "detail": transition,
+            }
+        if stored_transition != transition:
+            return {
+                "ok": False,
+                "reason": "compile_evidence_transition_receipt_mismatch",
+                "detail": {
+                    "stored": stored_transition,
+                    "rederived": transition,
+                },
+            }
+        setfile_binding_provenance = {
+            "mode": "compile_evidence_final_hash",
+            "historical_compile_evidence_unchanged": True,
+            "source_setfile_sha256": generated_sha,
+            "final_setfile_sha256": current["setfile"],
+            "transition": transition,
+        }
+    else:
+        transition_source_sha = generated_sha or evidence_setfile_sha
+        transition = authenticate_setfile_build_hash_transition_path(
+            transition_source_sha,
+            Path(artifact_paths["setfile"]),
+            expected_ex5_sha256=sealed["ex5"],
+        )
+        if transition.get("ok") is not True:
+            return {
+                "ok": False,
+                "reason": "artifact_drift_since_compile",
+                "detail": {
+                    "setfile_sealed_before_build_check": evidence_setfile_sha,
+                    "setfile_current": current["setfile"],
+                    "transition_refusal": transition,
+                },
+            }
+        sealed["setfile"] = current["setfile"]
+        if generated_sha or isinstance(stored_transition, dict):
+            if not generated_sha or not isinstance(stored_transition, dict):
+                return {
+                    "ok": False,
+                    "reason": "setfile_transition_provenance_incomplete",
+                }
+            stored_final_sha = str(
+                stored_transition.get("final_setfile_sha256") or ""
+            ).strip().lower()
+            reconstructed_compile_final_sha = str(
+                transition.get(
+                    "reconstructed_build_check_final_setfile_sha256"
+                )
+                or ""
+            ).strip().lower()
+            if (
+                stored_transition.get("ok") is not True
+                or str(stored_transition.get("generated_setfile_sha256") or "")
+                .strip()
+                .lower()
+                != generated_sha
+                or stored_final_sha != evidence_setfile_sha
+                or reconstructed_compile_final_sha != evidence_setfile_sha
+                or transition.get("transition_mode")
+                != "authenticated_ex5_hash_restamp"
+            ):
+                return {
+                    "ok": False,
+                    "reason": "compile_to_publish_transition_chain_invalid",
+                    "detail": {
+                        "evidence_setfile_sha256": evidence_setfile_sha,
+                        "stored_transition": stored_transition,
+                        "publish_transition": transition,
+                    },
+                }
+            setfile_binding_provenance = {
+                "mode": "compile_final_to_authenticated_ex5_restamp",
+                "historical_compile_evidence_unchanged": True,
+                "source_setfile_sha256": generated_sha,
+                "compile_final_setfile_sha256": evidence_setfile_sha,
+                "final_setfile_sha256": current["setfile"],
+                "compile_transition": stored_transition,
+                "transition": transition,
+            }
+        else:
+            setfile_binding_provenance = {
+                "mode": "historical_pre_stamp_exact_transition",
+                "historical_compile_evidence_unchanged": True,
+                "source_setfile_sha256": evidence_setfile_sha,
+                "final_setfile_sha256": current["setfile"],
+                "transition": transition,
+            }
+
+    if str(transition.get("symbol") or "").upper() != symbol.upper():
+        return {
+            "ok": False,
+            "reason": "setfile_transition_symbol_mismatch",
+            "detail": {
+                "transition_symbol": transition.get("symbol"),
+                "requested_symbol": symbol,
+            },
+        }
+
     mismatches = [
         f"{kind}: sealed={sealed[kind]} != current={current[kind]}"
         for kind in ("ex5", "mq5", "setfile")
@@ -26203,6 +26409,7 @@ def _authenticate_q01_smoke_dispatch(
         "expected_ex5_sha256": sealed["ex5"],
         "expected_mq5_sha256": sealed["mq5"],
         "expected_setfile_sha256": sealed["setfile"],
+        "setfile_binding_provenance": setfile_binding_provenance,
         "from_date": from_date,
         "to_date": to_date,
     }
@@ -26251,6 +26458,7 @@ def append_q01_smoke_work_item(
     work_item_id = _q01_smoke_dispatch_work_item_id(
         auth["ea_id"], auth["symbol"], auth["build_task_id"], auth["compile_work_item_id"]
     )
+    binding_receipt = _q01_setfile_binding_receipt(root, work_item_id, auth)
     payload = {
         "q01_smoke_contract": Q01_SMOKE_WORK_ITEM_CONTRACT,
         "dispatch_route": "farmctl.append_q01_smoke_work_item",
@@ -26269,6 +26477,15 @@ def append_q01_smoke_work_item(
         "expected_ex5_sha256": auth["expected_ex5_sha256"],
         "expected_mq5_sha256": auth["expected_mq5_sha256"],
         "expected_setfile_sha256": auth["expected_setfile_sha256"],
+        "artifact_identity": {
+            "mq5_sha256": auth["expected_mq5_sha256"],
+            "ex5_sha256": auth["expected_ex5_sha256"],
+            "setfile_sha256": auth["expected_setfile_sha256"],
+        },
+        "setfile_binding_receipt_schema": Q01_SETFILE_BINDING_RECEIPT_VERSION,
+        "setfile_binding_receipt_path": binding_receipt["path"],
+        "setfile_binding_receipt_sha256": binding_receipt["sha256"],
+        "setfile_binding_mode": auth["setfile_binding_provenance"]["mode"],
         "priority_reason": "governed_q01_smoke_dispatch_route",
         "priority_track": True,
     }
@@ -26280,6 +26497,9 @@ def append_q01_smoke_work_item(
             "would_append": True,
             "authenticated": True,
             "work_item_id": work_item_id,
+            "setfile_binding_receipt_path": binding_receipt["path"],
+            "setfile_binding_receipt_sha256": binding_receipt["sha256"],
+            "setfile_binding_receipt_would_write": True,
             **auth,
         }
 
@@ -26305,6 +26525,9 @@ def append_q01_smoke_work_item(
                     "compile_work_item_id": existing_payload.get("compile_work_item_id"),
                     "expected_ex5_sha256": existing_payload.get("expected_ex5_sha256"),
                     "expected_setfile_sha256": existing_payload.get("expected_setfile_sha256"),
+                    "setfile_binding_receipt_sha256": existing_payload.get(
+                        "setfile_binding_receipt_sha256"
+                    ),
                 }
                 expected = {
                     "kind": Q01_SMOKE_WORK_ITEM_KIND,
@@ -26317,6 +26540,7 @@ def append_q01_smoke_work_item(
                     "compile_work_item_id": auth["compile_work_item_id"],
                     "expected_ex5_sha256": auth["expected_ex5_sha256"],
                     "expected_setfile_sha256": auth["expected_setfile_sha256"],
+                    "setfile_binding_receipt_sha256": binding_receipt["sha256"],
                 }
                 if immutable != expected:
                     conn.rollback()
@@ -26324,12 +26548,18 @@ def append_q01_smoke_work_item(
                         f"deterministic work-item collision for {work_item_id}: "
                         f"observed={immutable} expected={expected}"
                     )
+                receipt_created = _write_append_only_receipt(
+                    Path(binding_receipt["path"]), binding_receipt["bytes"]
+                )
                 conn.rollback()
                 return {
                     "appended": False,
                     "already_applied": True,
                     "work_item_id": work_item_id,
                     "status": existing["status"],
+                    "setfile_binding_receipt_path": binding_receipt["path"],
+                    "setfile_binding_receipt_sha256": binding_receipt["sha256"],
+                    "setfile_binding_receipt_created": receipt_created,
                     **auth,
                 }
             conflict = conn.execute(
@@ -26347,6 +26577,9 @@ def append_q01_smoke_work_item(
                     "detail": {"work_item_id": conflict["id"], "status": conflict["status"]},
                     **auth,
                 }
+            receipt_created = _write_append_only_receipt(
+                Path(binding_receipt["path"]), binding_receipt["bytes"]
+            )
             conn.execute(
                 """
                 INSERT INTO work_items(
@@ -26382,6 +26615,8 @@ def append_q01_smoke_work_item(
                     "build_task_id": auth["build_task_id"],
                     "compile_work_item_id": auth["compile_work_item_id"],
                     "dispatch_route_version": Q01_SMOKE_DISPATCH_ROUTE_VERSION,
+                    "setfile_binding_receipt_path": binding_receipt["path"],
+                    "setfile_binding_receipt_sha256": binding_receipt["sha256"],
                 },
             )
             conn.commit()
@@ -26389,6 +26624,9 @@ def append_q01_smoke_work_item(
                 "appended": True,
                 "work_item_id": work_item_id,
                 "status": "pending",
+                "setfile_binding_receipt_path": binding_receipt["path"],
+                "setfile_binding_receipt_sha256": binding_receipt["sha256"],
+                "setfile_binding_receipt_created": receipt_created,
                 **auth,
             }
 

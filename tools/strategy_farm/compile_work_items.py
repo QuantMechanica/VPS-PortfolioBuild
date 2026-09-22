@@ -31,6 +31,17 @@ except ModuleNotFoundError:
     except ModuleNotFoundError:
         from include_mirror import running_terminal_names  # script-style import (sys.path = tools/strategy_farm)
 
+try:
+    from setfile_build_hash import (
+        SETFILE_BUILD_HASH_TRANSITION_SCHEMA,
+        authenticate_setfile_build_hash_transition_path,
+    )
+except ModuleNotFoundError:
+    from tools.strategy_farm.setfile_build_hash import (
+        SETFILE_BUILD_HASH_TRANSITION_SCHEMA,
+        authenticate_setfile_build_hash_transition_path,
+    )
+
 
 # Frozen at first import into this process. terminal_worker.py lazily
 # `import`s this module on every claimed COMPILE_EA row from inside a
@@ -6944,6 +6955,40 @@ def _failure_classes(output: str, exit_code: int) -> list[str]:
     return list(dict.fromkeys(classes))
 
 
+def _finalize_generated_setfile_evidence(
+    generations: list[dict[str, Any]],
+) -> None:
+    """Replace pre-stamp seals with authenticated final setfile seals.
+
+    ``gen_setfile.ps1`` runs before ``build_check.ps1``.  The latter performs
+    the governed build_hash stamp and CRLF normalization, so the generator hash
+    is provenance but is not the immutable runtime artifact hash.  Preserve it
+    explicitly and seal the final bytes only after proving the exact recognized
+    transition.  Pre-generated sibling-rebind artifacts are governed by their
+    separate binding contract and are intentionally outside this transition.
+    """
+    for generation in generations:
+        if generation.get("mode") == "pre_generated_append_only_sibling_rebind":
+            continue
+        path = Path(str(generation.get("setfile_path") or ""))
+        generated_sha = str(generation.get("setfile_sha256") or "").lower()
+        generation["generated_setfile_sha256"] = generated_sha
+        transition = authenticate_setfile_build_hash_transition_path(
+            generated_sha, path
+        )
+        generation["build_hash_transition"] = transition
+        if transition.get("ok") is not True:
+            raise RuntimeError(
+                "SETFILE_BUILD_HASH_TRANSITION_INVALID:"
+                f"{generation.get('symbol') or path.name}:"
+                f"{transition.get('reason') or 'UNKNOWN'}"
+            )
+        generation["setfile_sha256"] = transition["final_setfile_sha256"]
+        generation["setfile_sha256_after_build_check"] = transition[
+            "final_setfile_sha256"
+        ]
+
+
 def _complete_work_item(
     root: Path,
     work_item_id: str,
@@ -7276,6 +7321,16 @@ def run_compile_work_item(
             ),
             "build_check_output_tail": build_output[-20000:],
         })
+        if (
+            checked.returncode == 0
+            and evidence["build_check_result"] == "PASS"
+            and evidence["compile_result"] == "PASS"
+            and not sibling_rebind
+        ):
+            _finalize_generated_setfile_evidence(evidence["setfile_generation"])
+            evidence["setfile_lifecycle_contract_version"] = (
+                SETFILE_BUILD_HASH_TRANSITION_SCHEMA
+            )
         ex5 = ea_dir / f"{label}.ex5"
         setfiles = (
             [sibling_rebind_path]
