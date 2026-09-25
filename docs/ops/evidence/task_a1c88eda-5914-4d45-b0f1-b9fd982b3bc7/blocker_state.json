@@ -1,0 +1,84 @@
+{
+  "schema": "qm.agent-task-stable-blocker-state/v1",
+  "task_id": "a1c88eda-5914-4d45-b0f1-b9fd982b3bc7",
+  "classification": "GOVERNED_COMPILE_PROVENANCE_UNAVAILABLE",
+  "global_facts": {
+    "compile_ea_row_count_for_cohort": 0,
+    "identity_bar_relaxed": false,
+    "created_work_item_ids": []
+  },
+  "ea_facts": [
+    {
+      "ea_id": "QM5_12548",
+      "ea_label": "QM5_12548_turtle-s1-pyramid-d1",
+      "q08_work_item_id": "d64e26f7-1507-49fb-b849-86eee72dc477",
+      "q07_work_item_id": "ec825ea0-d308-4fa1-a5d1-cac2400dced6",
+      "current_and_q08_ex5_sha256": "30fae11a4c9f62da0413f83b75a6a39a07d64da8b4ec40132bd0154908188b12",
+      "current_mq5_sha256": "feded0e7b5ea6d2219b40ec794c6389557d697aaf04b0e05dbbaf04ffc9cf3b1",
+      "canonical_setfile_sha256": "38e81aae5062c2af8330e92afb55b223cbb61198575a15ecec2580bcae6165fb",
+      "variant_setfile_sha256": "a920b4aa58ca4c4ae7a737268196c95d972dc70c8a89f0c506e4679159237380",
+      "historical_build_task_id": "9919ec02-143d-451e-901a-b20f67e005ef",
+      "session_receipt_refusal": "SESSION_RECEIPT_ATTESTATION_INVALID",
+      "missing_attestation": "D:/QM/strategy_farm/artifacts/builds/9919ec02-143d-451e-901a-b20f67e005ef/session_compile_ok.json",
+      "pre_binding_q02_work_item_id": "8cb46599-36bd-4b23-9a96-e6d1d53f1909",
+      "current_identity_terminal_q02_work_item_id": "345cb963-ef14-4910-8bab-2a36d1e8f27a"
+    },
+    {
+      "ea_id": "QM5_10412",
+      "ea_label": "QM5_10412_et-td-camo",
+      "q08_work_item_id": "e77c1d8c-e2bc-40db-92a0-6af40cd84826",
+      "q07_work_item_id": "a38c13e5-03b6-4194-8ad8-aa51aee04bfb",
+      "current_and_q08_ex5_sha256": "f032a74b19fbb0b9f852d4fb7648d6a0bd4f4463abb9c0644a02399aa65fe29b",
+      "current_mq5_sha256": "d87356405511d03df9399c296aaa18aeb16475e0de2789efc3137542380567c8",
+      "canonical_setfile_sha256": "33c549efa862e68e1a911089d1a5a7f3a14f679c6e3a65f5a86c40184b48a829",
+      "variant_setfile_sha256": "f8c175ee1b72b079629daec0cc8ab8afe8541285cea397448dd12b2be72c0b67",
+      "historical_build_task_id": "4f2301e7-9c90-408d-9e3e-a0f562b4a67e",
+      "session_receipt_refusal": "SESSION_RECEIPT_ATTESTATION_INVALID",
+      "missing_attestation": "D:/QM/strategy_farm/artifacts/builds/4f2301e7-9c90-408d-9e3e-a0f562b4a67e/session_compile_ok.json",
+      "pre_binding_q02_work_item_id": "5e69bbc6-39b5-4d7e-be62-59e1d371cecc",
+      "current_identity_terminal_q02_work_item_id": "3764dcd6-e94c-41f0-8087-e76ee3b4a830"
+    },
+    {
+      "ea_id": "QM5_20266",
+      "ea_label": "QM5_20266_collins-66mom",
+      "q08_work_item_id": "665312e1-672f-4772-95d1-6c3077c946f8",
+      "q07_work_item_id": "cc8e760d-4a41-48c4-9933-5c153b78c829",
+      "q02_work_item_id": "8927c178-1c81-46bd-84fd-33f3d6c77132",
+      "current_and_q08_ex5_sha256": "8760402ac1ba34d9631b125989d13e63a737a0a305f6b3d6b00f3d1b6e128fed",
+      "current_mq5_sha256": "26965c9164b887e81e533837eb9b8005a3981d027619b718bcab014ab874394c",
+      "canonical_setfile_sha256": "1e5db116a559198cf26b27c099728b636e3fce05b5cbf899a1fffafbcbe3f6e9",
+      "legacy_qualifier_applicable": false,
+      "q02_requalification_refusal": "current_ex5_has_no_pass_bound_compile_record",
+      "additional_q08_blocker": "PEER_COHORT_WINDOW_SHORT"
+    },
+    {
+      "ea_id": "QM5_13138",
+      "ea_label": "QM5_13138_xau-m5-ema20",
+      "q08_work_item_id": "f5d489b9-42ae-462d-a846-6cb5070839b1",
+      "q07_work_item_id": "0dc8813d-3f6a-4de4-a0ed-16e7d9b40d2c",
+      "q02_work_item_id": "07696261-e8d8-4543-a2e5-06bf03bb6b0d",
+      "current_and_q08_ex5_sha256": "74e00380ccee6517bd37f02c600005023f575b940bbf0d573aaf1777252cb68b",
+      "current_mq5_sha256": "1bdfddb0bf4ce3e3b8f8189fa84213aed8979509212cecff9b84e8f98a2ee827",
+      "canonical_setfile_sha256": "f4c65accaaeb09ba6fa370336ea1a5cce8b2f6894cc91981aeaf8f13070f5f61",
+      "historical_build_task_id": "20cbe942-ebe3-499e-9a7d-9760547f27e1",
+      "session_receipt_refusal": "SESSION_RECEIPT_ATTESTATION_INVALID",
+      "q02_requalification_refusal": "current_ex5_has_no_pass_bound_compile_record",
+      "legacy_q08_refusal": "source_or_set_commit_after_q02_runs"
+    },
+    {
+      "ea_id": "QM5_13137",
+      "ea_label": "QM5_13137_breadth-tue",
+      "q08_work_item_id": "d02a1128-c6ee-4e4e-ad82-755937a06421",
+      "q07_work_item_id": "8bfc728a-9e59-4618-b240-88f809be42e5",
+      "q02_work_item_id": "221f2797-8b43-4252-b7f7-5e2173254613",
+      "current_and_q08_ex5_sha256": "db6eae9a7f81d4dfbfd8c365dfef492fd17d1d658525b2998db075be4cdc9989",
+      "current_mq5_sha256": "68816f88b522258543c9193471a3f1b951f14f095216d82bdee056c7f3d9e470",
+      "canonical_setfile_sha256": "e2b2bb312e5bb28fe5d4ad2d751b1c2921d26b320b5fe354e3abc0deb83d4e6c",
+      "historical_build_task_id": "fbafe53d-5fd1-437a-9b26-11f1e4017097",
+      "session_receipt_refusal": "SESSION_RECEIPT_ATTESTATION_INVALID",
+      "q02_requalification_refusal": "current_ex5_has_no_pass_bound_compile_record",
+      "legacy_q08_refusal": "source_or_set_commit_after_q02_runs"
+    }
+  ],
+  "required_next_governed_action": "Land a hash-bound, task-scoped COMPILE_EA source-repair authority or produce a new session-attested build; then use the resulting COMPILE_OK receipt for direct Q08 rerun where admissible or append-only Q02 requalification. Never synthesize a historical session attestation."
+}
