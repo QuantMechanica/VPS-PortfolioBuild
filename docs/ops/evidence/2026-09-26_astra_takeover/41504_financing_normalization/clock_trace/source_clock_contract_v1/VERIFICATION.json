@@ -1,0 +1,69 @@
+{
+  "at_utc": "2026-09-30T18:15:00+00:00",
+  "task_id": "f42ee12a-ea92-469b-b25b-da7e2177fc9e",
+  "scope": "Focused verification of the new source-clock contract draft only. No production code, registry, gate, financing library, or MT5 run touched.",
+  "tests_run": "python -m pytest test_source_clock_contract.py -v",
+  "tests_result": "13 passed, 0 failed, 0.04s",
+  "test_file_output": "pytest_output.txt",
+  "files_and_hashes": [
+    {
+      "path": "SOURCE_CLOCK_CONTRACT_V1.md",
+      "sha256": "c993c967371886da30f0e5d0dd580cad20f7174056fd82532a87ad0c03189d42"
+    },
+    {
+      "path": "source_clock_contract.py",
+      "sha256": "3fe351f841731065f9b97a393a5a14f1377a6840639d436c77e63aa833eb764b"
+    },
+    {
+      "path": "test_source_clock_contract.py",
+      "sha256": "7519791446677dd5d4a9a2ae052c953b13ffa8274ba45312310626aca34f6c63"
+    }
+  ],
+  "cited_evidence_hashes_reverified_at_read_time": [
+    {
+      "path": "docs/ops/evidence/2026-09-26_astra_takeover/41504_financing_normalization/RESULT.md",
+      "sha256": "f8b3ed197ea8d1c86560c0d4e0390b2513ae94fc6fb10a081ae91fde76815b23"
+    },
+    {
+      "path": "docs/ops/evidence/2026-09-26_astra_takeover/41504_financing_normalization/clock_trace/FINDINGS.md",
+      "sha256": "24717d614ba51bf21642d06141766880207f048cd4ebaacd78f0f38745248736",
+      "matches_task_payload_citation": true
+    },
+    {
+      "path": "docs/ops/evidence/2026-09-26_astra_takeover/41504_financing_normalization/clock_trace/VENUE_CLOCK_OBSERVATIONS.json",
+      "sha256": "3eb98d6133222cff2838c21619962d99687fcdeff7910f415fc78fb78771f61e"
+    },
+    {
+      "path": "docs/ops/evidence/2026-09-26_astra_takeover/41504_financing_normalization/clock_trace/CONDITIONAL_DST_EXPOSURE_10403.json",
+      "sha256": "5c7ed89509104f0366fb52e0ce927864f05e1a61e9a170879e4ec8be7be28312"
+    },
+    {
+      "path": "docs/ops/evidence/2026-09-26_astra_takeover/41504_financing_normalization/clock_trace/NATIVE_CLOCK_RESULT_10403.json",
+      "sha256": "d995c673d40ce935adead12942105c7dae876554adaf8a42a85044a4bfc97ed3"
+    },
+    {
+      "path": "docs/ops/evidence/2026-09-26_astra_takeover/41504_financing_normalization/clock_trace/BUNDLE_VS_NATIVE_IDENTITY_10403.json",
+      "sha256": "7fc8792fb07591a5fea6209b6fcb9326c27ebd5e5f708e8a799a7d1043788755"
+    },
+    {
+      "path": "docs/ops/evidence/task_07c373a8-41da-45ac-b0be-8f5b84e0635c/financing_lib_ftmo.py",
+      "sha256": "89723c362b7398f8524bc95926693846f417f49c17563e0bcdfc9186ff67cf77",
+      "note": "read-only citation of the approved financing library's hardcoded Europe/Bucharest assumption; file not modified"
+    }
+  ],
+  "worktree_staleness_disclosure": {
+    "worktree": "C:/QM/worktrees/claude-orchestration-2",
+    "worktree_head_before_this_commit": "7fea98a8eb20834e29ae6d921d5ade551c69caed",
+    "canonical_repo_head_at_task_time": "8c2852819f31576a68545e90732dec2997760fe8",
+    "relationship": "diverged, not ancestor (merge-base only); worktree is roughly 3319 commits behind the canonical C:/QM/repo checkout on the same nominal history",
+    "reason_not_fast_forwarded": "orchestration instructions explicitly forbid writing to C:/QM/repo, and this worktree carries pre-existing unrelated uncommitted changes (QM5_10069 EA files) that were not touched; a hard reset/merge to catch up risked discarding that state without investigation, which the safety protocol forbids without cause",
+    "impact": "the cited evidence files were read directly from C:/QM/repo (read-only) and their hashes verified at read time; the new contract files in this commit do not depend on any file being present in this worktree's own git history"
+  },
+  "not_claimed": [
+    "No DELTA_P80/P50/P90/LCB measurement",
+    "No account-level cash, breach, drawdown, tail-dependence, idle-day, or trade-density metric",
+    "No gate verdict, roster, or KPI change",
+    "No new source (other than the two already-established FTMO blog dates) newly authenticated as AUTHENTICATED_UTC",
+    "No production code path modified or wired to this module"
+  ]
+}

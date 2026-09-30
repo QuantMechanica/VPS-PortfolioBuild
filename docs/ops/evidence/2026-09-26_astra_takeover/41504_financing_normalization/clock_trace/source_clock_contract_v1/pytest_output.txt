@@ -1,0 +1,22 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0 -- C:\Python311\python.exe
+cachedir: .pytest_cache
+rootdir: C:\QM\worktrees\claude-orchestration-2\docs\ops\evidence\2026-09-26_astra_takeover\41504_financing_normalization\clock_trace\source_clock_contract_v1
+plugins: anyio-4.14.2
+collecting ... collected 13 items
+
+test_source_clock_contract.py::test_wednesday_triple_rollover_refuses_for_unauthenticated_source PASSED [  7%]
+test_source_clock_contract.py::test_friday_weekend_span_refuses_rather_than_fabricating_weekend_days PASSED [ 15%]
+test_source_clock_contract.py::test_rollover_role_is_mandatory_and_not_defaulted PASSED [ 23%]
+test_source_clock_contract.py::test_naive_utc_and_offset_table_decoding_diverge_and_neither_is_default PASSED [ 30%]
+test_source_clock_contract.py::test_refuted_bucharest_rule_rejected_at_march_2023_transition PASSED [ 38%]
+test_source_clock_contract.py::test_refuted_bucharest_rule_rejected_at_october_2024_transition PASSED [ 46%]
+test_source_clock_contract.py::test_candidate_ny_close_rule_is_unauthenticated_not_refused_arbitrarily PASSED [ 53%]
+test_source_clock_contract.py::test_unknown_source_never_silently_authenticated PASSED [ 61%]
+test_source_clock_contract.py::test_identity_offset_table_would_be_zero_diff_if_ever_authenticated PASSED [ 69%]
+test_source_clock_contract.py::test_refusal_state_independent_of_trade_side[buy] PASSED [ 76%]
+test_source_clock_contract.py::test_refusal_state_independent_of_trade_side[sell] PASSED [ 84%]
+test_source_clock_contract.py::test_refusal_state_independent_of_trade_side[BUY] PASSED [ 92%]
+test_source_clock_contract.py::test_refusal_state_independent_of_trade_side[SELL] PASSED [100%]
+
+============================= 13 passed in 0.04s ==============================
