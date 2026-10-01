@@ -1,0 +1,28 @@
+sha 42f9b94736e8cd2359b31bf31c9c24efe578544b1fb34fbc5f1f576c60fab147 45321
+n 106
+comm 37.486336 2016.33
+8.9 FAIL {'runs_p_value': 0.0, 'top_pct_share': 54.57} {'n_wins': 55, 'n_losses': 51, 'n_runs': 78, 'monthly_count': 47, 'top_n_months': 6}
+8.11 PASS 1315.99 4654.46
+monotone_nondecreasing True
+alternating symbols False first ['XAG', 'XAU', 'XAG', 'XAU', 'XAG', 'XAU']
+cycle sizes by entry_time Counter({2: 53})
+exit gap s: max 59 n>0 5 n>3600 0
+pair legs adjacent in stream True
+zeros 0
+within-cycle transitions 53 sign changes 45
+between-cycle transitions 52 sign changes 32
+cycles 53 cycle-level runs (DIAGNOSTIC) (30, 23, 30, 0.40280828274791025)
+opposite-sign pairs 45 of 53
+cycle-block realized dd 1188.9410895000037 p95 2045.6341690000409
+worst cycle sum-of-leg-MAE -829.32 worst single-leg MAE -636.65
+worst realized cycle -411.94325100000003 worst leg -637.064365
+==== ordering sensitivity
+as-stream (55, 51, 78, 2.525875658854204e-06)
+reversed-within-pair (55, 51, 76, 1.5953785340139248e-05)
+R 50 z -0.767 p 0.44300593846109315
+R 78 z 4.706 p 2.525875658854204e-06
+R 93 z 7.638 p 2.220446049250313e-14
+E 53.924528301886795 Var 26.172201596907897
+==== toy
+toy leg-level (10, 10, 20, 3.5462304914801734e-05)
+toy cycle-level (6, 4, 7, 0.39926914317106554)
