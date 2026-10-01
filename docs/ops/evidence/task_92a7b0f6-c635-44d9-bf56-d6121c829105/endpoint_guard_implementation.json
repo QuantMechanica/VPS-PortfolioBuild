@@ -1,0 +1,42 @@
+{
+  "task_id": "92a7b0f6-c635-44d9-bf56-d6121c829105",
+  "takeover_key": "ASTRA_LOCAL_TESTER_PORT_COLLISION_20260927",
+  "at_utc": "2026-10-02T00:00:00Z",
+  "scope_read_from_payload": {
+    "original_incident_contained": true,
+    "active_governed_retry": "09d665c5-42b6-4bb5-bf92-fb4f7d89d681 (T6, seed42 authenticated PASS, remaining seeds [17, 99, 7, 2026] in flight)",
+    "remaining_scope": "Generic fail-closed tester endpoint ownership / port-isolation guard, focused tests, independent review before shared-runner activation. No additional canary/retry, no interruption of 09d665c5, no redo of the render.mjs port fix, no new strategy lineage.",
+    "activation_approved": false
+  },
+  "what_was_built": {
+    "registry": "framework/registry/tester_endpoints.json",
+    "registry_purpose": "Documents a proposed per-terminal MetaTester [Tester] Port assignment (T1=3001 .. T14=3014, legacy default 3000 deliberately left unassigned as a visible collision signal). activation_status=proposed_pending_independent_review, activated=false.",
+    "guard_module": "framework/scripts/skill_tester_endpoint_guard.py",
+    "guard_purpose": "Generic, fail-closed preflight check: is a terminal's assigned local-agent port currently free? Reads live netstat -ano / tasklist state (stdlib subprocess only, no new third-party dependency), never launches or kills anything. Any listener (foreign OR self-owned/stale), any unknown terminal, or any lookup failure returns status != 'ok' / safe_to_launch=false -- it never defaults to a false 'clear to launch'.",
+    "tests": "framework/scripts/tests/test_skill_tester_endpoint_guard.py (8 tests, unittest, matches existing framework/scripts/tests conventions)",
+    "test_coverage": [
+      "registry ports are pairwise distinct and 3000 stays unassigned",
+      "free port -> ok / safe_to_launch=true",
+      "foreign listener reproducing the actual incident (node.exe PID 33224 on port 3000, from diagnostic.json) -> collision, owner identity captured",
+      "self-owned/stale metatester64.exe listener on the assigned port -> still collision (guard never assumes a same-image listener is safe to share)",
+      "unknown terminal id (not in registry) -> error, no guessed port",
+      "netstat command failure -> error, not ok (fail-closed on uncertainty)",
+      "tasklist unable to resolve an image name -> still reports collision with pid, image=null (never silently drops the finding)",
+      "missing registry file -> load_terminal_port returns None cleanly"
+    ],
+    "test_result": "python -m unittest framework.scripts.tests.test_skill_tester_endpoint_guard -> Ran 8 tests, OK",
+    "live_cli_smoke_test": [
+      "QM_REPO_ROOT=C:/QM/repo (canonical checkout, registry not yet merged there): --terminal T6 -> status=error, reason='terminal has no assigned port' (correct fail-closed behavior against the still-canonical state)",
+      "QM_REPO_ROOT=<this worktree>: --terminal T6 -> status=ok, port=3006, safe_to_launch=true (parsed real live netstat/tasklist output successfully; port 3006 is not the port 09d665c5 is currently using, so this smoke test did not observe or touch that run)"
+    ]
+  },
+  "what_was_deliberately_not_done": [
+    "No wiring of the guard into q07_multiseed.py, mt5_worker.py, farmctl.py, or any live launcher -- activation_approved stayed false per the task payload.",
+    "No change to the active governed retry 09d665c5 or its observers; it was only read, never interrupted.",
+    "No re-touch of the render.mjs port fix (already complete per renderer_port_change.json).",
+    "No write under C:/QM/repo -- all files are in this worktree (agents/claude-orchestration-2) only, per the session launcher's hard rule.",
+    "No new canary/retry work item enqueued.",
+    "No psutil or other new third-party dependency added; implementation uses only stdlib subprocess + netstat/tasklist, consistent with the rest of framework/scripts."
+  ],
+  "recommended_next_step": "Independent review (Codex) of framework/scripts/skill_tester_endpoint_guard.py and framework/registry/tester_endpoints.json, then a separate follow-up task to (a) wire each terminal's launch path to request its registry-assigned [Tester] Port and (b) call the guard immediately before every tester launch, failing the job (not the whole worker) on collision. Until that follow-up lands, terminals continue to use the historical default port 3000 behavior unchanged."
+}

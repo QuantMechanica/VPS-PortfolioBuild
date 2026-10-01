@@ -1,0 +1,32 @@
+{
+  "_authored_by": "Claude, task 92a7b0f6-c635-44d9-bf56-d6121c829105 (2026-10-02)",
+  "_authority": "decisions/2026-09-26_owner_astra_ftmo_takeover.md remaining-scope follow-up",
+  "_purpose": "Proposed per-terminal MetaTester local-agent port isolation, plus provenance for the fail-closed collision guard in framework/scripts/skill_tester_endpoint_guard.py. NOT yet wired into any launcher — see activation_status.",
+  "_incident_evidence": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-26_astra_takeover\\q07_41119_infra_recovery\\diagnostic.json (QM5_41119 Q07 row 748d85b2: foreign node.exe PID 33224 bound 127.0.0.1:3000 and 0.0.0.0:3000 three seconds before T6's MetaTester tried to bind the same default port; native tester logged 'tester agent authorization error' -> 30 invalid reports, INFRA_FAIL, zero economic verdict).",
+  "_official_configuration_reference": {
+    "url": "https://www.metatrader5.com/en/terminal/help/start_advanced/start",
+    "supported_parameter": "[Tester] Port selects a local testing-agent port"
+  },
+  "version": 1,
+  "activation_status": "proposed_pending_independent_review",
+  "activated": false,
+  "port_range_reserved_for_mt5": [3000, 3100],
+  "assignment_scheme": "3000 + terminal_index (T1=3001 ... T10=3010, headroom to T14=3014 for the AX42 scale-out). The legacy default port 3000 is deliberately left unassigned to any terminal so it stays a visible collision signal rather than a silently reused default.",
+  "terminals": {
+    "T1": 3001,
+    "T2": 3002,
+    "T3": 3003,
+    "T4": 3004,
+    "T5": 3005,
+    "T6": 3006,
+    "T7": 3007,
+    "T8": 3008,
+    "T9": 3009,
+    "T10": 3010,
+    "T11": 3011,
+    "T12": 3012,
+    "T13": 3013,
+    "T14": 3014
+  },
+  "note_on_not_wiring_yet": "The active governed retry 09d665c5 for QM5_41119 Q07 is running with T6 bound to the historical default port 3000 and has authenticated seed42 PASS. This registry and its guard are additive and are not applied to that run or to any other in-flight work item. Wiring terminal launchers to request their assigned [Tester] Port, and to call the guard before every launch, is the follow-up for independent review -- see docs/ops/evidence/task_92a7b0f6-c635-44d9-bf56-d6121c829105/."
+}
