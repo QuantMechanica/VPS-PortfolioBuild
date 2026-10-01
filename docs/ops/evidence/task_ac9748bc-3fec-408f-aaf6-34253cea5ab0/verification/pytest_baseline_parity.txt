@@ -1,0 +1,190 @@
+=== baseline (unmodified board-advisor dsr_cohort.py) regression check, same harness ===
+.........F..F.....EEEE                                                   [100%]
+=================================== ERRORS ====================================
+_ ERROR at setup of test_idempotent_holds_resolve_unmeasured_without_promoting_contiguous_gates _
+
+tmp_path = WindowsPath('C:/Windows/Temp/pytest-of-WIN-B95G5LPSJ1O$/pytest-53/test_idempotent_holds_resolve_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001EE6F346190>
+
+    @pytest.fixture
+    def program(tmp_path,monkeypatch):
+        # Exercise immutable legacy receipt semantics in a disposable DB only.
+        monkeypatch.setattr(p, 'RETIRED', False)
+        monkeypatch.setenv('QM_DL089_PRESCREEN','0')
+>       plan=_plan(tmp_path);db=_db(tmp_path/'db.sqlite');ledger=tmp_path/'ledger.json'
+             ^^^^^^^^^^^^^^^
+
+standalone_tests\test_dl089_prescreen_retro.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tools\strategy_farm\tests\test_opt_census.py:27: in _plan
+    return subject.build_plan(
+tools\strategy_farm\opt_census.py:250: in build_plan
+    seal = sealed_header(param_grid=param_grid, plan_doc=plan_doc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tools\strategy_farm\opt_census.py:141: in sealed_header
+    rule_text = extract_sealed_rule_text(plan_doc)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+plan_doc = WindowsPath('C:/QM/worktrees/claude-orchestration-2/docs/ops/evidence/task_ac9748bc-3fec-408f-aaf6-34253cea5ab0/sandbox/docs/research/PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md')
+
+    def extract_sealed_rule_text(plan_doc: Path = PLAN_DOC) -> str:
+        """Return the verbatim DL-089 §2 walk-forward selection rule, SHA-pinned.
+    
+        Fails closed if the authority document no longer contains the sealed block
+        or if its SHA-256 drifts from ``SEALED_RULE_SHA256`` (ROT tamper guard).
+        """
+        if not plan_doc.is_file():
+>           raise CensusError(f"sealed-rule authority missing: {plan_doc}")
+E           tools.strategy_farm.opt_census.CensusError: sealed-rule authority missing: C:\QM\worktrees\claude-orchestration-2\docs\ops\evidence\task_ac9748bc-3fec-408f-aaf6-34253cea5ab0\sandbox\docs\research\PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md
+
+tools\strategy_farm\opt_census.py:117: CensusError
+_ ERROR at setup of test_races_and_existing_inactive_holds_preserve_every_row _
+
+tmp_path = WindowsPath('C:/Windows/Temp/pytest-of-WIN-B95G5LPSJ1O$/pytest-53/test_races_and_existing_inacti0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001EE6F256FD0>
+
+    @pytest.fixture
+    def program(tmp_path,monkeypatch):
+        # Exercise immutable legacy receipt semantics in a disposable DB only.
+        monkeypatch.setattr(p, 'RETIRED', False)
+        monkeypatch.setenv('QM_DL089_PRESCREEN','0')
+>       plan=_plan(tmp_path);db=_db(tmp_path/'db.sqlite');ledger=tmp_path/'ledger.json'
+             ^^^^^^^^^^^^^^^
+
+standalone_tests\test_dl089_prescreen_retro.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tools\strategy_farm\tests\test_opt_census.py:27: in _plan
+    return subject.build_plan(
+tools\strategy_farm\opt_census.py:250: in build_plan
+    seal = sealed_header(param_grid=param_grid, plan_doc=plan_doc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tools\strategy_farm\opt_census.py:141: in sealed_header
+    rule_text = extract_sealed_rule_text(plan_doc)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+plan_doc = WindowsPath('C:/QM/worktrees/claude-orchestration-2/docs/ops/evidence/task_ac9748bc-3fec-408f-aaf6-34253cea5ab0/sandbox/docs/research/PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md')
+
+    def extract_sealed_rule_text(plan_doc: Path = PLAN_DOC) -> str:
+        """Return the verbatim DL-089 §2 walk-forward selection rule, SHA-pinned.
+    
+        Fails closed if the authority document no longer contains the sealed block
+        or if its SHA-256 drifts from ``SEALED_RULE_SHA256`` (ROT tamper guard).
+        """
+        if not plan_doc.is_file():
+>           raise CensusError(f"sealed-rule authority missing: {plan_doc}")
+E           tools.strategy_farm.opt_census.CensusError: sealed-rule authority missing: C:\QM\worktrees\claude-orchestration-2\docs\ops\evidence\task_ac9748bc-3fec-408f-aaf6-34253cea5ab0\sandbox\docs\research\PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md
+
+tools\strategy_farm\opt_census.py:117: CensusError
+__ ERROR at setup of test_missing_program_receipt_row_cannot_resolve_a_hold ___
+
+tmp_path = WindowsPath('C:/Windows/Temp/pytest-of-WIN-B95G5LPSJ1O$/pytest-53/test_missing_program_receipt_r0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001EE6F345C10>
+
+    @pytest.fixture
+    def program(tmp_path,monkeypatch):
+        # Exercise immutable legacy receipt semantics in a disposable DB only.
+        monkeypatch.setattr(p, 'RETIRED', False)
+        monkeypatch.setenv('QM_DL089_PRESCREEN','0')
+>       plan=_plan(tmp_path);db=_db(tmp_path/'db.sqlite');ledger=tmp_path/'ledger.json'
+             ^^^^^^^^^^^^^^^
+
+standalone_tests\test_dl089_prescreen_retro.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tools\strategy_farm\tests\test_opt_census.py:27: in _plan
+    return subject.build_plan(
+tools\strategy_farm\opt_census.py:250: in build_plan
+    seal = sealed_header(param_grid=param_grid, plan_doc=plan_doc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tools\strategy_farm\opt_census.py:141: in sealed_header
+    rule_text = extract_sealed_rule_text(plan_doc)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+plan_doc = WindowsPath('C:/QM/worktrees/claude-orchestration-2/docs/ops/evidence/task_ac9748bc-3fec-408f-aaf6-34253cea5ab0/sandbox/docs/research/PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md')
+
+    def extract_sealed_rule_text(plan_doc: Path = PLAN_DOC) -> str:
+        """Return the verbatim DL-089 §2 walk-forward selection rule, SHA-pinned.
+    
+        Fails closed if the authority document no longer contains the sealed block
+        or if its SHA-256 drifts from ``SEALED_RULE_SHA256`` (ROT tamper guard).
+        """
+        if not plan_doc.is_file():
+>           raise CensusError(f"sealed-rule authority missing: {plan_doc}")
+E           tools.strategy_farm.opt_census.CensusError: sealed-rule authority missing: C:\QM\worktrees\claude-orchestration-2\docs\ops\evidence\task_ac9748bc-3fec-408f-aaf6-34253cea5ab0\sandbox\docs\research\PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md
+
+tools\strategy_farm\opt_census.py:117: CensusError
+_ ERROR at setup of test_changed_native_proof_aborts_without_holds_or_work_item_changes _
+
+tmp_path = WindowsPath('C:/Windows/Temp/pytest-of-WIN-B95G5LPSJ1O$/pytest-53/test_changed_native_proof_abor0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001EE6F259E10>
+
+    @pytest.fixture
+    def program(tmp_path,monkeypatch):
+        # Exercise immutable legacy receipt semantics in a disposable DB only.
+        monkeypatch.setattr(p, 'RETIRED', False)
+        monkeypatch.setenv('QM_DL089_PRESCREEN','0')
+>       plan=_plan(tmp_path);db=_db(tmp_path/'db.sqlite');ledger=tmp_path/'ledger.json'
+             ^^^^^^^^^^^^^^^
+
+standalone_tests\test_dl089_prescreen_retro.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tools\strategy_farm\tests\test_opt_census.py:27: in _plan
+    return subject.build_plan(
+tools\strategy_farm\opt_census.py:250: in build_plan
+    seal = sealed_header(param_grid=param_grid, plan_doc=plan_doc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tools\strategy_farm\opt_census.py:141: in sealed_header
+    rule_text = extract_sealed_rule_text(plan_doc)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+plan_doc = WindowsPath('C:/QM/worktrees/claude-orchestration-2/docs/ops/evidence/task_ac9748bc-3fec-408f-aaf6-34253cea5ab0/sandbox/docs/research/PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md')
+
+    def extract_sealed_rule_text(plan_doc: Path = PLAN_DOC) -> str:
+        """Return the verbatim DL-089 §2 walk-forward selection rule, SHA-pinned.
+    
+        Fails closed if the authority document no longer contains the sealed block
+        or if its SHA-256 drifts from ``SEALED_RULE_SHA256`` (ROT tamper guard).
+        """
+        if not plan_doc.is_file():
+>           raise CensusError(f"sealed-rule authority missing: {plan_doc}")
+E           tools.strategy_farm.opt_census.CensusError: sealed-rule authority missing: C:\QM\worktrees\claude-orchestration-2\docs\ops\evidence\task_ac9748bc-3fec-408f-aaf6-34253cea5ab0\sandbox\docs\research\PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md
+
+tools\strategy_farm\opt_census.py:117: CensusError
+================================== FAILURES ===================================
+_ test_claimability_precheck_never_needs_claimed_at_iso_on_the_single_configuration_path _
+
+tmp_path = WindowsPath('C:/Windows/Temp/pytest-of-WIN-B95G5LPSJ1O$/pytest-53/test_claimability_precheck_nev0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001EE6F256950>
+
+    def test_claimability_precheck_never_needs_claimed_at_iso_on_the_single_configuration_path(
+        tmp_path, monkeypatch
+    ):
+        """The single-configuration fallback's factory-search-ledger step is the
+        ONE part of assemble() that depends on payload['claimed_at_iso'] (the
+        claim timestamp is not known until the row is actually claimed). The
+        precheck must never reach it -- if it did, this monkeypatched sentinel
+        would raise on a payload that deliberately has no claimed_at_iso."""
+>       import dsr_cohort as dc
+E       ModuleNotFoundError: No module named 'dsr_cohort'
+
+standalone_tests\test_dsr_cohort.py:342: ModuleNotFoundError
+__________________ test_window_pair_accepts_bare_year_edges ___________________
+
+    def test_window_pair_accepts_bare_year_edges():
+        """2026-09-14: Q08 reruns declare expected_from_date='2017'/expected_to_date='2022'; a bare year is a
+        whole-year edge (first day for from, last day for to); partial or malformed dates stay refused."""
+>       import dsr_cohort as dc
+E       ModuleNotFoundError: No module named 'dsr_cohort'
+
+standalone_tests\test_dsr_cohort.py:481: ModuleNotFoundError
+=========================== short test summary info ===========================
+FAILED standalone_tests/test_dsr_cohort.py::test_claimability_precheck_never_needs_claimed_at_iso_on_the_single_configuration_path
+FAILED standalone_tests/test_dsr_cohort.py::test_window_pair_accepts_bare_year_edges
+ERROR standalone_tests/test_dl089_prescreen_retro.py::test_idempotent_holds_resolve_unmeasured_without_promoting_contiguous_gates
+ERROR standalone_tests/test_dl089_prescreen_retro.py::test_races_and_existing_inactive_holds_preserve_every_row
+ERROR standalone_tests/test_dl089_prescreen_retro.py::test_missing_program_receipt_row_cannot_resolve_a_hold
+ERROR standalone_tests/test_dl089_prescreen_retro.py::test_changed_native_proof_aborts_without_holds_or_work_item_changes
+2 failed, 16 passed, 4 errors in 0.45s

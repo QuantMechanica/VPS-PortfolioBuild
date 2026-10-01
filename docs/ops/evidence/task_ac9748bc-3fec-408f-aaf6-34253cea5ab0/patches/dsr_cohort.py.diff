@@ -1,0 +1,46 @@
+--- /tmp/orig_dsr_cohort.py	2026-10-02 00:23:59.700514400 +0200
++++ docs/ops/evidence/task_ac9748bc-3fec-408f-aaf6-34253cea5ab0/sandbox/tools/strategy_farm/dsr_cohort.py	2026-10-02 00:23:49.660723900 +0200
+@@ -812,18 +812,37 @@
+         payload = _payload(row)
+         skip = row.get("_dsr_prescreen_skip")
+         if skip is not None:
+-            # A held PRESCREEN_SKIPPED cell whose skip authority re-authenticated
+-            # (dl089_prescreen_retro.disposition, called in _matrix_trial_groups) is
+-            # a validly measured year with zero trades, not a missing trial: the arm
+-            # stays in the cohort as a trial, contributing a zero-filled return series
+-            # for its calendar-day span.  Any other non-terminal cell is unaffected
+-            # and still raises INCOMPLETE_TRIAL below.
++            # dl089_prescreen_retro.disposition() re-authenticates permission to
++            # *omit measurement* of a held cell (unmeasured=True) -- it is not, by
++            # itself, evidence that the arm actually produced zero trades in that
++            # year.  Astra takeover q08_prescreen_measurement_boundary (2026-09-27,
++            # ACCEPTANCE.json/KIMI_CRITIQUE.md) retracts the prior convention of
++            # silently promoting that authenticated-skip into a zero-filled
++            # measured return series: doing so lets a screening disposition stand
++            # in for a causal no-trade claim the producer never made.  A future
++            # producer MAY attach a separately authenticated
++            # ``causal_no_trade_proof`` (a preregistered no-trade policy proof,
++            # distinct from ``unmeasured``) to a skip disposition; only that proof
++            # admits a zero-filled year here.  Until such a producer exists, every
++            # authenticated skip fails closed -- the arm/year stays a real trial
++            # (not silently dropped, not silently imputed), and the whole
++            # candidate is reported UNAVAILABLE pending a reviewed recovery
++            # decision.  This changes only *new* admission: already-sealed
++            # cohort documents on disk (content-addressed, written under the
++            # superseded OWNER-DEC-Q08-SWEEP-ARM-CONTEXT-20260914 convention) are
++            # untouched and remain readable historical fact.
++            causal_proof = skip.get("causal_no_trade_proof")
++            _require(
++                causal_proof is not None,
++                f"UNMEASURED_PRESCREEN_SKIP_REQUIRES_CAUSAL_NO_TRADE_PROOF:{trial_id}:{row.get('id')}",
++            )
+             start = dt.datetime.strptime(str(payload.get("from_date")), "%Y.%m.%d").date()
+             end = dt.datetime.strptime(str(payload.get("to_date")), "%Y.%m.%d").date()
+             returns.extend([0.0] * ((end - start).days + 1))
+             provenance.append(_binding(
+                 Path(str(skip["receipt_path"])), role="prescreen_skip_receipt", row_id=str(row.get("id"))
+             ))
++            provenance.append({"role": "causal_no_trade_proof", **dict(causal_proof)})
+             continue
+         _require(str(row.get("status") or "").lower() == "done", f"INCOMPLETE_TRIAL:{trial_id}")
+         _require(str(row.get("verdict") or "").upper() in MEASURED_VERDICTS,

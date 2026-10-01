@@ -1,0 +1,1434 @@
+"""Produce immutable, loser-inclusive DSR cohorts for new Q08 work items.
+
+The producer is deliberately fail closed.  It accepts only a sealed DL-089
+ledger whose complete declared annual/numeric search can be reconstructed from
+terminal matrix rows, plus readable Q02 and Q03 provenance.  Missing or pruned
+trials are UNAVAILABLE; they are never represented by zeroes or a survivor-only
+subset.
+"""
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import gzip
+import hashlib
+import json
+import math
+import os
+import sqlite3
+import statistics
+import sys
+import uuid
+from pathlib import Path
+from typing import Any, Mapping, Sequence
+
+
+SCHEMA = "qm.dsr-cohort/v1"
+DSR_WINDOW_CONTRACT = 2
+LEGACY_DSR_WINDOW_CONTRACT = 1
+Q08_WINDOW_SOURCE = "q08_phase_contract"
+Q08_WINDOW_SEAL_KEY_SCHEMA = "qm.q08-dsr-window-seal-key/v1"
+DL089_LEDGER_SCHEMA = "qm.opt-census.v1"
+DL089_DECLARED_TRIALS = 154
+DL089_TERMINAL_STATES = {"PATTERN_SELECTION_READY", "WF_UNSTABLE", "READY_FOR_Q15"}
+MEASURED_VERDICTS = {"MEASURED"}
+DEFAULT_ARTIFACT_ROOT = Path(
+    os.environ.get(
+        "QM_DSR_COHORT_ROOT",
+        r"D:\QM\strategy_farm\artifacts\dsr_cohorts",
+    )
+)
+DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
+DEFAULT_LEDGER_ROOT = Path(r"D:\QM\strategy_farm\artifacts\opt_census")
+CANONICAL_REPO_ROOT = Path(
+    os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo")
+)
+
+
+class CohortUnavailable(ValueError):
+    """The governed history is not complete enough to apply DSR."""
+
+
+def _require(condition: bool, reason: str) -> None:
+    if not condition:
+        raise CohortUnavailable(reason)
+
+
+def _canonical(value: Any) -> bytes:
+    return json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
+    ).encode("utf-8")
+
+
+def _content_sha256(path: Path) -> str:
+    """sha256 of the evidence CONTENT: the decompressed bytes of a DL-090 aged
+    ``.gz`` sibling, the raw bytes otherwise.  Recorded report/summary hashes
+    bind the original content, so an aged file is compared on its content while
+    the binding keeps the on-disk file hash (what a consumer re-reads)."""
+    path = _evidence_file(path)
+    if path.suffix.lower() == ".gz":
+        with gzip.open(path, "rb") as handle:
+            return hashlib.sha256(handle.read()).hexdigest()
+    return sha256_file(path)
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _evidence_file(path: Path) -> Path:
+    """The evidence file as stored, or its DL-090 aged ``.gz`` sibling.
+
+    2026-09-14: DL-090 report retention compresses aged evidence in place
+    (``summary.json`` -> ``summary.json.gz``, same bytes).  The Q03/Q02 source
+    rows of QM5_21501/USDJPY and QM5_20266/XTIUSD were refused as
+    Q03_GOVERNED_SOURCE_UNAVAILABLE only because the plain path no longer
+    existed; the cohort reads and hash-binds the sibling instead.  Nothing else
+    changes: a missing file (no sibling) still fails closed.
+    """
+    if path.is_file() or path.suffix.lower() == ".gz":
+        return path
+    sibling = path.with_name(path.name + ".gz")
+    return sibling if sibling.is_file() else path
+
+
+def _load_json(path: Path) -> dict[str, Any]:
+    path = _evidence_file(path)  # DL-090 aged .gz sibling (2026-09-14)
+    try:
+        raw = gzip.open(path, "rb").read() if path.suffix.lower() == ".gz" else path.read_bytes()
+        value = json.loads(raw.decode("utf-8-sig"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise CohortUnavailable(f"UNREADABLE_JSON:{path}") from exc
+    _require(isinstance(value, dict), f"JSON_OBJECT_REQUIRED:{path}")
+    return value
+
+
+def _payload(row: Mapping[str, Any]) -> dict[str, Any]:
+    try:
+        value = json.loads(str(row.get("payload_json") or "{}"))
+    except (TypeError, json.JSONDecodeError) as exc:
+        raise CohortUnavailable(f"INVALID_PAYLOAD_JSON:{row.get('id')}") from exc
+    _require(isinstance(value, dict), f"PAYLOAD_OBJECT_REQUIRED:{row.get('id')}")
+    return value
+
+
+def _row_dict(row: Any) -> dict[str, Any]:
+    return dict(row) if not isinstance(row, dict) else dict(row)
+
+
+def _timeframe(candidate: Mapping[str, Any], payload: Mapping[str, Any]) -> str:
+    for key in ("expected_period", "host_timeframe", "timeframe", "period"):
+        value = payload.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip().upper()
+    setfile = Path(str(candidate.get("setfile_path") or "")).stem.upper()
+    for token in ("M1", "M2", "M3", "M4", "M5", "M6", "M10", "M12", "M15", "M20", "M30", "H1", "H2", "H3", "H4", "H6", "H8", "H12", "D1", "W1", "MN1"):
+        if f"_{token}_" in f"_{setfile}_":
+            return token
+    raise CohortUnavailable("CANDIDATE_TIMEFRAME_UNAVAILABLE")
+
+
+def _date_text(value: Any) -> str:
+    raw = str(value or "").strip()
+    for fmt in ("%Y.%m.%d", "%Y-%m-%d"):
+        try:
+            return dt.datetime.strptime(raw, fmt).date().isoformat()
+        except ValueError:
+            pass
+    raise CohortUnavailable("CANDIDATE_WINDOW_UNAVAILABLE")
+
+
+def _year_edge_text(value: Any, *, edge: str) -> str | None:
+    """A bare four-digit year is a whole-year window edge (2026-09-14).
+
+    Q08 full-history rows and their append-only reruns declare their window as
+    ``expected_from_date="2017"`` / ``expected_to_date="2022"`` (year strings,
+    see farmctl enqueue-backtest --append-only-rerun-of).  The strict day parser
+    refused them as CANDIDATE_WINDOW_UNAVAILABLE, the Q08 DSR preflight then
+    skipped those rows on every claim scan while they still consumed the
+    history-preflight budget ahead of runnable rows (claim-idle fleet
+    2026-09-14 02:55-04:00Z).  A year resolves to its first day for ``from``
+    and its last day for ``to``; anything else stays with the strict parser.
+    """
+    raw = str(value or "").strip()
+    if len(raw) == 4 and raw.isdigit():
+        return f"{raw}-01-01" if edge == "from" else f"{raw}-12-31"
+    return None
+
+
+def _window_pair(start: Any, end: Any) -> dict[str, str] | None:
+    """Parse one complete candidate window without accepting partial dates."""
+    if start in (None, "") or end in (None, ""):
+        return None
+    try:
+        resolved = {
+            "from": _year_edge_text(start, edge="from") or _date_text(start),
+            "to": _year_edge_text(end, edge="to") or _date_text(end),
+        }
+    except CohortUnavailable:
+        return None
+    if resolved["from"] > resolved["to"]:
+        return None
+    return resolved
+
+
+def _candidate_window_v1(
+    conn: sqlite3.Connection,
+    candidate: Mapping[str, Any],
+    payload: Mapping[str, Any],
+) -> tuple[dict[str, str], str]:
+    """Legacy alias/lineage resolver, retained only for deterministic replay."""
+    direct = (
+        # The expected_* pair is the phase execution contract.  Legacy
+        # promotions copied Q02 canary from_date/to_date into every later
+        # phase, so preferring those aliases sealed Q08 DSR cohorts to a
+        # different calendar than the Q08 runner actually executed.
+        (
+            "payload.expected_from_date/expected_to_date",
+            payload.get("expected_from_date"),
+            payload.get("expected_to_date"),
+        ),
+        ("payload.from_date/to_date", payload.get("from_date"), payload.get("to_date")),
+        (
+            "work_items.data_window_start/data_window_end",
+            candidate.get("data_window_start"),
+            candidate.get("data_window_end"),
+        ),
+    )
+    for source, start, end in direct:
+        window = _window_pair(start, end)
+        if window is not None:
+            return window, source
+
+    queue: list[tuple[str, str]] = []
+    for key in ("promoted_from_work_item", "from_work_item_id"):
+        value = str(payload.get(key) or "").strip()
+        if value:
+            queue.append((value, f"payload.{key}"))
+    lineage = payload.get("append_only_rerun_lineage_work_items")
+    if isinstance(lineage, list):
+        queue.extend(
+            (str(value).strip(), "payload.append_only_rerun_lineage_work_items")
+            for value in lineage if str(value).strip()
+        )
+    rerun_of = str(payload.get("append_only_rerun_of_work_item") or "").strip()
+    if rerun_of:
+        queue.append((rerun_of, "payload.append_only_rerun_of_work_item"))
+
+    expected_ea = str(candidate.get("ea_id") or "")
+    expected_symbol = str(candidate.get("symbol") or "")
+    seen: set[str] = set()
+    while queue and len(seen) < 32:
+        row_id, edge = queue.pop(0)
+        if row_id in seen:
+            continue
+        seen.add(row_id)
+        raw = conn.execute("SELECT * FROM work_items WHERE id=?", (row_id,)).fetchone()
+        if raw is None:
+            continue
+        row = _row_dict(raw)
+        if (str(row.get("ea_id") or "") != expected_ea
+                or str(row.get("symbol") or "") != expected_symbol):
+            continue
+        row_payload = _payload(row)
+        if str(row.get("phase") or "").upper() == "Q07":
+            candidates = (
+                (
+                    "work_items.data_window_start/data_window_end",
+                    row.get("data_window_start"), row.get("data_window_end"),
+                ),
+                (
+                    "payload.from_date/to_date",
+                    row_payload.get("from_date"), row_payload.get("to_date"),
+                ),
+                (
+                    "payload.expected_from_date/expected_to_date",
+                    row_payload.get("expected_from_date"),
+                    row_payload.get("expected_to_date"),
+                ),
+            )
+            for location, start, end in candidates:
+                window = _window_pair(start, end)
+                if window is not None:
+                    return window, f"lineage:{edge}:{row_id}:{location}"
+        for key in (
+            "promoted_from_work_item", "from_work_item_id",
+            "append_only_rerun_of_work_item",
+        ):
+            value = str(row_payload.get(key) or "").strip()
+            if value and value not in seen:
+                queue.append((value, f"lineage.{key}"))
+        nested = row_payload.get("append_only_rerun_lineage_work_items")
+        if isinstance(nested, list):
+            queue.extend(
+                (str(value).strip(), "lineage.append_only_rerun_lineage_work_items")
+                for value in nested if str(value).strip() and str(value).strip() not in seen
+            )
+    raise CohortUnavailable("CANDIDATE_WINDOW_UNAVAILABLE")
+
+
+def _q08_window_resolution(
+    candidate: Mapping[str, Any],
+    payload: Mapping[str, Any],
+) -> tuple[dict[str, str], str, dict[str, Any]]:
+    """Resolve the exact Q08 runner window and authenticate any carried seal.
+
+    Contract v2 never derives the execution calendar from Q02/Q07 aliases.
+    Those fields remain provenance and the legacy resolver above remains
+    callable for offline v1 replay only.
+    """
+    try:
+        from tools.strategy_farm.q08_window import Q08WindowError, resolve_q08_window
+    except ModuleNotFoundError:
+        from q08_window import Q08WindowError, resolve_q08_window
+
+    setfile = Path(str(candidate.get("setfile_path") or ""))
+    if not setfile.is_absolute():
+        setfile = CANONICAL_REPO_ROOT / setfile
+    symbol = str(candidate.get("symbol") or "").strip()
+    try:
+        resolved = resolve_q08_window(CANONICAL_REPO_ROOT, setfile, symbol)
+    except Q08WindowError as exc:
+        raise CohortUnavailable(f"Q08_PHASE_WINDOW_UNAVAILABLE:{exc}") from exc
+    window = _window_pair(resolved.get("from_date"), resolved.get("to_date"))
+    _require(window is not None, "Q08_PHASE_WINDOW_UNAVAILABLE")
+
+    declared_contract = payload.get("dsr_window_contract")
+    if declared_contract is not None:
+        _require(
+            type(declared_contract) is int
+            and declared_contract == DSR_WINDOW_CONTRACT,
+            "DSR_WINDOW_CONTRACT_MISMATCH",
+        )
+    carried = payload.get("q08_candidate_window_binding")
+    if carried is not None:
+        _require(
+            isinstance(carried, Mapping),
+            "Q08_CANDIDATE_WINDOW_BINDING_MISMATCH",
+        )
+        carried_window = _window_pair(
+            carried.get("from_date"), carried.get("to_date")
+        )
+        _require(
+            carried_window == window,
+            "Q08_CANDIDATE_WINDOW_BINDING_MISMATCH",
+        )
+    return window, Q08_WINDOW_SOURCE, resolved
+
+
+def _candidate_window(
+    conn: sqlite3.Connection,
+    candidate: Mapping[str, Any],
+    payload: Mapping[str, Any],
+    *,
+    contract_version: int = DSR_WINDOW_CONTRACT,
+) -> tuple[dict[str, str], str]:
+    """Resolve a candidate calendar under an explicit, versioned contract."""
+    if contract_version == LEGACY_DSR_WINDOW_CONTRACT:
+        return _candidate_window_v1(conn, candidate, payload)
+    _require(
+        contract_version == DSR_WINDOW_CONTRACT,
+        "DSR_WINDOW_CONTRACT_UNSUPPORTED",
+    )
+    window, source, _ = _q08_window_resolution(candidate, payload)
+    return window, source
+
+
+def _valid_sha256(value: Any) -> str | None:
+    token = str(value or "").strip().lower()
+    return (
+        token
+        if len(token) == 64 and all(char in "0123456789abcdef" for char in token)
+        else None
+    )
+
+
+def _window_seal_key(
+    candidate: Mapping[str, Any],
+    payload: Mapping[str, Any],
+    window: Mapping[str, str],
+) -> dict[str, Any]:
+    """Content-address the setfile, logical symbol and resolved runner window."""
+    raw_identity = payload.get("artifact_identity")
+    identity = raw_identity if isinstance(raw_identity, Mapping) else {}
+    setfile_sha256 = next(
+        (
+            digest
+            for value in (
+                candidate.get("setfile_sha256"),
+                payload.get("expected_setfile_sha256"),
+                identity.get("setfile_sha256"),
+            )
+            if (digest := _valid_sha256(value)) is not None
+        ),
+        None,
+    )
+    setfile = Path(str(candidate.get("setfile_path") or ""))
+    if not setfile.is_absolute():
+        setfile = CANONICAL_REPO_ROOT / setfile
+    if setfile_sha256 is None and setfile.is_file():
+        setfile_sha256 = sha256_file(setfile)
+    _require(
+        setfile_sha256 is not None,
+        "Q08_WINDOW_SEAL_SETFILE_IDENTITY_UNAVAILABLE",
+    )
+    key_input = {
+        "setfile_sha256": setfile_sha256,
+        "symbol": str(candidate.get("symbol") or ""),
+        "window": {"from": str(window["from"]), "to": str(window["to"])},
+    }
+    return {
+        "schema": Q08_WINDOW_SEAL_KEY_SCHEMA,
+        **key_input,
+        "sha256": hashlib.sha256(_canonical(key_input)).hexdigest(),
+    }
+
+
+def _window_contract_stamp(
+    candidate: Mapping[str, Any],
+    payload: Mapping[str, Any],
+    window: Mapping[str, str],
+    resolution: Mapping[str, Any],
+) -> dict[str, Any]:
+    key = _window_seal_key(candidate, payload, window)
+    return {
+        "candidate_window_contract": DSR_WINDOW_CONTRACT,
+        "window_resolved_via": Q08_WINDOW_SOURCE,
+        "window_resolver_schema": str(resolution.get("schema") or ""),
+        "window_seal_key": key,
+        "window_seal_key_sha256": key["sha256"],
+    }
+
+
+def _read_bound_context(binding: Any) -> dict[str, Any]:
+    _require(
+        isinstance(binding, Mapping)
+        and set(binding) == {"path", "sha256"}
+        and _valid_sha256(binding.get("sha256")) is not None,
+        "STALE_DSR_WINDOW_SEAL_UNREADABLE",
+    )
+    path = Path(str(binding.get("path") or ""))
+    try:
+        raw = path.read_bytes()
+        _require(
+            hashlib.sha256(raw).hexdigest() == str(binding["sha256"]).lower(),
+            "STALE_DSR_WINDOW_SEAL_UNREADABLE",
+        )
+        value = json.loads(raw.decode("utf-8-sig"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise CohortUnavailable("STALE_DSR_WINDOW_SEAL_UNREADABLE") from exc
+    _require(isinstance(value, dict), "STALE_DSR_WINDOW_SEAL_UNREADABLE")
+    return value
+
+
+def _stale_seal_detail(
+    candidate: Mapping[str, Any],
+    payload: Mapping[str, Any],
+    expected_window: Mapping[str, str],
+    expected_key: Mapping[str, Any],
+) -> dict[str, Any] | None:
+    """Return a fail-closed refusal for a previously SEALED stale context."""
+    binding = payload.get("dsr_context")
+    status = payload.get("dsr_context_status")
+    declared_sealed = (
+        isinstance(status, Mapping) and status.get("status") == "SEALED"
+    )
+    if binding is None and not declared_sealed:
+        return None
+    try:
+        context = _read_bound_context(binding)
+    except CohortUnavailable as exc:
+        return {
+            "reason": str(exc),
+            "resolver_window": dict(expected_window),
+            "window_seal_key_sha256": expected_key["sha256"],
+        }
+    sealed_window_raw = context.get("window")
+    sealed_window = (
+        _window_pair(
+            sealed_window_raw.get("from"), sealed_window_raw.get("to")
+        )
+        if isinstance(sealed_window_raw, Mapping)
+        else None
+    )
+    if sealed_window != dict(expected_window):
+        return {
+            "reason": "STALE_DSR_WINDOW_SEAL",
+            "sealed_window": sealed_window,
+            "resolver_window": dict(expected_window),
+            "window_seal_key_sha256": expected_key["sha256"],
+        }
+    if context.get("candidate_window_contract") == DSR_WINDOW_CONTRACT:
+        if context.get("window_seal_key_sha256") != expected_key["sha256"]:
+            return {
+                "reason": "STALE_DSR_WINDOW_SEAL_KEY_MISMATCH",
+                "sealed_window": sealed_window,
+                "resolver_window": dict(expected_window),
+                "sealed_window_key_sha256": context.get(
+                    "window_seal_key_sha256"
+                ),
+                "window_seal_key_sha256": expected_key["sha256"],
+            }
+    return None
+
+
+def _coverage_window(pairs: Sequence[tuple[Any, Any]]) -> dict[str, str]:
+    intervals: list[tuple[dt.date, dt.date]] = []
+    for start, end in pairs:
+        parsed = _window_pair(start, end)
+        _require(parsed is not None, "PEER_COHORT_WINDOW_SHORT")
+        intervals.append(
+            (dt.date.fromisoformat(parsed["from"]), dt.date.fromisoformat(parsed["to"]))
+        )
+    _require(bool(intervals), "PEER_COHORT_WINDOW_SHORT")
+    intervals.sort()
+    first, last = intervals[0]
+    for start, end in intervals[1:]:
+        _require(start <= last + dt.timedelta(days=1), "PEER_COHORT_WINDOW_SHORT")
+        if end > last:
+            last = end
+    return {"from": first.isoformat(), "to": last.isoformat()}
+
+
+def _window_covers(
+    peer_window: Mapping[str, Any] | None,
+    candidate_window: Mapping[str, str],
+) -> bool:
+    if not isinstance(peer_window, Mapping):
+        return False
+    parsed = _window_pair(peer_window.get("from"), peer_window.get("to"))
+    return bool(
+        parsed
+        and parsed["from"] <= candidate_window["from"]
+        and parsed["to"] >= candidate_window["to"]
+    )
+
+
+def _require_peer_window(
+    peer_window: Mapping[str, Any] | None,
+    candidate_window: Mapping[str, str],
+) -> None:
+    _require(
+        _window_covers(peer_window, candidate_window),
+        "PEER_COHORT_WINDOW_SHORT",
+    )
+
+
+def _matrix_peer_window(rows: Sequence[Mapping[str, Any]]) -> dict[str, str]:
+    return _coverage_window(
+        [
+            (_payload(row).get("from_date"), _payload(row).get("to_date"))
+            for row in rows
+        ]
+    )
+
+
+def _pipeline_peer_window(row: Mapping[str, Any]) -> dict[str, str]:
+    summary = _load_json(Path(str(row.get("evidence_path") or "")))
+    ok = [run for run in summary.get("runs", []) if run.get("status") == "OK"]
+    _require(bool(ok), f"PIPELINE_TRIAL_HAS_NO_OK_RUN:{row.get('id')}")
+    run = ok[-1]
+    return _coverage_window(
+        [
+            (
+                run.get("from_date") or summary.get("from_date"),
+                run.get("to_date") or summary.get("to_date"),
+            )
+        ]
+    )
+
+
+def _utc_timestamp(value: Any, reason: str) -> dt.datetime:
+    raw = str(value or "").strip()
+    try:
+        parsed = dt.datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise CohortUnavailable(reason) from exc
+    _require(parsed.tzinfo is not None, reason)
+    return parsed.astimezone(dt.UTC)
+
+
+def _factory_search_before_q08_claim(
+    conn: sqlite3.Connection,
+    candidate: Mapping[str, Any],
+    payload: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Prove that no governed optimization row predates this Q08 claim."""
+    _require(str(candidate.get("phase") or "").upper() == "Q08", "Q08_CLAIM_ROW_REQUIRED")
+    q08_id = str(candidate.get("id") or "").strip()
+    _require(bool(q08_id), "Q08_WORK_ITEM_ID_REQUIRED")
+    claimed_at = _utc_timestamp(payload.get("claimed_at_iso"), "Q08_CLAIM_TIMESTAMP_REQUIRED")
+    rows = conn.execute(
+        "SELECT id,kind,phase,created_at,payload_json FROM work_items "
+        "WHERE ea_id=? AND id<>? ORDER BY created_at,id",
+        (str(candidate.get("ea_id") or ""), q08_id),
+    ).fetchall()
+    prior = []
+    optimization = []
+    for raw in rows:
+        row = _row_dict(raw)
+        created_at = _utc_timestamp(
+            row.get("created_at"), f"FACTORY_SEARCH_LEDGER_TIMESTAMP_INVALID:{row.get('id')}"
+        )
+        if created_at >= claimed_at:
+            continue
+        prior.append(row)
+        phase = str(row.get("phase") or "").upper()
+        searchable = " ".join(
+            str(row.get(key) or "") for key in ("kind", "phase", "payload_json")
+        ).lower().replace("-", "_").replace(" ", "_")
+        if (
+            phase.startswith("OPT_")
+            or phase in {"Q12", "Q13", "Q14", "Q15", "Q16"}
+            or any(marker in searchable for marker in (
+                "optimization_fork", "optimisation_fork", "opt_fork"
+            ))
+        ):
+            optimization.append({
+                "id": str(row.get("id") or ""),
+                "phase": str(row.get("phase") or ""),
+                "created_at": created_at.isoformat(),
+            })
+    _require(not optimization, "FACTORY_SEARCH_LEDGER_PRECEDES_Q08")
+    return {
+        "schema": "qm.factory-search-before-q08-claim/v1",
+        "complete": True,
+        "q08_work_item_id": q08_id,
+        "q08_claimed_at_utc": claimed_at.isoformat(),
+        "work_items_examined": len(prior),
+        "optimization_rows": [],
+    }
+
+
+def _binding(path: Path, *, role: str, row_id: str | None = None) -> dict[str, Any]:
+    path = _evidence_file(path)
+    _require(path.is_file(), f"{role.upper()}_MISSING:{path}")
+    result = {"role": role, "path": str(path.resolve()), "sha256": sha256_file(path)}
+    if row_id:
+        result["work_item_id"] = row_id
+    return result
+
+
+def _source_rows(
+    conn: sqlite3.Connection,
+    *,
+    phase: str,
+    ea_id: str,
+    symbol: str,
+    timeframe: str,
+) -> list[dict[str, Any]]:
+    rows = conn.execute(
+        "SELECT * FROM work_items WHERE ea_id=? AND symbol=? AND phase=? "
+        "AND status='done' AND evidence_path IS NOT NULL "
+        "ORDER BY julianday(updated_at) DESC, updated_at DESC, id DESC",
+        (ea_id, symbol, phase),
+    ).fetchall()
+    accepted: dict[str, dict[str, Any]] = {}
+    for raw in rows:
+        row = _row_dict(raw)
+        payload = _payload(row)
+        observed = str(
+            payload.get("expected_period")
+            or payload.get("host_timeframe")
+            or payload.get("timeframe")
+            or ""
+        ).upper()
+        path = _evidence_file(Path(str(row.get("evidence_path") or "")))
+        if observed == timeframe and path.is_file():
+            # Parse as well as hash: a corrupt but present file is not provenance.
+            _load_json(path)
+            set_sha = str(
+                row.get("setfile_sha256")
+                or (payload.get("artifact_identity") or {}).get("setfile_sha256")
+                or payload.get("expected_setfile_sha256")
+                or ""
+            ).lower()
+            _require(len(set_sha) == 64, f"{phase}_SETFILE_IDENTITY_UNAVAILABLE:{row['id']}")
+            if set_sha not in accepted:
+                accepted[set_sha] = row
+    _require(bool(accepted), f"{phase}_GOVERNED_SOURCE_UNAVAILABLE")
+    # Q02 is the baseline, not every historical rerun.  Q03 may contain many
+    # governed parameter configurations and must retain losers as well as the
+    # winning/default configuration.
+    selected = list(accepted.values()) if phase == "Q03" else [next(iter(accepted.values()))]
+    return selected
+
+
+def _source_binding(row: Mapping[str, Any], role: str) -> dict[str, Any]:
+    path = Path(str(row.get("evidence_path") or ""))
+    return {
+        **_binding(path, role=role, row_id=str(row["id"])),
+        "verdict": row.get("verdict"),
+        "setfile_path": row.get("setfile_path"),
+    }
+
+
+def _source_by_id(
+    conn: sqlite3.Connection, row_id: str, *, phase: str, timeframe: str
+) -> dict[str, Any]:
+    raw = conn.execute("SELECT * FROM work_items WHERE id=?", (row_id,)).fetchone()
+    _require(raw is not None, f"{phase}_GOVERNED_SOURCE_UNAVAILABLE")
+    row = _row_dict(raw)
+    payload = _payload(row)
+    observed = str(
+        payload.get("expected_period")
+        or payload.get("host_timeframe")
+        or payload.get("timeframe")
+        or ""
+    ).upper()
+    _require(str(row.get("phase") or "").upper() == phase
+             and str(row.get("status") or "").lower() == "done"
+             and observed == timeframe, f"{phase}_GOVERNED_SOURCE_UNAVAILABLE")
+    path = Path(str(row.get("evidence_path") or ""))
+    _load_json(path)
+    set_sha = str(
+        row.get("setfile_sha256")
+        or (payload.get("artifact_identity") or {}).get("setfile_sha256")
+        or payload.get("expected_setfile_sha256")
+        or ""
+    ).lower()
+    _require(len(set_sha) == 64, f"{phase}_SETFILE_IDENTITY_UNAVAILABLE:{row_id}")
+    return row
+
+
+def _pipeline_peer_metric(row: Mapping[str, Any], trial_id: str, trial_index: int) -> dict[str, Any]:
+    summary_path = Path(str(row.get("evidence_path") or ""))
+    summary = _load_json(summary_path)
+    ok = [run for run in summary.get("runs", []) if run.get("status") == "OK"]
+    _require(bool(ok), f"PIPELINE_TRIAL_HAS_NO_OK_RUN:{row.get('id')}")
+    run = ok[-1]
+    report_path = Path(str(run.get("report_canonical_path") or ""))
+    report_binding = _binding(report_path, role="native_report")
+    expected = str(run.get("report_sha256") or "").lower()
+    _require(not expected or expected in {report_binding["sha256"], _content_sha256(report_path)},
+             f"REPORT_SHA256_MISMATCH:{trial_id}")
+    start = dt.datetime.strptime(str(run.get("from_date") or summary.get("from_date")), "%Y.%m.%d").date()
+    end = dt.datetime.strptime(str(run.get("to_date") or summary.get("to_date")), "%Y.%m.%d").date()
+    values = [0.0] * ((end - start).days + 1)
+    total = int(run.get("total_trades") or 0)
+    if total:
+        trades, native = _closed_trades(report_path)
+        _require(int(native.get("total_trades") or 0) == len(trades) == total,
+                 f"TRADE_RECONCILIATION_FAILED:{trial_id}")
+        for trade in trades:
+            day = trade.exit_time.date()
+            _require(start <= day <= end, f"TRADE_OUTSIDE_TRIAL_WINDOW:{trial_id}")
+            values[(day - start).days] += float(trade.net)
+    mean, sd = statistics.fmean(values), statistics.stdev(values)
+    return {
+        "trial_index": trial_index, "trial_id": trial_id, "role": "research",
+        "frequency": "CALENDAR_DAY", "return_unit": "NET_CASH",
+        "window": {"from": start.isoformat(), "to": end.isoformat()},
+        "n_calendar_days": len(values), "net_return_input": math.fsum(values),
+        "sharpe_daily": 0.0 if sd == 0 else mean / sd,
+        "series_sha256": hashlib.sha256(_canonical(values)).hexdigest(),
+        "provenance": [
+            _binding(summary_path, role=str(row.get("phase") or "").lower(), row_id=str(row["id"])),
+            report_binding,
+        ],
+    }
+
+
+def _find_ledger(
+    *, ea_id: str, symbol: str, timeframe: str, ledger_root: Path
+) -> tuple[Path, dict[str, Any]]:
+    matches: list[tuple[Path, dict[str, Any]]] = []
+    for path in sorted(ledger_root.glob("*/ledger.json")):
+        try:
+            ledger = _load_json(path)
+        except CohortUnavailable:
+            continue
+        subject = str(ledger.get("subject_ea_id") or ledger.get("ea_id") or "").upper()
+        if (
+            subject == ea_id.upper()
+            and str(ledger.get("symbol") or "").upper() == symbol.upper()
+            and str(ledger.get("timeframe") or "").upper() == timeframe
+        ):
+            matches.append((path, ledger))
+    _require(bool(matches), "SEALED_SEARCH_LEDGER_UNAVAILABLE")
+    _require(len(matches) == 1, "AMBIGUOUS_SEARCH_LEDGER")
+    return matches[0]
+
+
+def _current_matrix_rows(
+    conn: sqlite3.Connection, program_id: str
+) -> dict[str, dict[str, Any]]:
+    rows = conn.execute(
+        "SELECT * FROM work_items WHERE phase='OPT_CENSUS' "
+        "AND json_valid(payload_json) "
+        "AND json_extract(payload_json,'$.program_id')=? "
+        "ORDER BY julianday(updated_at) DESC, updated_at DESC, id DESC",
+        (program_id,),
+    ).fetchall()
+    current: dict[str, dict[str, Any]] = {}
+    for raw in rows:
+        row = _row_dict(raw)
+        key = str(_payload(row).get("cell_key") or "")
+        if key and key not in current:
+            current[key] = row
+    return current
+
+
+def _closed_trades(report: Path) -> tuple[list[Any], dict[str, Any]]:
+    try:
+        from framework.scripts.q10_recency import extract_closed_trades
+    except ModuleNotFoundError:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+        from framework.scripts.q10_recency import extract_closed_trades
+    resolved = _evidence_file(Path(str(report)))
+    if resolved.suffix.lower() == ".gz":
+        # DL-090 aged native report: the parser reads a plain file, so the
+        # decompressed bytes are materialised once, content-addressed, under the
+        # farm's own scratch tree (never next to the evidence, never rewritten).
+        digest = _content_sha256(resolved)
+        scratch = Path("D:/QM/strategy_farm/_tmp/dsr_aged_reports")
+        scratch.mkdir(parents=True, exist_ok=True)
+        plain = scratch / (digest + "_" + resolved.name[:-3])
+        if not plain.is_file():
+            with gzip.open(resolved, "rb") as handle:
+                data = handle.read()
+            tmp = plain.with_name(plain.name + ".tmp")
+            tmp.write_bytes(data)
+            os.replace(tmp, plain)
+        return extract_closed_trades(plain)
+    return extract_closed_trades(report)
+
+
+def _peer_metric(
+    trial_id: str,
+    trial_index: int,
+    rows: Sequence[dict[str, Any]],
+    *,
+    role: str,
+) -> dict[str, Any]:
+    returns: list[float] = []
+    provenance: list[dict[str, Any]] = []
+    peer_window = _matrix_peer_window(rows)
+    for row in sorted(rows, key=lambda value: int(_payload(value).get("year") or 0)):
+        payload = _payload(row)
+        skip = row.get("_dsr_prescreen_skip")
+        if skip is not None:
+            # A held PRESCREEN_SKIPPED cell whose skip authority re-authenticated
+            # (dl089_prescreen_retro.disposition, called in _matrix_trial_groups) is
+            # a validly measured year with zero trades, not a missing trial: the arm
+            # stays in the cohort as a trial, contributing a zero-filled return series
+            # for its calendar-day span.  Any other non-terminal cell is unaffected
+            # and still raises INCOMPLETE_TRIAL below.
+            start = dt.datetime.strptime(str(payload.get("from_date")), "%Y.%m.%d").date()
+            end = dt.datetime.strptime(str(payload.get("to_date")), "%Y.%m.%d").date()
+            returns.extend([0.0] * ((end - start).days + 1))
+            provenance.append(_binding(
+                Path(str(skip["receipt_path"])), role="prescreen_skip_receipt", row_id=str(row.get("id"))
+            ))
+            continue
+        _require(str(row.get("status") or "").lower() == "done", f"INCOMPLETE_TRIAL:{trial_id}")
+        _require(str(row.get("verdict") or "").upper() in MEASURED_VERDICTS,
+                 f"UNMEASURED_OR_PRUNED_TRIAL:{trial_id}")
+        summary_path = Path(str(row.get("evidence_path") or ""))
+        summary = _load_json(summary_path)
+        ok = [run for run in summary.get("runs", []) if run.get("status") == "OK"]
+        _require(len(ok) == 1, f"EXACTLY_ONE_OK_RUN_REQUIRED:{trial_id}")
+        run = ok[0]
+        report_path = Path(str(run.get("report_canonical_path") or ""))
+        report_binding = _binding(report_path, role="native_report")
+        expected_report_sha = str(run.get("report_sha256") or "").lower()
+        _require(not expected_report_sha or expected_report_sha in {report_binding["sha256"], _content_sha256(report_path)},
+                 f"REPORT_SHA256_MISMATCH:{trial_id}")
+        start = dt.datetime.strptime(str(payload.get("from_date")), "%Y.%m.%d").date()
+        end = dt.datetime.strptime(str(payload.get("to_date")), "%Y.%m.%d").date()
+        values = [0.0] * ((end - start).days + 1)
+        total_trades = int(run.get("total_trades") or 0)
+        if total_trades:
+            trades, native = _closed_trades(report_path)
+            _require(int(native.get("total_trades") or 0) == len(trades) == total_trades,
+                     f"TRADE_RECONCILIATION_FAILED:{trial_id}")
+            for trade in trades:
+                day = trade.exit_time.date()
+                _require(start <= day <= end, f"TRADE_OUTSIDE_TRIAL_WINDOW:{trial_id}")
+                values[(day - start).days] += float(trade.net)
+        returns.extend(values)
+        provenance.extend([
+            _binding(summary_path, role="matrix_summary", row_id=str(row["id"])),
+            report_binding,
+        ])
+    _require(len(returns) >= 2, f"TRIAL_RETURN_SERIES_TOO_SHORT:{trial_id}")
+    mean = statistics.fmean(returns)
+    sd = statistics.stdev(returns)
+    sharpe = 0.0 if sd == 0 else mean / sd
+    _require(math.isfinite(sharpe), f"NONFINITE_SHARPE:{trial_id}")
+    return {
+        "trial_index": trial_index,
+        "trial_id": trial_id,
+        "role": role,
+        "frequency": "CALENDAR_DAY",
+        "return_unit": "NET_CASH",
+        "window": peer_window,
+        "n_calendar_days": len(returns),
+        "net_return_input": math.fsum(returns),
+        "sharpe_daily": sharpe,
+        "series_sha256": hashlib.sha256(_canonical(returns)).hexdigest(),
+        "provenance": provenance,
+    }
+
+
+def _prescreen_skip_disposition(conn: sqlite3.Connection, row: Mapping[str, Any]) -> dict[str, Any] | None:
+    """A held cell whose skip authority re-authenticates: contract section-6-style
+    fail-closed re-derivation (dl089_prescreen_retro.disposition), never trusted from
+    a stored status string alone.  Returns None when the cell is simply not a
+    prescreen-skip case (the ordinary INCOMPLETE_TRIAL path applies unchanged);
+    raises when a hold exists but its receipt/proof does not re-authenticate, so an
+    authentication gap fails closed with a distinct, named reason rather than being
+    silently downgraded to INCOMPLETE_TRIAL."""
+
+    try:
+        from . import dl089_prescreen_retro as retro
+    except ImportError:
+        import dl089_prescreen_retro as retro
+    try:
+        return retro.disposition(conn, row)
+    except ValueError as exc:
+        raise CohortUnavailable(f"PRESCREEN_SKIP_AUTHORITY_INVALID:{row.get('id')}:{exc}") from exc
+
+
+def _matrix_trial_groups(
+    ledger: Mapping[str, Any], current: Mapping[str, dict[str, Any]], conn: sqlite3.Connection
+) -> list[tuple[str, str, list[dict[str, Any]]]]:
+    years = [int(value) for value in ledger.get("years") or []]
+    _require(bool(years), "LEDGER_YEARS_UNAVAILABLE")
+    by_arm: dict[str, list[dict[str, Any]]] = {}
+    for cell in ledger.get("cells") or []:
+        arm = str(cell.get("arm") or "")
+        if not arm or arm == "baseline":
+            continue
+        row = current.get(str(cell.get("cell_key") or ""))
+        _require(row is not None, f"MATRIX_CELL_MISSING:{cell.get('cell_key')}")
+        skip = _prescreen_skip_disposition(conn, row)
+        if skip is not None:
+            row = {**row, "_dsr_prescreen_skip": skip}
+        by_arm.setdefault(arm, []).append(row)
+    declared = int(ledger.get("declared_trial_count") or 0)
+    _require(declared == DL089_DECLARED_TRIALS, "DL089_DECLARED_TRIAL_COUNT_MISMATCH")
+    _require(len(by_arm) == declared, "DL089_DECLARED_TRIAL_COVERAGE_MISMATCH")
+    for arm, rows in by_arm.items():
+        observed_years = sorted(int(_payload(row).get("year") or 0) for row in rows)
+        _require(observed_years == years, f"ANNUAL_HISTORY_INCOMPLETE:{arm}")
+
+    groups = [(f"DL089:PATTERN:{arm}", "selection", by_arm[arm]) for arm in sorted(by_arm)]
+    driver = ledger.get("driver") or {}
+    numeric = driver.get("numeric") or {}
+    increment = int(numeric.get("numeric_trial_increment") or 0)
+    if increment:
+        expected: set[tuple[str, str]] = set()
+        for param in numeric.get("parameters") or []:
+            parent = param.get("parent_value")
+            for value in param.get("candidate_values") or []:
+                if value != parent:
+                    expected.add((str(param.get("name")), str(value)))
+        _require(len(expected) == increment, "NUMERIC_DECLARATION_COUNT_MISMATCH")
+        numeric_groups: dict[tuple[str, str], list[dict[str, Any]]] = {}
+        for run in numeric.get("runs") or []:
+            if run.get("role") != "numeric":
+                continue
+            key = (str(run.get("param")), str(run.get("value")))
+            row = current.get(str(run.get("cell_key") or ""))
+            _require(row is not None, f"NUMERIC_CELL_MISSING:{run.get('cell_key')}")
+            numeric_groups.setdefault(key, []).append(row)
+        _require(set(numeric_groups) == expected, "NUMERIC_HISTORY_COVERAGE_MISMATCH")
+        for key in sorted(expected):
+            rows = numeric_groups[key]
+            observed_years = sorted(int(_payload(row).get("year") or 0) for row in rows)
+            _require(observed_years == years, f"NUMERIC_ANNUAL_HISTORY_INCOMPLETE:{key}")
+            groups.append((f"DL089:NUMERIC:{key[0]}={key[1]}", "selection", rows))
+    effective = int(ledger.get("declared_trial_count_effective") or declared + increment)
+    _require(effective == declared + increment == len(groups), "EFFECTIVE_TRIAL_COUNT_MISMATCH")
+    return groups
+
+
+def assemble(
+    conn: sqlite3.Connection,
+    candidate_row: Mapping[str, Any],
+    candidate_payload: Mapping[str, Any],
+    *,
+    ledger_root: Path = DEFAULT_LEDGER_ROOT,
+) -> dict[str, Any]:
+    candidate = _row_dict(candidate_row)
+    ea_id = str(candidate.get("ea_id") or "")
+    symbol = str(candidate.get("symbol") or "")
+    _require(bool(ea_id and symbol), "CANDIDATE_IDENTITY_UNAVAILABLE")
+    timeframe = _timeframe(candidate, candidate_payload)
+    window, window_source, window_resolution = _q08_window_resolution(
+        candidate, candidate_payload
+    )
+    window_contract = _window_contract_stamp(
+        candidate, candidate_payload, window, window_resolution
+    )
+    try:
+        ledger_path, ledger = _find_ledger(
+            ea_id=ea_id, symbol=symbol, timeframe=timeframe, ledger_root=Path(ledger_root)
+        )
+    except CohortUnavailable as exc:
+        if str(exc) != 'SEALED_SEARCH_LEDGER_UNAVAILABLE':
+            raise
+        return assemble_single_configuration(
+            conn,
+            candidate,
+            candidate_payload,
+            timeframe,
+            window,
+            window_source,
+            window_contract,
+        )
+    _require(ledger.get("schema") == DL089_LEDGER_SCHEMA, "UNSUPPORTED_SEARCH_LEDGER_SCHEMA")
+    _require(ledger.get("authority") == "DL-089", "SEARCH_LEDGER_AUTHORITY_MISMATCH")
+    _require(str((ledger.get("driver") or {}).get("state") or "") in DL089_TERMINAL_STATES,
+             "DL089_SEARCH_HISTORY_NOT_TERMINAL")
+    _require(isinstance(ledger.get("sealed_rule_sha256"), str)
+             and len(str(ledger["sealed_rule_sha256"])) == 64, "SEALED_RULE_HASH_UNAVAILABLE")
+    q02_precondition_id = str((ledger.get("q02_precondition") or {}).get("id") or "")
+    q02_rows = (
+        [_source_by_id(conn, q02_precondition_id, phase="Q02", timeframe=timeframe)]
+        if q02_precondition_id
+        else _source_rows(conn, phase="Q02", ea_id=ea_id, symbol=symbol, timeframe=timeframe)
+    )
+    q03_rows = _source_rows(conn, phase="Q03", ea_id=ea_id, symbol=symbol, timeframe=timeframe)
+    q12_id = str(ledger.get("q12_work_item_id") or "")
+    q12 = conn.execute("SELECT * FROM work_items WHERE id=?", (q12_id,)).fetchone()
+    _require(q12 is not None, "MATRIX_SERVICE_RECEIPT_ROW_UNAVAILABLE")
+    q12_row = _row_dict(q12)
+    _require(str(q12_row.get("status") or "").lower() == "done", "MATRIX_SERVICE_NOT_COMPLETE")
+    q12_binding = _binding(
+        Path(str(q12_row.get("evidence_path") or "")), role="matrix_service_receipt",
+        row_id=q12_id,
+    )
+    current = _current_matrix_rows(conn, str(ledger.get("program_id") or ""))
+    groups = _matrix_trial_groups(ledger, current, conn)
+    research_rows: dict[str, dict[str, Any]] = {}
+    for row in [*q02_rows, *q03_rows]:
+        row_payload = _payload(row)
+        set_sha = str(
+            row.get("setfile_sha256")
+            or (row_payload.get("artifact_identity") or {}).get("setfile_sha256")
+            or row_payload.get("expected_setfile_sha256")
+        ).lower()
+        research_rows.setdefault(set_sha, row)
+
+    # Amendment A1: a v2 candidate may not be compared with dispersion
+    # estimated from shorter peer series.  Check the cheap source windows
+    # before parsing hundreds of native reports, then stamp the same coverage
+    # on each peer for consumer-side authentication.
+    for _trial_id, _role, rows in groups:
+        _require_peer_window(_matrix_peer_window(rows), window)
+    for row in research_rows.values():
+        _require_peer_window(_pipeline_peer_window(row), window)
+
+    selection_peers = [
+        _peer_metric(trial_id, index, rows, role=role)
+        for index, (trial_id, role, rows) in enumerate(groups)
+    ]
+    research_peers = [
+        _pipeline_peer_metric(row, f"PIPELINE:{set_sha}", len(selection_peers) + index)
+        for index, (set_sha, row) in enumerate(sorted(research_rows.items()))
+    ]
+    peers = selection_peers + research_peers
+    sharpes = [float(peer["sharpe_daily"]) for peer in peers]
+    _require(len(sharpes) >= 2, "COHORT_DISPERSION_UNAVAILABLE")
+    cohort_std = statistics.stdev(sharpes)
+    _require(cohort_std > 0 and math.isfinite(cohort_std), "COHORT_DISPERSION_UNAVAILABLE")
+    return {
+        "schema": SCHEMA,
+        "sealed": True,
+        "complete": True,
+        "losers_included": True,
+        # Deterministic source timestamp: repeated enqueue attempts seal to the
+        # same content hash instead of manufacturing time-dependent cohorts.
+        "created_at_utc": str(q12_row.get("updated_at") or ledger.get("created_at_utc") or ""),
+        "candidate": {"ea_id": ea_id, "symbol": symbol, "timeframe": timeframe},
+        "window": window,
+        "window_source": window_source,
+        **window_contract,
+        "timezone": "UTC",
+        "initial_balance": float(candidate_payload.get("tester_deposit") or 100000.0),
+        "frequency": "CALENDAR_DAY",
+        "costs_attested": True,
+        "selection_mode": "DL089_V3",
+        "declared_trial_count": int(ledger["declared_trial_count"]),
+        "selection_trial_count": len(selection_peers),
+        "research_trial_count": len(research_peers),
+        "effective_trial_count": len(peers),
+        "cohort_std_daily": cohort_std,
+        "trial_ids": [peer["trial_id"] for peer in peers],
+        "peers": peers,
+        "search_history": {
+            "complete": True,
+            "unit": "candidate_configuration",
+            "annual_measurements_are_trials": False,
+            "sources": [
+                _binding(ledger_path, role="sealed_census_ledger"),
+                q12_binding,
+                *[_source_binding(row, "q02") for row in q02_rows],
+                *[_source_binding(row, "q03") for row in q03_rows],
+            ],
+        },
+    }
+
+
+def claimability_precheck(
+    conn: sqlite3.Connection,
+    candidate_row: Mapping[str, Any],
+    payload: Mapping[str, Any],
+    *,
+    ledger_root: Path = DEFAULT_LEDGER_ROOT,
+) -> dict[str, Any]:
+    """Claim-time-independent subset of assemble()'s checks.
+
+    Used by the claim-order preflight (terminal_worker.claim_atomic) to skip
+    Q08 candidates that are doomed regardless of when they get claimed --
+    bad identity/timeframe/window, or (absent a DL-089 search ledger) a
+    single-configuration card/build-identity mismatch -- BEFORE they consume
+    the bounded out-of-lock history-preflight budget. Head-of-line
+    starvation class (2026-09-15): CLAIM_PREFLIGHT_MAX_CANDIDATES exhausted
+    on doomed Q08 rows at the head of the claim order (their DSR-context
+    rejection was only discovered AFTER paying for a preflight slot), so the
+    scan never reached hundreds of plain claimable rows behind them; all ten
+    workers reported no_pending_claimable for ~30 minutes.
+
+    A True result is NOT a guarantee of eventual claimability. The DL-089
+    grouped-cohort path's remaining assembly (matrix rows, peer dispersion)
+    and the single-configuration path's factory-search-ledger step (which
+    needs payload['claimed_at_iso'], only known at real claim time) are
+    intentionally NOT run here -- both are deferred to the real check in
+    _seal_q08_dsr_at_claim. Only a False result is authoritative and safe to
+    skip a candidate on.
+    """
+    candidate = _row_dict(candidate_row)
+    try:
+        ea_id = str(candidate.get("ea_id") or "")
+        symbol = str(candidate.get("symbol") or "")
+        _require(bool(ea_id and symbol), "CANDIDATE_IDENTITY_UNAVAILABLE")
+        timeframe = _timeframe(candidate, payload)
+        window, _source, _resolution = _q08_window_resolution(candidate, payload)
+        seal_key = _window_seal_key(candidate, payload, window)
+        stale = _stale_seal_detail(candidate, payload, window, seal_key)
+        if stale is not None:
+            return {"claimable": False, **stale}
+    except CohortUnavailable as exc:
+        return {"claimable": False, "reason": str(exc)}
+    try:
+        _find_ledger(
+            ea_id=ea_id, symbol=symbol, timeframe=timeframe,
+            ledger_root=Path(ledger_root),
+        )
+        # DL-089 ledger found: the rest of assemble()'s grouped-cohort branch
+        # has no claim-time dependency either, but re-running its full
+        # DB-bound assembly here would double the in-lock query cost of
+        # every claim attempt for every DL-089 EA. The ledger's presence is
+        # already a strong claimable signal; defer full assembly to the real
+        # seal, consistent with this function's "only False is
+        # authoritative" contract.
+        return {"claimable": True, "reason": None}
+    except CohortUnavailable as exc:
+        if str(exc) != "SEALED_SEARCH_LEDGER_UNAVAILABLE":
+            return {"claimable": False, "reason": str(exc)}
+    try:
+        _resolve_single_configuration_identity(candidate, payload, timeframe)
+    except CohortUnavailable as exc:
+        reason = str(exc)
+        result = {"claimable": False, "reason": reason}
+        if reason == "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_UNBOUND":
+            result["binding_required"] = True
+        return result
+    return {"claimable": True, "reason": None}
+
+
+def single_configuration_identity_state(
+    candidate: Mapping[str, Any], payload: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Classify the row's three-part DSR build identity without reading files.
+
+    An absent binding is repairable from governed predecessor/compile evidence
+    at claim time.  It is materially different from a populated binding whose
+    bytes no longer match the EA directory, so callers must never collapse the
+    former into ``BUILD_IDENTITY_MISMATCH``.
+    """
+    raw_identity = payload.get("artifact_identity")
+    artifact_identity = (
+        raw_identity if isinstance(raw_identity, Mapping) else {}
+    )
+    identity: dict[str, Any] = {}
+    conflicts: dict[str, list[str]] = {}
+    missing: list[str] = []
+    for role in ("mq5", "ex5", "setfile"):
+        key = role + "_sha256"
+        claims = [
+            candidate.get(key),
+            artifact_identity.get(key),
+            payload.get("expected_" + key),
+        ]
+        populated = [
+            str(value).strip().lower()
+            for value in claims
+            if value not in (None, "") and str(value).strip()
+        ]
+        distinct = sorted(set(populated))
+        if not distinct:
+            identity[key] = None
+            missing.append(role)
+        else:
+            identity[key] = distinct[0]
+            if len(distinct) > 1:
+                conflicts[role] = distinct
+    return {
+        "identity": identity,
+        "missing_roles": missing,
+        "conflicts": conflicts,
+        "bound": not missing and not conflicts,
+    }
+
+
+def _resolve_single_configuration_identity(candidate, payload, timeframe):
+    """Card declaration + build-identity match: the claim-time-independent
+    half of assemble_single_configuration(). Raises CohortUnavailable
+    (wrapped SINGLE_CONFIGURATION_UNAVAILABLE) on the same failure modes as
+    before extraction; needs no payload['claimed_at_iso']. Shared by
+    assemble_single_configuration() and claimability_precheck() so the
+    preflight-budget precheck can never drift from the real check.
+    """
+    try:
+        from . import dsr_single_configuration as single
+    except ImportError:
+        import dsr_single_configuration as single
+    state = single_configuration_identity_state(candidate, payload)
+    if state["missing_roles"]:
+        raise CohortUnavailable(
+            "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_UNBOUND"
+        )
+    for role in ("mq5", "ex5", "setfile"):
+        if role in state["conflicts"]:
+            raise CohortUnavailable(
+                "SINGLE_CONFIGURATION_UNAVAILABLE:"
+                "CONFLICTING_BUILD_IDENTITY:" + role
+            )
+
+    setfile = Path(str(candidate.get('setfile_path') or ''))
+    ea_directory = setfile.parent.parent
+    label = ea_directory.name
+    paths = {'card': Path('D:/QM/strategy_farm/artifacts/cards_approved') / (label+'.md'),
+             'spec': ea_directory/'SPEC.md', 'mq5': ea_directory/(label+'.mq5'),
+             'ex5': ea_directory/(label+'.ex5'), 'setfile': setfile}
+    try:
+        candidate_id = {'ea_id': str(candidate['ea_id']), 'symbol': str(candidate['symbol']), 'timeframe': timeframe}
+        # Check explicit search authority first; defaults and absent ledgers never imply n=1.
+        # Contract v3 selects one declaration by the row's exact
+        # (symbol, timeframe). Missing and duplicate matches fail closed with
+        # distinct reasons before any cohort is sealed.
+        single.declaration(paths['card'].read_bytes(), candidate=candidate_id)
+        provenance = {role: {'path': str(path.resolve()), 'sha256': sha256_file(path)} for role, path in paths.items()}
+        identity = dict(state["identity"])
+        single.validate(provenance, candidate_id, identity)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise CohortUnavailable('SINGLE_CONFIGURATION_UNAVAILABLE:'+str(exc)) from exc
+    return candidate_id, provenance, identity
+
+
+def assemble_single_configuration(
+    conn,
+    candidate,
+    payload,
+    timeframe,
+    window,
+    window_source=None,
+    window_contract=None,
+):
+    try:
+        from . import dsr_single_configuration as single
+    except ImportError:
+        import dsr_single_configuration as single
+    candidate_id, provenance, identity = _resolve_single_configuration_identity(
+        candidate, payload, timeframe
+    )
+    try:
+        factory_search_ledger = _factory_search_before_q08_claim(conn, candidate, payload)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise CohortUnavailable('SINGLE_CONFIGURATION_UNAVAILABLE:'+str(exc)) from exc
+    return {'schema': single.SCHEMA, 'sealed': True, 'complete': True,
+            'losers_included': True, 'losers': [], 'candidate': candidate_id,
+            'window': window, 'window_source': window_source, 'timezone': 'UTC', 'initial_balance': float(payload.get('tester_deposit') or 100000),
+            'frequency': 'CALENDAR_DAY', 'costs_attested': True,
+            'selection_mode': 'DECLARED_SINGLE_CONFIGURATION', 'declared_trial_count': 1,
+            'selection_trial_count': 1, 'research_trial_count': 0, 'effective_trial_count': 1,
+            'cohort_std_daily': 0.0, 'build_identity': identity, 'provenance': provenance,
+            **dict(window_contract or {}),
+            'search_history': {'complete': True, 'unit': 'candidate_configuration',
+                               'annual_measurements_are_trials': False,
+                               'factory_search_ledger': factory_search_ledger}}
+
+
+def seal(document: Mapping[str, Any], artifact_root: Path = DEFAULT_ARTIFACT_ROOT) -> dict[str, str]:
+    raw = _canonical(document) + b"\n"
+    digest = hashlib.sha256(raw).hexdigest()
+    candidate = document["candidate"]
+    slug = "_".join(
+        str(candidate[key]).replace(".", "_").replace("/", "_")
+        for key in ("ea_id", "symbol", "timeframe")
+    )
+    target = Path(artifact_root).resolve() / slug / f"{digest}.json"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.exists():
+        _require(target.read_bytes() == raw, "CONTENT_ADDRESS_COLLISION")
+    else:
+        temporary = target.with_name(f".{target.name}.{uuid.uuid4().hex}.tmp")
+        try:
+            with temporary.open("xb") as handle:
+                handle.write(raw)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(temporary, target)
+        finally:
+            temporary.unlink(missing_ok=True)
+    return {"path": str(target), "sha256": digest}
+
+
+def produce(
+    conn: sqlite3.Connection,
+    candidate_row: Mapping[str, Any],
+    candidate_payload: Mapping[str, Any],
+    *,
+    ledger_root: Path = DEFAULT_LEDGER_ROOT,
+    artifact_root: Path = DEFAULT_ARTIFACT_ROOT,
+) -> dict[str, str]:
+    return seal(
+        assemble(conn, candidate_row, candidate_payload, ledger_root=ledger_root),
+        artifact_root=artifact_root,
+    )
+
+
+def attach(
+    conn: sqlite3.Connection,
+    candidate_row: Mapping[str, Any],
+    payload: dict[str, Any],
+    *,
+    ledger_root: Path = DEFAULT_LEDGER_ROOT,
+    artifact_root: Path = DEFAULT_ARTIFACT_ROOT,
+) -> dict[str, Any]:
+    """Attach only to a not-yet-inserted Q08 payload; never mutate a DB row."""
+    candidate = _row_dict(candidate_row)
+    try:
+        window, window_source, resolution = _q08_window_resolution(candidate, payload)
+        window_contract = _window_contract_stamp(
+            candidate, payload, window, resolution
+        )
+        stale = _stale_seal_detail(
+            candidate, payload, window, window_contract["window_seal_key"]
+        )
+    except CohortUnavailable as exc:
+        payload["dsr_context_status"] = {
+            "status": "UNAVAILABLE",
+            "reason": str(exc),
+            "producer_schema": SCHEMA,
+        }
+        return payload["dsr_context_status"]
+    if stale is not None:
+        payload["dsr_context_status"] = {
+            "status": "UNAVAILABLE",
+            "producer_schema": SCHEMA,
+            **stale,
+        }
+        return payload["dsr_context_status"]
+
+    payload.pop("dsr_context", None)
+    try:
+        binding = produce(
+            conn, candidate_row, payload, ledger_root=ledger_root, artifact_root=artifact_root
+        )
+    except CohortUnavailable as exc:
+        payload["dsr_context_status"] = {
+            "status": "UNAVAILABLE", "reason": str(exc), "producer_schema": SCHEMA
+        }
+        return payload["dsr_context_status"]
+    payload["dsr_context"] = binding
+    payload["dsr_window_contract"] = DSR_WINDOW_CONTRACT
+    payload["dsr_context_status"] = {
+        "status": "SEALED", "producer_schema": SCHEMA,
+        "candidate_window_source": window_source,
+        "candidate_window_contract": DSR_WINDOW_CONTRACT,
+        "window_resolver_schema": window_contract["window_resolver_schema"],
+        "window_seal_key_sha256": window_contract["window_seal_key_sha256"],
+    }
+    return payload["dsr_context_status"]
+
+
+def replay(conn: sqlite3.Connection, *, limit: int = 3) -> dict[str, Any]:
+    rows = conn.execute(
+        "SELECT * FROM work_items WHERE phase='Q08' AND status='done' "
+        "ORDER BY julianday(updated_at) DESC, updated_at DESC, id DESC LIMIT ?",
+        (int(limit),),
+    ).fetchall()
+    result: list[dict[str, Any]] = []
+    for raw in rows:
+        row = _row_dict(raw)
+        payload = _payload(row)
+        # Historical Q08 rows predate identity columns on some paths.  The
+        # immutable baseline summary is the authoritative replay fallback.
+        if not (payload.get("from_date") and payload.get("to_date") and payload.get("expected_period")):
+            try:
+                aggregate = _load_json(Path(str(row.get("evidence_path") or "")))
+                baseline = aggregate.get("baseline_run") or {}
+                summary = _load_json(Path(str(baseline.get("baseline_summary_path") or "")))
+                if not payload.get("from_date"):
+                    payload["from_date"] = summary.get("from_date")
+                if not payload.get("to_date"):
+                    payload["to_date"] = summary.get("to_date")
+                if not payload.get("expected_period"):
+                    payload["expected_period"] = baseline.get("period") or summary.get("period")
+            except CohortUnavailable:
+                pass
+        entry = {
+            "work_item_id": row["id"], "ea_id": row["ea_id"], "symbol": row["symbol"],
+            "stored_verdict": row.get("verdict"),
+        }
+        try:
+            document = assemble(conn, row, payload)
+            entry.update({
+                "cohort_status": "AVAILABLE",
+                "selection_trial_count": document["selection_trial_count"],
+                "v2_outcome": "COMPUTABLE_ON_RERUN",
+            })
+        except CohortUnavailable as exc:
+            entry.update({
+                "cohort_status": "UNAVAILABLE", "reason": str(exc),
+                "selection_trial_count": None, "v2_outcome": "UNCORRECTED_SELECTION",
+            })
+        result.append(entry)
+    return {
+        "schema": "qm.dsr-cohort-replay/v1",
+        "generated_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "read_only": True,
+        "rows": result,
+    }
+
+
+def _main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("command", choices=("replay",))
+    parser.add_argument("--db", type=Path, default=DEFAULT_DB)
+    parser.add_argument("--limit", type=int, default=3)
+    parser.add_argument("--out", type=Path)
+    args = parser.parse_args(argv)
+    conn = sqlite3.connect(f"file:{args.db.resolve()}?mode=ro", uri=True)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA query_only=ON")
+    output = replay(conn, limit=args.limit)
+    rendered = json.dumps(output, indent=2, sort_keys=True) + "\n"
+    if args.out:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(rendered, encoding="utf-8")
+    print(rendered, end="")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(_main())

@@ -1,0 +1,18 @@
+{
+  "dsr_cohort.py.new": {
+    "path": "docs/ops/evidence/task_ac9748bc-3fec-408f-aaf6-34253cea5ab0/patches/dsr_cohort.py.new",
+    "sha256": "3892c4885f22e222fdbb497aaef05938e80bdd5e1083807f4fb8c03f3d9cd457"
+  },
+  "dsr_cohort.py.orig_board_advisor": {
+    "path": "docs/ops/evidence/task_ac9748bc-3fec-408f-aaf6-34253cea5ab0/patches/orig/dsr_cohort.py",
+    "sha256": "b3fd3f8b2883a50f778945aac7f476fd962c65af90325a56d3fcebb991a075b1"
+  },
+  "test_dsr_cohort_prescreen_skip.py.new": {
+    "path": "docs/ops/evidence/task_ac9748bc-3fec-408f-aaf6-34253cea5ab0/patches/test_dsr_cohort_prescreen_skip.py.new",
+    "sha256": "8adb58c33a2f01106323d573e5df169f6a63f56607893916760a21041a139ab1"
+  },
+  "test_dsr_cohort_prescreen_skip.py.orig_board_advisor": {
+    "path": "docs/ops/evidence/task_ac9748bc-3fec-408f-aaf6-34253cea5ab0/patches/orig/test_dsr_cohort_prescreen_skip.py",
+    "sha256": "ed6c92befdf2781c9ae2b231d35d152dd1df4577813d6ad47b6d430f910322a5"
+  }
+}

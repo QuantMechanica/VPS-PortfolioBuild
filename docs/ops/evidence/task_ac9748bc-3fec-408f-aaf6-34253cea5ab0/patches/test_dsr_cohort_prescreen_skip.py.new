@@ -1,0 +1,339 @@
+"""Q08 prescreen measurement boundary (Astra takeover, 2026-09-27,
+docs/ops/evidence/2026-09-26_astra_takeover/q08_prescreen_measurement_boundary/
+ACCEPTANCE.json + KIMI_CRITIQUE.md). This supersedes the prior
+OWNER-DEC-Q08-SWEEP-ARM-CONTEXT-20260914 (ticket 7d9dd3b5) reading of a
+PRESCREEN_SKIPPED census cell.
+
+dl089_prescreen_retro.disposition() re-authenticates permission to *omit
+measurement* of a held cell (``unmeasured: True``); it never authenticates an
+actual zero-trade outcome. The corrected consumer contract: an authenticated
+skip without a separately authenticated ``causal_no_trade_proof`` fails closed
+(the arm/year stays a declared trial, it is not silently imputed as a measured
+zero and it is not silently dropped). Only a skip disposition that also
+carries a ``causal_no_trade_proof`` admits a zero-filled year. No producer in
+this codebase sets that field yet; recovering it is a separately reviewed
+information-value decision (out of scope here).
+
+These tests exercise ``_matrix_trial_groups``/``_peer_metric`` directly (the
+real, unmonkeypatched functions) with ``dsr_cohort._prescreen_skip_disposition``
+replaced by a stub -- the same boundary the real function calls at
+(``dl089_prescreen_retro.disposition``), so these tests verify dsr_cohort's own
+integration logic without re-deriving that module's receipt/contract
+authentication stack (a separate, already-governed component).
+"""
+import copy
+import json
+import sqlite3
+from pathlib import Path
+
+import pytest
+
+from tools.strategy_farm import dsr_cohort
+
+
+def write_json(path: Path, value) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(value), encoding="utf-8")
+    return path
+
+
+def _fixture(tmp_path: Path, monkeypatch, *, sell_early_fire_counts=False):
+    monkeypatch.setattr(dsr_cohort, "DL089_DECLARED_TRIALS", 2)
+    con = sqlite3.connect(":memory:")
+    con.row_factory = sqlite3.Row
+    con.execute("""CREATE TABLE work_items(
+        id TEXT PRIMARY KEY, phase TEXT, ea_id TEXT, symbol TEXT, setfile_path TEXT,
+        status TEXT, verdict TEXT, evidence_path TEXT, payload_json TEXT, updated_at TEXT)""")
+    report_path = tmp_path / "report.txt"
+    report_path.write_text("native report", encoding="utf-8")
+    source = write_json(tmp_path / "source.json", {
+        "runs": [{"status": "OK", "report_canonical_path": str(report_path), "total_trades": 0}],
+    })
+    common = ("QM5_42", "EURUSD.DWX", "x.set")
+
+    # buy_001: both years MEASURED/done -- ordinary path, unaffected by this contract.
+    for year in (2024, 2025):
+        con.execute(
+            "INSERT INTO work_items VALUES(?,?,?,?,?,?,?,?,?,?)",
+            (f"buy_001-{year}", "OPT_CENSUS", *common, "done", "MEASURED", str(source),
+             json.dumps({"program_id": "P", "cell_key": f"P:{year}:buy_001", "arm": "buy_001",
+                         "year": year, "from_date": f"{year}.01.01", "to_date": f"{year}.12.31"}),
+             "2026-09-06T00:00:00+00:00"),
+        )
+    # sell_001/2024: MEASURED/done. sell_001/2025: pending/None -- the held cell.
+    con.execute(
+        "INSERT INTO work_items VALUES(?,?,?,?,?,?,?,?,?,?)",
+        ("sell_001-2024", "OPT_CENSUS", *common, "done", "MEASURED", str(source),
+         json.dumps({"program_id": "P", "cell_key": "P:2024:sell_001", "arm": "sell_001",
+                     "year": 2024, "from_date": "2024.01.01", "to_date": "2024.12.31"}),
+         "2026-09-06T00:00:00+00:00"),
+    )
+    con.execute(
+        "INSERT INTO work_items VALUES(?,?,?,?,?,?,?,?,?,?)",
+        ("sell_001-2025", "OPT_CENSUS", *common, "pending", None, str(source),
+         json.dumps({"program_id": "P", "cell_key": "P:2025:sell_001", "arm": "sell_001",
+                     "year": 2025, "from_date": "2025.01.01", "to_date": "2025.12.31"}),
+         "2026-09-06T00:00:00+00:00"),
+    )
+
+    q12 = write_json(tmp_path / "q12.json", {"schema": "receipt"})
+    con.execute(
+        "INSERT INTO work_items VALUES(?,?,?,?,?,?,?,?,?,?)",
+        ("q12", "Q12", *common, "done", "OPT_ELIGIBLE", str(q12), "{}",
+         "2026-09-06T00:00:00+00:00"),
+    )
+
+    cells = [
+        {"cell_key": "P:2024:buy_001", "arm": "buy_001", "year": 2024},
+        {"cell_key": "P:2025:buy_001", "arm": "buy_001", "year": 2025},
+        {"cell_key": "P:2024:sell_001", "arm": "sell_001", "year": 2024},
+        {"cell_key": "P:2025:sell_001", "arm": "sell_001", "year": 2025},
+    ]
+    ledger = {
+        "schema": "qm.opt-census.v1", "authority": "DL-089", "program_id": "P",
+        "subject_ea_id": "QM5_42", "symbol": "EURUSD.DWX", "timeframe": "D1",
+        "years": [2024, 2025], "declared_trial_count": 2,
+        "declared_trial_count_effective": 2, "sealed_rule_sha256": "a" * 64,
+        "q12_work_item_id": "q12", "cells": cells,
+        "driver": {"state": "PATTERN_SELECTION_READY", "numeric": {}},
+    }
+    ledger_path = write_json(tmp_path / "ledgers" / "P" / "ledger.json", ledger)
+    candidate = {"id": "q07", "ea_id": "QM5_42", "symbol": "EURUSD.DWX",
+                 "setfile_path": "x.set", "payload_json": "{}"}
+    payload = {"expected_period": "D1", "from_date": "2024.01.01",
+               "to_date": "2025.12.31"}
+    return con, candidate, payload, ledger, ledger_path
+
+
+def _current_rows(con):
+    return dsr_cohort._current_matrix_rows(con, "P")
+
+
+def _authenticated_skip(receipt_path, *, fire_counts=None, causal_no_trade_proof=None):
+    skip = {"receipt_path": str(receipt_path), "receipt_sha256": "x" * 64,
+            "program_id": "P", "unmeasured": True}
+    if fire_counts is not None:
+        skip["fire_counts"] = fire_counts
+    if causal_no_trade_proof is not None:
+        skip["causal_no_trade_proof"] = causal_no_trade_proof
+    return skip
+
+
+# 1. Held skip with an authentic receipt and nonzero early-year fire counts:
+# authenticated permission-to-skip is still not a causal no-trade proof, so the
+# arm must fail closed, not become a measured zero-return year.
+def test_authenticated_skip_with_nonzero_fire_counts_fails_closed(tmp_path, monkeypatch):
+    con, candidate, payload, ledger, ledger_path = _fixture(tmp_path, monkeypatch)
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text("{}", encoding="utf-8")
+
+    def fake_skip(conn, row):
+        if row.get("id") == "sell_001-2025":
+            return _authenticated_skip(receipt_path, fire_counts=[1, 1])
+        return None
+
+    monkeypatch.setattr(dsr_cohort, "_prescreen_skip_disposition", fake_skip)
+    current = _current_rows(con)
+    groups = dsr_cohort._matrix_trial_groups(ledger, current, con)
+    by_trial = {trial_id: rows for trial_id, role, rows in groups}
+    sell_rows = by_trial["DL089:PATTERN:sell_001"]
+    assert len(sell_rows) == 2
+    skipped_row = next(r for r in sell_rows if r["id"] == "sell_001-2025")
+    assert skipped_row["_dsr_prescreen_skip"]["program_id"] == "P"
+
+    with pytest.raises(
+        dsr_cohort.CohortUnavailable,
+        match="UNMEASURED_PRESCREEN_SKIP_REQUIRES_CAUSAL_NO_TRADE_PROOF",
+    ):
+        dsr_cohort._peer_metric("DL089:PATTERN:sell_001", 0, sell_rows, role="selection")
+
+
+# Escape hatch: a skip disposition that *also* carries a separately
+# authenticated causal_no_trade_proof is admitted as a zero-filled year, and
+# the proof is bound into the series' own provenance (never silently folded
+# into the plain prescreen_skip_receipt binding).
+def test_skip_with_causal_no_trade_proof_is_admitted_and_bound(tmp_path, monkeypatch):
+    con, candidate, payload, ledger, ledger_path = _fixture(tmp_path, monkeypatch)
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text("{}", encoding="utf-8")
+    proof = {"policy_id": "NOT_YET_SPECIFIED", "sha256": "y" * 64}
+
+    def fake_skip(conn, row):
+        if row.get("id") == "sell_001-2025":
+            return _authenticated_skip(receipt_path, causal_no_trade_proof=proof)
+        return None
+
+    monkeypatch.setattr(dsr_cohort, "_prescreen_skip_disposition", fake_skip)
+    current = _current_rows(con)
+    groups = dsr_cohort._matrix_trial_groups(ledger, current, con)
+    by_trial = {trial_id: rows for trial_id, role, rows in groups}
+    sell_rows = by_trial["DL089:PATTERN:sell_001"]
+
+    peer = dsr_cohort._peer_metric("DL089:PATTERN:sell_001", 0, sell_rows, role="selection")
+    assert peer["n_calendar_days"] == 366 + 365  # 2024 (leap) MEASURED + 2025 zero-filled
+    assert peer["net_return_input"] == 0.0
+    roles = [p["role"] for p in peer["provenance"]]
+    assert "causal_no_trade_proof" in roles
+    bound_proof = next(p for p in peer["provenance"] if p["role"] == "causal_no_trade_proof")
+    assert bound_proof["policy_id"] == "NOT_YET_SPECIFIED"
+
+
+# 2. A terminal SKIPPED_PRESCREEN-shaped row that does NOT carry a
+# re-authenticated _dsr_prescreen_skip marker must not be treated as measured
+# -- it is an ordinary unmeasured/pruned trial and fails closed under its own
+# existing named reason.
+def test_terminal_skipped_prescreen_without_reauthentication_is_unmeasured(tmp_path, monkeypatch):
+    con, candidate, payload, ledger, ledger_path = _fixture(tmp_path, monkeypatch)
+    con.execute(
+        "UPDATE work_items SET status='done', verdict='SKIPPED_PRESCREEN' WHERE id='sell_001-2025'"
+    )
+    monkeypatch.setattr(dsr_cohort, "_prescreen_skip_disposition", lambda conn, row: None)
+    current = _current_rows(con)
+    groups = dsr_cohort._matrix_trial_groups(ledger, current, con)
+    by_trial = {trial_id: rows for trial_id, role, rows in groups}
+    sell_rows = by_trial["DL089:PATTERN:sell_001"]
+    with pytest.raises(dsr_cohort.CohortUnavailable, match="UNMEASURED_OR_PRUNED_TRIAL"):
+        dsr_cohort._peer_metric("DL089:PATTERN:sell_001", 0, sell_rows, role="selection")
+
+
+def test_no_hold_at_all_still_raises_incomplete_trial(tmp_path, monkeypatch):
+    con, candidate, payload, ledger, ledger_path = _fixture(tmp_path, monkeypatch)
+    monkeypatch.setattr(dsr_cohort, "_prescreen_skip_disposition", lambda conn, row: None)
+    current = _current_rows(con)
+    groups = dsr_cohort._matrix_trial_groups(ledger, current, con)
+    by_trial = {trial_id: rows for trial_id, role, rows in groups}
+    sell_rows = by_trial["DL089:PATTERN:sell_001"]
+    with pytest.raises(dsr_cohort.CohortUnavailable, match="INCOMPLETE_TRIAL"):
+        dsr_cohort._peer_metric("DL089:PATTERN:sell_001", 0, sell_rows, role="selection")
+
+
+# 3. A forged/un-reauthenticatable skip receipt fails closed under its own
+# named reason -- unaffected by this change (dl089_prescreen_retro's own
+# authentication stack, stubbed here, is a separately governed component).
+def test_hold_present_but_authentication_fails_closed_with_named_reason(tmp_path, monkeypatch):
+    con, candidate, payload, ledger, ledger_path = _fixture(tmp_path, monkeypatch)
+
+    def failing_skip(conn, row):
+        if row.get("id") == "sell_001-2025":
+            raise dsr_cohort.CohortUnavailable(
+                "PRESCREEN_SKIP_AUTHORITY_INVALID:sell_001-2025:retro held-cell receipt identity mismatch"
+            )
+        return None
+
+    monkeypatch.setattr(dsr_cohort, "_prescreen_skip_disposition", failing_skip)
+    current = _current_rows(con)
+    with pytest.raises(dsr_cohort.CohortUnavailable, match="PRESCREEN_SKIP_AUTHORITY_INVALID"):
+        dsr_cohort._matrix_trial_groups(ledger, current, con)
+
+
+# 4. Legacy sealed zero-imputed cohort: a document already sealed on disk
+# under the superseded Sept14 convention (role=prescreen_skip_receipt only,
+# no causal_no_trade_proof) is historical fact. This module never mutates it;
+# replaying the same facts through the *current* code path now fails closed,
+# which is the intended, visible divergence between old-contract replay and
+# current admission policy -- not a rewrite of the old record.
+def test_legacy_sealed_zero_imputed_document_is_preserved_but_not_replayable_as_current(tmp_path, monkeypatch):
+    legacy_sealed_document = {
+        "schema": "qm.dsr-cohort/v1",
+        "selection_peers": [{
+            "trial_id": "DL089:PATTERN:sell_001",
+            "n_calendar_days": 366 + 365,
+            "net_return_input": 0.0,
+            "provenance": [{"role": "prescreen_skip_receipt", "path": "C:\\legacy\\receipt.json"}],
+        }],
+    }
+    frozen = copy.deepcopy(legacy_sealed_document)
+
+    con, candidate, payload, ledger, ledger_path = _fixture(tmp_path, monkeypatch)
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text("{}", encoding="utf-8")
+
+    def fake_skip(conn, row):
+        if row.get("id") == "sell_001-2025":
+            return _authenticated_skip(receipt_path)  # no causal_no_trade_proof: legacy shape
+        return None
+
+    monkeypatch.setattr(dsr_cohort, "_prescreen_skip_disposition", fake_skip)
+    current = _current_rows(con)
+    groups = dsr_cohort._matrix_trial_groups(ledger, current, con)
+    by_trial = {trial_id: rows for trial_id, role, rows in groups}
+    sell_rows = by_trial["DL089:PATTERN:sell_001"]
+
+    with pytest.raises(dsr_cohort.CohortUnavailable, match="UNMEASURED_PRESCREEN_SKIP_REQUIRES_CAUSAL_NO_TRADE_PROOF"):
+        dsr_cohort._peer_metric("DL089:PATTERN:sell_001", 0, sell_rows, role="selection")
+
+    # The historical document itself is untouched by running the current code path.
+    assert legacy_sealed_document == frozen
+
+
+# 5. A genuine native zero-trade report (an ordinary MEASURED row whose report
+# legitimately shows zero closed trades) is a real measurement, not an
+# imputed skip zero, and must still be admitted via the ordinary path.
+def test_genuine_native_zero_trade_report_is_measured_not_imputed(tmp_path, monkeypatch):
+    con, candidate, payload, ledger, ledger_path = _fixture(tmp_path, monkeypatch)
+    monkeypatch.setattr(dsr_cohort, "_prescreen_skip_disposition", lambda conn, row: None)
+    con.execute("UPDATE work_items SET status='done', verdict='MEASURED' WHERE id='sell_001-2025'")
+    current = _current_rows(con)
+    groups = dsr_cohort._matrix_trial_groups(ledger, current, con)
+    by_trial = {trial_id: rows for trial_id, role, rows in groups}
+    sell_rows = by_trial["DL089:PATTERN:sell_001"]
+    for row in sell_rows:
+        assert row.get("_dsr_prescreen_skip") is None
+
+    peer = dsr_cohort._peer_metric("DL089:PATTERN:sell_001", 0, sell_rows, role="selection")
+    assert peer["n_calendar_days"] == 366 + 365
+    assert peer["net_return_input"] == 0.0
+    assert all(p["role"] != "prescreen_skip_receipt" for p in peer["provenance"])
+
+
+# 6 + 7. A complete ordinary measured cohort (buy_001) still assembles fine
+# while a sibling declared arm (sell_001) fails closed on an unauthenticated
+# skip: the declared trial count/coverage is preserved intact by
+# _matrix_trial_groups (both arms are present, nothing is silently dropped to
+# manufacture a smaller passing cohort) -- the failure surfaces only once the
+# unmeasured arm is actually measured.
+def test_ordinary_arm_measures_while_sibling_skip_arm_fails_closed_without_shrinking_declared_trials(
+    tmp_path, monkeypatch
+):
+    con, candidate, payload, ledger, ledger_path = _fixture(tmp_path, monkeypatch)
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text("{}", encoding="utf-8")
+
+    def fake_skip(conn, row):
+        if row.get("id") == "sell_001-2025":
+            return _authenticated_skip(receipt_path)
+        return None
+
+    monkeypatch.setattr(dsr_cohort, "_prescreen_skip_disposition", fake_skip)
+    current = _current_rows(con)
+    groups = dsr_cohort._matrix_trial_groups(ledger, current, con)
+
+    # Trial-count preservation: both declared arms are still present as
+    # distinct trial groups -- the unauthenticated skip did not shrink the
+    # declared cohort to a smaller passing subset.
+    assert {trial_id for trial_id, role, rows in groups} == {
+        "DL089:PATTERN:buy_001", "DL089:PATTERN:sell_001",
+    }
+
+    by_trial = {trial_id: rows for trial_id, role, rows in groups}
+    buy_peer = dsr_cohort._peer_metric("DL089:PATTERN:buy_001", 0, by_trial["DL089:PATTERN:buy_001"], role="selection")
+    assert buy_peer["n_calendar_days"] == 366 + 365
+
+    with pytest.raises(dsr_cohort.CohortUnavailable, match="UNMEASURED_PRESCREEN_SKIP_REQUIRES_CAUSAL_NO_TRADE_PROOF"):
+        dsr_cohort._peer_metric("DL089:PATTERN:sell_001", 0, by_trial["DL089:PATTERN:sell_001"], role="selection")
+
+
+def test_prescreen_skip_disposition_delegates_to_retro_and_wraps_value_error(monkeypatch):
+    """The real (unstubbed) _prescreen_skip_disposition: None passes through, a
+    ValueError from dl089_prescreen_retro.disposition becomes a named CohortUnavailable."""
+    from tools.strategy_farm import dl089_prescreen_retro as retro
+
+    monkeypatch.setattr(retro, "disposition", lambda conn, row: None)
+    assert dsr_cohort._prescreen_skip_disposition(object(), {"id": "x"}) is None
+
+    def raising(conn, row):
+        raise ValueError("boom")
+
+    monkeypatch.setattr(retro, "disposition", raising)
+    with pytest.raises(dsr_cohort.CohortUnavailable, match=r"PRESCREEN_SKIP_AUTHORITY_INVALID:x:boom"):
+        dsr_cohort._prescreen_skip_disposition(object(), {"id": "x"})
