@@ -1,0 +1,355 @@
+{
+  "all_checks_true": true,
+  "bound_sources_sha256": {
+    "framework/registry/live_commission.json": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197",
+    "tools/strategy_farm/ftmo/book_sim.py": "4a02c63ac18fbede085a4c791d41f35273c94530b8ecaf6ee72d1ae922907596",
+    "tools/strategy_farm/ftmo/first_passage.py": "b2c56edf7327f5301eda5d1b5793cecf62466dd0e7db7052503f277af9ef6335"
+  },
+  "cases": {
+    "A_whole_host_XAU_xau_row_first": {
+      "BOOK_EXPECTANCY": 0.09575,
+      "account_path_worst_daily_low": -48.203125,
+      "commission_scaled_total": 1.328125,
+      "concentration": {
+        "book_risk_percent": 0.15625,
+        "risk_by_family_percent": {
+          "XAUXAG_RV_BASKET": 0.15625
+        },
+        "risk_by_symbol_percent": {
+          "XAUUSD.DWX": 0.15625
+        },
+        "symbol_risk_hhi": 1.0
+      },
+      "first_passage_grid_net": 29.921875,
+      "first_passage_grid_worst_low": -48.203125,
+      "net_scaled_total": 29.921875,
+      "sleeves": [
+        {
+          "id": "A",
+          "risk_percent": 0.15625,
+          "rows": 2,
+          "symbol": "XAUUSD.DWX"
+        }
+      ],
+      "slippage_stress_scaled_total": 0.0,
+      "spread_stress_scaled_total": 0.0
+    },
+    "B_whole_host_XAU_xag_row_first": {
+      "BOOK_EXPECTANCY": 0.09575,
+      "account_path_worst_daily_low": -125.585938,
+      "commission_scaled_total": 1.328125,
+      "concentration": {
+        "book_risk_percent": 0.15625,
+        "risk_by_family_percent": {
+          "XAUXAG_RV_BASKET": 0.15625
+        },
+        "risk_by_symbol_percent": {
+          "XAUUSD.DWX": 0.15625
+        },
+        "symbol_risk_hhi": 1.0
+      },
+      "first_passage_grid_net": 29.921875,
+      "first_passage_grid_worst_low": -125.585938,
+      "net_scaled_total": 29.921875,
+      "sleeves": [
+        {
+          "id": "B",
+          "risk_percent": 0.15625,
+          "rows": 2,
+          "symbol": "XAUUSD.DWX"
+        }
+      ],
+      "slippage_stress_scaled_total": 0.0,
+      "spread_stress_scaled_total": 0.0
+    },
+    "C_whole_host_XAG_xau_row_first": {
+      "BOOK_EXPECTANCY": 0.09575,
+      "account_path_worst_daily_low": -48.203125,
+      "commission_scaled_total": 1.328125,
+      "concentration": {
+        "book_risk_percent": 0.15625,
+        "risk_by_family_percent": {
+          "XAUXAG_RV_BASKET": 0.15625
+        },
+        "risk_by_symbol_percent": {
+          "XAGUSD.DWX": 0.15625
+        },
+        "symbol_risk_hhi": 1.0
+      },
+      "first_passage_grid_net": 29.921875,
+      "first_passage_grid_worst_low": -48.203125,
+      "net_scaled_total": 29.921875,
+      "sleeves": [
+        {
+          "id": "C",
+          "risk_percent": 0.15625,
+          "rows": 2,
+          "symbol": "XAGUSD.DWX"
+        }
+      ],
+      "slippage_stress_scaled_total": 0.0,
+      "spread_stress_scaled_total": 0.0
+    },
+    "D_split_full_risk_legs": {
+      "BOOK_EXPECTANCY": 0.09575,
+      "account_path_worst_daily_low": -141.953125,
+      "commission_scaled_total": 1.328125,
+      "concentration": {
+        "book_risk_percent": 0.3125,
+        "risk_by_family_percent": {
+          "XAUXAG_RV_BASKET": 0.3125
+        },
+        "risk_by_symbol_percent": {
+          "XAGUSD.DWX": 0.15625,
+          "XAUUSD.DWX": 0.15625
+        },
+        "symbol_risk_hhi": 0.5
+      },
+      "first_passage_grid_net": 29.921875,
+      "first_passage_grid_worst_low": -141.953125,
+      "net_scaled_total": 29.921875,
+      "sleeves": [
+        {
+          "id": "D_xau",
+          "risk_percent": 0.15625,
+          "rows": 1,
+          "symbol": "XAUUSD.DWX"
+        },
+        {
+          "id": "D_xag",
+          "risk_percent": 0.15625,
+          "rows": 1,
+          "symbol": "XAGUSD.DWX"
+        }
+      ],
+      "slippage_stress_scaled_total": 0.0,
+      "spread_stress_scaled_total": 0.0
+    },
+    "E_split_half_risk_legs": {
+      "BOOK_EXPECTANCY": 0.09575,
+      "account_path_worst_daily_low": -70.976562,
+      "commission_scaled_total": 0.664062,
+      "concentration": {
+        "book_risk_percent": 0.15625,
+        "risk_by_family_percent": {
+          "XAUXAG_RV_BASKET": 0.15625
+        },
+        "risk_by_symbol_percent": {
+          "XAGUSD.DWX": 0.078125,
+          "XAUUSD.DWX": 0.078125
+        },
+        "symbol_risk_hhi": 0.5
+      },
+      "first_passage_grid_net": 14.960938,
+      "first_passage_grid_worst_low": -70.976562,
+      "net_scaled_total": 14.960938,
+      "sleeves": [
+        {
+          "id": "E_xau",
+          "risk_percent": 0.078125,
+          "rows": 1,
+          "symbol": "XAUUSD.DWX"
+        },
+        {
+          "id": "E_xag",
+          "risk_percent": 0.078125,
+          "rows": 1,
+          "symbol": "XAGUSD.DWX"
+        }
+      ],
+      "slippage_stress_scaled_total": 0.0,
+      "spread_stress_scaled_total": 0.0
+    },
+    "P_whole_per_symbol_stress": {
+      "BOOK_EXPECTANCY": 0.08615,
+      "account_path_worst_daily_low": -51.203125,
+      "commission_scaled_total": 1.328125,
+      "concentration": {
+        "book_risk_percent": 0.15625,
+        "risk_by_family_percent": {
+          "XAUXAG_RV_BASKET": 0.15625
+        },
+        "risk_by_symbol_percent": {
+          "XAUUSD.DWX": 0.15625
+        },
+        "symbol_risk_hhi": 1.0
+      },
+      "first_passage_grid_net": 26.921875,
+      "first_passage_grid_worst_low": -51.203125,
+      "net_scaled_total": 26.921875,
+      "sleeves": [
+        {
+          "id": "P",
+          "risk_percent": 0.15625,
+          "rows": 2,
+          "symbol": "XAUUSD.DWX"
+        }
+      ],
+      "slippage_stress_scaled_total": 0.34375,
+      "spread_stress_scaled_total": 2.65625
+    },
+    "Q_split_full_per_symbol_stress": {
+      "BOOK_EXPECTANCY": 0.07745,
+      "account_path_worst_daily_low": -147.671875,
+      "commission_scaled_total": 1.328125,
+      "concentration": {
+        "book_risk_percent": 0.3125,
+        "risk_by_family_percent": {
+          "XAUXAG_RV_BASKET": 0.3125
+        },
+        "risk_by_symbol_percent": {
+          "XAGUSD.DWX": 0.15625,
+          "XAUUSD.DWX": 0.15625
+        },
+        "symbol_risk_hhi": 0.5
+      },
+      "first_passage_grid_net": 24.203125,
+      "first_passage_grid_worst_low": -147.671875,
+      "net_scaled_total": 24.203125,
+      "sleeves": [
+        {
+          "id": "Q_xau",
+          "risk_percent": 0.15625,
+          "rows": 1,
+          "symbol": "XAUUSD.DWX"
+        },
+        {
+          "id": "Q_xag",
+          "risk_percent": 0.15625,
+          "rows": 1,
+          "symbol": "XAGUSD.DWX"
+        }
+      ],
+      "slippage_stress_scaled_total": 0.71875,
+      "spread_stress_scaled_total": 5.0
+    },
+    "U_whole_uniform_stress": {
+      "BOOK_EXPECTANCY": 0.08615,
+      "account_path_worst_daily_low": -51.203125,
+      "commission_scaled_total": 1.328125,
+      "concentration": {
+        "book_risk_percent": 0.15625,
+        "risk_by_family_percent": {
+          "XAUXAG_RV_BASKET": 0.15625
+        },
+        "risk_by_symbol_percent": {
+          "XAUUSD.DWX": 0.15625
+        },
+        "symbol_risk_hhi": 1.0
+      },
+      "first_passage_grid_net": 26.921875,
+      "first_passage_grid_worst_low": -51.203125,
+      "net_scaled_total": 26.921875,
+      "sleeves": [
+        {
+          "id": "U",
+          "risk_percent": 0.15625,
+          "rows": 2,
+          "symbol": "XAUUSD.DWX"
+        }
+      ],
+      "slippage_stress_scaled_total": 0.34375,
+      "spread_stress_scaled_total": 2.65625
+    },
+    "V_split_full_uniform_stress": {
+      "BOOK_EXPECTANCY": 0.08615,
+      "account_path_worst_daily_low": -144.953125,
+      "commission_scaled_total": 1.328125,
+      "concentration": {
+        "book_risk_percent": 0.3125,
+        "risk_by_family_percent": {
+          "XAUXAG_RV_BASKET": 0.3125
+        },
+        "risk_by_symbol_percent": {
+          "XAGUSD.DWX": 0.15625,
+          "XAUUSD.DWX": 0.15625
+        },
+        "symbol_risk_hhi": 0.5
+      },
+      "first_passage_grid_net": 26.921875,
+      "first_passage_grid_worst_low": -144.953125,
+      "net_scaled_total": 26.921875,
+      "sleeves": [
+        {
+          "id": "V_xau",
+          "risk_percent": 0.15625,
+          "rows": 1,
+          "symbol": "XAUUSD.DWX"
+        },
+        {
+          "id": "V_xag",
+          "risk_percent": 0.15625,
+          "rows": 1,
+          "symbol": "XAGUSD.DWX"
+        }
+      ],
+      "slippage_stress_scaled_total": 0.34375,
+      "spread_stress_scaled_total": 2.65625
+    }
+  },
+  "checks": {
+    "commission_host_substitution_null_current_registry": true,
+    "fp_grid_matches_account_path_low_A": true,
+    "fp_grid_matches_account_path_low_D": true,
+    "logical_basket_label_falls_to_default_class": true,
+    "logical_label_commission_differs_from_leg": true,
+    "monetary_scaling_whole_equals_split_full": true,
+    "per_symbol_stress_host_substitution_differs": true,
+    "split_full_book_risk_metadata_double": true,
+    "split_full_daily_low_equals_leg_envelope": true,
+    "split_half_is_half_of_whole": true,
+    "uniform_stress_host_substitution_null": true,
+    "whole_basket_concentration_all_on_host": true,
+    "whole_basket_daily_low_above_leg_envelope": true,
+    "whole_basket_daily_low_is_row_order_dependent": true
+  },
+  "fixture": {
+    "basket_target_risk_percent": 0.15625,
+    "source_risk_percent": 1.0,
+    "xag_leg": {
+      "commission": 0.0,
+      "entry_time": 1609747200,
+      "event": "TRADE_CLOSED",
+      "fee": 0.0,
+      "mae_acct": -800.0,
+      "mfe_acct": 0.0,
+      "net": -300.0,
+      "notional": 75000.0,
+      "profit": -300.0,
+      "side": "SELL",
+      "swap": 0.0,
+      "symbol": "XAGUSD.DWX",
+      "time": 1609927200,
+      "volume": 0.6
+    },
+    "xau_leg": {
+      "commission": 0.0,
+      "entry_time": 1609747200,
+      "event": "TRADE_CLOSED",
+      "fee": 0.0,
+      "mae_acct": -100.0,
+      "mfe_acct": 500.0,
+      "net": 500.0,
+      "notional": 95000.0,
+      "profit": 500.0,
+      "side": "BUY",
+      "swap": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "time": 1609927200,
+      "volume": 0.5
+    }
+  },
+  "logical_label_commission_case": {
+    "class": "forex",
+    "commission_leg": 0.5,
+    "commission_logical": 5.0,
+    "normalized": "QM5_41119_XAU_XAG_MCLOSE_QUARTILE_RV_D1.DWX",
+    "row": {
+      "notional": 10000.0,
+      "volume": 1.0
+    }
+  },
+  "per_leg_conservative_envelope_scaled": -141.953125,
+  "scope": "Synthetic one-basket fixture through actual book_sim/first_passage consumers; not book, execution or economic evidence.",
+  "task_id": "55eaa2ee-0380-4799-9141-5639a0f6548a"
+}
