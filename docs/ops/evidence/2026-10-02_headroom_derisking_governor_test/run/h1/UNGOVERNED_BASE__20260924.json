@@ -1,0 +1,57 @@
+{
+ "job": {
+  "kind": "ungoverned",
+  "name": "UNGOVERNED_BASE"
+ },
+ "n_paths": 40000,
+ "normal": {
+  "censored_share": 0.0699,
+  "cond_p50_bd": 487.0,
+  "cond_p90_bd": 895.0,
+  "daily_loss_all_stages": 0,
+  "lcb": 0.8822,
+  "max_loss_all_stages": 0.037,
+  "n_paths": 40000,
+  "p": 0.8932,
+  "p50_point_bd": 526,
+  "p80_point_bd": 885,
+  "phase1_daily_loss": 0.0,
+  "phase1_max_loss": 0.0199,
+  "t80_bd": 928,
+  "t80_status": "REACHED_IN_MARKET_PATH_MODEL"
+ },
+ "phase1": {
+  "friday_breach_share": 0.3643,
+  "p_pass": 0.9566,
+  "time_p50_bd": 285.0,
+  "time_p90_bd": 627.0,
+  "top_breach_sleeve": "10700:XAUUSD.DWX",
+  "top_breach_sleeve_share": 0.3342
+ },
+ "seed": 20260924,
+ "stress": {
+  "censored_share": 0.1018,
+  "cond_p50_bd": 537.0,
+  "cond_p90_bd": 979.0,
+  "daily_loss_all_stages": 0,
+  "lcb": 0.8135,
+  "max_loss_all_stages": 0.0689,
+  "n_paths": 40000,
+  "p": 0.8293,
+  "p50_point_bd": 615,
+  "p80_point_bd": 1169,
+  "phase1_daily_loss": 0.0,
+  "phase1_max_loss": 0.0377,
+  "t80_bd": 1306,
+  "t80_status": "REACHED_IN_MARKET_PATH_MODEL"
+ },
+ "wall_s": 8.3,
+ "window": {
+  "active_book_days": 1598,
+  "business_days": 1750,
+  "end": "2025-10-21",
+  "low_power": false,
+  "low_power_note": "adequate",
+  "start": "2019-02-06"
+ }
+}
