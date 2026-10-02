@@ -1,0 +1,34 @@
+{
+  "task_id": "cef98602-40a5-4684-918e-c5cd7fc6ec1e",
+  "blocker": "registry_write_target_resolves_relative_to_importing_checkout_module",
+  "code_citation": "tools/strategy_farm/compile_work_items.py LEGACY_FIRST_GOVERNED_COMPILE_REGISTRY_PATH = Path(__file__).resolve().parent / 'config' / 'legacy_first_governed_compile_waves.v1.json' -- no env override",
+  "session_worktree": "C:\\QM\\worktrees\\claude-orchestration-2",
+  "session_branch": "agents/claude-orchestration-2",
+  "canonical_checkout": "C:\\QM\\repo",
+  "launch_constraint_citation": "session launch prompt: 'NEVER modify, patch or write files under C:/QM/repo ... EDIT AND COMMIT ONLY INSIDE YOUR OWN WORKING DIRECTORY'",
+  "live_worker_import_source": "C:\\QM\\repo",
+  "reachable_class": "q08_legacy_qualifier_v2_refused",
+  "reachable_class_ea_count": 29,
+  "unblocked_ea": "QM5_13137",
+  "unblocked_ea_state": "Q04 pending (landed 2026-09-28)",
+  "remaining_ea_count": 28,
+  "out_of_scope_ea_count": 20,
+  "registry_wave_entry_count": 8,
+  "registry_entries_for_remaining_28": 0,
+  "decision_reference": "decisions/2026-09-26_fable_p80_lever_breadth_over_new_waves.md",
+  "mechanism_test_file": "tools/strategy_farm/tests/test_legacy_first_governed_compile.py",
+  "mechanism_test_status": "31/31 passing",
+  "per_ea_evidence_shape_reference": "docs/ops/evidence/task_8b692228/LEGACY_FIRST_GOVERNED_COMPILE/wave3_pilot/QM5_13137_breadth-tue.md",
+  "identical_prior_findings": [
+    {
+      "task_id": "103b4212-574f-4aeb-973f-b1492da6f244",
+      "evidence_path": "docs/ops/evidence/2026-10-02_lever2_lever3_status/RESULT.md",
+      "section": "3.3"
+    },
+    {
+      "task_id": "f865f0a1-f282-42b4-a8af-4f93e76db724",
+      "evidence_path": "docs/ops/evidence/task_f865f0a1-f282-42b4-a8af-4f93e76db724/no_change_9d6d99851057f458.json"
+    }
+  ],
+  "verdict": "not_actionable_from_this_session_no_change"
+}
