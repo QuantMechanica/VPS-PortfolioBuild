@@ -1,0 +1,12 @@
+{
+  "status_histogram": {
+    "done": 102120,
+    "failed": 49561,
+    "pending": 4134
+  },
+  "raw_pending_count": 4134,
+  "pending_excluded_by_active_hold": 3699,
+  "pending_excluded_by_supersede": 606,
+  "pending_excluded_by_poison_pill_quarantine": 41,
+  "note": "categories overlap; this is a magnitude check, not an exact partition"
+}

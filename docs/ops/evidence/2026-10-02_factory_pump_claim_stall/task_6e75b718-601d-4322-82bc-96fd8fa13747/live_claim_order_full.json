@@ -1,0 +1,270 @@
+{
+  "captured_at_utc": "2026-10-02T03:20Z (approx, live read)",
+  "total_candidates": 33,
+  "candidates": [
+    {
+      "rank": 1,
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_13117",
+      "symbol": "EURGBP.DWX",
+      "updated_at": "2026-10-01T07:04:25+00:00",
+      "id": "667ef9de-e295-59da-a18f-f0cbed54915b"
+    },
+    {
+      "rank": 2,
+      "phase": "Q08",
+      "ea_id": "QM5_41221",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-09-25T06:59:17+00:00",
+      "id": "6fbad00c-3519-44e0-af18-d010f5db99aa"
+    },
+    {
+      "rank": 3,
+      "phase": "Q08",
+      "ea_id": "QM5_41504",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-26T21:09:02+00:00",
+      "id": "d64a236e-beff-40be-b46c-292a038c66b2"
+    },
+    {
+      "rank": 4,
+      "phase": "Q04",
+      "ea_id": "QM5_37008",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-09-26T02:50:12+00:00",
+      "id": "58a56b0e-877b-4067-afd3-7f100c651cd4"
+    },
+    {
+      "rank": 5,
+      "phase": "Q04",
+      "ea_id": "QM5_10403",
+      "symbol": "GDAXI.DWX",
+      "updated_at": "2026-09-26T06:35:27+00:00",
+      "id": "45e60faa-81a9-49d1-ae31-6d2c5996256d"
+    },
+    {
+      "rank": 6,
+      "phase": "Q04",
+      "ea_id": "QM5_10403",
+      "symbol": "SP500.DWX",
+      "updated_at": "2026-09-26T06:35:27+00:00",
+      "id": "6d509f7d-47bd-453e-9408-86edb8b88b07"
+    },
+    {
+      "rank": 7,
+      "phase": "Q02",
+      "ea_id": "QM5_12920",
+      "symbol": "SP500.DWX",
+      "updated_at": "2026-09-20T16:52:58+00:00",
+      "id": "2edcc175-15ae-43c2-bd29-55af813aec2b"
+    },
+    {
+      "rank": 8,
+      "phase": "Q02",
+      "ea_id": "QM5_41145",
+      "symbol": "SP500.DWX",
+      "updated_at": "2026-09-23T20:11:19+00:00",
+      "id": "e78b8e2d-f27e-4335-9759-1f7662906c35"
+    },
+    {
+      "rank": 9,
+      "phase": "Q08",
+      "ea_id": "QM5_11927",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-26T22:04:50+00:00",
+      "id": "e1687db2-e87b-45e3-af53-9efe1fee7f99"
+    },
+    {
+      "rank": 10,
+      "phase": "Q08",
+      "ea_id": "QM5_41119",
+      "symbol": "QM5_41119_XAU_XAG_MCLOSE_QUARTILE_RV_D1",
+      "updated_at": "2026-09-27T16:29:57+00:00",
+      "id": "795b0250-bcba-4374-a566-62804a01b390"
+    },
+    {
+      "rank": 11,
+      "phase": "Q04",
+      "ea_id": "QM5_9468",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-09-25T09:25:01+00:00",
+      "id": "d284ec0a-cca1-4659-9c60-90d4976a9843"
+    },
+    {
+      "rank": 12,
+      "phase": "Q04",
+      "ea_id": "QM5_9932",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-09-25T10:55:11+00:00",
+      "id": "08729772-8c7b-435a-b8ca-535a6d7b433a"
+    },
+    {
+      "rank": 13,
+      "phase": "Q02",
+      "ea_id": "QM5_11100",
+      "symbol": "AUDUSD.DWX",
+      "updated_at": "2026-09-26T02:34:36+00:00",
+      "id": "96b98814-1d18-5190-87a7-2a6a78d7c3f8"
+    },
+    {
+      "rank": 14,
+      "phase": "Q02",
+      "ea_id": "QM5_12975",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-08-30T07:03:13+00:00",
+      "id": "41c47e3e-22cd-5867-a977-371bd0d3bbe7"
+    },
+    {
+      "rank": 15,
+      "phase": "Q02",
+      "ea_id": "QM5_41189",
+      "symbol": "QM5_41189_XTI_XNG_MLAD_RV_D1",
+      "updated_at": "2026-09-24T00:58:21+00:00",
+      "id": "616c057c-15f3-4a71-95db-11a4a91c924c"
+    },
+    {
+      "rank": 16,
+      "phase": "Q02",
+      "ea_id": "QM5_41179",
+      "symbol": "QM5_41179_XTI_XNG_MCOXSTUART_RV_D1",
+      "updated_at": "2026-09-24T00:58:22+00:00",
+      "id": "49cfdb90-274a-496e-b258-95b7a9f87666"
+    },
+    {
+      "rank": 17,
+      "phase": "Q02",
+      "ea_id": "QM5_41371",
+      "symbol": "QM5_41371_XTI_XNG_CS_LEADSWITCH_CONT_D1",
+      "updated_at": "2026-09-24T00:59:30+00:00",
+      "id": "c7d33519-27f9-4df7-aea2-f6cbfa2ff467"
+    },
+    {
+      "rank": 18,
+      "phase": "Q02",
+      "ea_id": "QM5_41370",
+      "symbol": "QM5_41370_XTI_XNG_CS_LEADPERSIST_RV_D1",
+      "updated_at": "2026-09-24T00:59:30+00:00",
+      "id": "8dc92741-5cd0-45a5-981d-bcaa16b8928d"
+    },
+    {
+      "rank": 19,
+      "phase": "Q02",
+      "ea_id": "QM5_41369",
+      "symbol": "QM5_41369_XTI_XNG_CS_LEADPERSIST_CONT_D1",
+      "updated_at": "2026-09-24T00:59:31+00:00",
+      "id": "0c31500d-ed70-46d0-8689-a6a123433a49"
+    },
+    {
+      "rank": 20,
+      "phase": "Q02",
+      "ea_id": "QM5_41368",
+      "symbol": "QM5_41368_XTI_XNG_CS_LEADSWITCH_RV_D1",
+      "updated_at": "2026-09-24T00:59:32+00:00",
+      "id": "064aa3d7-df87-41a6-bed3-597a9f427e4d"
+    },
+    {
+      "rank": 21,
+      "phase": "Q02",
+      "ea_id": "QM5_41178",
+      "symbol": "QM5_41178_XTI_XNG_MWILCOXON_RV_D1",
+      "updated_at": "2026-09-24T00:59:38+00:00",
+      "id": "475a7fd9-526b-4899-afb2-7fe1efd4a286"
+    },
+    {
+      "rank": 22,
+      "phase": "Q02",
+      "ea_id": "QM5_41190",
+      "symbol": "QM5_41190_XTI_XNG_MTHEILSEN_RV_D1",
+      "updated_at": "2026-09-24T00:59:45+00:00",
+      "id": "1b0e8764-f9f6-4102-8281-edd38e38e1f8"
+    },
+    {
+      "rank": 23,
+      "phase": "Q02",
+      "ea_id": "QM5_41372",
+      "symbol": "QM5_41372_XTI_XNG_WRELVOTE_FLIP_CONT_D1",
+      "updated_at": "2026-09-24T01:04:23+00:00",
+      "id": "3f99a6e5-85bd-45a4-8cda-6b954f15ddae"
+    },
+    {
+      "rank": 24,
+      "phase": "Q02",
+      "ea_id": "QM5_41367",
+      "symbol": "QM5_41367_XTI_XNG_COMMONSHOCK_CONT_D1",
+      "updated_at": "2026-09-24T01:04:50+00:00",
+      "id": "abd2719f-478a-4215-98a5-5c0f4027efa3"
+    },
+    {
+      "rank": 25,
+      "phase": "Q02",
+      "ea_id": "QM5_41366",
+      "symbol": "QM5_41366_XTI_XNG_DECOUPLE_CONT_D1",
+      "updated_at": "2026-09-24T01:05:12+00:00",
+      "id": "f1c1c7f4-89f9-4dda-9e47-594144f40bc1"
+    },
+    {
+      "rank": 26,
+      "phase": "Q02",
+      "ea_id": "QM5_41364",
+      "symbol": "QM5_41364_XTI_XNG_WCLVDIV_RV_D1",
+      "updated_at": "2026-09-24T01:08:42+00:00",
+      "id": "85a56624-485c-4be9-9c35-1fa6e71d327a"
+    },
+    {
+      "rank": 27,
+      "phase": "Q02",
+      "ea_id": "QM5_41175",
+      "symbol": "QM5_41175_XTI_XNG_MPETTITT_RV_D1",
+      "updated_at": "2026-09-24T01:47:25+00:00",
+      "id": "8df2f0f3-070f-4ca9-9151-8369f2d4436c"
+    },
+    {
+      "rank": 28,
+      "phase": "Q02",
+      "ea_id": "QM5_41272",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-09-24T01:47:31+00:00",
+      "id": "a7bd2e8c-8052-4038-8573-27c15bca6f93"
+    },
+    {
+      "rank": 29,
+      "phase": "Q02",
+      "ea_id": "QM5_21509",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-09-24T22:35:06+00:00",
+      "id": "49afc0b9-7e63-4b2b-a0d4-9be1d4e3cecf"
+    },
+    {
+      "rank": 30,
+      "phase": "Q02",
+      "ea_id": "QM5_13137",
+      "symbol": "SP500.DWX",
+      "updated_at": "2026-09-28T01:30:26+00:00",
+      "id": "58a4adee-6a87-4f25-97bf-88f4b7240180"
+    },
+    {
+      "rank": 31,
+      "phase": "Q02",
+      "ea_id": "QM5_1246",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-07-26T10:38:56+00:00",
+      "id": "f5b5d846-f126-420a-87c4-74ab04084e52"
+    },
+    {
+      "rank": 32,
+      "phase": "Q02",
+      "ea_id": "QM5_1191",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-07-26T10:38:56+00:00",
+      "id": "cdfe1c32-1cad-4959-b5cf-02f9794067a3"
+    },
+    {
+      "rank": 33,
+      "phase": "Q02",
+      "ea_id": "QM5_10050",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-07-26T10:38:56+00:00",
+      "id": "eb0f9c58-b5e2-4452-9531-06fd46fe6bd1"
+    }
+  ]
+}

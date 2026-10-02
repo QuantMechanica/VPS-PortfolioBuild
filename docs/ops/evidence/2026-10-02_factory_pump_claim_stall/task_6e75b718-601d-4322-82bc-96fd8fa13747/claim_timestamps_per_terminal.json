@@ -1,0 +1,22 @@
+{
+  "captured_at_utc_approx": "2026-10-02T03:17Z",
+  "note": "claimed_true/claim_declined are lifetime counts for each terminal_worker_T*.log on disk, not a 2-hour window. last_claimed_true_utc is the timestamp of the most recent successful claim in that log.",
+  "terminals": {
+    "T1": {"claimed_true_lifetime": 2900, "claim_declined_lifetime": 13502, "last_claimed_true_utc": "2026-10-01T07:30:45.981+00:00"},
+    "T2": {"claimed_true_lifetime": 313, "claim_declined_lifetime": 4745, "last_claimed_true_utc": "2026-10-02T01:07:07.984+00:00"},
+    "T3": {"claimed_true_lifetime": 307, "claim_declined_lifetime": 4828, "last_claimed_true_utc": "2026-10-01T08:57:35.988+00:00"},
+    "T4": {"claimed_true_lifetime": 289, "claim_declined_lifetime": 4919, "last_claimed_true_utc": "2026-09-29T13:04:10.881+00:00"},
+    "T5": {"claimed_true_lifetime": 273, "claim_declined_lifetime": 4692, "last_claimed_true_utc": "2026-09-29T03:35:30.171+00:00"},
+    "T6": {"claimed_true_lifetime": 255, "claim_declined_lifetime": 4735, "last_claimed_true_utc": "2026-10-01T07:27:32.779+00:00"},
+    "T7": {"claimed_true_lifetime": 262, "claim_declined_lifetime": 4910, "last_claimed_true_utc": "2026-09-29T12:12:41.229+00:00"},
+    "T8": {"claimed_true_lifetime": 304, "claim_declined_lifetime": 4789, "last_claimed_true_utc": "2026-09-29T23:55:48.708+00:00"},
+    "T9": {"claimed_true_lifetime": 271, "claim_declined_lifetime": 4598, "last_claimed_true_utc": "2026-09-30T00:07:25.327+00:00"},
+    "T10": {"claimed_true_lifetime": 270, "claim_declined_lifetime": 4821, "last_claimed_true_utc": "2026-10-02T01:06:49.416+00:00"}
+  },
+  "independent_live_ram_check": {
+    "source": "Get-CimInstance Win32_OperatingSystem",
+    "free_physical_memory_gb": 44.5,
+    "total_visible_memory_gb": 63.1,
+    "matches_log_free_ram_gb_range": "44.1-44.9"
+  }
+}
