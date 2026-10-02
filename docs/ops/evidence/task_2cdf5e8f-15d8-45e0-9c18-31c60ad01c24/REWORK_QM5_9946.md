@@ -68,8 +68,34 @@ No entry/exit/risk logic beyond the above was touched. Symbols remain inputs
   (`strategy_atr_period`/`strategy_max_hold_bars` defaults are unchanged;
   only how the code *uses* them changed).
 
-## Next step
+## Router state transition attempted — blocked on governed-compile identity
 
-Router state → REVIEW. Per standing hard rules, independent (Codex) review is
-required before this can move to APPROVED/PIPELINE; this session does not
-self-approve.
+Attempted `agent_router.py update-task 2cdf5e8f... --state REVIEW`:
+refused with `gate_code=D6_BUILD_IDENTITY_MISSING` /
+`reason=build_identity_json_missing_review_dispatch_refused`. For
+`task_type=build_ea`, the router requires a governed `COMPILE_EA` receipt
+binding the new `mq5_sha256` before a task can enter REVIEW.
+
+Investigated the one queuing path the commit guard itself suggested
+(`farmctl.py enqueue-compile --build-task-id 2cdf5e8f... QM5_9946_bandy-supertrend-flip-trend`):
+refused with `build_task_binding.reason=BUILD_TASK_BINDING_NOT_FOUND` (no
+pre-registered binding record exists for this task id). Separately, and more
+importantly: this command's `ea_dir` resolves to
+`C:\QM\repo\framework\EAs\QM5_9946_bandy-supertrend-flip-trend` — the
+**canonical checkout**, not this worktree — so even a successful call would
+not have compiled this worktree's fixed source; it operates on whatever is
+currently on disk at `C:/QM/repo`. Per standing instruction (never write
+under `C:/QM/repo`; `farmctl.py` runs against the canonical checkout only)
+and because the binding lookup fails regardless, no further enqueue attempts
+were made and no `--source-repair-authority` grant was invoked (that
+mechanism is additionally scoped to repairing a *failed* predecessor
+compile — `787088b3` was COMPILE_OK, not a failure, so it would not apply
+even if a grant existed).
+
+**Net: the source-level repair is complete, verified, and committed in this
+worktree. It cannot be carried to REVIEW from this session** — that requires
+the build lane's governed `COMPILE_EA` queue (over the committed
+`agents/claude-orchestration-2` source) to produce a receipt binding this
+commit's `mq5_sha256`, followed by a binary resync. Router state set to
+`BLOCKED` with this evidence path so the compile dependency is visible to
+the next routing cycle, rather than forcing a disallowed state transition.
