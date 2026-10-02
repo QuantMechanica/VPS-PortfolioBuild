@@ -1,0 +1,31 @@
+{
+  "schema": "qm.orchestration_no_change_evidence.v1",
+  "task_id": "f865f0a1-f282-42b4-a8af-4f93e76db724",
+  "agent": "claude",
+  "state_sha256": "9d6d99851057f458f74a497740403986fb219800fa2be565c3a64eb412c93a20",
+  "marker_path": "D:\\QM\\strategy_farm\\state\\orchestration_no_change\\claude\\f865f0a1-f282-42b4-a8af-4f93e76db724\\9d6d99851057f458f74a497740403986fb219800fa2be565c3a64eb412c93a20.json",
+  "verdict": "not_actionable_from_this_session_no_change",
+  "finding": "Task asks to extend the legacy_first_governed_compile wave registry to the remaining 28 reachable q08_legacy_qualifier_v2_refused EAs. This session (worktree C:/QM/worktrees/claude-orchestration-2, branch agents/claude-orchestration-2) was first asked to determine which checkout the live factory workers mtime-reload the registry from before touching it. Confirmed by code read: tools/strategy_farm/compile_work_items.py:2653-2656 resolves LEGACY_FIRST_GOVERNED_COMPILE_REGISTRY_PATH as Path(__file__).resolve().parent / 'config' / 'legacy_first_governed_compile_waves.v1.json' -- i.e. relative to whichever checkout's compile_work_items.py module the running process imported, with no env override. This session's own launch constraints state the live T1-T10 factory workers import compile_work_items.py from the canonical C:/QM/repo checkout at run time, and explicitly forbid this session from writing/patching anything under C:/QM/repo (citing the 2026-09-22T02:38Z SyntaxError incident from a prior cross-checkout edit). Therefore the registry edit + per-EA evidence doc this task requires cannot be landed where the live workers would actually read it, from this session. This is the identical blocker already surfaced the same day by a sibling task.",
+  "identical_to_prior_finding": {
+    "task_id": "103b4212-574f-4aeb-973f-b1492da6f244",
+    "evidence_path": "docs/ops/evidence/2026-10-02_lever2_lever3_status/RESULT.md",
+    "section": "3.3"
+  },
+  "unchanged_facts": {
+    "reachable_class": "q08_legacy_qualifier_v2_refused",
+    "reachable_class_ea_count": 29,
+    "unblocked_ea": "QM5_13137",
+    "unblocked_ea_state": "Q04 pending (landed 2026-09-28)",
+    "remaining_ea_count": 28,
+    "out_of_scope_ea_count": 20,
+    "registry_head_commit_at_check": "7792f01c671c61b53fe8263edb599a0d3db71cb6",
+    "mechanism_test_file": "tools/strategy_farm/tests/test_legacy_first_governed_compile.py",
+    "mechanism_test_status": "16/16 passing",
+    "decision_reference": "decisions/2026-09-26_fable_p80_lever_breadth_over_new_waves.md"
+  },
+  "before_after_count": {
+    "before": "1 of 29 unblocked (QM5_13137); 28 of 29 unchanged",
+    "after": "1 of 29 unblocked (QM5_13137); 28 of 29 unchanged -- no mutation performed by this task"
+  },
+  "recommended_next_step": "Hand the 28-EA registry extension to a session that actually runs from canonical C:/QM/repo (same posture as commits 86900f5b07 / 5ab9154996), reusing decisions/2026-09-26_fable_p80_lever_breadth_over_new_waves.md as decision_reference and docs/ops/evidence/task_8b692228/LEGACY_FIRST_GOVERNED_COMPILE/wave3_pilot/QM5_13137_breadth-tue.md as the per-EA evidence shape. No new decision is implied; this is routing/session-posture, not a design gap."
+}

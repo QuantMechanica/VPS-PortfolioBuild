@@ -1,0 +1,23 @@
+{
+  "task_id": "f865f0a1-f282-42b4-a8af-4f93e76db724",
+  "objective": "extend legacy_first_governed_compile wave to remaining 28 q08_legacy_qualifier_v2_refused EAs",
+  "blocker_class": "cross_checkout_registry_write_forbidden",
+  "registry_path_relative": "tools/strategy_farm/config/legacy_first_governed_compile_waves.v1.json",
+  "registry_resolution_code_ref": "tools/strategy_farm/compile_work_items.py:2653-2656 (Path(__file__).resolve().parent / \"config\" / ...; no env override)",
+  "live_worker_import_source": "C:/QM/repo (canonical checkout; stated in session launch constraints)",
+  "session_write_constraint": "launch instruction: NEVER modify, patch or write files under C:/QM/repo; EDIT AND COMMIT ONLY INSIDE OWN WORKING DIRECTORY",
+  "prior_incident_reference": "SyntaxError from cross-checkout edit, 2026-09-22T02:38Z",
+  "mechanism_test_file": "tools/strategy_farm/tests/test_legacy_first_governed_compile.py",
+  "mechanism_test_status": "16/16 passing",
+  "decision_reference": "decisions/2026-09-26_fable_p80_lever_breadth_over_new_waves.md",
+  "evidence_shape_precedent": "docs/ops/evidence/task_8b692228/LEGACY_FIRST_GOVERNED_COMPILE/wave3_pilot/QM5_13137_breadth-tue.md",
+  "reachable_class": "q08_legacy_qualifier_v2_refused",
+  "reachable_class_ea_count": 29,
+  "unblocked_ea": "QM5_13137",
+  "unblocked_ea_state": "Q04 pending (landed 2026-09-28)",
+  "remaining_ea_count": 28,
+  "out_of_scope_ea_count": 20,
+  "prior_task_with_identical_finding": "103b4212-574f-4aeb-973f-b1492da6f244",
+  "prior_task_evidence_path": "docs/ops/evidence/2026-10-02_lever2_lever3_status/RESULT.md",
+  "registry_head_commit_at_check": "7792f01c671c61b53fe8263edb599a0d3db71cb6"
+}
