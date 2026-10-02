@@ -1,7 +1,7 @@
 # QM5_9947_bandy-double-bottom-formalised-mr-index - Strategy Spec
 
 **EA ID:** QM5_9947
-**Slug:** andy-double-bottom-formalised-mr-index
+**Slug:** bandy-double-bottom-formalised-mr-index
 **Source:** 9ef19e06-5ca6-5b35-aa06-b8187aa0e016
 **Author of this spec:** Gemini
 **Last revised:** 2026-08-23
@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades the bullish double-bottom (W-pattern) chart pattern on D1 bars per Howard Bandy\'s formalisation in Quantitative Technical Analysis. It scans the most recent 60 completed bars for the two most recent confirmed 3-bar swing lows, requires those lows to be 10-50 bars apart and within 2 percent of each other, then finds the highest high between them as the neckline. A long entry fires after the latest completed close breaks above the neckline, the pattern depth is at least 3 percent of the bottom price, and price is above its 200-day SMA regime filter. The stop loss is placed below the pattern\'s deepest low with a 0.5 ATR buffer capped at 3.5 ATR from entry; the target is the measured pattern height projected upward from entry, with a 20 D1-bar time stop.
+This EA trades the bullish double-bottom (W-pattern) chart pattern on D1 bars per Howard Bandy's formalisation in Quantitative Technical Analysis. It scans the most recent 60 completed bars for the two most recent confirmed 3-bar swing lows, requires those lows to be 10-50 bars apart and within 2 percent of each other, then finds the highest high between them as the neckline. A long entry fires after the latest completed close breaks above the neckline, the pattern depth is at least 3 percent of the bottom price, and price is above its 200-day SMA regime filter. The stop loss is placed below the pattern's deepest low with a 0.5 ATR buffer capped at 3.5 ATR from entry; the target is the measured pattern height projected upward from entry, with a 20 D1-bar time stop.
 
 ---
 
@@ -89,7 +89,7 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 - Q10) | RISK_FIXED | ,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio, typically 0.3% - 0.5% |
 

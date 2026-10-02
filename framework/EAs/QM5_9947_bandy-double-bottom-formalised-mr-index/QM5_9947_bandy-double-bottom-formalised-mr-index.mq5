@@ -55,6 +55,47 @@ input double strategy_stop_cap_atr        = 3.50;
 input int    strategy_max_hold_bars       = 20;
 input int    strategy_max_spread_points   = 0;
 
+string Strategy_LastFiredP2Key()
+  {
+   // GlobalVariable, not a function-static: persists across EA/terminal
+   // restarts so a restart cannot re-arm a P2 that already fired (finding 3).
+   return StringFormat("Q9947.%I64d.%d.%s.last_fired_p2_time",
+                       (long)AccountInfoInteger(ACCOUNT_LOGIN),
+                       QM_FrameworkMagic(),
+                       _Symbol);
+  }
+
+datetime Strategy_ReadLastFiredP2Time()
+  {
+   const string key = Strategy_LastFiredP2Key();
+   if(!GlobalVariableCheck(key))
+      return 0;
+   return (datetime)GlobalVariableGet(key);
+  }
+
+void Strategy_WriteLastFiredP2Time(const datetime p2_time)
+  {
+   GlobalVariableSet(Strategy_LastFiredP2Key(), (double)p2_time);
+  }
+
+// Encodes the card next-bar-open target price into POSITION_COMMENT so the
+// exit check (finding 2) survives EA/terminal restarts without re-deriving
+// the pattern from a scan window that may have rolled past P1/P2.
+string Strategy_EntryReason(const double target_price)
+  {
+   return StringFormat("bandy_mr_entry_T=%.8f", target_price);
+  }
+
+bool Strategy_ReadTargetPrice(const string comment, double &target_price)
+  {
+   target_price = 0.0;
+   const int marker = StringFind(comment, "_T=");
+   if(marker < 0)
+      return false;
+   target_price = StringToDouble(StringSubstr(comment, marker + 3));
+   return (target_price > 0.0);
+  }
+
 bool Strategy_SymbolAllowed(const string sym)
   {
    return (sym == strategy_symbol_sp500 ||
@@ -113,8 +154,6 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   static datetime last_fired_p2_time = 0;
-
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
@@ -182,7 +221,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(p1_index < 0 || p2_index < 0)
       return false;
-   if(p2_time == last_fired_p2_time)
+   if(p2_time == Strategy_ReadLastFiredP2Time())
       return false;
 
    const int separation = p1_index - p2_index;
@@ -205,6 +244,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(pattern_height / p1_low < strategy_min_depth_pct)
       return false;
    if(last_close <= neckline_high)
+      return false;
+   // Strictly a fresh cross: if the prior completed bar had already closed
+   // above the neckline, the breakout was confirmed on an earlier bar and
+   // this is a late/stale re-entry on the same unfired P2, not the signal.
+   if(copied < 2 || rates[1].close > neckline_high)
       return false;
 
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period,
@@ -230,19 +274,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(sl_raw <= 0.0)
       return false;
 
-   double tp_raw = ask + pattern_height;
-   if(tp_raw - ask < min_stop_distance)
-      tp_raw = ask + min_stop_distance + point;
+   // Card target is a next-bar-open strategy exit (checked in
+   // Strategy_ExitSignal against the completed bar's high), not an intrabar
+   // broker take-profit (finding 2) -- req.tp stays 0.0 and the target price
+   // is carried restart-safely in POSITION_COMMENT.
+   const double target_price = ask + pattern_height;
 
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = NormalizeDouble(sl_raw, digits);
-   req.tp = NormalizeDouble(tp_raw, digits);
-   req.reason = "bandy_double_bottom_neckline_break";
+   req.tp = 0.0;
+   req.reason = Strategy_EntryReason(target_price);
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   last_fired_p2_time = p2_time;
+   Strategy_WriteLastFiredP2Time(p2_time);
    return true;
   }
 
@@ -256,9 +302,10 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
-   const int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
-   if(period_seconds <= 0)
-      return false;
+   // Single closed-bar high read, checked every tick, so a touch is acted on
+   // at the first tick of the following bar -- the card's next-bar-open
+   // target exit (finding 2). perf-allowed: one scalar price per tick.
+   const double last_closed_high = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -267,8 +314,19 @@ bool Strategy_ExitSignal()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+
+      // Completed-D1-bar count via the restart-safe framework helper (finding
+      // 1); QM_TM_HeldPeriods returns -1 on unknown history, which fails
+      // closed against strategy_max_hold_bars rather than exiting early.
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      if(opened > 0 && TimeCurrent() - opened >= strategy_max_hold_bars * period_seconds)
+      const int held_bars = QM_TM_HeldPeriods(_Symbol, (ENUM_TIMEFRAMES)_Period, opened);
+      if(held_bars >= strategy_max_hold_bars)
+         return true;
+
+      double target_price = 0.0;
+      if(last_closed_high > 0.0 &&
+         Strategy_ReadTargetPrice(PositionGetString(POSITION_COMMENT), target_price) &&
+         last_closed_high >= target_price)
          return true;
      }
    return false;
