@@ -1,0 +1,46 @@
+{
+  "schema": "qm.quiet_ndx_replay_prep.prerequisite_contract/v1",
+  "task_id": "49b5921b-c5dc-4536-bb6f-5e467b1455b8",
+  "at_utc": "2026-10-02T00:00:00Z",
+  "activation_approved": false,
+  "implementation_performed": false,
+  "build_performed": false,
+  "mt5_run_performed": false,
+  "new_outcomes_observed": false,
+  "ea_source_path": "framework/EAs/QM5_10290_cinar-trix/QM5_10290_cinar-trix.mq5",
+  "ea_source_sha256": "4113a65051a0942f726c2d13191466caa8bfb052ab1ef25069a9b1aeffa83cf0",
+  "ea_source_git_blob": "aa862415722b351056ead2a5a07849ea954dd61f",
+  "ea_source_hash_matches_protocol_acceptance": true,
+  "gate_insertion_point": {
+    "function": "Strategy_EntrySignal",
+    "after_line": 163,
+    "before_line": 165,
+    "note": "Strictly after the opposite-signal close resolution block, strictly before new-request construction. Never gates Strategy_ExitSignal (hardcoded false) or the close itself."
+  },
+  "feature_component_commit": "2bf3b90656",
+  "feature_component_state": "INDEPENDENTLY_REVIEWED_LANDED_SYNTHETIC_ONLY",
+  "outstanding_blockers": [
+    "calendar_clock_authority",
+    "ftmo_normal_stress_cost_contract",
+    "fresh_quote_margin_spread",
+    "q05_setfile_byte_identity_unrecovered",
+    "execution_fidelity_tolerance_undefined",
+    "governed_build_registry_identities_unallocated",
+    "exposure_selection_ledger_unresolved",
+    "paired_marginal_book_inputs_blocked_transitively",
+    "stage_b_confirmation_window_unlocked"
+  ],
+  "required_output_branch_used": "precise_internally_actionable_prerequisite_list",
+  "evidence_files": [
+    "PREREQUISITES.md"
+  ],
+  "upstream_evidence_read": [
+    "docs/ops/evidence/2026-09-26_astra_takeover/quiet_regime_diagnostic/PROTOCOL_ACCEPTANCE.md",
+    "docs/ops/evidence/2026-09-26_astra_takeover/quiet_regime_diagnostic/INPUT_RECONCILIATION.md",
+    "docs/ops/evidence/2026-09-26_astra_takeover/quiet_regime_diagnostic/protocol_delivery/revision1/research_answer.md",
+    "docs/ops/evidence/2026-09-26_astra_takeover/quiet_regime_diagnostic/feature_preparation/INTEGRATION_CONTRACT.md",
+    "docs/ops/evidence/2026-09-26_astra_takeover/quiet_regime_diagnostic/feature_preparation/IMPLEMENTATION.json",
+    "docs/ops/evidence/2026-09-26_astra_takeover/quiet_regime_diagnostic/input_readiness_20260928/FINDINGS.md",
+    "docs/ops/evidence/2026-09-26_astra_takeover/quiet_regime_diagnostic/exposure_ledger.json"
+  ]
+}
