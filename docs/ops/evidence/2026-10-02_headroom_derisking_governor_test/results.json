@@ -1,0 +1,1394 @@
+{
+ "decision_base_cfg": {
+  "daily_event": "day_reset",
+  "stages": [
+   "phase1"
+  ],
+  "trigger_basis": "low"
+ },
+ "engine_hashes": {
+  "book_sim.py": "749146ddfe7dfa9ccad8bec4b8a9523b4aa0ed81a76d03af5700b77f7dae16ba",
+  "first_passage.py": "ebd61a9f4c716908d63748b7f1c2a91ec8cc588248ef6bd587a24c9f94080069",
+  "governor_base.py": "4212fee0521e18b75a06dd972f472a77ff6645cb66530604d8674645791296bb",
+  "governor_ladder.py": "7f43a2325bee7460beba69a4eee4d9d8c07785dce1e522081bb0b09a926f9403",
+  "governor_ladder_w3.py": "bcf266b964466576f2808733ceea2ee08ec47543750226dbce6814ceeb47f759"
+ },
+ "generated_at": "2026-10-02",
+ "h1": {
+  "cells_summary": {
+   "W7-02G-w5000-f0.15": {
+    "censored_normal": 0.145,
+    "lcb_normal": 0.8427199999999999,
+    "lcb_stress": 0.75796,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 993.2,
+    "t80_bd_normal": 1044.8
+   },
+   "W7-02G-w5000-f0.25": {
+    "censored_normal": 0.14350000000000002,
+    "lcb_normal": 0.8428799999999999,
+    "lcb_stress": 0.7580799999999999,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 992.8,
+    "t80_bd_normal": 1044.2
+   },
+   "W7-02G-w5000-f0.35": {
+    "censored_normal": 0.14188,
+    "lcb_normal": 0.8426199999999999,
+    "lcb_stress": 0.75838,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 992.2,
+    "t80_bd_normal": 1043.4
+   },
+   "W7-02G-w5000-f0.50": {
+    "censored_normal": 0.13944,
+    "lcb_normal": 0.84196,
+    "lcb_stress": 0.75758,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 990.6,
+    "t80_bd_normal": 1041.8
+   },
+   "W7-02G-w6000-f0.15": {
+    "censored_normal": 0.14592,
+    "lcb_normal": 0.84074,
+    "lcb_stress": 0.7557,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 993.6,
+    "t80_bd_normal": 1047.0
+   },
+   "W7-02G-w6000-f0.25": {
+    "censored_normal": 0.144,
+    "lcb_normal": 0.8401399999999999,
+    "lcb_stress": 0.7557,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 993.4,
+    "t80_bd_normal": 1047.4
+   },
+   "W7-02G-w6000-f0.35": {
+    "censored_normal": 0.14257999999999998,
+    "lcb_normal": 0.83956,
+    "lcb_stress": 0.7556999999999998,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 993.0,
+    "t80_bd_normal": 1047.0
+   },
+   "W7-02G-w6000-f0.50": {
+    "censored_normal": 0.14066,
+    "lcb_normal": 0.8381000000000001,
+    "lcb_stress": 0.75514,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 992.8,
+    "t80_bd_normal": 1050.0
+   },
+   "W7-02G-w7000-f0.15": {
+    "censored_normal": 0.14279999999999998,
+    "lcb_normal": 0.83998,
+    "lcb_stress": 0.7555799999999999,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 991.2,
+    "t80_bd_normal": 1043.2
+   },
+   "W7-02G-w7000-f0.25": {
+    "censored_normal": 0.14129999999999998,
+    "lcb_normal": 0.83994,
+    "lcb_stress": 0.75518,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 990.6,
+    "t80_bd_normal": 1042.4
+   },
+   "W7-02G-w7000-f0.35": {
+    "censored_normal": 0.14023999999999998,
+    "lcb_normal": 0.83918,
+    "lcb_stress": 0.7548199999999999,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 991.2,
+    "t80_bd_normal": 1043.0
+   },
+   "W7-02G-w7000-f0.50": {
+    "censored_normal": 0.13913999999999999,
+    "lcb_normal": 0.83788,
+    "lcb_stress": 0.75422,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 991.8,
+    "t80_bd_normal": 1048.6
+   },
+   "W7-02G-w8000-f0.15": {
+    "censored_normal": 0.13972,
+    "lcb_normal": 0.8387399999999999,
+    "lcb_stress": 0.75516,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 991.4,
+    "t80_bd_normal": 1044.2
+   },
+   "W7-02G-w8000-f0.25": {
+    "censored_normal": 0.139,
+    "lcb_normal": 0.8377600000000001,
+    "lcb_stress": 0.7547,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 991.6,
+    "t80_bd_normal": 1048.0
+   },
+   "W7-02G-w8000-f0.35": {
+    "censored_normal": 0.13858,
+    "lcb_normal": 0.8370200000000001,
+    "lcb_stress": 0.75344,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 992.0,
+    "t80_bd_normal": 1051.0
+   },
+   "W7-02G-w8000-f0.50": {
+    "censored_normal": 0.1381,
+    "lcb_normal": 0.8365600000000001,
+    "lcb_stress": 0.75342,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 992.8,
+    "t80_bd_normal": 1050.2
+   }
+  },
+  "payload_rule_cells_passing": 0,
+  "payload_rule_delta_p80_lt0_and_delta_lcb_ge0": {
+   "W7-02G-w5000-f0.15": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([15, -4, -14, -17, -22])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.006199999999999983,
+      0.006099999999999994,
+      0.008199999999999985,
+      0.009500000000000064,
+      0.009000000000000008
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      15,
+      -4,
+      -14,
+      -17,
+      -22
+     ],
+     "mean_d_lcb": 0.007800000000000007,
+     "mean_d_p80": -8.4
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      0.0041999999999999815,
+      0.008899999999999908,
+      0.0049000000000000155,
+      0.009500000000000064,
+      0.010000000000000009
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": 0.007499999999999995,
+     "mean_d_p80": null
+    }
+   },
+   "W7-02G-w5000-f0.25": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([9, -4, -14, -14, -22])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.00660000000000005,
+      0.006099999999999994,
+      0.007699999999999929,
+      0.009500000000000064,
+      0.00990000000000002
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      9,
+      -4,
+      -14,
+      -14,
+      -22
+     ],
+     "mean_d_lcb": 0.007960000000000012,
+     "mean_d_p80": -9.0
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      0.0041999999999999815,
+      0.009899999999999909,
+      0.0043999999999999595,
+      0.009600000000000053,
+      0.010000000000000009
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": 0.007619999999999983,
+     "mean_d_p80": null
+    }
+   },
+   "W7-02G-w5000-f0.35": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([13, -17, -6, -17, -22])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.007099999999999995,
+      0.006099999999999994,
+      0.006299999999999972,
+      0.009500000000000064,
+      0.009500000000000064
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      13,
+      -17,
+      -6,
+      -17,
+      -22
+     ],
+     "mean_d_lcb": 0.007700000000000018,
+     "mean_d_p80": -9.8
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      0.006199999999999983,
+      0.009499999999999953,
+      0.0049000000000000155,
+      0.008600000000000052,
+      0.010400000000000076
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": 0.007920000000000016,
+     "mean_d_p80": null
+    }
+   },
+   "W7-02G-w5000-f0.50": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([5, -17, -4, -17, -24])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.005700000000000038,
+      0.005600000000000049,
+      0.005900000000000016,
+      0.008900000000000019,
+      0.009099999999999997
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      5,
+      -17,
+      -4,
+      -17,
+      -24
+     ],
+     "mean_d_lcb": 0.007040000000000024,
+     "mean_d_p80": -11.4
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      0.006199999999999983,
+      0.007899999999999907,
+      0.00539999999999996,
+      0.007500000000000062,
+      0.008600000000000052
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": 0.007119999999999993,
+     "mean_d_p80": null
+    }
+   },
+   "W7-02G-w6000-f0.15": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([5, -9, 0, -13, -14])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.005600000000000049,
+      0.0046000000000000485,
+      0.005299999999999971,
+      0.007600000000000051,
+      0.006000000000000005
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      5,
+      -9,
+      0,
+      -13,
+      -14
+     ],
+     "mean_d_lcb": 0.005820000000000025,
+     "mean_d_p80": -6.2
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      0.0027000000000000357,
+      0.00649999999999995,
+      0.005800000000000027,
+      0.0040999999999999925,
+      0.007099999999999995
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": 0.00524,
+     "mean_d_p80": null
+    }
+   },
+   "W7-02G-w6000-f0.25": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([5, -9, 1, -12, -14])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.005099999999999993,
+      0.0046000000000000485,
+      0.0033999999999999586,
+      0.007099999999999995,
+      0.005900000000000016
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      5,
+      -9,
+      1,
+      -12,
+      -14
+     ],
+     "mean_d_lcb": 0.005220000000000002,
+     "mean_d_p80": -5.8
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      0.0018000000000000238,
+      0.006899999999999906,
+      0.0048000000000000265,
+      0.005099999999999993,
+      0.007600000000000051
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": 0.00524,
+     "mean_d_p80": null
+    }
+   },
+   "W7-02G-w6000-f0.35": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([5, -9, 1, -11, -17])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.005099999999999993,
+      0.0036000000000000476,
+      0.0033999999999999586,
+      0.00660000000000005,
+      0.0045000000000000595
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      5,
+      -9,
+      1,
+      -11,
+      -17
+     ],
+     "mean_d_lcb": 0.004640000000000022,
+     "mean_d_p80": -6.2
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      0.0031999999999999806,
+      0.005899999999999905,
+      0.0043999999999999595,
+      0.0047000000000000375,
+      0.008000000000000007
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": 0.005239999999999978,
+     "mean_d_p80": null
+    }
+   },
+   "W7-02G-w6000-f0.50": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([5, -4, 6, -9, -14])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.0031999999999999806,
+      0.0020999999999999908,
+      0.0014999999999999458,
+      0.005099999999999993,
+      0.0040000000000000036
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      5,
+      -4,
+      6,
+      -9,
+      -14
+     ],
+     "mean_d_lcb": 0.0031799999999999828,
+     "mean_d_p80": -3.2
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      0.0030999999999999917,
+      0.0040000000000000036,
+      0.0049000000000000155,
+      0.0035000000000000586,
+      0.007900000000000018
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": 0.0046800000000000175,
+     "mean_d_p80": null
+    }
+   },
+   "W7-02G-w7000-f0.15": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([-19, -11, 1, -15, -6])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.005099999999999993,
+      0.005099999999999993,
+      0.0034999999999999476,
+      0.00660000000000005,
+      0.0050000000000000044
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      -19,
+      -11,
+      1,
+      -15,
+      -6
+     ],
+     "mean_d_lcb": 0.005059999999999998,
+     "mean_d_p80": -10.0
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      0.0021999999999999797,
+      0.006999999999999895,
+      0.006299999999999972,
+      0.0030999999999999917,
+      0.007000000000000006
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": 0.005119999999999969,
+     "mean_d_p80": null
+    }
+   },
+   "W7-02G-w7000-f0.25": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([-20, -9, 1, -15, -11])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.0050000000000000044,
+      0.0040999999999999925,
+      0.0043999999999999595,
+      0.00660000000000005,
+      0.0050000000000000044
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      -20,
+      -9,
+      1,
+      -15,
+      -11
+     ],
+     "mean_d_lcb": 0.005020000000000002,
+     "mean_d_p80": -10.8
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      0.0020999999999999908,
+      0.005999999999999894,
+      0.005800000000000027,
+      0.0036000000000000476,
+      0.006099999999999994
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": 0.004719999999999991,
+     "mean_d_p80": null
+    }
+   },
+   "W7-02G-w7000-f0.35": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([-20, -4, 1, -14, -14])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.0040999999999999925,
+      0.0040000000000000036,
+      0.0030000000000000027,
+      0.005600000000000049,
+      0.0046000000000000485
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      -20,
+      -4,
+      1,
+      -14,
+      -14
+     ],
+     "mean_d_lcb": 0.004260000000000019,
+     "mean_d_p80": -10.2
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      0.0031999999999999806,
+      0.005499999999999949,
+      0.0049000000000000155,
+      0.0030999999999999917,
+      0.005099999999999993
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": 0.004359999999999986,
+     "mean_d_p80": null
+    }
+   },
+   "W7-02G-w7000-f0.50": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([-1, -1, 2, -12, -11])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.0020999999999999908,
+      0.0020000000000000018,
+      0.0030000000000000027,
+      0.0046000000000000485,
+      0.0030999999999999917
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      -1,
+      -1,
+      2,
+      -12,
+      -11
+     ],
+     "mean_d_lcb": 0.002960000000000007,
+     "mean_d_p80": -4.6
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      0.0030000000000000027,
+      0.004899999999999904,
+      0.0038000000000000256,
+      0.0020999999999999908,
+      0.0050000000000000044
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": 0.0037599999999999856,
+     "mean_d_p80": null
+    }
+   },
+   "W7-02G-w8000-f0.15": {
+    "adopt": false,
+    "fails": [
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.0050000000000000044,
+      0.0033999999999999586,
+      0.0024999999999999467,
+      0.0046000000000000485,
+      0.0036000000000000476
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      -19,
+      -4,
+      -2,
+      -14,
+      -6
+     ],
+     "mean_d_lcb": 0.0038200000000000013,
+     "mean_d_p80": -9.0
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      0.0036000000000000476,
+      0.006399999999999961,
+      0.005800000000000027,
+      0.0030999999999999917,
+      0.0046000000000000485
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": 0.004700000000000015,
+     "mean_d_p80": null
+    }
+   },
+   "W7-02G-w8000-f0.25": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([-2, 0, -2, -12, -10])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.0026000000000000467,
+      0.0020000000000000018,
+      0.0029000000000000137,
+      0.0036000000000000476,
+      0.0030999999999999917
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      -2,
+      0,
+      -2,
+      -12,
+      -10
+     ],
+     "mean_d_lcb": 0.0028400000000000205,
+     "mean_d_p80": -5.2
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      0.0045000000000000595,
+      0.004899999999999904,
+      0.0048000000000000265,
+      0.0030000000000000027,
+      0.0040000000000000036
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": 0.004239999999999999,
+     "mean_d_p80": null
+    }
+   },
+   "W7-02G-w8000-f0.35": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([-2, 4, 0, -9, -4])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.0025000000000000577,
+      0.0014999999999999458,
+      0.0013999999999999568,
+      0.0030999999999999917,
+      0.0020000000000000018
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      -2,
+      4,
+      0,
+      -9,
+      -4
+     ],
+     "mean_d_lcb": 0.0020999999999999908,
+     "mean_d_p80": -2.2
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      0.0029000000000000137,
+      0.0034999999999999476,
+      0.0038000000000000256,
+      0.0010999999999999899,
+      0.0036000000000000476
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": 0.0029800000000000048,
+     "mean_d_p80": null
+    }
+   },
+   "W7-02G-w8000-f0.50": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([-2, 0, 0, -9, -4])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.0016000000000000458,
+      0.0010000000000000009,
+      0.0013999999999999568,
+      0.0026000000000000467,
+      0.0016000000000000458
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      -2,
+      0,
+      0,
+      -9,
+      -4
+     ],
+     "mean_d_lcb": 0.0016400000000000193,
+     "mean_d_p80": -3.0
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      0.0025000000000000577,
+      0.0038999999999999035,
+      0.0037000000000000366,
+      0.00019999999999997797,
+      0.0045000000000000595
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": 0.002960000000000007,
+     "mean_d_p80": null
+    }
+   }
+  },
+  "references": {
+   "UNGOVERNED_BASE": {
+    "censored_normal": 0.07038,
+    "lcb_normal": 0.88172,
+    "lcb_stress": 0.81228,
+    "phase1_max_loss_normal": 0.01974,
+    "point_p80_bd_normal": 892.2,
+    "t80_bd_normal": 928.0
+   },
+   "W3_BASE_GOVDR_dayreset": {
+    "censored_normal": 0.13672,
+    "lcb_normal": 0.83492,
+    "lcb_stress": 0.75046,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 996.6,
+    "t80_bd_normal": 1053.2
+   }
+  },
+  "wave3_cells_passing": 16,
+  "wave3_sealed_cell_clauses": {
+   "W7-02G-w5000-f0.15": {
+    "normal": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.007800000000000007,
+     "d_maxloss": -0.016180000000000003,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P80",
+     "speed_p80": true
+    },
+    "pass": true,
+    "stress": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.007499999999999995,
+     "d_maxloss": -0.02656,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P50_FALLBACK_BASE_NEVER_REACHES_P80",
+     "speed_p80": true
+    }
+   },
+   "W7-02G-w5000-f0.25": {
+    "normal": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.007960000000000012,
+     "d_maxloss": -0.014780000000000001,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P80",
+     "speed_p80": true
+    },
+    "pass": true,
+    "stress": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.007619999999999983,
+     "d_maxloss": -0.02324,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P50_FALLBACK_BASE_NEVER_REACHES_P80",
+     "speed_p80": true
+    }
+   },
+   "W7-02G-w5000-f0.35": {
+    "normal": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.007700000000000018,
+     "d_maxloss": -0.01322,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P80",
+     "speed_p80": true
+    },
+    "pass": true,
+    "stress": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.007920000000000016,
+     "d_maxloss": -0.020059999999999998,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P50_FALLBACK_BASE_NEVER_REACHES_P80",
+     "speed_p80": true
+    }
+   },
+   "W7-02G-w5000-f0.50": {
+    "normal": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.007040000000000024,
+     "d_maxloss": -0.010440000000000001,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P80",
+     "speed_p80": true
+    },
+    "pass": true,
+    "stress": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.007119999999999993,
+     "d_maxloss": -0.015199999999999997,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P50_FALLBACK_BASE_NEVER_REACHES_P80",
+     "speed_p80": true
+    }
+   },
+   "W7-02G-w6000-f0.15": {
+    "normal": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.005820000000000025,
+     "d_maxloss": -0.014600000000000002,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P80",
+     "speed_p80": true
+    },
+    "pass": true,
+    "stress": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.00524,
+     "d_maxloss": -0.02258,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P50_FALLBACK_BASE_NEVER_REACHES_P80",
+     "speed_p80": true
+    }
+   },
+   "W7-02G-w6000-f0.25": {
+    "normal": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.005220000000000002,
+     "d_maxloss": -0.012680000000000002,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P80",
+     "speed_p80": true
+    },
+    "pass": true,
+    "stress": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.00524,
+     "d_maxloss": -0.0189,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P50_FALLBACK_BASE_NEVER_REACHES_P80",
+     "speed_p80": true
+    }
+   },
+   "W7-02G-w6000-f0.35": {
+    "normal": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.004640000000000022,
+     "d_maxloss": -0.010900000000000002,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P80",
+     "speed_p80": true
+    },
+    "pass": true,
+    "stress": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.005239999999999978,
+     "d_maxloss": -0.01562,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P50_FALLBACK_BASE_NEVER_REACHES_P80",
+     "speed_p80": true
+    }
+   },
+   "W7-02G-w6000-f0.50": {
+    "normal": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.0031799999999999828,
+     "d_maxloss": -0.008320000000000001,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P80",
+     "speed_p80": true
+    },
+    "pass": true,
+    "stress": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.0046800000000000175,
+     "d_maxloss": -0.011739999999999999,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P50_FALLBACK_BASE_NEVER_REACHES_P80",
+     "speed_p80": true
+    }
+   },
+   "W7-02G-w7000-f0.15": {
+    "normal": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.005059999999999998,
+     "d_maxloss": -0.011300000000000001,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P80",
+     "speed_p80": true
+    },
+    "pass": true,
+    "stress": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.005119999999999969,
+     "d_maxloss": -0.016479999999999998,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P50_FALLBACK_BASE_NEVER_REACHES_P80",
+     "speed_p80": true
+    }
+   },
+   "W7-02G-w7000-f0.25": {
+    "normal": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.005020000000000002,
+     "d_maxloss": -0.00944,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P80",
+     "speed_p80": true
+    },
+    "pass": true,
+    "stress": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.004719999999999991,
+     "d_maxloss": -0.013239999999999998,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P50_FALLBACK_BASE_NEVER_REACHES_P80",
+     "speed_p80": true
+    }
+   },
+   "W7-02G-w7000-f0.35": {
+    "normal": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.004260000000000019,
+     "d_maxloss": -0.00792,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P80",
+     "speed_p80": true
+    },
+    "pass": true,
+    "stress": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.004359999999999986,
+     "d_maxloss": -0.01092,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P50_FALLBACK_BASE_NEVER_REACHES_P80",
+     "speed_p80": true
+    }
+   },
+   "W7-02G-w7000-f0.50": {
+    "normal": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.002960000000000007,
+     "d_maxloss": -0.00608,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P80",
+     "speed_p80": true
+    },
+    "pass": true,
+    "stress": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.0037599999999999856,
+     "d_maxloss": -0.007979999999999998,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P50_FALLBACK_BASE_NEVER_REACHES_P80",
+     "speed_p80": true
+    }
+   },
+   "W7-02G-w8000-f0.15": {
+    "normal": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.0038200000000000013,
+     "d_maxloss": -0.0068000000000000005,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P80",
+     "speed_p80": true
+    },
+    "pass": true,
+    "stress": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.004700000000000015,
+     "d_maxloss": -0.00904,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P50_FALLBACK_BASE_NEVER_REACHES_P80",
+     "speed_p80": true
+    }
+   },
+   "W7-02G-w8000-f0.25": {
+    "normal": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.0028400000000000205,
+     "d_maxloss": -0.005660000000000001,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P80",
+     "speed_p80": true
+    },
+    "pass": true,
+    "stress": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.004239999999999999,
+     "d_maxloss": -0.007319999999999998,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P50_FALLBACK_BASE_NEVER_REACHES_P80",
+     "speed_p80": true
+    }
+   },
+   "W7-02G-w8000-f0.35": {
+    "normal": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.0020999999999999908,
+     "d_maxloss": -0.004700000000000001,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P80",
+     "speed_p80": true
+    },
+    "pass": true,
+    "stress": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.0029800000000000048,
+     "d_maxloss": -0.006059999999999999,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P50_FALLBACK_BASE_NEVER_REACHES_P80",
+     "speed_p80": true
+    }
+   },
+   "W7-02G-w8000-f0.50": {
+    "normal": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.0016400000000000193,
+     "d_maxloss": -0.003720000000000001,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P80",
+     "speed_p80": true
+    },
+    "pass": true,
+    "stress": {
+     "censored_le_5pp": true,
+     "d_lcb": 0.002960000000000007,
+     "d_maxloss": -0.004559999999999998,
+     "daily_loss_not_up": true,
+     "lcb_mean_nonneg_and_seed_floor": true,
+     "maxloss_down_every_seed": true,
+     "speed_basis": "P50_FALLBACK_BASE_NEVER_REACHES_P80",
+     "speed_p80": true
+    }
+   }
+  },
+  "wave3_sign_stable_all_16": true
+ },
+ "h2": {
+  "arms_summary": {
+   "H2_DERISK_ONLY": {
+    "censored_normal": 0.15346,
+    "lcb_normal": 0.83498,
+    "lcb_stress": 0.74348,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 1148.8,
+    "t80_bd_normal": 1196.8
+   },
+   "H2_HOT_CHALLENGE": {
+    "censored_normal": 0.17908000000000002,
+    "lcb_normal": 0.8080399999999999,
+    "lcb_stress": 0.71886,
+    "phase1_max_loss_normal": 0.0,
+    "point_p80_bd_normal": 1213.4,
+    "t80_bd_normal": 1363.0
+   }
+  },
+  "payload_rule_arms_passing": 0,
+  "payload_rule_delta_p80_lt0_and_delta_lcb_ge0": {
+   "H2_DERISK_ONLY": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([153, 133, 146, 143, 143])",
+     "normal:DELTA_LCB_NOT_NONNEGATIVE_EVERY_SEED([0.0006, -0.0011, -0.0007, 0.0006, 0.0009])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])",
+     "stress:DELTA_LCB_NOT_NONNEGATIVE_EVERY_SEED([-0.0087, -0.0051, -0.0076, -0.0104, -0.0031])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      0.0006000000000000449,
+      -0.0010999999999999899,
+      -0.0007000000000000339,
+      0.0006000000000000449,
+      0.0009000000000000119
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      153,
+      133,
+      146,
+      143,
+      143
+     ],
+     "mean_d_lcb": 6.0000000000015594e-05,
+     "mean_d_p80": 143.6
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      -0.00869999999999993,
+      -0.0051000000000001044,
+      -0.007600000000000051,
+      -0.010399999999999965,
+      -0.0030999999999999917
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": -0.006980000000000009,
+     "mean_d_p80": null
+    }
+   },
+   "H2_HOT_CHALLENGE": {
+    "adopt": false,
+    "fails": [
+     "normal:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([360, 318, 347, 267, 257])",
+     "normal:DELTA_LCB_NOT_NONNEGATIVE_EVERY_SEED([-0.0253, -0.0298, -0.0276, -0.029, -0.0227])",
+     "stress:DELTA_P80_NOT_NEGATIVE_EVERY_SEED([None, None, None, None, None])",
+     "stress:DELTA_LCB_NOT_NONNEGATIVE_EVERY_SEED([-0.0294, -0.0272, -0.0315, -0.0344, -0.0355])"
+    ],
+    "normal": {
+     "d_lcb_per_seed": [
+      -0.02529999999999999,
+      -0.02980000000000005,
+      -0.02760000000000007,
+      -0.029000000000000026,
+      -0.022699999999999942
+     ],
+     "d_p80_key": "t80_bd",
+     "d_p80_per_seed": [
+      360,
+      318,
+      347,
+      267,
+      257
+     ],
+     "mean_d_lcb": -0.026880000000000015,
+     "mean_d_p80": 309.8
+    },
+    "stress": {
+     "d_lcb_per_seed": [
+      -0.02939999999999998,
+      -0.027200000000000002,
+      -0.03149999999999997,
+      -0.034399999999999986,
+      -0.035499999999999976
+     ],
+     "d_p80_key": "p80_point_bd",
+     "d_p80_per_seed": [
+      null,
+      null,
+      null,
+      null,
+      null
+     ],
+     "mean_d_lcb": -0.03159999999999998,
+     "mean_d_p80": null
+    }
+   }
+  },
+  "reference": {
+   "censored_normal": 0.13672,
+   "lcb_normal": 0.83492,
+   "lcb_stress": 0.75046,
+   "phase1_max_loss_normal": 0.0,
+   "point_p80_bd_normal": 996.6,
+   "t80_bd_normal": 1053.2
+  }
+ },
+ "n_paths": 40000,
+ "seeds": [
+  20260924,
+  20260925,
+  20260926,
+  20260927,
+  20260928
+ ]
+}

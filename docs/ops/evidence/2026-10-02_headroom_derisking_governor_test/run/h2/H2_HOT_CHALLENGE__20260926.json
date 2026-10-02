@@ -1,0 +1,54 @@
+{
+ "arm": "H2_HOT_CHALLENGE",
+ "n_paths": 40000,
+ "normal": {
+  "censored_share": 0.178,
+  "cond_p50_bd": 548.0,
+  "cond_p90_bd": 955.0,
+  "daily_loss_all_stages": 0,
+  "lcb": 0.8068,
+  "max_loss_all_stages": 0.0015,
+  "n_paths": 40000,
+  "p": 0.8203,
+  "p50_point_bd": 622,
+  "p80_point_bd": 1207,
+  "phase1_daily_loss": 0.0,
+  "phase1_max_loss": 0.0,
+  "t80_bd": 1398,
+  "t80_status": "REACHED_IN_MARKET_PATH_MODEL"
+ },
+ "phase1": {
+  "friday_breach_share": null,
+  "p_pass": 0.8814,
+  "time_p50_bd": 239.0,
+  "time_p90_bd": 512.0,
+  "top_breach_sleeve": null,
+  "top_breach_sleeve_share": null
+ },
+ "seed": 20260926,
+ "stress": {
+  "censored_share": 0.2631,
+  "cond_p50_bd": 596.0,
+  "cond_p90_bd": 1043.0,
+  "daily_loss_all_stages": 0,
+  "lcb": 0.7224,
+  "max_loss_all_stages": 0.0034,
+  "n_paths": 40000,
+  "p": 0.7335,
+  "p50_point_bd": 747,
+  "p80_point_bd": null,
+  "phase1_daily_loss": 0.0,
+  "phase1_max_loss": 0.0,
+  "t80_bd": null,
+  "t80_status": "NOT_REACHED"
+ },
+ "wall_s": 36.6,
+ "window": {
+  "active_book_days": 1598,
+  "business_days": 1750,
+  "end": "2025-10-21",
+  "low_power": false,
+  "low_power_note": "adequate",
+  "start": "2019-02-06"
+ }
+}
