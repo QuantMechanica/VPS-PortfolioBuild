@@ -1,0 +1,40 @@
+{
+  "source_path": "D:\\QM\\reports\\state\\ftmo_owner_status_pulse.json",
+  "source_sha256": "4be469cfde1c2c81fc8dc17ce03cf7787d5c2702ba8ae6955ddd3b62ac83c414",
+  "source_bytes": 99698,
+  "at_utc": "2026-10-15T23:05:02Z",
+  "classification": {
+    "autonomy": "STALLED",
+    "class": "TECHNICAL_STALL",
+    "factory_state": "EXECUTION_FAILURE",
+    "technical": [
+      "workers not claiming: 1 runnable rows, 0 running for two pulses (worker reason no_pending_claimable)"
+    ],
+    "economic": [
+      "no meaningful transition for 26.5 h with capacity available (Goal v2 diagnostic P80 1300 > 180)",
+      "economic pipeline stale with idle AI capacity; freshest durable activity: q04_verdict 3.8 d"
+    ],
+    "warnings": [
+      "DEMO_TERMINAL_AUTH_LOST: AUTH_FAILED(Invalid account, since 2026-10-04T21:01:45Z)",
+      "16 rows in REVIEW (orchestrator closure)",
+      "bottleneck FACTORY_CLAIM unchanged for 5.9 d",
+      "kimi quota flag set while work is queued"
+    ],
+    "neutral": [
+      "CAPACITY_AVAILABLE: claude (2 free), codex (3 free), gemini (2 free)"
+    ],
+    "quiet_hour": false
+  },
+  "runnable_now": 1,
+  "worker_claim_skips": {
+    "data_2026_skipped": 1,
+    "longrun_cap_skipped": 4,
+    "q08_dsr_context_skipped": 5,
+    "ram_class_skipped": 7
+  },
+  "gate_breakdown": {
+    "ram_class_skipped": 7,
+    "longrun_cap_skipped": 4,
+    "q08_dsr_context_skipped": 5
+  }
+}
