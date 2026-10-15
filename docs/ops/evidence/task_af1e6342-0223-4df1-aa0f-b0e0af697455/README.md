@@ -147,3 +147,59 @@ full transitive closure (`farmctl.py` alone is ~2MB) just to exercise a
 2-line import-path fix was judged disproportionate; the fix is a static,
 file-local change verifiable by the new guard test plus a syntax check
 (`ast.parse`), both of which passed.
+
+## Addendum 2026-10-15 — REVIEW submission blocked by a lane-wide landing-gate defect
+
+`agent_router.py update-task af1e6342-... --state REVIEW --artifact-path
+docs/ops/evidence/task_af1e6342-.../README.md --verdict "...Commit 95742fca35
+on agents/claude-orchestration-2..."` was run and refused:
+
+```
+gate_code: REVIEW_REF_MISSING
+reason: unlanded_cited_commits
+state: IN_PROGRESS (unchanged)
+```
+
+The task's own payload (`landing_pending_review`) says the orchestration
+launcher's post-session hook (`run_agent_orchestration_task.py:
+publish_review_artifacts`) runs automatically after this session exits and is
+supposed to create that review ref. Root-caused why that hook had already
+failed once on this lane before this session started (payload already
+carried `artifact_landing_conflict.reason = "commit_has_no_paths"`,
+`source_commit = b23df957ed20c66dcb626e8ffdf5a39e9b883a9a`) and will very
+likely fail again the same way:
+
+- `publish_review_artifacts` always calls `_lane_commits_for_publication(...,
+  auto_lane_commits=True)` whenever `landing_pending_review` is present
+  (`run_agent_orchestration_task.py:1039-1095`), and `auto_lane_commits` for
+  any `agents/claude-*` branch unconditionally sweeps every commit in
+  `git rev-list canonical_head..lane_head` — on this lane, ~489 commits back
+  to a May 2026 divergence — not just the commit cited in the verdict.
+- `_ordered_activation_commits` (`lane_evidence.py:312-337`) then calls
+  `_commit_paths` on every one of those commits and treats a commit with zero
+  changed paths as a hard `landing_conflict` (`reason: commit_has_no_paths`,
+  `lane_evidence.py:187-201`).
+- `b23df957ed20c66dcb626e8ffdf5a39e9b883a9a` (`docs(ops): claude orchestration
+  cycle 2026-05-28 2230Z - idle 0 claude tasks, ...`) is a genuinely empty
+  commit (`git diff-tree --root --no-commit-id --name-only -r b23df957...`
+  returns nothing) - a status-journal checkpoint with no file changes. This
+  lane has many such commits from historical idle-cycle journaling. Any one
+  of them anywhere in the swept range permanently blocks review-ref
+  publication for every task on this lane, independent of what that task
+  actually changed.
+
+This is a defect in the shared landing-gate plumbing
+(`tools/strategy_farm/lane_evidence.py` /
+`tools/strategy_farm/run_agent_orchestration_task.py`), not in this task's
+fix. Recommended remedy (separate ops task, not done here - out of scope for
+af1e6342 and touches shared landing code used by every Codex/Claude lane):
+`_commit_paths`/`_ordered_activation_commits` should skip a truly empty,
+non-merge commit (0 changed paths) rather than erroring, since there is
+nothing to cherry-pick from it and nothing is lost by passing over it.
+
+This task's deliverable (the sys.path fix, the guard test, 2/2 passing) is
+complete and unchanged by this finding. The task remains `IN_PROGRESS` in the
+router because the landing gate - not the fix - refuses the state
+transition. Re-submitting `update-task --state REVIEW` with the same verdict
+will not change this outcome until the shared landing-gate defect above is
+fixed; no further action on af1e6342 itself is pending.
