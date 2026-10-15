@@ -1,0 +1,17 @@
+{
+  "task_id": "af1e6342-0223-4df1-aa0f-b0e0af697455",
+  "blocker": "landing_gate_review_ref_missing",
+  "gate_code": "REVIEW_REF_MISSING",
+  "reason": "unlanded_cited_commits",
+  "lane_branch": "agents/claude-orchestration-2",
+  "expected_canonical_branch": "agents/board-advisor",
+  "cited_commits": [
+    "95742fca35eed70e8cf925b2f21b10e31bcc894f",
+    "1838dfaa09a67d2cb105e04340cb00b26458f8fe"
+  ],
+  "fix_commit": "95742fca35eed70e8cf925b2f21b10e31bcc894f",
+  "evidence_commit": "1838dfaa09a67d2cb105e04340cb00b26458f8fe",
+  "structural_cause": "task_launched_in_worktree_agents/claude-orchestration-2_but_landing_gate_requires_commits_reachable_on_agents/board-advisor; this agent is barred by CLAUDE.md worktree-discipline and launcher instructions from cherry-picking/merging/advancing board-advisor or main",
+  "resolution_owner": "OWNER_or_board-advisor_close-out",
+  "unresolved_since_prior_cycle": true
+}
