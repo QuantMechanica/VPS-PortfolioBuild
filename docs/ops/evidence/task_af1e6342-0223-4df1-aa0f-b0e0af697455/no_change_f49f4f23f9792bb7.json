@@ -1,0 +1,22 @@
+{
+  "task_id": "af1e6342-0223-4df1-aa0f-b0e0af697455",
+  "blocker": "landing_gate_unlanded_cited_commits",
+  "gate_reason": "cited_commit_outside_task_range",
+  "lane_branch": "agents/claude-orchestration-2",
+  "lane_head": "219a78e699e0ad87400aaf56d392dc4477214358",
+  "expected_canonical_branch": "agents/board-advisor",
+  "canonical_head_at_this_check": "1e2347637febba8c4b0d60a0554952139545b781",
+  "canonical_head_at_prior_check": "7aa1756eaf3cae223f8bf2c777ab3b5481ade08b",
+  "cited_commits": [
+    "95742fca35eed70e8cf925b2f21b10e31bcc894f",
+    "1838dfaa09a67d2cb105e04340cb00b26458f8fe",
+    "7aa1756eaf3cae223f8bf2c777ab3b5481ade08b"
+  ],
+  "cited_commits_ancestor_of_canonical_head": false,
+  "verified_via": "git merge-base --is-ancestor <sha> 1e2347637febba8c4b0d60a0554952139545b781 (all three: not an ancestor)",
+  "structural_cause": "task_launched_in_worktree_agents/claude-orchestration-2_but_landing_gate_requires_commits_reachable_on_agents/board-advisor; this agent is barred by CLAUDE.md worktree-discipline and launcher instructions from cherry-picking/merging/advancing board-advisor or main",
+  "change_since_prior_check": "canonical_head on agents/board-advisor advanced from 7aa1756eaf3c to 1e2347637f since the prior no-change evidence (no_change_9467f21dd6cece53.json), but the three fix commits are still not ancestors of the new canonical head -- conclusion unchanged, only the canonical-head value moved, which is why a new state hash was reserved",
+  "resolution_owner": "OWNER_or_board-advisor_close-out",
+  "unresolved_since_prior_cycle": true,
+  "state_sha256": "f49f4f23f9792bb7c16ea99fe0db08376efc9ce80b029368c86d90238a7125d2"
+}
