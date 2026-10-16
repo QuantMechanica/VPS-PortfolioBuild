@@ -1,20 +1,62 @@
 import json
+import os
 import sqlite3
 import sys
 import tempfile
+import time
 import unittest
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
 import farmctl  # noqa: E402
+import research_ram_floor_guard  # noqa: E402
 import terminal_worker  # noqa: E402
+from tools.strategy_farm import dsr_cohort  # noqa: E402
+
+LEGACY_WORKER_STARTER = REPO / "tools" / "strategy_farm" / "start_terminal_workers.ps1"
+FACTORY_WATCHDOG = REPO / "tools" / "strategy_farm" / "factory_watchdog.ps1"
+FACTORY_ON = REPO / "tools" / "strategy_farm" / "Factory_ON.ps1"
 
 
 class TerminalWorkerAtomicClaimTests(unittest.TestCase):
+    def setUp(self) -> None:
+        # Claim tests exercise queue semantics, not the host machine's live
+        # pressure. Individual resource-guard tests override this explicitly.
+        self._original_commit_headroom_gb = terminal_worker._commit_headroom_gb
+        terminal_worker._commit_headroom_gb = lambda: 10_000.0
+        self._original_free_ram_gb = terminal_worker._free_ram_gb
+        terminal_worker._free_ram_gb = lambda: 10_000.0
+        self._original_test_total_ram = os.environ.get(
+            terminal_worker.QM_TEST_TOTAL_RAM_GB_ENV
+        )
+        os.environ[terminal_worker.QM_TEST_TOTAL_RAM_GB_ENV] = "10000"
+        self._original_test_free_ram = os.environ.get(
+            terminal_worker.TEST_FREE_RAM_GB_ENV
+        )
+        os.environ[terminal_worker.TEST_FREE_RAM_GB_ENV] = "10000"
+
+    def tearDown(self) -> None:
+        terminal_worker._commit_headroom_gb = self._original_commit_headroom_gb
+        terminal_worker._free_ram_gb = self._original_free_ram_gb
+        if self._original_test_total_ram is None:
+            os.environ.pop(terminal_worker.QM_TEST_TOTAL_RAM_GB_ENV, None)
+        else:
+            os.environ[terminal_worker.QM_TEST_TOTAL_RAM_GB_ENV] = (
+                self._original_test_total_ram
+            )
+        if self._original_test_free_ram is None:
+            os.environ.pop(terminal_worker.TEST_FREE_RAM_GB_ENV, None)
+        else:
+            os.environ[terminal_worker.TEST_FREE_RAM_GB_ENV] = (
+                self._original_test_free_ram
+            )
+
     def _root(self) -> tempfile.TemporaryDirectory:
         return tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
 
@@ -27,7 +69,12 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
         phase: str = "P2",
         status: str = "pending",
         claimed_by: str | None = None,
+        verdict: str | None = None,
         payload: dict[str, object] | None = None,
+        ea_id: str = "QM5_9999",
+        setfile_path: str = "dummy.set",
+        kind: str = "backtest",
+        gate_contract_version: str | None = None,
     ) -> None:
         farmctl.init_db(root)
         now = farmctl.utc_now()
@@ -37,14 +84,434 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 INSERT INTO work_items
                   (id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
                    attempt_count, parent_task_id, evidence_path, claimed_by,
-                   payload_json, created_at, updated_at)
+                   payload_json, gate_contract_version, created_at, updated_at)
                 VALUES
-                  (?, 'backtest', ?, 'QM5_9999', ?, 'dummy.set', ?, NULL,
-                   0, NULL, NULL, ?, ?, ?, ?)
+                  (?, ?, ?, ?, ?, ?, ?, ?,
+                   0, NULL, NULL, ?, ?, ?, ?, ?)
                 """,
-                (item_id, phase, symbol, status, claimed_by, json.dumps(payload or {}), now, now),
+                (
+                    item_id,
+                    kind,
+                    phase,
+                    ea_id,
+                    symbol,
+                    setfile_path,
+                    status,
+                    verdict,
+                    claimed_by,
+                    json.dumps(payload or {}),
+                    gate_contract_version,
+                    now,
+                    now,
+                ),
             )
             conn.commit()
+
+    def _tracking_factory_lock(self):
+        real_lock = terminal_worker.FactoryMutationLock
+        state = {"global_active": False, "global_durations": []}
+
+        class _TrackingFactoryLock:
+            def __init__(self, path, *args, **kwargs):
+                self._inner = real_lock(path, *args, **kwargs)
+                self._is_global = Path(path).name.upper() == "FACTORY_MUTATION.LOCK"
+                self._started = None
+
+            def __enter__(self):
+                self._inner.__enter__()
+                if self._is_global:
+                    self._started = time.perf_counter()
+                    state["global_active"] = True
+                return self
+
+            def __exit__(self, exc_type, exc, traceback):
+                self._inner.__exit__(exc_type, exc, traceback)
+                if self._is_global:
+                    state["global_active"] = False
+                    state["global_durations"].append(
+                        time.perf_counter() - self._started
+                    )
+
+        return state, _TrackingFactoryLock
+
+    def test_legacy_worker_starter_honors_disabled_terminal_cap(self) -> None:
+        source = LEGACY_WORKER_STARTER.read_text(encoding="utf-8")
+        self.assertIn('Join-Path $stateDir "disabled_terminals.txt"', source)
+        self.assertIn("$_ -notin $disabledTerminals", source)
+
+    def test_enum_contract_preflight_refuses_symbolic_set_before_claim(self) -> None:
+        with self._root() as tmp:
+            repo = Path(tmp) / "repo"
+            label = "QM5_9999_enum-fixture"
+            ea_dir = repo / "framework" / "EAs" / label
+            setfile = ea_dir / "sets" / f"{label}_EURUSD.DWX_H1_backtest.set"
+            setfile.parent.mkdir(parents=True)
+            (ea_dir / f"{label}.mq5").write_text(
+                "enum EntryMode { ENTRY_DEFAULT=0, ENTRY_ONE=1 };\n"
+                "input EntryMode EntryMode=ENTRY_DEFAULT;\n",
+                encoding="utf-8",
+            )
+            setfile.write_text("EntryMode=ENTRY_ONE\n", encoding="utf-8")
+            item = {
+                "id": "enum-contract-fail",
+                "kind": "backtest",
+                "phase": "Q02",
+                "ea_id": "QM5_9999",
+                "setfile_path": str(setfile),
+            }
+            payload = {"expected_expert": f"QM\\{label}"}
+
+            _fingerprint, failure = (
+                terminal_worker._setfile_enum_contract_claim_preflight(
+                    item, payload, repo_root=repo
+                )
+            )
+
+            self.assertEqual(failure["reason"], "setfile_enum_contract_fail")
+            self.assertEqual(failure["finding_count"], 1)
+
+    def test_atomic_claim_skips_enum_contract_failure_without_burning_attempt(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root, "a-enum-invalid", "EURUSD.DWX", phase="Q04"
+            )
+            self._insert_work_item(
+                root, "z-valid", "GBPUSD.DWX", phase="Q04"
+            )
+
+            def enum_preflight(item, payload, **_kwargs):
+                fingerprint = (
+                    terminal_worker._setfile_enum_contract_claim_fingerprint(
+                        item, payload
+                    )
+                )
+                failure = None
+                if item["id"] == "a-enum-invalid":
+                    failure = {
+                        "reason": "setfile_enum_contract_fail",
+                        "setfile_path": item["setfile_path"],
+                        "finding_count": 1,
+                    }
+                return fingerprint, failure
+
+            with patch.object(
+                terminal_worker,
+                "_setfile_enum_contract_claim_preflight",
+                side_effect=enum_preflight,
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "z-valid")
+            skipped = result["setfile_enum_contract_fail_skipped"]
+            self.assertEqual(skipped[0]["item_id"], "a-enum-invalid")
+            self.assertEqual(skipped[0]["reason"], "setfile_enum_contract_fail")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                invalid = conn.execute(
+                    "SELECT status,attempt_count FROM work_items WHERE id=?",
+                    ("a-enum-invalid",),
+                ).fetchone()
+            self.assertEqual(tuple(invalid), ("pending", 0))
+
+    def test_q08_dsr_context_preflight_is_default_off(self) -> None:
+        payload: dict[str, object] = {}
+        with patch.dict(os.environ, {"QM_DSR_V2": "1"}, clear=False), patch.object(
+            dsr_cohort,
+            "attach",
+            return_value={"status": "UNAVAILABLE", "reason": "DECLARATION_REQUIRED"},
+        ):
+            os.environ.pop(terminal_worker.Q08_DSR_CONTEXT_PREFLIGHT_ENV, None)
+            result = terminal_worker._seal_q08_dsr_at_claim(
+                object(), {"phase": "Q08", "id": "q08"}, payload
+            )
+        self.assertTrue(result["claimable"])
+        self.assertEqual(result["status"], "UNAVAILABLE")
+
+    def test_q08_stale_window_seal_is_unconditionally_refused(self) -> None:
+        payload: dict[str, object] = {
+            "dsr_context": {
+                "path": "D:/sealed/stale-context.json",
+                "sha256": "a" * 64,
+            },
+            "dsr_context_status": {"status": "SEALED"},
+        }
+        stale = {
+            "status": "UNAVAILABLE",
+            "reason": "STALE_DSR_WINDOW_SEAL",
+            "sealed_window": {"from": "2018-07-02", "to": "2022-12-31"},
+            "resolver_window": {"from": "2017-01-01", "to": "2025-12-31"},
+        }
+        with patch.dict(os.environ, {}, clear=False), patch.object(
+            dsr_cohort, "attach", return_value=stale
+        ):
+            os.environ.pop("QM_DSR_V2", None)
+            os.environ.pop(terminal_worker.Q08_DSR_CONTEXT_PREFLIGHT_ENV, None)
+            result = terminal_worker._seal_q08_dsr_at_claim(
+                object(), {"phase": "Q08", "id": "q08"}, payload
+            )
+
+        self.assertFalse(result["claimable"])
+        self.assertEqual(result["reason"], "STALE_DSR_WINDOW_SEAL")
+        self.assertEqual(result["stale_seal"]["sealed_window"], stale["sealed_window"])
+
+    def test_q08_dsr_context_preflight_blocks_unsealed_context_when_enabled(self) -> None:
+        payload: dict[str, object] = {}
+        with patch.dict(
+            os.environ,
+            {
+                "QM_DSR_V2": "1",
+                terminal_worker.Q08_DSR_CONTEXT_PREFLIGHT_ENV: "1",
+            },
+            clear=False,
+        ), patch.object(
+            dsr_cohort,
+            "attach",
+            return_value={"status": "UNAVAILABLE", "reason": "DECLARATION_REQUIRED"},
+        ):
+            result = terminal_worker._seal_q08_dsr_at_claim(
+                object(), {"phase": "Q08", "id": "q08"}, payload
+            )
+        self.assertFalse(result["claimable"])
+        self.assertEqual(result["reason"], "DECLARATION_REQUIRED")
+
+    def test_q08_dsr_context_preflight_accepts_hash_bound_seal(self) -> None:
+        payload: dict[str, object] = {
+            "dsr_context": {"path": "D:/sealed/context.json", "sha256": "a" * 64}
+        }
+        with patch.dict(
+            os.environ,
+            {
+                "QM_DSR_V2": "1",
+                terminal_worker.Q08_DSR_CONTEXT_PREFLIGHT_ENV: "1",
+            },
+            clear=False,
+        ), patch.object(
+            dsr_cohort,
+            "attach",
+            return_value={"status": "SEALED", "producer_schema": "qm.dsr-cohort/v1"},
+        ):
+            result = terminal_worker._seal_q08_dsr_at_claim(
+                object(), {"phase": "Q08", "id": "q08"}, payload
+            )
+        self.assertTrue(result["claimable"])
+        self.assertEqual(result["status"], "SEALED")
+
+    def test_head_of_line_doomed_q08_rows_do_not_starve_a_claimable_row_behind_them(
+        self,
+    ) -> None:
+        """2026-09-15 head-of-line preflight starvation: Q08 rows whose DSR
+        context can never seal (bad window/timeframe, independent of claim
+        time) used to be discovered only AFTER paying for scarce out-of-lock
+        preflight slots (CLAIM_PREFLIGHT_MAX_CANDIDATES). With enough such rows
+        bunched at the head of the claim order, enum/history checks spent every
+        slot before the scan ever reached a plain claimable row behind them ->
+        the whole fleet reported no_pending_claimable despite claimable work
+        existing. The claim-time-independent precheck must catch these before
+        they touch either bounded cold-file budget."""
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            doomed_count = terminal_worker.CLAIM_PREFLIGHT_MAX_CANDIDATES + 2
+            for index in range(doomed_count):
+                setfile = root / f"doomed-q08-{index}.set"
+                setfile.parent.mkdir(parents=True, exist_ok=True)
+                setfile.write_text("Mode=0\n", encoding="utf-8")
+                self._insert_work_item(
+                    root,
+                    f"doomed-q08-{index}",
+                    "EURUSD.DWX",
+                    phase="Q08",
+                    ea_id=f"QM5_{9500 + index}",
+                    # The real file forces a cold enum preflight if ordering
+                    # regresses, while its name still has no timeframe token;
+                    # DSR can therefore refuse it without claim-time facts.
+                    setfile_path=str(setfile),
+                )
+            target_setfile = root / "plain-claimable.set"
+            target_setfile.write_text("Mode=0\n", encoding="utf-8")
+            self._insert_work_item(
+                root,
+                "plain-claimable",
+                "GBPUSD.DWX",
+                phase="Q04",
+                setfile_path=str(target_setfile),
+            )
+            enum_preflighted = []
+
+            def enum_preflight(item, payload, *, fingerprint, **_kwargs):
+                enum_preflighted.append(item["id"])
+                return fingerprint, None
+
+            lock_state, tracking_lock = self._tracking_factory_lock()
+            ledger_index_builds = []
+
+            def build_ledger_index():
+                ledger_index_builds.append(lock_state["global_active"])
+                return {}
+
+            terminal_worker._ENUM_CONTRACT_PREFLIGHT_MEMO.clear()
+            with (
+                patch.dict(
+                    os.environ,
+                    {
+                        "QM_DSR_V2": "1",
+                        terminal_worker.Q08_DSR_CONTEXT_PREFLIGHT_ENV: "1",
+                    },
+                    clear=False,
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_setfile_enum_contract_claim_preflight_uncached",
+                    side_effect=enum_preflight,
+                ),
+                patch.object(
+                    dsr_cohort,
+                    "claimability_precheck",
+                    return_value={
+                        "claimable": False,
+                        "reason": "fixture_claim_time_independent_refusal",
+                    },
+                ),
+                patch.object(
+                    dsr_cohort,
+                    "build_ledger_index",
+                    side_effect=build_ledger_index,
+                ),
+                patch.object(
+                    terminal_worker,
+                    "FactoryMutationLock",
+                    tracking_lock,
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_p2_history_claimable",
+                    return_value=(True, None),
+                ),
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "plain-claimable")
+            self.assertEqual(ledger_index_builds, [False])
+            # claim_atomic deliberately primes the single queue head before
+            # its first lock acquisition. No other refused Q08 may be linted.
+            self.assertEqual(
+                enum_preflighted, ["doomed-q08-0", "plain-claimable"]
+            )
+            self.assertEqual(
+                [
+                    entry["item_id"]
+                    for entry in result.get("setfile_enum_contract_preflights", [])
+                ],
+                ["plain-claimable"],
+            )
+            # The doomed rows must be caught by the cheap precheck, not by
+            # burning either bounded retry budget. Apart from the intentional
+            # one-row queue-head prime, the only enum/history retries paid for
+            # are the plain row's own -- no other doomed Q08 consumed a slot.
+            preflights = result.get("history_claim_preflights", [])
+            self.assertEqual(
+                [entry["item_id"] for entry in preflights], ["plain-claimable"]
+            )
+
+    def test_head_of_line_doomed_q08_rows_report_the_precheck_stage_when_no_row_is_claimable(
+        self,
+    ) -> None:
+        """Companion to the test above: with no plain row behind the doomed
+        Q08 rows, the scan legitimately ends no_pending_claimable -- but
+        every doomed row must be attributed to the cheap precheck stage, and
+        the out-of-lock preflight budget must show zero retries spent."""
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            doomed_count = terminal_worker.CLAIM_PREFLIGHT_MAX_CANDIDATES + 2
+            for index in range(doomed_count):
+                self._insert_work_item(
+                    root,
+                    f"doomed-q08-{index}",
+                    "EURUSD.DWX",
+                    phase="Q08",
+                    ea_id=f"QM5_{9500 + index}",
+                )
+            with patch.dict(
+                os.environ,
+                {
+                    "QM_DSR_V2": "1",
+                    terminal_worker.Q08_DSR_CONTEXT_PREFLIGHT_ENV: "1",
+                },
+                clear=False,
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertFalse(result.get("claimed"), result)
+            self.assertEqual(result.get("reason"), "no_pending_claimable")
+            self.assertEqual(
+                len(result.get("q08_dsr_context_skipped", [])), doomed_count
+            )
+            for skipped in result["q08_dsr_context_skipped"]:
+                self.assertEqual(
+                    skipped["stage"], "claim_time_independent_precheck"
+                )
+            self.assertNotIn("history_claim_preflights", result)
+
+    def test_q08_precheck_disabled_by_default_flag_leaves_starvation_path_unchanged(
+        self,
+    ) -> None:
+        """The precheck must be inert unless both Q08 DSR preflight env
+        vars are set -- matching _seal_q08_dsr_at_claim's own gate -- so a
+        site that never enabled the DSR preflight sees byte-identical
+        behavior to before this fix."""
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root, "doomed-q08-0", "EURUSD.DWX", phase="Q08", ea_id="QM5_9500",
+            )
+            with patch.dict(os.environ, {}, clear=False):
+                os.environ.pop("QM_DSR_V2", None)
+                os.environ.pop(terminal_worker.Q08_DSR_CONTEXT_PREFLIGHT_ENV, None)
+                result = terminal_worker.claim_atomic(root, "T1")
+            # With the DSR preflight flag off, _seal_q08_dsr_at_claim always
+            # reports claimable=True (best-effort sealing only) -- so the row
+            # is claimed exactly as it was before this fix existed, and the
+            # new precheck must never have engaged.
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "doomed-q08-0")
+            self.assertEqual(result.get("q08_dsr_context_skipped", []), [])
+
+    def test_longrun_ram_probe_reuses_prelock_process_snapshot(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-snapshot", "EURUSD.DWX", phase="Q03")
+            state, tracking = self._tracking_factory_lock()
+            calls = []
+
+            def process_snapshot():
+                calls.append(state["global_active"])
+                self.assertFalse(state["global_active"], "OS process census inside global lock")
+                return {}, {}, set()
+
+            with patch.object(terminal_worker, "FactoryMutationLock", tracking), patch.object(
+                terminal_worker, "_process_private_snapshot", side_effect=process_snapshot
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "wi-snapshot")
+            self.assertTrue(calls)
+            self.assertFalse(any(calls))
+
+    def test_longrun_ram_facts_supplied_snapshot_preserves_results(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-long", "EURUSD.DWX", phase="Q08", status="active", claimed_by="T2")
+            snapshot = ({}, {}, set())
+            with patch.object(terminal_worker, "_process_private_snapshot", return_value=snapshot):
+                expected = terminal_worker._drain_active_ram_facts(root, multisym_ids=frozenset(), armed_item_id=None)
+            with farmctl.connect(root) as conn, patch.object(
+                terminal_worker, "_process_private_snapshot", side_effect=AssertionError("unexpected OS probe")
+            ), patch.object(farmctl, "connect", side_effect=AssertionError("unexpected nested connection")):
+                actual = terminal_worker._drain_active_ram_facts(root, multisym_ids=frozenset(), armed_item_id=None,
+                    process_snapshot=snapshot, connection=conn)
+                self.assertEqual(actual, expected)
+                self.assertEqual(conn.execute("SELECT COUNT(*) FROM work_items").fetchone()[0], 1)
 
     def test_two_workers_race_claim_same_work_item_only_one_wins(self) -> None:
         with self._root() as tmp:
@@ -63,6 +530,1951 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(rows[0][0], "active")
             self.assertIn(rows[0][1], {"T1", "T2"})
 
+    def test_optimistic_claim_rechecks_hold_added_after_read_selection(self) -> None:
+        """A writer can add a hold during selection and the final CAS refuses."""
+
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-hold-race", "EURUSD.DWX", phase="P3")
+            original_sha256_text = terminal_worker.next_cell_prestage.sha256_text
+            injected = False
+
+            def add_hold_after_candidate_read(text: str) -> str:
+                nonlocal injected
+                if not injected:
+                    injected = True
+                    now = farmctl.utc_now()
+                    with sqlite3.connect(root / farmctl.DB_REL, timeout=1) as contender:
+                        contender.execute("BEGIN IMMEDIATE")
+                        contender.execute(
+                            """
+                            INSERT INTO work_item_holds
+                              (work_item_id,hold_code,reason,active,
+                               release_on_restart,created_at,updated_at)
+                            VALUES (?,?,?,1,0,?,?)
+                            """,
+                            (
+                                "wi-hold-race",
+                                "TEST_OPTIMISTIC_RACE",
+                                "test writer inserted hold after read selection",
+                                now,
+                                now,
+                            ),
+                        )
+                        contender.commit()
+                return original_sha256_text(text)
+
+            with patch.object(
+                terminal_worker.next_cell_prestage,
+                "sha256_text",
+                side_effect=add_hold_after_candidate_read,
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertTrue(injected)
+            self.assertFalse(result.get("claimed"), result)
+            self.assertEqual(result.get("reason"), "no_pending_claimable")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status,claimed_by FROM work_items WHERE id=?",
+                    ("wi-hold-race",),
+                ).fetchone()
+                hold = conn.execute(
+                    "SELECT active FROM work_item_holds WHERE work_item_id=?",
+                    ("wi-hold-race",),
+                ).fetchone()
+            self.assertEqual(row, ("pending", None))
+            self.assertEqual(hold, (1,))
+
+    def test_successful_claim_reports_subsecond_write_lock_hold(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-lock-metric", "EURUSD.DWX", phase="P3")
+
+            result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertGreaterEqual(result["claim_write_lock_ms"], 0.0)
+            self.assertLess(result["claim_write_lock_ms"], 1000.0)
+
+    def test_physical_ram_reservation_classes_are_conservative(self) -> None:
+        ordinary = {"phase": "P3", "symbol": "EURUSD.DWX", "ea_id": "QM5_A"}
+        index = {"phase": "P3", "symbol": "SP500.DWX", "ea_id": "QM5_B"}
+        census = {
+            "phase": "OPT_CENSUS",
+            "symbol": "EURUSD.DWX",
+            "ea_id": "QM5_C",
+        }
+        two_leg_payload = {
+            "basket_symbols": ["EURUSD.DWX", "GBPUSD.DWX"],
+            "basket_symbol_count": 2,
+        }
+        multi_leg_payload = {
+            "basket_symbols": [
+                "EURUSD.DWX",
+                "GBPUSD.DWX",
+                "USDJPY.DWX",
+            ],
+            "basket_symbol_count": 3,
+        }
+
+        self.assertEqual(
+            terminal_worker._ram_reservation_for_candidate(ordinary, {}, False),
+            (terminal_worker.MULTISYMBOL_COMMIT_CLASS_ORDINARY, 8.0),
+        )
+        self.assertEqual(
+            terminal_worker._ram_reservation_for_candidate(index, {}, False),
+            (terminal_worker.COMMIT_CLASS_SINGLE_INDEX_TICK, 44.0),
+        )
+        self.assertEqual(
+            terminal_worker._ram_reservation_for_candidate(census, {}, False),
+            (terminal_worker.RAM_CLASS_OPT_CENSUS_CELL, 4.0),
+        )
+        self.assertEqual(
+            terminal_worker._ram_reservation_for_candidate(
+                ordinary, two_leg_payload, True
+            ),
+            (terminal_worker.MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX, 8.0),
+        )
+        self.assertEqual(
+            terminal_worker._ram_reservation_for_candidate(
+                ordinary, multi_leg_payload, True
+            ),
+            (terminal_worker.MULTISYMBOL_COMMIT_CLASS_MULTI_LEG_FX, 32.0),
+        )
+
+    def test_ram_class_boundary_admits_census_and_skips_ordinary(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "ordinary-needs-eight",
+                "EURUSD.DWX",
+                phase="P3",
+            )
+            with patch.object(terminal_worker, "_free_ram_gb", return_value=18.0):
+                skipped = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertFalse(skipped.get("claimed"), skipped)
+            self.assertEqual(
+                skipped["ram_class_skipped"][0]["ram_class"],
+                terminal_worker.MULTISYMBOL_COMMIT_CLASS_ORDINARY,
+            )
+            self.assertEqual(
+                skipped["ram_class_skipped"][0]["post_reservation_free_gb"],
+                10.0,
+            )
+
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "census-needs-four",
+                "EURUSD.DWX",
+                phase="OPT_CENSUS",
+            )
+            with patch.object(terminal_worker, "_free_ram_gb", return_value=18.0):
+                admitted = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertTrue(admitted.get("claimed"), admitted)
+            self.assertEqual(admitted["item"]["id"], "census-needs-four")
+
+    def test_invalid_free_ram_override_falls_back_to_provider(self) -> None:
+        os.environ[terminal_worker.TEST_FREE_RAM_GB_ENV] = "not-a-number"
+        with (
+            patch.object(
+                terminal_worker, "_free_ram_gb", self._original_free_ram_gb
+            ),
+            patch.object(
+                terminal_worker,
+                "_memory_headroom_gb",
+                return_value=(123.0, 456.0),
+            ),
+        ):
+            self.assertEqual(terminal_worker._free_ram_gb(), 123.0)
+
+    def test_ram_hysteresis_bypass_only_opens_for_admissible_census(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "ordinary-only",
+                "EURUSD.DWX",
+                phase="P3",
+            )
+            self.assertFalse(
+                terminal_worker._ram_latch_opt_census_bypass_available(root, 19.0)
+            )
+            self._insert_work_item(
+                root,
+                "small-census",
+                "EURUSD.DWX",
+                phase="OPT_CENSUS",
+            )
+            self.assertFalse(
+                terminal_worker._ram_latch_opt_census_bypass_available(root, 11.9)
+            )
+            self.assertTrue(
+                terminal_worker._ram_latch_opt_census_bypass_available(root, 12.0)
+            )
+
+    def test_running_terminal_probe_precedes_claim_write_transaction(self) -> None:
+        """A slow process census must not own the SQLite writer lock."""
+
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            self._insert_work_item(root, "wi-probe-order", "EURUSD.DWX", phase="P3")
+            probe_writes: list[str] = []
+
+            def probe_running_terminals() -> set[str]:
+                # Reproduce the incident shape in one process: the process probe
+                # opens a second connection and writes while claim_atomic is in
+                # flight.  Before the fix, claim_atomic had already executed
+                # BEGIN IMMEDIATE, so this exact second write raised
+                # "database is locked" and the later defer write failed too.
+                with sqlite3.connect(root / farmctl.DB_REL, timeout=0.01) as contender:
+                    contender.execute("PRAGMA busy_timeout=1")
+                    contender.execute("BEGIN IMMEDIATE")
+                    contender.execute(
+                        "UPDATE work_items SET updated_at=updated_at WHERE id=?",
+                        ("wi-probe-order",),
+                    )
+                    probe_writes.append("write_acquired")
+                    contender.rollback()
+                return set()
+
+            with (
+                patch.object(farmctl, "DEFAULT_ROOT", root),
+                patch.object(
+                    farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+                patch.object(
+                    farmctl,
+                    "_running_mt5_terminals",
+                    side_effect=probe_running_terminals,
+                ),
+                patch.object(terminal_worker, "SQLITE_WRITE_RETRIES", 1),
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "wi-probe-order")
+            self.assertEqual(probe_writes, ["write_acquired"])
+
+    def test_heavy_pruning_preflight_holds_global_lock_under_one_second(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "opt-heavy-preflight",
+                "EURUSD.DWX",
+                phase="OPT_CENSUS",
+            )
+            state, tracking_lock = self._tracking_factory_lock()
+            pruning_calls = []
+
+            def slow_pruning(_conn, row, **_kwargs):
+                self.assertFalse(state["global_active"])
+                pruning_calls.append(row["id"])
+                time.sleep(1.1)
+                self.assertFalse(state["global_active"])
+                return {"enabled": True, "skipped_current": False, "skipped": 0}
+
+            started = time.perf_counter()
+            with (
+                patch.object(terminal_worker, "FactoryMutationLock", tracking_lock),
+                patch.object(
+                    terminal_worker.opt_census_pruning,
+                    "pruning_enabled",
+                    return_value=True,
+                ),
+                patch.object(
+                    terminal_worker.opt_census_pruning,
+                    "prune_candidate_if_excluded",
+                    side_effect=slow_pruning,
+                ),
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+            elapsed = time.perf_counter() - started
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "opt-heavy-preflight")
+            self.assertEqual(pruning_calls, ["opt-heavy-preflight"])
+            self.assertGreaterEqual(elapsed, 1.0)
+            self.assertTrue(state["global_durations"])
+            self.assertLess(max(state["global_durations"]), 1.0)
+
+    def test_active_program_is_skipped_before_other_program_pruning(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root, "a-active", "EURUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A",
+                payload={"program_id": "program-a"},
+            )
+            self._insert_work_item(
+                root, "a-next", "EURUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_A", payload={"program_id": "program-a"},
+            )
+            self._insert_work_item(
+                root, "b-next", "GBPUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_B", payload={"program_id": "program-b"},
+            )
+            inspected: list[str] = []
+
+            def inspect(_conn, row, **_kwargs):
+                inspected.append(str(row["id"]))
+                return {"enabled": True, "skipped_current": False, "skipped": 0}
+
+            with (
+                patch.dict(os.environ, {"DL089_PROGRAM_SLOTS": "4"}),
+                patch.object(terminal_worker.opt_census_pruning, "pruning_enabled", return_value=True),
+                patch.object(
+                    terminal_worker.opt_census_pruning,
+                    "prune_candidate_if_excluded",
+                    side_effect=inspect,
+                ),
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "b-next")
+            self.assertEqual(inspected, ["b-next"])
+
+    def test_busy_candidate_defers_only_its_program(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root, "a-head", "EURUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_A", payload={"program_id": "program-a"},
+            )
+            self._insert_work_item(
+                root, "b-head", "GBPUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_B", payload={"program_id": "program-b"},
+            )
+            inspected: list[str] = []
+
+            def preflight(_root, _terminal, candidate):
+                inspected.append(str(candidate["id"]))
+                if candidate["id"] == "a-head":
+                    return {"status": "busy", "reason": "fixture_busy"}
+                return {
+                    "status": "checked",
+                    "item_id": candidate["id"],
+                    "candidate_pending": True,
+                    "pruning": {"enabled": True, "skipped_current": False},
+                }
+
+            with (
+                patch.dict(os.environ, {"DL089_PROGRAM_SLOTS": "4"}),
+                patch.object(terminal_worker.opt_census_pruning, "pruning_enabled", return_value=True),
+                patch.object(
+                    terminal_worker,
+                    "_prune_candidate_outside_factory_lock",
+                    side_effect=preflight,
+                ),
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "b-head")
+            self.assertEqual(inspected, ["a-head", "b-head"])
+
+    def test_program_slot_cap_and_k1_rollback_preserve_one_active_per_program(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            for program, symbol in (("program-a", "EURUSD.DWX"), ("program-b", "GBPUSD.DWX")):
+                self._insert_work_item(
+                    root, f"{program}-head", symbol, phase="OPT_CENSUS",
+                    ea_id=f"QM5_{program[-1].upper()}", payload={"program_id": program},
+                )
+
+            with (
+                patch.dict(os.environ, {"DL089_PROGRAM_SLOTS": "1"}),
+                patch.object(terminal_worker.opt_census_pruning, "pruning_enabled", return_value=False),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+            ):
+                first = terminal_worker.claim_atomic(root, "T1")
+                second = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(first.get("claimed"), first)
+            self.assertFalse(second.get("claimed"), second)
+            self.assertEqual(second.get("reason"), "no_pending_claimable")
+            self.assertEqual(second.get("opt_census_program_slots"), 1)
+            self.assertTrue(second.get("opt_census_slot_deferred"))
+
+    def test_inert_default_skips_serialized_governed_rows_before_lane_preflight(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            governed = {
+                "schema": "qm.opt-census.v1",
+                "program_id": "program-a",
+                "cell_key": "program-a:2019:active",
+                "arm": "active-arm",
+                "year": 2019,
+                "ledger_path": "sealed-ledger.json",
+                "q12_work_item_id": "q12-a",
+                "q12_declaration_sha256": "fixture-sha256",
+            }
+            self._insert_work_item(
+                root, "program-a-active", "EURUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A", payload=governed,
+            )
+            # More governed rows than CLAIM_PREFLIGHT_MAX_CANDIDATES reproduce
+            # the live decline-loop shape.  Under inert defaults they are all
+            # transaction-locally ineligible while program-a owns its one lane.
+            for index in range(terminal_worker.CLAIM_PREFLIGHT_MAX_CANDIDATES + 2):
+                self._insert_work_item(
+                    root,
+                    f"program-a-pending-{index:02d}",
+                    "EURUSD.DWX",
+                    phase="OPT_CENSUS",
+                    ea_id="QM5_A",
+                    payload={
+                        **governed,
+                        "cell_key": f"program-a:2019:pending-{index:02d}",
+                        "arm": f"pending-arm-{index:02d}",
+                    },
+                )
+            self._insert_work_item(
+                root, "ordinary-fallback", "GBPUSD.DWX", phase="P2", ea_id="QM5_B",
+            )
+
+            with (
+                patch.dict(os.environ, {
+                    "DL089_PROGRAM_SLOTS": "1",
+                    "DL089_LANES_PER_PROGRAM": "1",
+                    "DL089_CELL_SLOTS": "6",
+                    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "",
+                }),
+                patch.object(
+                    terminal_worker.opt_census_pruning,
+                    "pruning_enabled",
+                    return_value=False,
+                ),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_opt_census_lane_preflight_outside_factory_lock",
+                ) as lane_preflight,
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "ordinary-fallback")
+            lane_preflight.assert_not_called()
+
+    def test_eligible_governed_tail_completes_preflight_after_serialized_rows(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            governed_a = {
+                "schema": "qm.opt-census.v1",
+                "program_id": "program-a",
+                "cell_key": "program-a:2019:active",
+                "arm": "active-arm",
+                "year": 2019,
+                "ledger_path": "sealed-ledger-a.json",
+                "q12_work_item_id": "q12-a",
+                "q12_declaration_sha256": "fixture-sha256-a",
+            }
+            self._insert_work_item(
+                root, "program-a-active", "EURUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A", payload=governed_a,
+            )
+            for index in range(terminal_worker.CLAIM_PREFLIGHT_MAX_CANDIDATES + 2):
+                self._insert_work_item(
+                    root,
+                    f"program-a-pending-{index:02d}",
+                    "EURUSD.DWX",
+                    phase="OPT_CENSUS",
+                    ea_id="QM5_A",
+                    payload={
+                        **governed_a,
+                        "cell_key": f"program-a:2019:pending-{index:02d}",
+                        "arm": f"pending-arm-{index:02d}",
+                    },
+                )
+            governed_b = {
+                **governed_a,
+                "program_id": "program-b",
+                "cell_key": "program-b:2019:head",
+                "arm": "head-arm",
+                "ledger_path": "sealed-ledger-b.json",
+                "q12_work_item_id": "q12-b",
+                "q12_declaration_sha256": "fixture-sha256-b",
+            }
+            self._insert_work_item(
+                root, "program-b-head", "GBPUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_B", payload=governed_b,
+            )
+            token = {
+                "item_id": "program-b-head",
+                "payload_json": json.dumps(governed_b),
+                "lane_id": ["program-b", "head-arm"],
+                "year": 2019,
+                "predecessor_ids": [],
+                "predecessor_status_sha256": "fixture",
+            }
+
+            with (
+                patch.dict(os.environ, {
+                    "DL089_PROGRAM_SLOTS": "2",
+                    "DL089_LANES_PER_PROGRAM": "1",
+                    "DL089_CELL_SLOTS": "2",
+                    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "",
+                }, clear=True),
+                patch.object(
+                    terminal_worker.opt_census_pruning,
+                    "pruning_enabled",
+                    return_value=False,
+                ),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_opt_census_lane_preflight_outside_factory_lock",
+                    return_value={
+                        "status": "checked",
+                        "candidate_pending": True,
+                        "token": token,
+                    },
+                ) as lane_preflight,
+                patch.object(
+                    terminal_worker,
+                    "_opt_census_token_matches",
+                    side_effect=lambda _conn, _item, _payload, candidate_token: (
+                        candidate_token is not None
+                    ),
+                ) as token_matches,
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "program-b-head")
+            self.assertEqual(result["dl089_lane_preflight"]["status"], "checked")
+            lane_preflight.assert_called_once()
+            self.assertEqual(lane_preflight.call_args.args[2]["id"], "program-b-head")
+            token_matches.assert_called()
+
+    def test_allowlisted_distinct_arm_head_uses_narrow_duplicate_exception(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            governed = {
+                "schema": "qm.opt-census.v1",
+                "program_id": "program-a",
+                "cell_key": "program-a:2019:buy-001",
+                "arm": "buy-001",
+                "year": 2019,
+                "ledger_path": "sealed-ledger.json",
+                "q12_work_item_id": "q12-a",
+                "q12_declaration_sha256": "fixture-sha256",
+            }
+            self._insert_work_item(
+                root, "arm-a-active", "EURUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A", payload=governed,
+            )
+            pending = {
+                **governed,
+                "cell_key": "program-a:2019:sell-001",
+                "arm": "sell-001",
+            }
+            self._insert_work_item(
+                root, "arm-b-head", "EURUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_A", payload=pending,
+            )
+            token = {
+                "item_id": "arm-b-head",
+                "payload_json": json.dumps(pending),
+                "lane_id": ["program-a", "sell-001"],
+                "year": 2019,
+                "predecessor_ids": [],
+                "predecessor_status_sha256": "fixture",
+            }
+            with (
+                patch.dict(os.environ, {
+                    "DL089_LANES_PER_PROGRAM": "2",
+                    "DL089_CELL_SLOTS": "6",
+                    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "program-a",
+                }, clear=True),
+                patch.object(terminal_worker.opt_census_pruning, "pruning_enabled", return_value=False),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_opt_census_lane_preflight_outside_factory_lock",
+                    return_value={"status": "checked", "candidate_pending": True, "token": token},
+                ),
+                patch.object(terminal_worker, "_opt_census_token_matches", return_value=True),
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "arm-b-head")
+
+    def test_l2_skips_later_year_and_preflights_actual_arm_frontier(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            base = {
+                "schema": "qm.opt-census.v1",
+                "program_id": "program-a",
+                "cell_key": "active:2019",
+                "arm": "active-arm",
+                "year": 2019,
+                "ledger_path": "sealed-ledger.json",
+                "q12_work_item_id": "q12-a",
+                "q12_declaration_sha256": "fixture-sha256",
+            }
+            self._insert_work_item(
+                root, "active", "EURUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A", payload=base,
+            )
+            later = {**base, "cell_key": "sell:2020", "arm": "sell-arm", "year": 2020}
+            head = {**base, "cell_key": "sell:2019", "arm": "sell-arm", "year": 2019}
+            self._insert_work_item(
+                root, "sell-later", "EURUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_A", payload=later,
+            )
+            self._insert_work_item(
+                root, "sell-head", "EURUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_A", payload=head,
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute("UPDATE work_items SET updated_at='2026-01-01T00:00:00Z' WHERE id='sell-later'")
+                conn.execute("UPDATE work_items SET updated_at='2026-01-02T00:00:00Z' WHERE id='sell-head'")
+                conn.commit()
+
+            def preflight(_root, _terminal, candidate, **_kwargs):
+                self.assertEqual(candidate["id"], "sell-head")
+                return {
+                    "status": "checked",
+                    "candidate_pending": True,
+                    "token": {"item_id": "sell-head"},
+                }
+
+            with (
+                patch.dict(os.environ, {
+                    "DL089_PROGRAM_SLOTS": "2",
+                    "DL089_LANES_PER_PROGRAM": "2",
+                    "DL089_CELL_SLOTS": "3",
+                    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "program-a",
+                }, clear=True),
+                patch.object(terminal_worker.opt_census_pruning, "pruning_enabled", return_value=False),
+                patch.object(terminal_worker.farmctl, "_news_calendar_preflight", return_value={"ok": True}),
+                patch.object(terminal_worker, "_opt_census_lane_preflight_outside_factory_lock", side_effect=preflight) as lane_preflight,
+                patch.object(terminal_worker, "_opt_census_token_matches", side_effect=lambda _c, item, _p, token: bool(token) and item["id"] == "sell-head"),
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "sell-head")
+            lane_preflight.assert_called_once()
+
+    def test_l2_suppresses_program_after_one_lane_preflight_refusal(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            governed = {
+                "schema": "qm.opt-census.v1",
+                "program_id": "program-a",
+                "cell_key": "active:2019",
+                "arm": "active-arm",
+                "year": 2019,
+                "ledger_path": "sealed-ledger.json",
+                "q12_work_item_id": "q12-a",
+                "q12_declaration_sha256": "fixture-sha256",
+            }
+            self._insert_work_item(
+                root, "active", "EURUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A", payload=governed,
+            )
+            for arm in ("arm-b", "arm-c", "arm-d"):
+                self._insert_work_item(
+                    root, arm, "EURUSD.DWX", phase="OPT_CENSUS", ea_id="QM5_A",
+                    payload={**governed, "cell_key": f"{arm}:2019", "arm": arm},
+                )
+            self._insert_work_item(root, "ordinary", "GBPUSD.DWX", phase="P2", ea_id="QM5_B")
+            with (
+                patch.dict(os.environ, {
+                    "DL089_PROGRAM_SLOTS": "2",
+                    "DL089_LANES_PER_PROGRAM": "2",
+                    "DL089_CELL_SLOTS": "3",
+                    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "program-a",
+                }, clear=True),
+                patch.object(terminal_worker.opt_census_pruning, "pruning_enabled", return_value=False),
+                patch.object(terminal_worker.farmctl, "_news_calendar_preflight", return_value={"ok": True}),
+                patch.object(
+                    terminal_worker,
+                    "_opt_census_lane_preflight_outside_factory_lock",
+                    return_value={"status": "ineligible", "reason": "candidate_not_arm_frontier"},
+                ) as lane_preflight,
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "ordinary")
+            lane_preflight.assert_called_once()
+
+    def test_idle_program_head_claims_before_running_program_second_lane(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            governed = {
+                "schema": "qm.opt-census.v1",
+                "program_id": "program-a",
+                "cell_key": "program-a:2019:buy-001",
+                "arm": "buy-001",
+                "year": 2019,
+                "ledger_path": "sealed-ledger-a.json",
+                "q12_work_item_id": "q12-a",
+                "q12_declaration_sha256": "fixture-sha256-a",
+                "priority_track": True,
+                "opt_census_frontier_priority": True,
+            }
+            self._insert_work_item(
+                root, "program-a-active", "XAUUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A", payload=governed,
+            )
+            self._insert_work_item(
+                root, "program-a-second-lane", "XAUUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_A", payload={
+                    **governed,
+                    "cell_key": "program-a:2019:buy-002",
+                    "arm": "buy-002",
+                },
+            )
+            idle = {
+                **governed,
+                "program_id": "program-b",
+                "cell_key": "program-b:2021:baseline",
+                "arm": "baseline",
+                "year": 2021,
+                "ledger_path": "sealed-ledger-b.json",
+                "q12_work_item_id": "q12-b",
+                "q12_declaration_sha256": "fixture-sha256-b",
+            }
+            self._insert_work_item(
+                root, "program-b-head", "EURUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_B", payload=idle,
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    "UPDATE work_items SET updated_at='2026-08-31T00:00:00+00:00' "
+                    "WHERE id='program-a-second-lane'"
+                )
+                conn.execute(
+                    "UPDATE work_items SET updated_at='2026-08-31T01:00:00+00:00' "
+                    "WHERE id='program-b-head'"
+                )
+                conn.commit()
+
+            token = {
+                "item_id": "program-b-head",
+                "payload_json": json.dumps(idle),
+                "lane_id": ["program-b", "baseline"],
+                "year": 2021,
+                "predecessor_ids": [],
+                "predecessor_status_sha256": "fixture",
+            }
+            with (
+                patch.dict(os.environ, {
+                    "DL089_PROGRAM_SLOTS": "2",
+                    "DL089_LANES_PER_PROGRAM": "2",
+                    "DL089_CELL_SLOTS": "3",
+                    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "program-a",
+                }, clear=True),
+                patch.object(
+                    terminal_worker.opt_census_pruning,
+                    "pruning_enabled",
+                    return_value=False,
+                ),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_opt_census_lane_preflight_outside_factory_lock",
+                    return_value={
+                        "status": "checked",
+                        "candidate_pending": True,
+                        "token": token,
+                    },
+                ) as lane_preflight,
+                patch.object(
+                    terminal_worker,
+                    "_opt_census_token_matches",
+                    side_effect=lambda _conn, _item, _payload, candidate_token: (
+                        candidate_token is not None
+                    ),
+                ),
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "program-b-head")
+            lane_preflight.assert_called_once()
+            self.assertEqual(lane_preflight.call_args.args[2]["id"], "program-b-head")
+
+    def test_same_arm_and_empty_allowlist_remain_serialized(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            payload = {"program_id": "program-a", "arm": "buy-001"}
+            self._insert_work_item(
+                root, "arm-active", "EURUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A", payload=payload,
+            )
+            self._insert_work_item(
+                root, "arm-later", "EURUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_A", payload=payload,
+            )
+            with (
+                patch.dict(os.environ, {
+                    "DL089_LANES_PER_PROGRAM": "2",
+                    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "",
+                }, clear=True),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+            ):
+                result = terminal_worker.claim_atomic(root, "T2")
+            self.assertFalse(result.get("claimed"), result)
+            self.assertEqual(result.get("reason"), "no_pending_claimable")
+            self.assertEqual(
+                result["opt_census_slot_deferred"][0]["reason"],
+                "PROGRAM_LANE_WAIT",
+            )
+
+    def test_targeted_claim_uses_same_allowlisted_lane_policy(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            payload_a = {
+                "schema": "qm.opt-census.v1",
+                "program_id": "program-a",
+                "cell_key": "a",
+                "arm": "buy-001",
+                "year": 2019,
+                "ledger_path": "sealed-ledger.json",
+                "q12_work_item_id": "q12-a",
+                "q12_declaration_sha256": "fixture-sha256",
+            }
+            payload_b = {**payload_a, "cell_key": "b", "arm": "sell-001"}
+            self._insert_work_item(
+                root, "target-active", "EURUSD.DWX", phase="OPT_CENSUS",
+                status="active", claimed_by="T1", ea_id="QM5_A", payload=payload_a,
+            )
+            self._insert_work_item(
+                root, "target-pending", "EURUSD.DWX", phase="OPT_CENSUS",
+                ea_id="QM5_A", payload=payload_b,
+            )
+            (root / "state" / "FACTORY_OFF.flag").write_text("fixture", encoding="utf-8")
+            with (
+                patch.dict(os.environ, {
+                    "DL089_LANES_PER_PROGRAM": "2",
+                    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "program-a",
+                }, clear=True),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_opt_census_lane_preflight_outside_factory_lock",
+                    return_value={"status": "checked", "token": {"fixture": True}},
+                ),
+                patch.object(terminal_worker, "_opt_census_token_matches", return_value=True),
+            ):
+                result = terminal_worker.claim_specific_atomic(
+                    root, "T2", "target-pending"
+                )
+            self.assertTrue(result.get("claimed"), result)
+            self.assertTrue(result.get("targeted"), result)
+
+    def test_lane_token_fails_closed_when_predecessor_status_changes(self) -> None:
+        conn = sqlite3.connect(":memory:")
+        conn.row_factory = sqlite3.Row
+        conn.execute(
+            "CREATE TABLE work_items (id TEXT,status TEXT,verdict TEXT,claimed_by TEXT)"
+        )
+        conn.execute(
+            "INSERT INTO work_items VALUES ('pred','done','MEASURED',NULL)"
+        )
+        payload = {"program_id": "program-a", "arm": "buy-001", "year": 2020}
+        raw = json.dumps(payload)
+        item = {
+            "id": "candidate",
+            "ea_id": "QM5_A",
+            "symbol": "EURUSD.DWX",
+            "payload_json": raw,
+        }
+        token = {
+            "item_id": "candidate",
+            "payload_json": raw,
+            "lane_id": ["program-a", "buy-001"],
+            "year": 2020,
+            "predecessor_ids": ["pred"],
+            "predecessor_status_sha256": terminal_worker._predecessor_status_fingerprint(
+                conn, ["pred"]
+            ),
+        }
+        self.assertTrue(
+            terminal_worker._opt_census_token_matches(conn, item, payload, token)
+        )
+        conn.execute(
+            "UPDATE work_items SET status='active',verdict=NULL,claimed_by='T1' "
+            "WHERE id='pred'"
+        )
+        self.assertFalse(
+            terminal_worker._opt_census_token_matches(conn, item, payload, token)
+        )
+        conn.close()
+
+    def test_sqlite_writer_contention_keeps_global_claim_lock_under_one_second(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "writer-busy", "EURUSD.DWX", phase="P3")
+            state, tracking_lock = self._tracking_factory_lock()
+            database = root / farmctl.DB_REL
+
+            blocker = sqlite3.connect(database, timeout=0.1)
+            blocker.execute("PRAGMA busy_timeout=100")
+            blocker.execute("BEGIN IMMEDIATE")
+            try:
+                started = time.perf_counter()
+                with (
+                    patch.object(terminal_worker, "FactoryMutationLock", tracking_lock),
+                    patch.object(terminal_worker.farmctl, "init_db", return_value=None),
+                ):
+                    result = terminal_worker.claim_atomic(root, "T1")
+                elapsed = time.perf_counter() - started
+            finally:
+                blocker.rollback()
+                blocker.close()
+
+            self.assertFalse(result.get("claimed"), result)
+            self.assertEqual(result["reason"], "sqlite_locked")
+            self.assertTrue(state["global_durations"])
+            self.assertLess(max(state["global_durations"]), 1.0)
+            self.assertLess(elapsed, 2.0)
+
+    def test_slow_privatization_and_reaudit_run_after_global_claim_lock(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "custom-heavy", "EURUSD.DWX", phase="P3")
+            state, tracking_lock = self._tracking_factory_lock()
+            heavy_elapsed = []
+
+            def slow_privatization(_root, _row, _terminal, _gate):
+                self.assertFalse(state["global_active"])
+                started = time.perf_counter()
+                time.sleep(1.1)
+                heavy_elapsed.append(time.perf_counter() - started)
+                self.assertFalse(state["global_active"])
+                return {"required": True, "status": "PASS_PRIVATIZED"}
+
+            passing_gate = {
+                "required": True,
+                "status": "PASS_ISOLATED",
+                "admission_allowed": True,
+                "audit_sha256": "a" * 64,
+            }
+            with (
+                patch.object(terminal_worker, "FactoryMutationLock", tracking_lock),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_work_item_preflight_failure",
+                    return_value=None,
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_prepare_staged_ex5",
+                    return_value={
+                        "required_sha256": "b" * 64,
+                        "source_path": "test.ex5",
+                    },
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_custom_history_gate",
+                    return_value=passing_gate,
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_privatize_custom_history_claim",
+                    side_effect=slow_privatization,
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_acquire_launch_slot",
+                    return_value=None,
+                ),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_spawn_work_item_runner",
+                    return_value={
+                        "spawned": False,
+                        "pending_runner": True,
+                        "reason": "timing_test_complete",
+                        "log_path": str(root / "timing.log"),
+                        "report_root": str(root / "timing-report"),
+                    },
+                ),
+            ):
+                claimed = terminal_worker.claim_atomic(root, "T1")
+                self.assertTrue(claimed.get("claimed"), claimed)
+                result = terminal_worker._run_claimed_item(
+                    root,
+                    claimed["item"],
+                    "T1",
+                    timeout_seconds=30,
+                )
+
+            self.assertEqual(result["action"], "pending_runner")
+            self.assertGreaterEqual(heavy_elapsed[0], 1.0)
+            self.assertTrue(state["global_durations"])
+            self.assertLess(max(state["global_durations"]), 1.0)
+
+    def test_generic_worker_skips_declared_dl089_matrix_row(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "dl089-q12",
+                "GBPUSD.DWX",
+                phase="Q12",
+                kind="analytic",
+                payload={
+                    "role": "PATTERN",
+                    "routing_revision": "dl089-annual-wf-cells-v1",
+                    "execution_lane": "GOVERNED_ANALYTIC_DISPATCH",
+                },
+                ea_id="QM5_10706",
+            )
+            self._insert_work_item(root, "ordinary", "EURUSD.DWX", phase="P3")
+
+            claimed = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertTrue(claimed.get("claimed"), claimed)
+            self.assertEqual(claimed["item"]["id"], "ordinary")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status,claimed_by FROM work_items WHERE id='dl089-q12'"
+                ).fetchone()
+            self.assertEqual(row, ("pending", None))
+
+    def test_specific_generic_worker_rejects_declared_dl089_matrix_row(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "dl089-target",
+                "GBPUSD.DWX",
+                phase="Q12",
+                kind="analytic",
+                payload={
+                    "role": "PATTERN",
+                    "routing_revision": "dl089-annual-wf-cells-v1",
+                    "execution_lane": "GOVERNED_ANALYTIC_DISPATCH",
+                },
+                ea_id="QM5_10706",
+            )
+            flag = root / "state" / "FACTORY_OFF.flag"
+            flag.write_text("{}", encoding="ascii")
+
+            refused = terminal_worker.claim_specific_atomic(root, "T2", "dl089-target")
+
+            self.assertFalse(refused.get("claimed"))
+            self.assertEqual(refused.get("reason"), "governed_analytic_dispatch_required")
+            self.assertEqual(refused.get("required_runner"), "dl089_matrix_service")
+
+    def test_normal_claim_refuses_existing_factory_off_without_db_mutation(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            flag = root / "state" / "FACTORY_OFF.flag"
+            flag.parent.mkdir(parents=True, exist_ok=True)
+            flag.write_text("{}", encoding="ascii")
+
+            result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "factory_off")
+            self.assertFalse((root / farmctl.DB_REL).exists())
+            self.assertFalse((root / "state" / "FACTORY_MUTATION.lock").exists())
+
+    def test_empty_queue_fast_path_does_not_churn_global_lock(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            farmctl.init_db(root)
+
+            with patch.object(
+                terminal_worker,
+                "FactoryMutationLock",
+                side_effect=AssertionError("empty queue must not acquire mutation lock"),
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "no_pending_claimable")
+            self.assertFalse((root / "state" / "FACTORY_MUTATION.lock").exists())
+
+    def test_off_asserted_after_lock_acquisition_blocks_claim(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-off-race", "EURUSD.DWX", phase="P3")
+            flag = root / "state" / "FACTORY_OFF.flag"
+
+            class _AssertOffOnEnter:
+                def __enter__(self):
+                    flag.write_text("{}", encoding="ascii")
+                    return self
+
+                def __exit__(self, exc_type, exc, traceback):
+                    return None
+
+            with patch.object(
+                terminal_worker,
+                "FactoryMutationLock",
+                return_value=_AssertOffOnEnter(),
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "factory_off")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, claimed_by FROM work_items WHERE id='wi-off-race'"
+                ).fetchone()
+            self.assertEqual(row, ("pending", None))
+
+    def test_claim_admitted_before_off_may_finish_bounded_transaction(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-pre-admitted", "EURUSD.DWX", phase="P3")
+            flag = root / "state" / "FACTORY_OFF.flag"
+            original_retry = terminal_worker._with_claim_lock_sqlite_write
+
+            def _assert_off_after_admission(fn):
+                flag.write_text("{}", encoding="ascii")
+                return original_retry(fn)
+
+            with patch.object(
+                terminal_worker,
+                "_with_claim_lock_sqlite_write",
+                side_effect=_assert_off_after_admission,
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "wi-pre-admitted")
+            self.assertTrue(flag.exists())
+            self.assertFalse((root / "state" / "FACTORY_MUTATION.lock").exists())
+
+    def test_live_terminal_reservation_declines_claim_and_logs(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-reserved", "EURUSD.DWX", phase="P3")
+            reservation = farmctl.set_terminal_reservation(
+                root, "T4", "codex-test", minutes=30, reason="ad-hoc evaluation",
+            )
+
+            with patch("builtins.print") as logged:
+                result = terminal_worker.claim_atomic(root, "T4")
+
+            self.assertFalse(result["claimed"])
+            self.assertEqual(result["reason"], "terminal_reserved")
+            self.assertEqual(result["reserved_by"], "codex-test")
+            self.assertEqual(result["until_utc"], reservation["until_utc"])
+            self.assertTrue(any(
+                "terminal_reservation_claim_declined" in str(call)
+                for call in logged.call_args_list
+            ))
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, claimed_by FROM work_items WHERE id='wi-reserved'"
+                ).fetchone()
+            self.assertEqual(row, ("pending", None))
+
+    def test_q09_main_claim_leases_and_releases_only_free_helper_slots(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "q09-sharded",
+                "EURUSD.DWX",
+                phase=terminal_worker._Q09_NEWS_PHASE,
+                status="active",
+                claimed_by="T1",
+                payload={"q09_cell_count": 40, "q09_cell_timeout_sec": 60},
+            )
+            with farmctl.connect(root) as conn:
+                row = conn.execute(
+                    "SELECT * FROM work_items WHERE id='q09-sharded'"
+                ).fetchone()
+            with (
+                patch.dict(
+                    os.environ,
+                    {
+                        terminal_worker.Q09_CELL_SHARDING_FLAG: "1",
+                        terminal_worker.Q09_CELL_SHARDING_MAX_TERMINALS_FLAG: "3",
+                    },
+                ),
+                patch.object(
+                    farmctl,
+                    "active_mt5_terminals",
+                    return_value=("T1", "T2", "T3"),
+                ),
+                patch.object(
+                    terminal_worker, "_commit_headroom_gb", return_value=1000.0
+                ),
+                patch.object(
+                    terminal_worker, "_free_ram_gb", return_value=1000.0
+                ),
+            ):
+                lease = terminal_worker._reserve_q09_helper_terminals(
+                    root, row, "T1"
+                )
+
+            self.assertIsNotNone(lease)
+            self.assertEqual(lease["helper_terminals"], ["T2", "T3"])
+            self.assertEqual(
+                set(farmctl.terminal_reservations(root)), {"T2", "T3"}
+            )
+            terminal_worker._release_q09_helper_terminals(root, lease)
+            self.assertEqual(farmctl.terminal_reservations(root), {})
+
+    def test_expired_terminal_reservation_fails_open(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-expired", "EURUSD.DWX", phase="P3")
+            path = root / farmctl.TERMINAL_RESERVATIONS_REL
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps({
+                "reservations": {
+                    "T3": {
+                        "reserved_by": "codex-test",
+                        "reason": "expired",
+                        "created_at_utc": "2026-01-01T00:00:00+00:00",
+                        "until_utc": "2026-01-01T00:30:00+00:00",
+                    }
+                }
+            }), encoding="utf-8")
+
+            result = terminal_worker.claim_atomic(root, "T3")
+
+            self.assertTrue(result["claimed"])
+            self.assertEqual(result["item"]["id"], "wi-expired")
+
+    def test_claim_fails_closed_without_valid_multisymbol_registry(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-registry-unknown", "EURUSD.DWX")
+            old_path = terminal_worker.MULTISYMBOL_REGISTRY_PATH
+            old_cache = terminal_worker._multisym_cache
+            try:
+                terminal_worker.MULTISYMBOL_REGISTRY_PATH = root / "missing-multisymbol-eas.txt"
+                terminal_worker._multisym_cache = {
+                    "mtime": -1.0,
+                    "ids": frozenset(),
+                    "loaded": False,
+                }
+
+                result = terminal_worker.claim_atomic(root, "T1")
+            finally:
+                terminal_worker.MULTISYMBOL_REGISTRY_PATH = old_path
+                terminal_worker._multisym_cache = old_cache
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "multisymbol_registry_unavailable")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='wi-registry-unknown'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_multisymbol_registry_uses_last_valid_cache_after_read_failure(self) -> None:
+        with self._root() as tmp:
+            registry = Path(tmp) / "multisymbol_eas.txt"
+            registry.write_text(
+                "# generated registry\nQM5_10718 legacy basket description\n",
+                encoding="utf-8",
+            )
+            old_path = terminal_worker.MULTISYMBOL_REGISTRY_PATH
+            old_cache = terminal_worker._multisym_cache
+            try:
+                terminal_worker.MULTISYMBOL_REGISTRY_PATH = registry
+                terminal_worker._multisym_cache = {
+                    "mtime": -1.0,
+                    "ids": frozenset(),
+                    "loaded": False,
+                }
+                first = terminal_worker._multisymbol_ea_ids()
+                registry.unlink()
+                cached = terminal_worker._multisymbol_ea_ids()
+            finally:
+                terminal_worker.MULTISYMBOL_REGISTRY_PATH = old_path
+                terminal_worker._multisym_cache = old_cache
+
+            self.assertEqual(first, frozenset({"QM5_10718"}))
+            self.assertEqual(cached, first)
+
+    def test_watchdog_reset_marker_blocks_new_claim_inside_transaction(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-reset-blocked", "EURUSD.DWX")
+            marker = root / "state" / terminal_worker.WATCHDOG_RESET_BLOCK_FILENAME
+            marker.write_text(
+                json.dumps(
+                    {
+                        "expires_at_utc": (
+                            datetime.now(timezone.utc) + timedelta(minutes=5)
+                        ).isoformat()
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "watchdog_reset_pending")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='wi-reset-blocked'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_watchdog_reset_marker_never_expires_without_handover_ack(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-expired-reset-block", "EURUSD.DWX")
+            marker = root / "state" / terminal_worker.WATCHDOG_RESET_BLOCK_FILENAME
+            marker.write_text(
+                json.dumps(
+                    {
+                        "expires_at_utc": (
+                            datetime.now(timezone.utc) - timedelta(days=1)
+                        ).isoformat()
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "watchdog_reset_pending")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='wi-expired-reset-block'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_watchdog_reset_marker_probe_error_pauses_instead_of_crashing(self) -> None:
+        with patch.object(Path, "exists", side_effect=OSError("access denied")):
+            blocked = terminal_worker._watchdog_reset_admission_blocked(Path("X:/farm"))
+
+        self.assertTrue(blocked)
+
+    def test_watchdog_reset_handover_has_transactional_claim_interlock(self) -> None:
+        watchdog = FACTORY_WATCHDOG.read_text(encoding="utf-8-sig")
+        factory_on = FACTORY_ON.read_text(encoding="utf-8-sig")
+        worker = (REPO / "tools" / "strategy_farm" / "terminal_worker.py").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("WATCHDOG_RESET_PENDING.json", watchdog)
+        self.assertNotIn("expires_at_utc", watchdog)
+        self.assertIn("owner_started_at_utc", watchdog)
+        self.assertIn("abort reset admission instead of inventing an identity", watchdog)
+        self.assertIn("reset marker path probe failed", watchdog)
+        self.assertIn("noop_reset_handover_in_progress", watchdog)
+        self.assertIn("@('Ready', 'Disabled')", watchdog)
+        self.assertIn("Unreadable/Unknown/ambiguous state remains blocked", watchdog)
+        self.assertIn("task_probe_ok", watchdog)
+        self.assertIn(
+            "Get-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop",
+            watchdog,
+        )
+        self.assertIn("orphan cleanup failed", watchdog)
+        self.assertIn('conn.execute("BEGIN IMMEDIATE")', watchdog)
+        self.assertGreaterEqual(worker.count("_watchdog_reset_admission_blocked(root)"), 2)
+        dump_pos = watchdog.index("$dumpDetail = Invoke-StallDumpCapture")
+        guard_pos = watchdog.index(
+            "$resetGuard = Enter-GuardedFactoryReset",
+            dump_pos,
+        )
+        reset_pos = watchdog.index(
+            "Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon'",
+            guard_pos,
+        )
+        self.assertLess(dump_pos, guard_pos)
+        self.assertLess(guard_pos, reset_pos)
+
+        preflight_pos = factory_on.index("# Preflight and stale factory-process drain")
+        kill_pos = factory_on.index("\n    Stop-FactoryProcesses\n", preflight_pos)
+        lock_pos = factory_on.index(
+            "Enter-FactoryMutationLock -Owner 'factory_on_restart_window'"
+        )
+        self.assertLess(lock_pos, kill_pos)
+        clear_pos = factory_on.index(
+            "Remove-Item -LiteralPath $watchdogResetBlockPath",
+            kill_pos,
+        )
+        # Search after the reset marker release. An earlier policy comment also
+        # names start_terminal_workers.py, but it is not the worker launch.
+        spawn_pos = factory_on.index("start_terminal_workers.py", clear_pos)
+        self.assertLess(kill_pos, clear_pos)
+        self.assertLess(clear_pos, spawn_pos)
+        clear_block = factory_on[kill_pos:spawn_pos]
+        self.assertIn("Remove-Item -LiteralPath $watchdogResetBlockPath", clear_block)
+        self.assertIn(
+            "Test-Path -LiteralPath $watchdogResetBlockPath -ErrorAction Stop",
+            clear_block,
+        )
+        self.assertIn("-ErrorAction Stop", clear_block)
+        self.assertIn("Invoke-FailClosedRollback", factory_on)
+        self.assertIn("FACTORY ON FAILED CLOSED", factory_on)
+
+    def test_claim_respects_payload_avoid_terminals(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "wi-avoid-t1",
+                "AUDCAD.DWX",
+                phase="Q04",
+                payload={"avoid_terminals": ["T1"]},
+            )
+
+            blocked = terminal_worker.claim_atomic(root, "T1")
+            self.assertFalse(blocked.get("claimed"))
+            self.assertEqual(blocked.get("reason"), "no_pending_claimable")
+            self.assertEqual(blocked["terminal_avoid_skipped"][0]["item_id"], "wi-avoid-t1")
+
+            claimed = terminal_worker.claim_atomic(root, "T2")
+            self.assertTrue(claimed.get("claimed"))
+            self.assertEqual(claimed["item"]["id"], "wi-avoid-t1")
+
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute("SELECT status, claimed_by FROM work_items WHERE id='wi-avoid-t1'").fetchone()
+            self.assertEqual(row[0], "active")
+            self.assertEqual(row[1], "T2")
+
+    def test_specific_claim_requires_factory_off_and_selects_exact_item(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "queue-first", "XAUUSD.DWX", phase="Q10")
+            self._insert_work_item(root, "target-q08", "USDJPY.DWX", phase="Q08")
+
+            refused = terminal_worker.claim_specific_atomic(root, "T2", "target-q08")
+            self.assertFalse(refused.get("claimed"))
+            self.assertEqual(refused.get("reason"), "factory_off_required")
+
+            flag = root / "state" / "FACTORY_OFF.flag"
+            flag.parent.mkdir(parents=True, exist_ok=True)
+            flag.write_text("{}", encoding="ascii")
+            claimed = terminal_worker.claim_specific_atomic(root, "T2", "target-q08")
+
+            self.assertTrue(claimed.get("claimed"))
+            self.assertEqual(claimed["item"]["id"], "target-q08")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                rows = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
+                payload = json.loads(
+                    conn.execute("SELECT payload_json FROM work_items WHERE id='target-q08'").fetchone()[0]
+                )
+            self.assertEqual(rows["queue-first"], "pending")
+            self.assertEqual(rows["target-q08"], "active")
+            self.assertTrue(payload["targeted_factory_off_run"])
+            self.assertEqual(payload["ram_reservation_class"], "ordinary")
+            self.assertEqual(payload["ram_reservation_gb"], 16.0)
+            self.assertEqual(payload["ram_reservation_source"], "phase_floor")
+
+    def test_specific_claim_skips_a_2026_row_at_selection_boundary(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "target-2026",
+                "EURUSD.DWX",
+                phase="RESEARCH",
+                kind="research",
+                gate_contract_version="RESEARCH_VARIANT",
+                ea_id="QM5_99999",
+                payload={
+                    "schema": "qm.research-backtest-work-item/v1",
+                    "research_contract": "qm.research-backtest-work-item/v1",
+                    "evidence_class": "RESEARCH_VARIANT",
+                    "label": "RESEARCH_VARIANT_LIVE_BOOK_L2_ALPHA",
+                    "label_slug": "RESEARCH_VARIANT_LIVE_BOOK_L2_ALPHA",
+                    "host_symbol": "EURUSD.DWX",
+                    "from_date": "2026-07-24",
+                    "to_date": "2026-10-09",
+                    "expected_from_date": "2026-07-24",
+                    "expected_to_date": "2026-10-09",
+                    "no_q_verdict": True,
+                    "no_promotion": True,
+                    "no_magic_registry_write": True,
+                    "research_exact_window": True,
+                    "expected_ex5_sha256": "a" * 64,
+                    "expected_setfile_sha256": "b" * 64,
+                    "tester_model": 4,
+                    "risk_fixed": 100.0,
+                    "risk_percent": 0.0,
+                    "qm_news_stale_max_hours": 336,
+                },
+            )
+            flag = root / "state" / "FACTORY_OFF.flag"
+            flag.parent.mkdir(parents=True, exist_ok=True)
+            flag.write_text("{}", encoding="ascii")
+
+            with patch.dict(
+                os.environ,
+                {farmctl.RESEARCH_BACKTEST_ACTIVATION_ENV: "1"},
+                clear=False,
+            ), patch.object(
+                terminal_worker, "_p2_history_claimable", return_value=(True, {})
+            ):
+                refused = terminal_worker.claim_specific_atomic(
+                    root, "T2", "target-2026"
+                )
+
+            self.assertFalse(refused.get("claimed"), refused)
+            self.assertEqual(
+                refused.get("reason"),
+                terminal_worker.custom_history_2026_access.REASON_BINDING_MISMATCH,
+            )
+            self.assertTrue(
+                refused["data_2026_admission"]["touches_2026"]
+            )
+            self.assertEqual(
+                refused["data_2026_admission"]["detail"],
+                "bound L2 inventory is absent",
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status, payload_json = conn.execute(
+                    "SELECT status,payload_json FROM work_items WHERE id=?",
+                    ("target-2026",),
+                ).fetchone()
+            self.assertEqual(status, "pending")
+            self.assertNotIn(
+                "custom_history_2026_claim_admission",
+                json.loads(payload_json),
+            )
+
+    def test_pre_2026_claim_clears_forged_2026_admission(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "pre-2026-forged",
+                "EURUSD.DWX",
+                phase="Q04",
+                payload={
+                    "label": "LEGACY_RESEARCH",
+                    "label_slug": "LEGACY_RESEARCH",
+                    "host_symbol": "EURUSD.DWX",
+                    "from_date": "2025-07-24",
+                    "to_date": "2025-10-09",
+                    "expected_from_date": "2025-07-24",
+                    "expected_to_date": "2025-10-09",
+                    "DATA_PROVENANCE": "FORGED",
+                    "custom_history_2026_claim_admission": {
+                        "allowed": True,
+                        "touches_2026": True,
+                        "decision_sha256": "f" * 64,
+                    },
+                },
+            )
+            flag = root / "state" / "FACTORY_OFF.flag"
+            flag.parent.mkdir(parents=True, exist_ok=True)
+            flag.write_text("{}", encoding="ascii")
+
+            with patch.object(
+                terminal_worker,
+                "_p2_history_claimable",
+                return_value=(True, {}),
+            ):
+                claimed = terminal_worker.claim_specific_atomic(
+                    root, "T2", "pre-2026-forged"
+                )
+
+            self.assertTrue(claimed.get("claimed"), claimed)
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status, payload_json = conn.execute(
+                    "SELECT status,payload_json FROM work_items WHERE id=?",
+                    ("pre-2026-forged",),
+                ).fetchone()
+            persisted = json.loads(payload_json)
+            self.assertEqual(status, "active")
+            self.assertNotIn("custom_history_2026_claim_admission", persisted)
+            self.assertNotIn("DATA_PROVENANCE", persisted)
+
+    def test_fleet_claim_clears_forged_2026_admission(self) -> None:
+        """The ordinary fleet claimant, not only the FACTORY_OFF path, strips G1 input."""
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "fleet-pre-2026-forged",
+                "EURUSD.DWX",
+                phase="Q04",
+                payload={
+                    "label": "LEGACY_RESEARCH",
+                    "label_slug": "LEGACY_RESEARCH",
+                    "host_symbol": "EURUSD.DWX",
+                    "from_date": "2025-07-24",
+                    "to_date": "2025-10-09",
+                    "expected_from_date": "2025-07-24",
+                    "expected_to_date": "2025-10-09",
+                    "DATA_PROVENANCE": "FORGED",
+                    "custom_history_2026_claim_admission": {
+                        "allowed": True,
+                        "touches_2026": True,
+                        "decision_sha256": "f" * 64,
+                    },
+                },
+            )
+
+            with patch.object(
+                terminal_worker,
+                "_p2_history_claimable",
+                return_value=(True, {}),
+            ):
+                claimed = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(claimed.get("claimed"), claimed)
+            self.assertEqual(claimed["item"]["id"], "fleet-pre-2026-forged")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status, payload_json = conn.execute(
+                    "SELECT status,payload_json FROM work_items WHERE id=?",
+                    ("fleet-pre-2026-forged",),
+                ).fetchone()
+            persisted = json.loads(payload_json)
+            self.assertEqual(status, "active")
+            self.assertNotIn("custom_history_2026_claim_admission", persisted)
+            self.assertNotIn("DATA_PROVENANCE", persisted)
+
+    def test_specific_claim_refuses_busy_terminal(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "already-active",
+                "NDX.DWX",
+                phase="Q08",
+                status="active",
+                claimed_by="T2",
+            )
+            self._insert_work_item(root, "target-q08", "USDJPY.DWX", phase="Q08")
+            flag = root / "state" / "FACTORY_OFF.flag"
+            flag.parent.mkdir(parents=True, exist_ok=True)
+            flag.write_text("{}", encoding="ascii")
+
+            refused = terminal_worker.claim_specific_atomic(root, "T2", "target-q08")
+
+            self.assertFalse(refused.get("claimed"))
+            self.assertEqual(refused.get("reason"), "terminal_worker_busy")
+            self.assertEqual(refused.get("item_id"), "already-active")
+
+    def test_specific_multisymbol_claim_waits_for_commit_headroom(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "target-basket",
+                "QM5_12751_EURUSD_EURAUD_COINTEGRATION_D1",
+                phase="Q08",
+                ea_id="QM5_12751",
+                payload={"portfolio_scope": "basket", "basket_symbol_count": 2},
+            )
+            flag = root / "state" / "FACTORY_OFF.flag"
+            flag.parent.mkdir(parents=True, exist_ok=True)
+            flag.write_text("{}", encoding="ascii")
+            terminal_worker._commit_headroom_gb = (
+                lambda: terminal_worker.MULTISYMBOL_COMMIT_MIN_FREE_GB - 1.0
+            )
+
+            refused = terminal_worker.claim_specific_atomic(root, "T2", "target-basket")
+
+            self.assertFalse(refused.get("claimed"))
+            self.assertEqual(refused.get("reason"), "multisymbol_commit_headroom_low")
+            self.assertEqual(
+                refused.get("threshold_gb"),
+                terminal_worker.MULTISYMBOL_COMMIT_MIN_FREE_GB,
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='target-basket'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_exact_rss_multisymbol_claim_keeps_48gb_commit_gate(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            payload = {
+                "portfolio_scope": "basket",
+                "basket_symbol_count": 4,
+                "basket_symbols": [
+                    "AUDUSD.DWX",
+                    "EURJPY.DWX",
+                    "EURUSD.DWX",
+                    "EURAUD.DWX",
+                ],
+                "host_symbol": "AUDUSD.DWX",
+                "host_timeframe": "D1",
+                "from_date": "2017.10.01",
+                "to_date": "2025.12.31",
+                "costs": {"model": 4},
+            }
+            self._insert_work_item(
+                root,
+                "exact-basket",
+                "QM5_12778_FX_BASKET_D1",
+                phase="Q05",
+                ea_id="QM5_12778",
+                payload=payload,
+            )
+            candidate = {
+                "id": "exact-basket",
+                "kind": "backtest",
+                "phase": "Q05",
+                "ea_id": "QM5_12778",
+                "symbol": "QM5_12778_FX_BASKET_D1",
+            }
+            ram_class = terminal_worker._multisymbol_commit_class(
+                candidate, payload, True
+            )
+            identity = terminal_worker._tester_rss_identity(
+                candidate, payload, True, ram_class
+            )
+            self.assertIsNotNone(identity)
+            evidence = {
+                identity["tester_rss_lookup_key"]: {
+                    "n": 1,
+                    "max_gb": 26.538,
+                    "p95_gb": 26.538,
+                }
+            }
+            terminal_worker._commit_headroom_gb = lambda: 40.0
+
+            with patch.dict(
+                os.environ,
+                {
+                    terminal_worker.TESTER_RSS_RESERVATIONS_ENV: "1",
+                    terminal_worker.MULTISYMBOL_RAM_CANARY_ENV: "0",
+                    terminal_worker.MULTISYMBOL_RAM_CANARY_V2_ENV: "0",
+                },
+            ), patch.object(
+                terminal_worker,
+                "_tester_memory_expectations_keys",
+                return_value=evidence,
+            ), patch.object(
+                terminal_worker,
+                "_measured_ram_expectation_gb",
+                return_value=None,
+            ):
+                resolved = terminal_worker._ram_reservation_detail_for_candidate(
+                    candidate, payload, True
+                )
+                refused = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertFalse(refused.get("claimed"))
+            self.assertEqual(
+                resolved[1:],
+                (34.0, terminal_worker.RAM_RESERVATION_SOURCE_EXACT_TESTER_RSS),
+            )
+            self.assertEqual(refused.get("reason"), "no_pending_claimable", refused)
+            skipped = refused["multisymbol_commit_skipped"]
+            self.assertEqual(len(skipped), 1)
+            self.assertEqual(skipped[0]["threshold_gb"], 48.0)
+            self.assertEqual(skipped[0]["effective_commit_headroom_gb"], 40.0)
+
+    def test_research_floor_claim_contract_flows_to_ledger_and_guard(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            seed_ledger = root / "research_floor_seed.jsonl"
+            seed_ledger.parent.mkdir(parents=True, exist_ok=True)
+            seed_rows = [
+                {
+                    "schema": "qm.tester_memory_ledger/v1",
+                    "ts_utc": f"2026-10-12T05:0{i}:00+00:00",
+                    "ea_id": f"QM5_{9100 + i}",
+                    "symbol": "USDJPY.DWX",
+                    "symbol_class": "fx_major",
+                    "timeframe": "H4",
+                    "phase": "RESEARCH",
+                    "run_kind": "backtest",
+                    "outcome": "finished",
+                    "peak_subtree_working_set_gb": peak,
+                    "peak_subtree_private_gb": peak,
+                }
+                for i, peak in enumerate((5.0, 6.0, 7.0, 7.25, 7.5, 7.0))
+            ]
+            seed_ledger.write_text(
+                "".join(json.dumps(row) + "\n" for row in seed_rows),
+                encoding="utf-8",
+            )
+            self._insert_work_item(
+                root,
+                "research-floor-flow",
+                "USDJPY.DWX",
+                phase="RESEARCH",
+                ea_id="QM5_9999",
+                kind=farmctl.RESEARCH_BACKTEST_KIND,
+                gate_contract_version=farmctl.RESEARCH_BACKTEST_EVIDENCE_CLASS,
+                payload={
+                    "host_timeframe": "H4",
+                    "schema": farmctl.RESEARCH_BACKTEST_SCHEMA,
+                    "research_contract": farmctl.RESEARCH_BACKTEST_SCHEMA,
+                    "evidence_class": farmctl.RESEARCH_BACKTEST_EVIDENCE_CLASS,
+                    "no_q_verdict": True,
+                    "no_promotion": True,
+                    "no_magic_registry_write": True,
+                    "research_exact_window": True,
+                    "expected_ex5_sha256": "a" * 64,
+                    "expected_setfile_sha256": "b" * 64,
+                    "from_date": "2017.01.01",
+                    "to_date": "2025.12.31",
+                },
+            )
+            flag_path = root / "absent_research_floor_flag.json"
+            with patch.dict(
+                os.environ,
+                {
+                    farmctl.RESEARCH_BACKTEST_ACTIVATION_ENV: "1",
+                    farmctl.RESEARCH_BACKTEST_MAX_ACTIVE_ENV: "2",
+                    terminal_worker.RESEARCH_RAM_FLOOR_V1_ENV: "1",
+                    terminal_worker.RESEARCH_RAM_FLOOR_FLAG_FILE_ENV: str(flag_path),
+                    "QM_TESTER_MEMORY_LEDGER": str(seed_ledger),
+                },
+                clear=False,
+            ), patch.object(
+                terminal_worker,
+                "_measured_ram_expectation_gb",
+                return_value=None,
+            ), patch.object(
+                terminal_worker,
+                "_multisymbol_ea_ids",
+                return_value=frozenset(),
+            ):
+                terminal_worker._RESEARCH_RAM_FLOOR_STATS_CACHE.clear()
+                terminal_worker._RESEARCH_RAM_FLOOR_FLAG_FILE_CACHE.clear()
+                claimed = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertTrue(claimed.get("claimed"), claimed)
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                stored = conn.execute(
+                    "SELECT status, payload_json FROM work_items WHERE id=?",
+                    ("research-floor-flow",),
+                ).fetchone()
+            self.assertEqual(stored[0], "active")
+            payload = json.loads(stored[1])
+            contract = payload[
+                terminal_worker.RESEARCH_RAM_FLOOR_CONTRACT_PAYLOAD_KEY
+            ]
+            self.assertEqual(contract["work_item_id"], "research-floor-flow")
+            self.assertEqual(contract["cohort_key"], "fx_major|H4|backtest")
+            self.assertEqual(contract["derived_floor_gb"], 15.0)
+            self.assertEqual(
+                payload[terminal_worker.RAM_RESERVATION_GB_PAYLOAD_KEY], 15.0
+            )
+
+            run_ledger = root / "research_floor_run.jsonl"
+            gib = 1024 ** 3
+            item = {
+                "id": "research-floor-flow",
+                "phase": "RESEARCH",
+                "ea_id": "QM5_9999",
+                "symbol": "USDJPY.DWX",
+            }
+            with patch.object(
+                terminal_worker,
+                "_tester_memory_ledger_path",
+                return_value=run_ledger,
+            ), patch.object(
+                terminal_worker,
+                "_multisymbol_ea_ids",
+                return_value=frozenset(),
+            ):
+                terminal_worker._write_tester_memory_ledger(
+                    root,
+                    item,
+                    payload,
+                    {"pid": 123},
+                    {
+                        "samples": 1,
+                        "peak_subtree_ws": int(15.25 * gib),
+                        "peak_subtree_private": 14 * gib,
+                        "peak_metatester_ws": 7 * gib,
+                        "metatester_os_peak_ws": 7 * gib,
+                        "peak_terminal_ws": 1 * gib,
+                    },
+                    "T1",
+                    run_seconds=60.0,
+                    outcome="finished",
+                )
+            run_row = json.loads(run_ledger.read_text(encoding="utf-8"))
+            self.assertEqual(
+                run_row[terminal_worker.RESEARCH_RAM_FLOOR_CONTRACT_PAYLOAD_KEY],
+                contract,
+            )
+            events = research_ram_floor_guard.ledger_research_floor_breaches(
+                run_ledger,
+                datetime.now(timezone.utc) - timedelta(minutes=1),
+            )
+            self.assertEqual(
+                [event["rule"] for event in events],
+                ["c_research_peak_exceeds_claim_floor"],
+            )
+
+    def test_ordinary_reservation_blocks_following_specific_multisymbol_claim(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "ordinary", "GBPUSD.DWX", phase="Q08")
+            self._insert_work_item(
+                root,
+                "basket",
+                "QM5_12751_EURUSD_EURAUD_COINTEGRATION_D1",
+                phase="Q08",
+                ea_id="QM5_12751",
+                payload={"portfolio_scope": "basket", "basket_symbol_count": 2},
+            )
+            flag = root / "state" / "FACTORY_OFF.flag"
+            flag.parent.mkdir(parents=True, exist_ok=True)
+            flag.write_text("{}", encoding="ascii")
+            terminal_worker._commit_headroom_gb = lambda: 55.0
+
+            first = terminal_worker.claim_specific_atomic(root, "T1", "ordinary")
+            second = terminal_worker.claim_specific_atomic(root, "T2", "basket")
+
+            self.assertTrue(first.get("claimed"))
+            self.assertFalse(second.get("claimed"))
+            self.assertEqual(second.get("reason"), "multisymbol_commit_headroom_low")
+            self.assertEqual(second.get("commit_reserved_gb"), 8.0)
+            self.assertEqual(second.get("effective_commit_headroom_gb"), 47.0)
+
     def test_per_symbol_lock_is_respected(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"
@@ -78,6 +2490,744 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
             self.assertEqual(statuses["pending-1"], "pending")
             self.assertEqual(statuses["pending-2"], "active")
+
+    def test_same_symbol_parallel_across_eas_up_to_cap(self) -> None:
+        # Variant-A relaxation (2026-08-12): cross-EA same-symbol work is
+        # capped at CLAIM_SYMBOL_ACTIVE_CAP, no longer serialized to one.
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            for idx in range(farmctl.CLAIM_SYMBOL_ACTIVE_CAP - 1):
+                self._insert_work_item(
+                    root,
+                    f"active-{idx}",
+                    "XAUUSD.DWX",
+                    phase="P3",
+                    status="active",
+                    claimed_by=f"T{idx + 1}",
+                    ea_id=f"QM5_800{idx}",
+                )
+            self._insert_work_item(root, "pending-xau", "XAUUSD.DWX", phase="P3", ea_id="QM5_8099")
+
+            result = terminal_worker.claim_atomic(root, "T9")
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "pending-xau")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                active_count = conn.execute(
+                    "SELECT COUNT(*) FROM work_items WHERE status='active' AND symbol='XAUUSD.DWX'"
+                ).fetchone()[0]
+            self.assertEqual(active_count, farmctl.CLAIM_SYMBOL_ACTIVE_CAP)
+
+    def test_same_symbol_cap_blocks_next_run_at_cap(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            for idx in range(farmctl.CLAIM_SYMBOL_ACTIVE_CAP):
+                self._insert_work_item(
+                    root,
+                    f"active-{idx}",
+                    "XAUUSD.DWX",
+                    phase="P3",
+                    status="active",
+                    claimed_by=f"T{idx + 1}",
+                    ea_id=f"QM5_800{idx}",
+                )
+            self._insert_work_item(root, "pending-xau", "XAUUSD.DWX", phase="P3", ea_id="QM5_8099")
+
+            result = terminal_worker.claim_atomic(root, "T9")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "no_pending_claimable")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='pending-xau'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_duplicate_ea_symbol_pair_never_runs_twice(self) -> None:
+        # The literal 2026-05-18 crash shape (five concurrent items of ONE
+        # (ea_id, symbol)) stays hard-blocked below the cap.
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root, "active-dup", "XAUUSD.DWX", phase="P3",
+                status="active", claimed_by="T1", ea_id="QM5_8000",
+            )
+            self._insert_work_item(root, "pending-dup", "XAUUSD.DWX", phase="P3", ea_id="QM5_8000")
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "no_pending_claimable")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='pending-dup'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_claim_waits_when_system_commit_headroom_is_low(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "ordinary-q02", "GBPUSD.DWX", phase="Q02")
+            terminal_worker._commit_headroom_gb = (
+                lambda: terminal_worker.COMMIT_MIN_FREE_GB - 0.5
+            )
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "commit_headroom_low")
+            self.assertEqual(result.get("threshold_gb"), terminal_worker.COMMIT_MIN_FREE_GB)
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='ordinary-q02'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_low_effective_commit_claims_only_compile_utility(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            now = datetime.now(timezone.utc)
+            self._insert_work_item(
+                root,
+                "active-index",
+                "GDAXI.DWX",
+                phase="Q04",
+                status="active",
+                claimed_by="T1",
+                ea_id="QM5_1000",
+                payload={
+                    "commit_reservation_until_utc": (
+                        now + timedelta(seconds=terminal_worker.COMMIT_RESERVATION_SECONDS)
+                    ).isoformat(),
+                    "commit_reservation_gb": (
+                        terminal_worker.SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB
+                    ),
+                },
+            )
+            self._insert_work_item(
+                root,
+                "priority-backtest",
+                "GBPUSD.DWX",
+                phase="Q10",
+                ea_id="QM5_1001",
+            )
+            self._insert_work_item(
+                root,
+                "compile-utility",
+                "",
+                phase=farmctl.COMPILE_EA_PHASE,
+                ea_id="QM5_1002",
+                setfile_path="",
+                payload={"ea_label": "QM5_1002_fixture"},
+            )
+            terminal_worker._commit_headroom_gb = lambda: 55.0
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "compile-utility")
+            self.assertEqual(
+                result["claim_admission_mode"],
+                "compile_only_under_reservation_pressure",
+            )
+            payload = json.loads(result["item"]["payload_json"])
+            self.assertEqual(
+                payload["commit_reservation_class"],
+                terminal_worker.MULTISYMBOL_COMMIT_CLASS_ORDINARY,
+            )
+            self.assertEqual(
+                payload["commit_reservation_gb"],
+                terminal_worker.ORDINARY_COMMIT_RESERVATION_GB,
+            )
+            self.assertNotIn("ram_reservation_gb", payload)
+            self.assertEqual(payload["claim_admission_commit_reserved_gb"], 44.0)
+            self.assertEqual(
+                payload["claim_admission_effective_commit_headroom_gb"], 11.0
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='priority-backtest'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_compile_utility_still_fails_closed_on_low_live_commit(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "compile-utility",
+                "",
+                phase=farmctl.COMPILE_EA_PHASE,
+                ea_id="QM5_1002",
+                setfile_path="",
+            )
+            terminal_worker._commit_headroom_gb = lambda: (
+                terminal_worker.COMMIT_MIN_FREE_GB - 0.5
+            )
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "commit_headroom_low")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='compile-utility'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_claim_waits_when_commit_probe_fails(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "ordinary-q02", "GBPUSD.DWX", phase="Q02")
+            terminal_worker._commit_headroom_gb = lambda: float("nan")
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "commit_probe_failed")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='ordinary-q02'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_frozen_commit_probe_cannot_overbook_after_multisymbol_claim(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "basket-q02",
+                "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+                phase="Q02",
+                ea_id="QM5_12533",
+                payload={"portfolio_scope": "basket", "host_symbol": "EURJPY.DWX"},
+            )
+            self._insert_work_item(
+                root,
+                "ordinary-q02",
+                "GBPUSD.DWX",
+                phase="Q02",
+                ea_id="QM5_1001",
+            )
+            terminal_worker._commit_headroom_gb = lambda: 55.0
+            old_free_ram = terminal_worker._free_ram_gb
+            try:
+                terminal_worker._free_ram_gb = lambda: 64.0
+                first = terminal_worker.claim_atomic(root, "T1")
+                second = terminal_worker.claim_atomic(root, "T2")
+            finally:
+                terminal_worker._free_ram_gb = old_free_ram
+
+            self.assertTrue(first.get("claimed"))
+            self.assertEqual(first["item"]["id"], "basket-q02")
+            first_payload = json.loads(first["item"]["payload_json"])
+            self.assertEqual(
+                first_payload["commit_reservation_gb"],
+                terminal_worker.MULTISYMBOL_COMMIT_RESERVATION_GB,
+            )
+            self.assertFalse(second.get("claimed"))
+            self.assertEqual(second.get("reason"), "commit_headroom_low")
+            self.assertEqual(
+                second.get("commit_reserved_gb"),
+                terminal_worker.MULTISYMBOL_COMMIT_RESERVATION_GB,
+            )
+            self.assertEqual(second.get("effective_commit_headroom_gb"), 11.0)
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='ordinary-q02'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_two_leg_fx_claim_uses_measured_eight_gb_reservation(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "two-leg-fx",
+                "EURUSD.DWX",
+                phase="Q08",
+                ea_id="QM5_20196",
+                payload={
+                    "portfolio_scope": "basket",
+                    "basket_symbol_count": 2,
+                    "basket_symbols": ["EURUSD.DWX", "USDJPY.DWX"],
+                },
+            )
+            self._insert_work_item(
+                root,
+                "ordinary-after-pair",
+                "GBPUSD.DWX",
+                phase="Q08",
+                ea_id="QM5_9000",
+            )
+            terminal_worker._commit_headroom_gb = lambda: 55.0
+
+            with patch.object(terminal_worker, "_free_ram_gb", return_value=64.0):
+                result = terminal_worker.claim_atomic(root, "T1")
+                following = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"), result)
+            payload = json.loads(result["item"]["payload_json"])
+            self.assertEqual(
+                payload["commit_reservation_class"],
+                terminal_worker.MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX,
+            )
+            self.assertEqual(
+                payload["commit_reservation_gb"],
+                terminal_worker.MULTISYMBOL_TWO_LEG_FX_COMMIT_RESERVATION_GB,
+            )
+            self.assertEqual(
+                payload["ram_reservation_class"],
+                terminal_worker.MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX,
+            )
+            self.assertEqual(payload["ram_reservation_gb"], 8.0)
+            self.assertEqual(payload["ram_reservation_source"], "flat")
+            self.assertTrue(following.get("claimed"), following)
+            self.assertEqual(following["item"]["id"], "ordinary-after-pair")
+
+    def test_multisymbol_commit_class_mapping_keeps_large_and_unknown_baskets_heavy(self) -> None:
+        four_leg_fx = {
+            "portfolio_scope": "basket",
+            "basket_symbol_count": 4,
+            "basket_symbols": [
+                "EURUSD.DWX",
+                "GBPUSD.DWX",
+                "AUDUSD.DWX",
+                "NZDUSD.DWX",
+            ],
+        }
+        ten_leg_fx = {
+            "portfolio_scope": "basket",
+            "basket_symbol_count": 10,
+            "basket_symbols": [
+                "EURUSD.DWX",
+                "GBPUSD.DWX",
+                "AUDUSD.DWX",
+                "NZDUSD.DWX",
+                "USDJPY.DWX",
+                "USDCHF.DWX",
+                "USDCAD.DWX",
+                "EURGBP.DWX",
+                "EURJPY.DWX",
+                "GBPJPY.DWX",
+            ],
+        }
+        metal_pair = {
+            "portfolio_scope": "basket",
+            "basket_symbol_count": 2,
+            "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+        }
+
+        four_leg_class = terminal_worker._multisymbol_commit_class(
+            {"ea_id": "QM5_9001", "symbol": "EURUSD.DWX"}, four_leg_fx, True
+        )
+        ten_leg_class = terminal_worker._multisymbol_commit_class(
+            {"ea_id": "QM5_9002", "symbol": "EURUSD.DWX"}, ten_leg_fx, True
+        )
+        metal_class = terminal_worker._multisymbol_commit_class(
+            {"ea_id": "QM5_9003", "symbol": "XAUUSD.DWX"}, metal_pair, True
+        )
+        unknown_class = terminal_worker._multisymbol_commit_class(
+            {"ea_id": "QM5_9004", "symbol": "EURUSD.DWX"},
+            {"portfolio_scope": "basket", "basket_symbol_count": 2},
+            True,
+        )
+
+        self.assertEqual(
+            four_leg_class,
+            terminal_worker.MULTISYMBOL_COMMIT_CLASS_MULTI_LEG_FX,
+        )
+        self.assertEqual(
+            terminal_worker._commit_reservation_gb(four_leg_class),
+            terminal_worker.MULTISYMBOL_MULTI_LEG_FX_COMMIT_RESERVATION_GB,
+        )
+        # ab37b2f8c2 (2026-09-14): a two-leg XAU+XAG basket is its own provisional 24 GB class,
+        # no longer the flat 44 GB heavy class; ten-leg and unknown baskets stay heavy.
+        self.assertEqual(metal_class, terminal_worker.MULTISYMBOL_COMMIT_CLASS_TWO_LEG_METAL)
+        self.assertEqual(
+            terminal_worker._commit_reservation_gb(metal_class),
+            terminal_worker.MULTISYMBOL_TWO_LEG_METAL_COMMIT_RESERVATION_GB,
+        )
+        for commit_class in (ten_leg_class, unknown_class):
+            self.assertEqual(commit_class, terminal_worker.MULTISYMBOL_COMMIT_CLASS_HEAVY)
+            self.assertEqual(
+                terminal_worker._commit_reservation_gb(commit_class),
+                terminal_worker.MULTISYMBOL_COMMIT_RESERVATION_GB,
+            )
+
+    def test_legacy_qm5_11240_fx_host_is_two_leg_but_index_host_stays_heavy(self) -> None:
+        fx_class = terminal_worker._multisymbol_commit_class(
+            {"ea_id": "QM5_11240", "symbol": "NZDUSD.DWX"}, {}, True
+        )
+        index_class = terminal_worker._multisymbol_commit_class(
+            {"ea_id": "QM5_11240", "symbol": "NDX.DWX"}, {}, True
+        )
+
+        self.assertEqual(fx_class, terminal_worker.MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX)
+        self.assertEqual(
+            terminal_worker._commit_reservation_gb(fx_class),
+            terminal_worker.MULTISYMBOL_TWO_LEG_FX_COMMIT_RESERVATION_GB,
+        )
+        self.assertEqual(index_class, terminal_worker.MULTISYMBOL_COMMIT_CLASS_HEAVY)
+        self.assertEqual(
+            terminal_worker._commit_reservation_gb(index_class),
+            terminal_worker.MULTISYMBOL_COMMIT_RESERVATION_GB,
+        )
+
+    def test_two_leg_fx_reservation_still_decays_against_measured_subtree(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            now = datetime.now(timezone.utc)
+            self._insert_work_item(
+                root,
+                "two-leg-active",
+                "QM5_20196_EURUSD_USDJPY_COINTEGRATION_D1",
+                phase="Q02",
+                status="active",
+                claimed_by="T1",
+                ea_id="QM5_20196",
+                payload={
+                    "portfolio_scope": "basket",
+                    "basket_symbol_count": 2,
+                    "basket_symbols": ["EURUSD.DWX", "USDJPY.DWX"],
+                    "claimed_at_iso": now.isoformat(),
+                    "commit_reservation_until_utc": (
+                        now + timedelta(seconds=terminal_worker.MULTISYMBOL_COMMIT_RESERVATION_SECONDS)
+                    ).isoformat(),
+                    "pid": 12345,
+                },
+            )
+
+            with patch.object(terminal_worker, "_measured_subtree_gb", return_value=3.0):
+                with farmctl.connect(root) as conn:
+                    snapshot = terminal_worker._commit_admission_snapshot(
+                        conn,
+                        now.isoformat(),
+                        frozenset({"QM5_20196"}),
+                    )
+
+            self.assertEqual(snapshot["reserved_gb"], 5.0)
+            self.assertEqual(snapshot["reservations"][0]["expected_peak_gb"], 8.0)
+            self.assertEqual(snapshot["reservations"][0]["measured_gb"], 3.0)
+            self.assertEqual(
+                snapshot["reservations"][0]["reservation_class"],
+                terminal_worker.MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX,
+            )
+
+    def test_frozen_commit_probe_caps_parallel_ordinary_claims(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            for index, symbol in enumerate(
+                ("EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "AUDUSD.DWX", "NZDUSD.DWX"),
+                start=1,
+            ):
+                self._insert_work_item(
+                    root,
+                    f"ordinary-{index}",
+                    symbol,
+                    phase="Q02",
+                    ea_id=f"QM5_90{index:02d}",
+                )
+            terminal_worker._commit_headroom_gb = lambda: 55.0
+
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                results = list(
+                    executor.map(
+                        lambda terminal: terminal_worker.claim_atomic(root, terminal),
+                        ("T1", "T2", "T3", "T4", "T5"),
+                    )
+                )
+
+            self.assertEqual(sum(bool(result.get("claimed")) for result in results), 4)
+            blocked = next(result for result in results if not result.get("claimed"))
+            self.assertEqual(blocked.get("reason"), "commit_headroom_low")
+            self.assertEqual(blocked.get("commit_reserved_gb"), 32.0)
+            self.assertEqual(blocked.get("effective_commit_headroom_gb"), 23.0)
+
+    def test_expired_commit_reservation_is_ignored(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            expired_claim = (
+                datetime.now(timezone.utc)
+                - timedelta(seconds=terminal_worker.COMMIT_RESERVATION_SECONDS + 10)
+            ).isoformat()
+            self._insert_work_item(
+                root,
+                "old-active",
+                "EURUSD.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T1",
+                payload={
+                    "claimed_at_iso": expired_claim,
+                    "commit_reservation_gb": terminal_worker.ORDINARY_COMMIT_RESERVATION_GB,
+                },
+            )
+            self._insert_work_item(root, "new-pending", "GBPUSD.DWX", phase="Q02")
+            terminal_worker._commit_headroom_gb = lambda: 30.0
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "new-pending")
+
+    def test_q04_claim_limits_one_active_item_per_ea(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "active-q04-ea-a",
+                "NDX.DWX",
+                phase="Q04",
+                status="active",
+                claimed_by="T1",
+                ea_id="QM5_1001",
+            )
+            self._insert_work_item(
+                root,
+                "pending-q04-same-ea",
+                "SP500.DWX",
+                phase="Q04",
+                ea_id="QM5_1001",
+            )
+            self._insert_work_item(
+                root,
+                "pending-q04-other-ea",
+                "WS30.DWX",
+                phase="Q04",
+                ea_id="QM5_1002",
+            )
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "pending-q04-other-ea")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
+            self.assertEqual(statuses["pending-q04-same-ea"], "pending")
+            self.assertEqual(statuses["pending-q04-other-ea"], "active")
+
+    def test_q02_logical_basket_claims_before_ordinary_winner_pool(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "ordinary-pass",
+                "EURUSD.DWX",
+                phase="Q02",
+                status="done",
+                verdict="PASS",
+                ea_id="QM5_1001",
+            )
+            self._insert_work_item(
+                root,
+                "ordinary-q02",
+                "GBPUSD.DWX",
+                phase="Q02",
+                ea_id="QM5_1001",
+            )
+            self._insert_work_item(
+                root,
+                "basket-q02",
+                "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+                phase="Q02",
+                ea_id="QM5_12533",
+                payload={"portfolio_scope": "basket", "host_symbol": "EURJPY.DWX"},
+            )
+
+            old_free_ram_gb = terminal_worker._free_ram_gb
+            try:
+                terminal_worker._free_ram_gb = lambda: (
+                    terminal_worker.RAM_MIN_FREE_GB
+                    + terminal_worker.MULTISYMBOL_COMMIT_RESERVATION_GB
+                )
+                result = terminal_worker.claim_atomic(root, "T2")
+            finally:
+                terminal_worker._free_ram_gb = old_free_ram_gb
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "basket-q02")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
+            self.assertEqual(statuses["basket-q02"], "active")
+            self.assertEqual(statuses["ordinary-q02"], "pending")
+
+    def test_multisymbol_q02_waits_for_memory_headroom(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "basket-q02",
+                "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+                phase="Q02",
+                ea_id="QM5_12533",
+                payload={"portfolio_scope": "basket", "host_symbol": "EURJPY.DWX"},
+            )
+            self._insert_work_item(
+                root,
+                "ordinary-q02",
+                "GBPUSD.DWX",
+                phase="Q02",
+                ea_id="QM5_1001",
+            )
+
+            old_multisymbol_ea_ids = terminal_worker._multisymbol_ea_ids
+            old_free_ram_gb = terminal_worker._free_ram_gb
+            try:
+                terminal_worker._multisymbol_ea_ids = lambda: frozenset({"QM5_12533"})
+                terminal_worker._free_ram_gb = lambda: (
+                    terminal_worker.RAM_MIN_FREE_GB
+                    + terminal_worker.ORDINARY_COMMIT_RESERVATION_GB
+                )
+
+                result = terminal_worker.claim_atomic(root, "T2")
+            finally:
+                terminal_worker._multisymbol_ea_ids = old_multisymbol_ea_ids
+                terminal_worker._free_ram_gb = old_free_ram_gb
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "ordinary-q02")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
+            self.assertEqual(statuses["basket-q02"], "pending")
+            self.assertEqual(statuses["ordinary-q02"], "active")
+
+    def test_multisymbol_q02_waits_for_commit_headroom(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "basket-q02",
+                "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+                phase="Q02",
+                ea_id="QM5_12533",
+                payload={"portfolio_scope": "basket", "host_symbol": "EURJPY.DWX"},
+            )
+            terminal_worker._commit_headroom_gb = (
+                lambda: terminal_worker.MULTISYMBOL_COMMIT_MIN_FREE_GB - 0.5
+            )
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "no_pending_claimable")
+            skipped = result["multisymbol_commit_skipped"]
+            self.assertEqual(skipped[0]["item_id"], "basket-q02")
+            self.assertEqual(
+                skipped[0]["threshold_gb"],
+                terminal_worker.MULTISYMBOL_COMMIT_MIN_FREE_GB,
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='basket-q02'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_payload_basket_q02_waits_for_memory_headroom_without_registry_hint(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "basket-q02",
+                "QM5_12751_EURUSD_EURAUD_COINTEGRATION_D1",
+                phase="Q02",
+                ea_id="QM5_12751",
+                payload={
+                    "portfolio_scope": "basket",
+                    "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12751_demo/basket_manifest.json",
+                    "basket_symbol_count": 2,
+                    "host_symbol": "EURUSD.DWX",
+                },
+            )
+            self._insert_work_item(
+                root,
+                "ordinary-q02",
+                "GBPUSD.DWX",
+                phase="Q02",
+                ea_id="QM5_1001",
+            )
+
+            old_multisymbol_ea_ids = terminal_worker._multisymbol_ea_ids
+            old_free_ram_gb = terminal_worker._free_ram_gb
+            try:
+                terminal_worker._multisymbol_ea_ids = lambda: frozenset()
+                terminal_worker._free_ram_gb = lambda: (
+                    terminal_worker.RAM_MIN_FREE_GB
+                    + terminal_worker.ORDINARY_COMMIT_RESERVATION_GB
+                )
+
+                result = terminal_worker.claim_atomic(root, "T2")
+            finally:
+                terminal_worker._multisymbol_ea_ids = old_multisymbol_ea_ids
+                terminal_worker._free_ram_gb = old_free_ram_gb
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "ordinary-q02")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
+            self.assertEqual(statuses["basket-q02"], "pending")
+            self.assertEqual(statuses["ordinary-q02"], "active")
+
+    def test_payload_basket_q02_serializes_while_another_payload_basket_is_active(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "active-basket",
+                "QM5_12749_NZDUSD_AUDJPY_COINTEGRATION_D1",
+                phase="Q02",
+                status="active",
+                claimed_by="T1",
+                ea_id="QM5_12749",
+                payload={
+                    "portfolio_scope": "basket",
+                    "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12749_demo/basket_manifest.json",
+                    "basket_symbol_count": 2,
+                    "host_symbol": "NZDUSD.DWX",
+                },
+            )
+            self._insert_work_item(
+                root,
+                "pending-basket",
+                "QM5_12751_EURUSD_EURAUD_COINTEGRATION_D1",
+                phase="Q02",
+                ea_id="QM5_12751",
+                payload={
+                    "portfolio_scope": "basket",
+                    "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12751_demo/basket_manifest.json",
+                    "basket_symbol_count": 2,
+                    "host_symbol": "EURUSD.DWX",
+                },
+            )
+            self._insert_work_item(
+                root,
+                "ordinary-q02",
+                "GBPUSD.DWX",
+                phase="Q02",
+                ea_id="QM5_1001",
+            )
+
+            old_multisymbol_ea_ids = terminal_worker._multisymbol_ea_ids
+            old_free_ram_gb = terminal_worker._free_ram_gb
+            try:
+                terminal_worker._multisymbol_ea_ids = lambda: frozenset()
+                terminal_worker._free_ram_gb = lambda: (
+                    terminal_worker.RAM_MIN_FREE_GB
+                    + terminal_worker.ORDINARY_COMMIT_RESERVATION_GB
+                )
+
+                result = terminal_worker.claim_atomic(root, "T2")
+            finally:
+                terminal_worker._multisymbol_ea_ids = old_multisymbol_ea_ids
+                terminal_worker._free_ram_gb = old_free_ram_gb
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "ordinary-q02")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
+            self.assertEqual(statuses["active-basket"], "active")
+            self.assertEqual(statuses["pending-basket"], "pending")
+            self.assertEqual(statuses["ordinary-q02"], "active")
 
     def test_dwx_history_range_registry_is_respected_for_p2_claims(self) -> None:
         with self._root() as tmp:
@@ -103,6 +3253,172 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 status = conn.execute("SELECT status FROM work_items WHERE id='wi-no-history'").fetchone()[0]
             self.assertEqual(status, "pending")
 
+    def test_q02_claim_skips_terminal_without_symbol_history_source(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "wi-audusd-q02",
+                "AUDUSD.DWX",
+                phase="Q02",
+                payload={"host_timeframe": "D1", "from_year": 2017, "to_year": 2025},
+            )
+
+            registry = {
+                ("AUDUSD.DWX", "D1"): {
+                    "first_year": 2017,
+                    "last_year": 2025,
+                    "source_terminals": "T1,T2,T3,T4,T5",
+                }
+            }
+            old_registry = terminal_worker.farmctl._dwx_symbol_history_registry
+            try:
+                terminal_worker.farmctl._dwx_symbol_history_registry = lambda: registry
+                skipped = terminal_worker.claim_atomic(root, "T7")
+                claimed = terminal_worker.claim_atomic(root, "T3")
+            finally:
+                terminal_worker.farmctl._dwx_symbol_history_registry = old_registry
+
+            self.assertFalse(skipped.get("claimed"))
+            self.assertEqual(skipped.get("reason"), "no_pending_claimable")
+            self.assertEqual(skipped["history_skipped"][0]["reason"], terminal_worker.TERMINAL_NO_SYMBOL_HISTORY_REASON)
+            self.assertEqual(skipped["history_skipped"][0]["terminal"], "T7")
+            self.assertTrue(claimed.get("claimed"))
+            self.assertEqual(claimed["item"]["id"], "wi-audusd-q02")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute("SELECT status, claimed_by FROM work_items WHERE id='wi-audusd-q02'").fetchone()
+            self.assertEqual(row, ("active", "T3"))
+
+    def test_q02_claim_persists_adjusted_history_window(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "wi-ws30-q02",
+                "WS30.DWX",
+                phase="Q02",
+                setfile_path="QM5_9999_demo_WS30.DWX_D1_backtest.set",
+            )
+
+            registry = {
+                ("WS30.DWX", "D1"): {
+                    "first_year": 2018,
+                    "last_year": 2026,
+                    "source_terminals": "T1,T2,T3,T4,T5,T6,T7,T8,T9,T10",
+                }
+            }
+            old_registry = terminal_worker.farmctl._dwx_symbol_history_registry
+            try:
+                terminal_worker.farmctl._dwx_symbol_history_registry = lambda: registry
+                claimed = terminal_worker.claim_atomic(root, "T9")
+            finally:
+                terminal_worker.farmctl._dwx_symbol_history_registry = old_registry
+
+            self.assertTrue(claimed.get("claimed"))
+            self.assertEqual(claimed["item"]["id"], "wi-ws30-q02")
+            payload = json.loads(claimed["item"]["payload_json"])
+            self.assertEqual(payload["from_year"], 2018)
+            self.assertEqual(payload["to_year"], farmctl.P2_DEFAULT_TO_YEAR)
+            self.assertEqual(payload["requested_from_year"], farmctl.P2_DEFAULT_FROM_YEAR)
+            self.assertEqual(payload["requested_to_year"], farmctl.P2_DEFAULT_TO_YEAR)
+            self.assertEqual(payload["history_first_year"], 2018)
+            self.assertEqual(payload["history_last_year"], 2026)
+            self.assertTrue(payload["history_adjusted"])
+            self.assertEqual(payload["history_adjustment_source"], "terminal_worker_claim")
+
+    def test_q03_claim_uses_setfile_period_for_terminal_history_source(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "wi-audusd-q03",
+                "AUDUSD.DWX",
+                phase="Q03",
+                setfile_path="QM5_9999_AUDUSD.DWX_D1_backtest.set",
+            )
+
+            registry = {
+                ("AUDUSD.DWX", "D1"): {
+                    "first_year": 2017,
+                    "last_year": 2026,
+                    "source_terminals": "T1,T2,T3,T4,T5",
+                }
+            }
+            old_registry = terminal_worker.farmctl._dwx_symbol_history_registry
+            try:
+                terminal_worker.farmctl._dwx_symbol_history_registry = lambda: registry
+                result = terminal_worker.claim_atomic(root, "T7")
+            finally:
+                terminal_worker.farmctl._dwx_symbol_history_registry = old_registry
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "no_pending_claimable")
+            self.assertEqual(result["history_skipped"][0]["item_id"], "wi-audusd-q03")
+            self.assertEqual(result["history_skipped"][0]["period"], "D1")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute("SELECT status FROM work_items WHERE id='wi-audusd-q03'").fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_basket_claim_requires_terminal_history_for_all_manifest_symbols(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            payload = {
+                "portfolio_scope": "basket",
+                "host_symbol": "AUDUSD.DWX",
+                "host_timeframe": "D1",
+                "logical_symbol": "QM5_12783_AUDUSD_AUDJPY_COINTEGRATION_D1",
+                "basket_symbols": ["AUDUSD.DWX", "AUDJPY.DWX", "USDJPY.DWX"],
+                "basket_symbol_count": 3,
+            }
+            self._insert_work_item(
+                root,
+                "wi-audusd-audjpy-q03",
+                "QM5_12783_AUDUSD_AUDJPY_COINTEGRATION_D1",
+                phase="Q03",
+                payload=payload,
+                ea_id="QM5_12783",
+                setfile_path="QM5_12783_AUDUSD_AUDJPY_COINTEGRATION_D1_D1_backtest.set",
+            )
+
+            registry = {
+                ("AUDUSD.DWX", "D1"): {
+                    "first_year": 2017,
+                    "last_year": 2026,
+                    "source_terminals": "T3,T7",
+                },
+                ("AUDJPY.DWX", "D1"): {
+                    "first_year": 2017,
+                    "last_year": 2026,
+                    "source_terminals": "T3",
+                },
+                ("USDJPY.DWX", "D1"): {
+                    "first_year": 2017,
+                    "last_year": 2026,
+                    "source_terminals": "T3",
+                },
+            }
+            old_registry = terminal_worker.farmctl._dwx_symbol_history_registry
+            old_free_ram = terminal_worker._free_ram_gb
+            try:
+                terminal_worker.farmctl._dwx_symbol_history_registry = lambda: registry
+                terminal_worker._free_ram_gb = lambda: 64.0
+                skipped = terminal_worker.claim_atomic(root, "T7")
+                claimed = terminal_worker.claim_atomic(root, "T3")
+            finally:
+                terminal_worker.farmctl._dwx_symbol_history_registry = old_registry
+                terminal_worker._free_ram_gb = old_free_ram
+
+            self.assertFalse(skipped.get("claimed"))
+            self.assertEqual(skipped.get("reason"), "no_pending_claimable")
+            self.assertEqual(skipped["history_skipped"][0]["reason"], terminal_worker.TERMINAL_NO_SYMBOL_HISTORY_REASON)
+            self.assertEqual(skipped["history_skipped"][0]["symbol"], "AUDJPY.DWX")
+            self.assertEqual(
+                skipped["history_skipped"][0]["history_check_symbols"],
+                ["AUDUSD.DWX", "AUDJPY.DWX", "USDJPY.DWX"],
+            )
+            self.assertTrue(claimed.get("claimed"))
+            self.assertEqual(claimed["item"]["id"], "wi-audusd-audjpy-q03")
+
     def test_stale_same_terminal_claim_is_released_before_next_claim(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"
@@ -113,7 +3429,17 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 phase="P3",
                 status="active",
                 claimed_by="T1",
-                payload={"pid": 999999999},
+                payload={
+                    "pid": 999999999,
+                    "started_at_iso": "2026-07-07T20:13:41+00:00",
+                    "log_path": "old-run.log",
+                    "claimed_at_iso": "2026-07-07T20:13:41+00:00",
+                    "claimed_by_worker_pid": 424242,
+                    "commit_reservation_gb": terminal_worker.ORDINARY_COMMIT_RESERVATION_GB,
+                    "commit_reservation_until_utc": "2026-07-07T20:18:41+00:00",
+                    "terminal": "T1",
+                    "priority_track": True,
+                },
             )
 
             old_pid_exists = terminal_worker.farmctl._pid_exists
@@ -126,8 +3452,571 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertTrue(result.get("claimed"))
             self.assertEqual(result["item"]["id"], "stale-1")
             with sqlite3.connect(root / farmctl.DB_REL) as conn:
-                row = conn.execute("SELECT status, claimed_by FROM work_items WHERE id='stale-1'").fetchone()
-            self.assertEqual(row, ("active", "T1"))
+                row = conn.execute(
+                    "SELECT status, claimed_by, payload_json FROM work_items WHERE id='stale-1'"
+                ).fetchone()
+            self.assertEqual(row[0:2], ("active", "T1"))
+            payload = json.loads(row[2])
+            self.assertEqual(payload["prior_failure"], "worker_process_missing_released_stale_claim")
+            self.assertTrue(payload["priority_track"])
+            self.assertNotIn("pid", payload)
+            self.assertNotIn("started_at_iso", payload)
+            self.assertNotIn("log_path", payload)
+            self.assertEqual(
+                payload["commit_reservation_gb"],
+                terminal_worker.ORDINARY_COMMIT_RESERVATION_GB,
+            )
+            self.assertNotEqual(
+                payload["commit_reservation_until_utc"],
+                "2026-07-07T20:18:41+00:00",
+            )
+            self.assertNotEqual(payload.get("claimed_by_worker_pid"), 424242)
+
+    def test_dead_bound_news_runner_is_held_instead_of_pid_reuse_adoption(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "news-runner-abort-1",
+                "XAUUSD.DWX",
+                phase=terminal_worker._Q09_NEWS_PHASE,
+                status="active",
+                claimed_by="T6",
+                payload={
+                    "pid": 9696,
+                    "process_creation_key": "windows-filetime:original",
+                    "process_image_path": r"C:\Python311\python.exe",
+                    "started_at_iso": "2026-08-29T09:07:00+00:00",
+                    "claimed_at_iso": "2026-08-29T09:03:11+00:00",
+                    "claimed_by_worker_pid": 17644,
+                    "q09_run_plan_path": r"D:\reports\run_plan.json",
+                    "q09_run_plan_file_sha256": "a" * 64,
+                    "log_path": r"D:\logs\work_item.log",
+                },
+            )
+
+            with (
+                patch.object(farmctl, "_pid_exists", return_value=False),
+                patch.object(
+                    farmctl,
+                    "get_process_identity",
+                    return_value={
+                        "pid": 9696,
+                        "creation_key": "windows-filetime:reused",
+                        "image_path": r"C:\Windows\System32\other.exe",
+                        "is_running": True,
+                    },
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_stop_terminal_slot_for_release",
+                    return_value=False,
+                ),
+            ):
+                result = terminal_worker.claim_atomic(root, "T6")
+
+            self.assertFalse(result.get("claimed"), result)
+            self.assertEqual(result["reason"], "news_runner_spawn_abort_held")
+            self.assertEqual(
+                result["hold_code"],
+                terminal_worker.NEWS_RUNNER_SPAWN_ABORT_HOLD_CODE,
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status,claimed_by,payload_json FROM work_items WHERE id=?",
+                    ("news-runner-abort-1",),
+                ).fetchone()
+                hold = conn.execute(
+                    "SELECT hold_code,active,release_on_restart FROM work_item_holds WHERE work_item_id=?",
+                    ("news-runner-abort-1",),
+                ).fetchone()
+                event = conn.execute(
+                    "SELECT event,detail_json FROM events WHERE entity_id=? ORDER BY rowid DESC LIMIT 1",
+                    ("news-runner-abort-1",),
+                ).fetchone()
+            self.assertEqual(row[0:2], ("pending", None))
+            payload = json.loads(row[2])
+            self.assertNotIn("pid", payload)
+            self.assertEqual(
+                payload["news_runner_spawn_abort"]["runner_identity"]["state"],
+                "pid_reused",
+            )
+            self.assertEqual(
+                hold,
+                (terminal_worker.NEWS_RUNNER_SPAWN_ABORT_HOLD_CODE, 1, 0),
+            )
+            self.assertEqual(event[0], "news_runner_spawn_abort_held")
+            self.assertEqual(
+                json.loads(event[1])["runner_identity"]["observed_creation_key"],
+                "windows-filetime:reused",
+            )
+
+    def test_stale_runtime_cleanup_removes_commit_reservation_fields(self) -> None:
+        payload = {
+            "commit_reservation_gb": terminal_worker.ORDINARY_COMMIT_RESERVATION_GB,
+            "commit_reservation_class": terminal_worker.MULTISYMBOL_COMMIT_CLASS_ORDINARY,
+            "commit_reservation_until_utc": "2026-07-07T20:18:41+00:00",
+            terminal_worker.RAM_RESERVATION_CLASS_PAYLOAD_KEY: "ordinary",
+            terminal_worker.RAM_RESERVATION_GB_PAYLOAD_KEY: 8.0,
+            terminal_worker.RAM_RESERVATION_SOURCE_PAYLOAD_KEY: "flat",
+            "priority_track": True,
+        }
+
+        terminal_worker._clear_stale_runtime_payload(payload)
+
+        self.assertNotIn("commit_reservation_gb", payload)
+        self.assertNotIn("commit_reservation_class", payload)
+        self.assertNotIn("commit_reservation_until_utc", payload)
+        self.assertNotIn(terminal_worker.RAM_RESERVATION_CLASS_PAYLOAD_KEY, payload)
+        self.assertNotIn(terminal_worker.RAM_RESERVATION_GB_PAYLOAD_KEY, payload)
+        self.assertNotIn(terminal_worker.RAM_RESERVATION_SOURCE_PAYLOAD_KEY, payload)
+        self.assertTrue(payload["priority_track"])
+
+    def test_live_worker_without_child_pid_keeps_terminal_busy(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "launching-1",
+                "EURUSD.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T4",
+                payload={"claimed_by_worker_pid": 424242},
+            )
+            self._insert_work_item(root, "pending-1", "GBPUSD.DWX", phase="Q02")
+
+            old_pid_exists = terminal_worker.farmctl._pid_exists
+            try:
+                terminal_worker.farmctl._pid_exists = lambda pid: int(pid) == 424242
+                result = terminal_worker.claim_atomic(root, "T4")
+            finally:
+                terminal_worker.farmctl._pid_exists = old_pid_exists
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result["reason"], "terminal_worker_busy")
+            self.assertEqual(result["item_id"], "launching-1")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
+                claimed = dict(conn.execute("SELECT id, claimed_by FROM work_items").fetchall())
+            self.assertEqual(statuses["launching-1"], "active")
+            self.assertEqual(statuses["pending-1"], "pending")
+            self.assertEqual(claimed["launching-1"], "T4")
+
+    def test_claim_skips_launch_fault_cooldown_item(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            future = (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
+            self._insert_work_item(
+                root,
+                "cooldown-1",
+                "EURUSD.DWX",
+                phase="Q02",
+                payload={"launch_not_before_utc": future},
+            )
+            self._insert_work_item(root, "ready-1", "GBPUSD.DWX", phase="Q02")
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "ready-1")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
+            self.assertEqual(statuses["cooldown-1"], "pending")
+            self.assertEqual(statuses["ready-1"], "active")
+
+    def test_summary_missing_retry_avoids_failed_terminal_and_cools_down(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "missing-summary-1",
+                "EURUSD.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T3",
+                payload={},
+            )
+
+            old_find = terminal_worker._find_work_item_summary_data
+            old_stop = terminal_worker._stop_terminal_slot_for_release
+            try:
+                terminal_worker._find_work_item_summary_data = lambda *_args, **_kwargs: None
+                terminal_worker._stop_terminal_slot_for_release = lambda *_args, **_kwargs: True
+                result = terminal_worker._finish_work_item(root, "missing-summary-1", 0)
+            finally:
+                terminal_worker._find_work_item_summary_data = old_find
+                terminal_worker._stop_terminal_slot_for_release = old_stop
+
+            self.assertEqual(result["status"], "pending")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT attempt_count, claimed_by, payload_json FROM work_items WHERE id=?",
+                    ("missing-summary-1",),
+                ).fetchone()
+            payload = json.loads(row[2])
+            self.assertEqual(row[0], 1)
+            self.assertIsNone(row[1])
+            self.assertEqual(payload["avoid_terminals"], ["T3"])
+            self.assertGreater(
+                datetime.fromisoformat(payload["launch_not_before_utc"]),
+                datetime.now(timezone.utc),
+            )
+
+    def test_orphan_same_terminal_claim_adopts_live_child(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "orphan-1",
+                "EURUSD.DWX",
+                phase="P3",
+                status="active",
+                claimed_by="T1",
+                payload={"pid": 123456, "claimed_by_worker_pid": 654321},
+            )
+
+            stopped_children: list[int] = []
+            old_pid_exists = terminal_worker.farmctl._pid_exists
+            old_pid_tree_exists = terminal_worker.farmctl._pid_tree_exists
+            old_stop_pid_tree = terminal_worker.farmctl._stop_pid_tree
+            try:
+                terminal_worker.farmctl._pid_exists = lambda pid: int(pid) != 654321
+                terminal_worker.farmctl._pid_tree_exists = lambda _pid: True
+                terminal_worker.farmctl._stop_pid_tree = lambda pid: stopped_children.append(int(pid)) or True
+                result = terminal_worker.claim_atomic(root, "T1")
+            finally:
+                terminal_worker.farmctl._pid_exists = old_pid_exists
+                terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
+                terminal_worker.farmctl._stop_pid_tree = old_stop_pid_tree
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "orphan-1")
+            self.assertTrue(result.get("adopt_existing"))
+            self.assertEqual(stopped_children, [])
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute("SELECT status, claimed_by, payload_json FROM work_items WHERE id='orphan-1'").fetchone()
+            self.assertEqual(row[0], "active")
+            self.assertEqual(row[1], "T1")
+            payload = json.loads(row[2])
+            self.assertEqual(payload["prior_failure"], "worker_process_missing_adopted_active_child")
+            self.assertEqual(payload["orphan_worker_pid"], 654321)
+            self.assertEqual(payload["claimed_by_worker_pid"], os.getpid())
+            self.assertIn("orphan_child_adopted_at_iso", payload)
+
+    def test_launch_fault_defers_without_incrementing_attempt_count(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            self._insert_work_item(
+                root,
+                "wi-launch-fault",
+                "CADJPY.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T4",
+                payload={},
+            )
+
+            old_spawn = terminal_worker.farmctl._spawn_work_item_runner
+            old_pid_tree_exists = terminal_worker.farmctl._pid_tree_exists
+            old_preflight = terminal_worker._work_item_preflight_failure
+            old_acquire = terminal_worker._acquire_launch_slot
+            old_sleep = terminal_worker.time.sleep
+            try:
+                terminal_worker.farmctl._spawn_work_item_runner = lambda _root, _row, _terminal: {
+                    "spawned": True,
+                    "pid": 123456,
+                    "log_path": str(root / "runner.log"),
+                    "report_root": str(root / "reports"),
+                    "ea_dir_name": "QM5_9999",
+                    "expected_trades_per_year_per_symbol": 10,
+                    "smoke_year_count": 6,
+                    "effective_min_trades": 5,
+                    "phase_runner": "run_smoke.ps1",
+                    "timeout_seconds": 7200,
+                }
+                terminal_worker.farmctl._pid_tree_exists = lambda _pid: False
+                terminal_worker._work_item_preflight_failure = lambda _row: None
+                terminal_worker._acquire_launch_slot = lambda _terminal: None
+                terminal_worker.time.sleep = lambda _seconds: None
+
+                # This monitor test never stages a real EA into a host terminal.
+                with patch.object(terminal_worker, "_prepare_staged_ex5", return_value={
+                    "required_sha256": "a" * 64, "source_path": "fixture.ex5"
+                }):
+                    result = terminal_worker._run_claimed_item(
+                        root,
+                        {"id": "wi-launch-fault"},
+                        "T4",
+                        timeout_seconds=30,
+                    )
+            finally:
+                terminal_worker.farmctl._spawn_work_item_runner = old_spawn
+                terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
+                terminal_worker._work_item_preflight_failure = old_preflight
+                terminal_worker._acquire_launch_slot = old_acquire
+                terminal_worker.time.sleep = old_sleep
+
+            self.assertEqual(result["reason"], "launch_fault_deferred")
+            self.assertEqual(result["launch_fault_count"], 1)
+            self.assertEqual(result["launch_fault_defer_seconds"], terminal_worker.LAUNCH_FAULT_DEFER_SECONDS)
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, claimed_by, attempt_count, payload_json FROM work_items WHERE id='wi-launch-fault'"
+                ).fetchone()
+            self.assertEqual(row[0], "pending")
+            self.assertIsNone(row[1])
+            self.assertIsNone(row[2])
+            self.assertEqual(row[3], 0)
+            payload = json.loads(row[4])
+            self.assertEqual(payload["prior_failure"], "launch_fault")
+            self.assertEqual(payload["launch_fault_count"], 1)
+            self.assertEqual(payload["launch_fault_defer_seconds"], terminal_worker.LAUNCH_FAULT_DEFER_SECONDS)
+            self.assertEqual(payload["timeout_seconds"], 7200)
+            self.assertIn("launch_not_before_utc", payload)
+
+    def test_spawn_refusal_persists_reason_and_event_before_releasing_claim(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            self._insert_work_item(
+                root,
+                "wi-spawn-refused",
+                "NDX.DWX",
+                phase="Q07",
+                status="active",
+                claimed_by="T5",
+                payload={"retained": True},
+            )
+
+            with (
+                patch.object(terminal_worker, "_work_item_preflight_failure", return_value=None),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_news_calendar_preflight",
+                    return_value={"ok": True, "status": "VALID"},
+                ),
+                patch.object(
+                    terminal_worker,
+                    "_prepare_staged_ex5",
+                    return_value={
+                        "source_path": r"C:\fixture\QM5_9999.ex5",
+                        "destination_path": r"D:\fixture\QM5_9999.ex5",
+                        "required_sha256": "a" * 64,
+                        "pre_run_sha256": "a" * 64,
+                        "verified": True,
+                    },
+                ),
+                patch.object(terminal_worker, "_acquire_launch_slot", return_value=None),
+                patch.object(
+                    terminal_worker.farmctl,
+                    "_spawn_work_item_runner",
+                    return_value={
+                        "spawned": False,
+                        "phase_runner_scope_blocked": True,
+                        "reason": "test_policy_scope_refusal",
+                    },
+                ),
+            ):
+                result = terminal_worker._run_claimed_item(
+                    root,
+                    {"id": "wi-spawn-refused"},
+                    "T5",
+                    timeout_seconds=30,
+                )
+
+            self.assertEqual(result["action"], "spawn_failed")
+            self.assertEqual(
+                result["refusal_evidence"]["event"],
+                "runner_spawn_refused",
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, claimed_by, payload_json "
+                    "FROM work_items WHERE id='wi-spawn-refused'"
+                ).fetchone()
+                event_row = conn.execute(
+                    "SELECT event, detail_json FROM events "
+                    "WHERE entity_type='work_item' "
+                    "AND entity_id='wi-spawn-refused'"
+                ).fetchone()
+            self.assertEqual(row[:3], ("failed", "INFRA_FAIL", None))
+            payload = json.loads(row[3])
+            self.assertTrue(payload["retained"])
+            self.assertEqual(payload["verdict_reason"], "test_policy_scope_refusal")
+            self.assertEqual(event_row[0], "runner_spawn_refused")
+            self.assertEqual(
+                json.loads(event_row[1])["reason"],
+                "test_policy_scope_refusal",
+            )
+
+    def test_fast_phase_runner_with_host_keyed_aggregate_finishes_item(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            report_root = root / "reports" / "wi-q05-basket"
+            aggregate = report_root / "QM5_9999" / "Q05" / "EURGBP_DWX" / "aggregate.json"
+            aggregate.parent.mkdir(parents=True)
+            aggregate.write_text(
+                json.dumps({
+                    "phase": "Q05",
+                    "verdict": "INVALID",
+                    "reason": "invalid_summary:NO_HISTORY,BARS_ZERO",
+                    "summary_path": str(report_root / "summary.json"),
+                    "trades": 0,
+                }),
+                encoding="utf-8",
+            )
+            self._insert_work_item(
+                root,
+                "wi-q05-basket",
+                "QM5_9999_EURGBP_EURAUD_COINTEGRATION_D1",
+                phase="Q05",
+                status="active",
+                claimed_by="T4",
+                payload={"report_root": str(report_root)},
+            )
+
+            old_pid_tree_exists = terminal_worker.farmctl._pid_tree_exists
+            old_terminal_slot_running = terminal_worker._terminal_slot_running
+            old_sleep = terminal_worker.time.sleep
+            try:
+                terminal_worker.farmctl._pid_tree_exists = lambda _pid: False
+                terminal_worker._terminal_slot_running = lambda _root, _terminal: False
+                terminal_worker.time.sleep = lambda _seconds: None
+
+                result = terminal_worker._monitor_spawned_work_item(
+                    root,
+                    {
+                        "id": "wi-q05-basket",
+                        "phase": "Q05",
+                        "ea_id": "QM5_9999",
+                        "symbol": "QM5_9999_EURGBP_EURAUD_COINTEGRATION_D1",
+                    },
+                    "T4",
+                    {"pid": 123456, "report_root": str(report_root)},
+                    {"report_root": str(report_root)},
+                    timeout_seconds=30,
+                )
+            finally:
+                terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
+                terminal_worker._terminal_slot_running = old_terminal_slot_running
+                terminal_worker.time.sleep = old_sleep
+
+            self.assertEqual(result["status"], "done")
+            self.assertEqual(result["verdict"], "INFRA_FAIL")
+            self.assertIn("invalid_summary", result["reason"])
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, claimed_by, attempt_count, evidence_path, payload_json "
+                    "FROM work_items WHERE id='wi-q05-basket'"
+                ).fetchone()
+            self.assertEqual(row[0], "done")
+            self.assertEqual(row[1], "INFRA_FAIL")
+            self.assertIsNone(row[2])
+            self.assertEqual(row[3], 0)
+            self.assertEqual(Path(row[4]), aggregate)
+            payload = json.loads(row[5])
+            self.assertEqual(payload["evidence_provenance"], "phase_runner")
+            self.assertEqual(payload["run_smoke_exit_code"], 0)
+
+    def test_parent_aggregate_preserves_all_infra_fail_verdict(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO tasks(
+                        id, kind, status, source_id, card_id, payload_json,
+                        created_at, updated_at
+                    )
+                    VALUES (
+                        'parent-q03', 'backtest_q03', 'pending', NULL,
+                        'QM5_9998', ?, ?, ?
+                    )
+                    """,
+                    (json.dumps({"ea_id": "QM5_9998", "phase": "Q03"}), now, now),
+                )
+                conn.execute(
+                    """
+                    INSERT INTO work_items(
+                        id, kind, phase, ea_id, symbol, setfile_path, status,
+                        verdict, attempt_count, parent_task_id, evidence_path,
+                        payload_json, created_at, updated_at
+                    )
+                    VALUES (
+                        'wi-infra', 'backtest', 'Q03', 'QM5_9998',
+                        'QM5_9998_EURUSD_GBPUSD_COINTEGRATION_D1',
+                        'dummy.set', 'done', 'INFRA_FAIL', 0,
+                        'parent-q03', ?, '{}', ?, ?
+                    )
+                    """,
+                    (farmctl._evidence_unavailable_sentinel("test_fixture"), now, now),
+                )
+                conn.commit()
+
+            result = terminal_worker._aggregate_finished_parent(root, "parent-q03")
+            self.assertEqual(result["verdict"], "INFRA_FAIL")
+
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, payload_json FROM tasks WHERE id='parent-q03'"
+                ).fetchone()
+            self.assertEqual(row[0], "done")
+            classification = json.loads(row[1])["classification"]
+            self.assertEqual(classification["verdict"], "INFRA_FAIL")
+            self.assertEqual(classification["counts_by_verdict"]["INFRA_FAIL"], 1)
+
+    def test_launch_fault_defer_seconds_backoff_caps(self) -> None:
+        base = terminal_worker.LAUNCH_FAULT_DEFER_SECONDS
+        cap = terminal_worker.LAUNCH_FAULT_DEFER_MAX_SECONDS
+
+        self.assertEqual(terminal_worker._launch_fault_defer_seconds(0), base)
+        self.assertEqual(terminal_worker._launch_fault_defer_seconds("1"), base * 2)
+        self.assertEqual(terminal_worker._launch_fault_defer_seconds(3), base * 8)
+        self.assertEqual(terminal_worker._launch_fault_defer_seconds(4), cap)
+        self.assertEqual(terminal_worker._launch_fault_defer_seconds(99), cap)
+        self.assertEqual(terminal_worker._launch_fault_defer_seconds("bad"), base)
+
+    def test_repeated_launch_fault_persists_capped_backoff(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            self._insert_work_item(
+                root,
+                "wi-launch-fault-repeat",
+                "EURAUD.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T4",
+                payload={"launch_fault_count": 4},
+            )
+
+            result = terminal_worker._defer_launch_fault(
+                root,
+                "wi-launch-fault-repeat",
+                "T4",
+                {"pid": 123456},
+                ran_seconds=0.1,
+                child_tail="",
+            )
+
+            self.assertEqual(result["reason"], "launch_fault_deferred")
+            self.assertEqual(result["launch_fault_count"], 5)
+            self.assertEqual(result["launch_fault_defer_seconds"], terminal_worker.LAUNCH_FAULT_DEFER_MAX_SECONDS)
+            self.assertIn("launch_not_before_utc", result)
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, claimed_by, attempt_count, payload_json FROM work_items WHERE id='wi-launch-fault-repeat'"
+                ).fetchone()
+            self.assertEqual(row[0], "pending")
+            self.assertIsNone(row[1])
+            self.assertIsNone(row[2])
+            self.assertEqual(row[3], 0)
+            payload = json.loads(row[4])
+            self.assertEqual(payload["prior_failure"], "launch_fault")
+            self.assertEqual(payload["launch_fault_count"], 5)
+            self.assertEqual(payload["launch_fault_defer_seconds"], terminal_worker.LAUNCH_FAULT_DEFER_MAX_SECONDS)
+            self.assertEqual(payload["last_launch_fault_terminal"], "T4")
 
     def test_summary_missing_release_stops_terminal_slot(self) -> None:
         with self._root() as tmp:
@@ -146,13 +4035,16 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
 
             stopped: list[str] = []
             old_default_root = terminal_worker.farmctl.DEFAULT_ROOT
+            old_mt5_root = terminal_worker.farmctl.MT5_ROOT
             old_stop_terminal_slot = terminal_worker.farmctl._stop_terminal_slot
             try:
                 terminal_worker.farmctl.DEFAULT_ROOT = root
+                terminal_worker.farmctl.MT5_ROOT = root  # no MT5 logs -> no storm probe
                 terminal_worker.farmctl._stop_terminal_slot = lambda terminal: stopped.append(terminal) or True
                 result = terminal_worker._finish_work_item(root, "wi-summary-missing", exit_code=0)
             finally:
                 terminal_worker.farmctl.DEFAULT_ROOT = old_default_root
+                terminal_worker.farmctl.MT5_ROOT = old_mt5_root
                 terminal_worker.farmctl._stop_terminal_slot = old_stop_terminal_slot
 
             self.assertEqual(result["status"], "pending")
@@ -166,6 +4058,252 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             payload = json.loads(row[2])
             self.assertEqual(payload["prior_failure"], "summary_missing")
             self.assertTrue(payload["terminal_stopped_on_release"])
+
+    def test_finish_work_item_ignores_summary_run_tag_before_claim(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            claim_time = datetime.now(timezone.utc)
+            old_run_time = claim_time - timedelta(minutes=5)
+            old_run_tag = old_run_time.strftime("%Y%m%d_%H%M%S")
+            report_root = root / "reports" / "wi-stale-summary"
+            summary_path = report_root / "QM5_9999" / old_run_tag / "summary.json"
+            summary_path.parent.mkdir(parents=True)
+            summary_path.write_text(
+                json.dumps({
+                    "timestamp_utc": old_run_time.isoformat(),
+                    "run_tag": old_run_tag,
+                    "result": "PASS",
+                    "model4_log_marker_detected": True,
+                    "min_trades_required": 5,
+                    "runs": [{"total_trades": 10}],
+                }),
+                encoding="utf-8",
+            )
+            os.utime(summary_path, (claim_time.timestamp(), claim_time.timestamp()))
+            claim_iso = claim_time.isoformat().replace("+00:00", "Z")
+            self._insert_work_item(
+                root,
+                "wi-stale-summary",
+                "EURUSD.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T3",
+                payload={
+                    "report_root": str(report_root),
+                    "pid": 123456,
+                    "claimed_at_iso": claim_iso,
+                    "started_at_iso": claim_iso,
+                },
+            )
+
+            stopped: list[str] = []
+            old_default_root = terminal_worker.farmctl.DEFAULT_ROOT
+            old_mt5_root = terminal_worker.farmctl.MT5_ROOT
+            old_stop_terminal_slot = terminal_worker.farmctl._stop_terminal_slot
+            try:
+                terminal_worker.farmctl.DEFAULT_ROOT = root
+                terminal_worker.farmctl.MT5_ROOT = root  # no MT5 logs -> no storm probe
+                terminal_worker.farmctl._stop_terminal_slot = lambda terminal: stopped.append(terminal) or True
+                result = terminal_worker._finish_work_item(root, "wi-stale-summary", exit_code=0)
+            finally:
+                terminal_worker.farmctl.DEFAULT_ROOT = old_default_root
+                terminal_worker.farmctl.MT5_ROOT = old_mt5_root
+                terminal_worker.farmctl._stop_terminal_slot = old_stop_terminal_slot
+
+            self.assertEqual(result["status"], "pending")
+            self.assertEqual(stopped, ["T3"])
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, evidence_path, payload_json FROM work_items WHERE id='wi-stale-summary'"
+                ).fetchone()
+            self.assertEqual(row[0], "pending")
+            self.assertIsNone(row[1])
+            self.assertIsNone(row[2])
+            self.assertEqual(json.loads(row[3])["prior_failure"], "summary_missing")
+
+    def test_finish_work_item_accepts_summary_run_tag_after_claim(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            claim_time = datetime.now(timezone.utc)
+            run_time = claim_time + timedelta(seconds=1)
+            run_tag = run_time.strftime("%Y%m%d_%H%M%S")
+            report_root = root / "reports" / "wi-fresh-summary"
+            summary_path = report_root / "QM5_9999" / run_tag / "summary.json"
+            summary_path.parent.mkdir(parents=True)
+            summary_path.write_text(
+                json.dumps({
+                    "timestamp_utc": run_time.isoformat(),
+                    "run_tag": run_tag,
+                    "result": "PASS",
+                    "model4_log_marker_detected": True,
+                    "min_trades_required": 5,
+                    "runs": [{"total_trades": 10}],
+                }),
+                encoding="utf-8",
+            )
+            claim_iso = claim_time.isoformat().replace("+00:00", "Z")
+            self._insert_work_item(
+                root,
+                "wi-fresh-summary",
+                "EURUSD.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T3",
+                payload={
+                    "report_root": str(report_root),
+                    "pid": 123456,
+                    "claimed_at_iso": claim_iso,
+                    "started_at_iso": claim_iso,
+                    "expected_ex5_sha256": "a" * 64,
+                },
+            )
+
+            result = terminal_worker._finish_work_item(root, "wi-fresh-summary", exit_code=0)
+
+            self.assertEqual(result["status"], "done")
+            self.assertEqual(result["verdict"], "PASS")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, evidence_path FROM work_items WHERE id='wi-fresh-summary'"
+                ).fetchone()
+            self.assertEqual(row[0], "done")
+            self.assertEqual(row[1], "PASS")
+            self.assertEqual(Path(row[2]), summary_path)
+
+    def test_claim_recovers_completed_same_terminal_row_before_next_claim(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            claim_time = datetime.now(timezone.utc)
+            run_time = claim_time + timedelta(seconds=1)
+            run_tag = run_time.strftime("%Y%m%d_%H%M%S")
+            report_root = root / "reports" / "finished-1"
+            summary_path = report_root / "QM5_9999" / run_tag / "summary.json"
+            summary_path.parent.mkdir(parents=True)
+            summary_path.write_text(
+                json.dumps({
+                    "timestamp_utc": run_time.isoformat(),
+                    "run_tag": run_tag,
+                    "result": "PASS",
+                    "model4_log_marker_detected": True,
+                    "min_trades_required": 5,
+                    "runs": [{"total_trades": 10, "exit_code": 0}],
+                }),
+                encoding="utf-8",
+            )
+            claim_iso = claim_time.isoformat().replace("+00:00", "Z")
+            self._insert_work_item(
+                root,
+                "finished-1",
+                "EURUSD.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T3",
+                payload={
+                    "report_root": str(report_root),
+                    "claimed_at_iso": claim_iso,
+                    "started_at_iso": claim_iso,
+                    "claimed_by_worker_pid": os.getpid(),
+                    "pid": 987654321,
+                    "expected_ex5_sha256": "a" * 64,
+                },
+            )
+            self._insert_work_item(
+                root,
+                "next-1",
+                "GBPUSD.DWX",
+                phase="Q02",
+            )
+
+            with patch.object(farmctl, "_pid_tree_exists", return_value=False):
+                result = terminal_worker.claim_atomic(root, "T3")
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "next-1")
+            recovery = result["completed_claim_recovery"]
+            self.assertTrue(recovery["finished"])
+            self.assertEqual(recovery["status"], "done")
+            self.assertEqual(recovery["verdict"], "PASS")
+            self.assertEqual(Path(recovery["summary_path"]), summary_path)
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                rows = {
+                    row[0]: row[1:]
+                    for row in conn.execute(
+                        "SELECT id, status, verdict, claimed_by FROM work_items"
+                    ).fetchall()
+                }
+            self.assertEqual(rows["finished-1"], ("done", "PASS", None))
+            self.assertEqual(rows["next-1"], ("active", None, "T3"))
+
+    def test_monitor_waits_for_detached_terminal_summary(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            report_root = root / "reports" / "wi-detached"
+            self._insert_work_item(
+                root,
+                "wi-detached",
+                "EURJPY.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T7",
+                payload={
+                    "report_root": str(report_root),
+                    "expected_ex5_sha256": "a" * 64,
+                },
+            )
+
+            summary_path = report_root / "QM5_9999" / "20260101_000000" / "summary.json"
+            slot_checks = {"count": 0}
+
+            def fake_terminal_slot_running(_root: Path, _terminal: str | None) -> bool:
+                slot_checks["count"] += 1
+                if slot_checks["count"] == 1:
+                    return True
+                summary_path.parent.mkdir(parents=True, exist_ok=True)
+                summary_path.write_text(
+                    json.dumps({
+                        "result": "PASS",
+                        "model4_log_marker_detected": True,
+                        "min_trades_required": 5,
+                        "runs": [{"total_trades": 10}],
+                    }),
+                    encoding="utf-8",
+                )
+                return False
+
+            old_pid_tree_exists = terminal_worker.farmctl._pid_tree_exists
+            old_terminal_slot_running = terminal_worker._terminal_slot_running
+            old_sleep = terminal_worker.time.sleep
+            try:
+                terminal_worker.farmctl._pid_tree_exists = lambda _pid: False
+                terminal_worker._terminal_slot_running = fake_terminal_slot_running
+                terminal_worker.time.sleep = lambda _seconds: None
+
+                result = terminal_worker._monitor_spawned_work_item(
+                    root,
+                    {"id": "wi-detached", "phase": "Q02"},
+                    "T7",
+                    {"pid": 123456, "report_root": str(report_root)},
+                    {
+                        "report_root": str(report_root),
+                        "expected_ex5_sha256": "a" * 64,
+                    },
+                    timeout_seconds=30,
+                )
+            finally:
+                terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
+                terminal_worker._terminal_slot_running = old_terminal_slot_running
+                terminal_worker.time.sleep = old_sleep
+
+            self.assertEqual(result["status"], "done")
+            self.assertEqual(result["verdict"], "PASS")
+            self.assertGreaterEqual(slot_checks["count"], 2)
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, evidence_path FROM work_items WHERE id='wi-detached'"
+                ).fetchone()
+            self.assertEqual(row[0], "done")
+            self.assertEqual(row[1], "PASS")
+            self.assertEqual(Path(row[2]), summary_path)
 
     def test_run_claimed_item_stops_child_when_claim_is_externally_released(self) -> None:
         with self._root() as tmp:
@@ -215,12 +4353,15 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 terminal_worker.farmctl._stop_terminal_slot = lambda terminal: stopped_terminals.append(terminal) or True
                 terminal_worker._work_item_preflight_failure = lambda _row: None
 
-                result = terminal_worker._run_claimed_item(
-                    root,
-                    {"id": "wi-external-release"},
-                    "T5",
-                    timeout_seconds=30,
-                )
+                with patch.object(terminal_worker, "_prepare_staged_ex5", return_value={
+                    "required_sha256": "a" * 64, "source_path": "fixture.ex5"
+                }):
+                    result = terminal_worker._run_claimed_item(
+                        root,
+                        {"id": "wi-external-release"},
+                        "T5",
+                        timeout_seconds=30,
+                    )
             finally:
                 terminal_worker.farmctl._spawn_work_item_runner = old_spawn
                 terminal_worker.farmctl._pid_exists = old_pid_exists
@@ -233,6 +4374,82 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(result["reason"], "status_changed")
             self.assertEqual(stopped_children, [123456])
             self.assertEqual(stopped_terminals, ["T5"])
+
+    def test_log_bomb_kill_records_payload_and_evidence(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            report_root = root / "reports" / "wi-log-bomb"
+            journal = report_root / "raw" / "run_01" / "20260101.log"
+            journal.parent.mkdir(parents=True)
+            journal.write_bytes(b"x" * 1024)
+            self._insert_work_item(
+                root,
+                "wi-log-bomb",
+                "QM5_9001_EUR_GBP_BASKET_D1",
+                phase="Q02",
+                status="active",
+                claimed_by="T2",
+                payload={"report_root": str(report_root), "pid": 123456},
+                ea_id="QM5_9001",
+            )
+
+            stopped_children: list[int] = []
+            stopped_terminals: list[str] = []
+            old_pid_tree_exists = terminal_worker.farmctl._pid_tree_exists
+            old_stop_pid_tree = terminal_worker.farmctl._stop_pid_tree
+            old_stop_slot = terminal_worker._stop_terminal_slot_for_release
+            old_journal_bomb = terminal_worker._journal_bomb
+            old_check_every = terminal_worker.LOG_BOMB_CHECK_EVERY_ITERS
+            old_sleep = terminal_worker.time.sleep
+            try:
+                terminal_worker.farmctl._pid_tree_exists = lambda pid: int(pid) == 123456
+                terminal_worker.farmctl._stop_pid_tree = lambda pid: stopped_children.append(int(pid)) or True
+                terminal_worker._stop_terminal_slot_for_release = (
+                    lambda _root, terminal: stopped_terminals.append(str(terminal)) or True
+                )
+                terminal_worker._journal_bomb = lambda _report_root, _sizes, _now_mono: (str(journal), 0.0, "test")
+                terminal_worker.LOG_BOMB_CHECK_EVERY_ITERS = 1
+                terminal_worker.time.sleep = lambda _seconds: None
+
+                result = terminal_worker._monitor_spawned_work_item(
+                    root,
+                    {"id": "wi-log-bomb", "ea_id": "QM5_9001", "symbol": "QM5_9001_EUR_GBP_BASKET_D1", "phase": "Q02"},
+                    "T2",
+                    {"pid": 123456, "report_root": str(report_root)},
+                    {"report_root": str(report_root)},
+                    timeout_seconds=30,
+                )
+            finally:
+                terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
+                terminal_worker.farmctl._stop_pid_tree = old_stop_pid_tree
+                terminal_worker._stop_terminal_slot_for_release = old_stop_slot
+                terminal_worker._journal_bomb = old_journal_bomb
+                terminal_worker.LOG_BOMB_CHECK_EVERY_ITERS = old_check_every
+                terminal_worker.time.sleep = old_sleep
+
+            self.assertEqual(result["action"], "log_bomb_killed")
+            self.assertEqual(stopped_children, [123456])
+            self.assertEqual(stopped_terminals, ["T2"])
+            self.assertFalse(journal.exists())
+            evidence_path = Path(result["evidence_path"])
+            self.assertTrue(evidence_path.exists())
+            evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+            self.assertEqual(evidence["event"], "LOG_BOMB")
+            self.assertEqual(evidence["terminal"], "T2")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, attempt_count, claimed_by, evidence_path, payload_json FROM work_items WHERE id='wi-log-bomb'"
+                ).fetchone()
+            self.assertEqual(row[0], "done")
+            self.assertEqual(row[1], "INFRA_FAIL")
+            self.assertEqual(row[2], 99)
+            self.assertIsNone(row[3])
+            self.assertEqual(Path(row[4]), evidence_path)
+            payload = json.loads(row[5])
+            self.assertIn("LOG_BOMB", payload["reason_classes"])
+            self.assertEqual(payload["verdict_reason"], "LOG_BOMB")
+            self.assertEqual(payload["final_failure"], "log_bomb")
+            self.assertTrue(payload["terminal_stopped_on_release"])
 
     def test_run_claimed_item_preflight_blocks_missing_ex5_without_spawn(self) -> None:
         with self._root() as tmp:
@@ -285,11 +4502,262 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                     "SELECT status, verdict, claimed_by, evidence_path, payload_json FROM work_items WHERE id='wi-missing-ex5'"
                 ).fetchone()
             self.assertEqual(row[0], "failed")
-            self.assertEqual(row[1], "INVALID")
+            self.assertEqual(row[1], "INFRA_FAIL")
             self.assertIsNone(row[2])
             self.assertTrue(Path(row[3]).exists())
             self.assertEqual(json.loads(row[4])["verdict_reason"], "ex5_missing")
 
+    def test_preflight_prefers_setfile_dir_when_sibling_versions_exist(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            repo = Path(tmp) / "repo"
+            base_dir = repo / "framework" / "EAs" / "QM5_9997_sibling"
+            v2_dir = repo / "framework" / "EAs" / "QM5_9997_sibling_v2"
+            sets = v2_dir / "sets"
+            sets.mkdir(parents=True)
+            base_dir.mkdir(parents=True)
+            (base_dir / "QM5_9997_sibling.ex5").write_bytes(b"compiled")
+            (v2_dir / "QM5_9997_sibling_v2.ex5").write_bytes(b"compiled")
+            setfile = sets / "QM5_9997_sibling_v2_XTIUSD.DWX_D1_backtest.set"
+            setfile.write_text("Symbol=XTIUSD.DWX\n", encoding="utf-8")
+
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
+                       attempt_count, parent_task_id, evidence_path, claimed_by,
+                       payload_json, created_at, updated_at)
+                    VALUES
+                      ('wi-sibling-v2', 'backtest', 'Q02', 'QM5_9997', 'XTIUSD.DWX', ?,
+                       'pending', NULL, 0, NULL, NULL, NULL, '{}', ?, ?)
+                    """,
+                    (str(setfile), now, now),
+                )
+                conn.commit()
+
+            old_repo_root = terminal_worker.farmctl.REPO_ROOT
+            try:
+                terminal_worker.farmctl.REPO_ROOT = repo
+                with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                    conn.row_factory = sqlite3.Row
+                    row = conn.execute("SELECT * FROM work_items WHERE id='wi-sibling-v2'").fetchone()
+
+                self.assertIsNone(terminal_worker._work_item_preflight_failure(row))
+            finally:
+                terminal_worker.farmctl.REPO_ROOT = old_repo_root
+
+    def test_run_claimed_item_clears_stale_preflight_before_spawn(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            repo = Path(tmp) / "repo"
+            ea_dir = repo / "framework" / "EAs" / "QM5_9996_stale-preflight"
+            sets = ea_dir / "sets"
+            sets.mkdir(parents=True)
+            setfile = sets / "QM5_9996_stale-preflight_XTIUSD.DWX_D1_backtest.set"
+            setfile.write_text("Symbol=XTIUSD.DWX\n", encoding="utf-8")
+            (ea_dir / "QM5_9996_stale-preflight.ex5").write_bytes(b"compiled")
+            old_evidence = root / "old" / "preflight_failure.json"
+            old_evidence.parent.mkdir(parents=True)
+            old_evidence.write_text("{}", encoding="utf-8")
+            payload = {
+                "preflight_failure": {"reason": "ea_dir_ambiguous", "detail": ["base", "v2"]},
+                "preflight_failed_at": "2026-07-03T07:42:34Z",
+                "verdict_reason": "ea_dir_ambiguous",
+                "repair_handler": "R11_pending_unclaimable_work_item",
+                "report_root": str(root / "old"),
+                "pid": 123456789,
+                "started_at_iso": "2026-07-03T07:42:34Z",
+                "log_path": str(root / "old" / "run.log"),
+            }
+
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
+                       attempt_count, parent_task_id, evidence_path, claimed_by,
+                       payload_json, created_at, updated_at)
+                    VALUES
+                      ('wi-stale-preflight', 'backtest', 'Q02', 'QM5_9996', 'XTIUSD.DWX', ?,
+                       'active', NULL, 0, NULL, ?, 'T1', ?, ?, ?)
+                    """,
+                    (str(setfile), str(old_evidence), json.dumps(payload), now, now),
+                )
+                conn.commit()
+
+            old_repo_root = terminal_worker.farmctl.REPO_ROOT
+            old_spawn = terminal_worker.farmctl._spawn_work_item_runner
+            old_pid_tree_exists = terminal_worker.farmctl._pid_tree_exists
+            try:
+                terminal_worker.farmctl.REPO_ROOT = repo
+                terminal_worker.farmctl._pid_tree_exists = lambda _pid: (_ for _ in ()).throw(
+                    AssertionError("stale preflight pid must be cleared before adoption")
+                )
+
+                def fake_spawn(_root: Path, item_row: sqlite3.Row, _terminal: str) -> dict[str, object]:
+                    spawn_payload = json.loads(item_row["payload_json"])
+                    for key in ("preflight_failure", "preflight_failed_at", "pid", "report_root", "log_path"):
+                        self.assertNotIn(key, spawn_payload)
+                    self.assertIsNone(item_row["evidence_path"])
+                    self.assertEqual(spawn_payload["cleared_stale_preflight_reason"], "ea_dir_ambiguous")
+                    return {
+                        "spawned": False,
+                        "pending_runner": True,
+                        "reason": "test_pending_runner",
+                        "log_path": str(root / "pending.log"),
+                        "report_root": str(root / "pending"),
+                    }
+
+                terminal_worker.farmctl._spawn_work_item_runner = fake_spawn
+                result = terminal_worker._run_claimed_item(root, {"id": "wi-stale-preflight"}, "T1", 30)
+            finally:
+                terminal_worker.farmctl.REPO_ROOT = old_repo_root
+                terminal_worker.farmctl._spawn_work_item_runner = old_spawn
+                terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
+
+            self.assertEqual(result["action"], "pending_runner")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT evidence_path, payload_json FROM work_items WHERE id='wi-stale-preflight'"
+                ).fetchone()
+            self.assertIsNone(row[0])
+            updated_payload = json.loads(row[1])
+            self.assertNotIn("preflight_failure", updated_payload)
+            self.assertNotIn("pid", updated_payload)
+            self.assertEqual(updated_payload["cleared_stale_preflight_reason"], "ea_dir_ambiguous")
+
+    def test_preflight_resolves_absolute_setfile_outside_worker_repo_root(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            source_repo = Path(tmp) / "source_repo"
+            stale_worker_repo = Path(tmp) / "stale_worker_repo"
+            ea_dir = source_repo / "framework" / "EAs" / "QM5_9998_external-ea"
+            sets = ea_dir / "sets"
+            sets.mkdir(parents=True)
+            stale_worker_repo.mkdir(parents=True)
+            setfile = sets / "QM5_9998_external-ea_EURUSD.DWX_H1_backtest.set"
+            setfile.write_text("Symbol=EURUSD.DWX\n", encoding="utf-8")
+            (ea_dir / "QM5_9998_external-ea.ex5").write_bytes(b"compiled")
+
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
+                       attempt_count, parent_task_id, evidence_path, claimed_by,
+                       payload_json, created_at, updated_at)
+                    VALUES
+                      ('wi-external-setfile', 'backtest', 'Q04', 'QM5_9998', 'EURUSD.DWX', ?,
+                       'pending', NULL, 0, NULL, NULL, NULL, '{}', ?, ?)
+                    """,
+                    (str(setfile), now, now),
+                )
+                conn.commit()
+
+            old_repo_root = terminal_worker.farmctl.REPO_ROOT
+            try:
+                terminal_worker.farmctl.REPO_ROOT = stale_worker_repo
+                with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                    conn.row_factory = sqlite3.Row
+                    row = conn.execute(
+                        "SELECT * FROM work_items WHERE id='wi-external-setfile'"
+                    ).fetchone()
+
+                self.assertIsNone(terminal_worker._work_item_preflight_failure(row))
+            finally:
+                terminal_worker.farmctl.REPO_ROOT = old_repo_root
+
+    def test_dead_runner_without_summary_requeues_live_claim(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            self._insert_work_item(
+                root,
+                "wi-dead-runner",
+                "USDJPY.DWX",
+                phase="OPT_CENSUS",
+                status="active",
+                claimed_by="T3",
+                payload={"pid": 424242, "claimed_by_worker_pid": 999},
+            )
+            ticks = iter((0.0, 1.0, 2.0, 400.0, 401.0))
+            stopped = []
+            old_pid_tree_exists = terminal_worker.farmctl._pid_tree_exists
+            old_terminal_slot_running = terminal_worker._terminal_slot_running
+            old_summary = terminal_worker._work_item_has_summary_data
+            old_stop_slot = terminal_worker._stop_terminal_slot_for_release
+            old_monotonic = terminal_worker.time.monotonic
+            try:
+                terminal_worker.farmctl._pid_tree_exists = lambda _pid: False
+                terminal_worker._terminal_slot_running = lambda *_: True
+                terminal_worker._work_item_has_summary_data = lambda *_: False
+                terminal_worker._stop_terminal_slot_for_release = (
+                    lambda _root, terminal: stopped.append(terminal) or True
+                )
+                terminal_worker.time.monotonic = lambda: next(ticks)
+                result = terminal_worker._monitor_spawned_work_item(
+                    root,
+                    {"id": "wi-dead-runner", "phase": "OPT_CENSUS"},
+                    "T3",
+                    {"pid": 424242, "report_root": str(root / "reports")},
+                    {"pid": 424242, "claimed_by_worker_pid": 999},
+                    timeout_seconds=1000,
+                )
+            finally:
+                terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
+                terminal_worker._terminal_slot_running = old_terminal_slot_running
+                terminal_worker._work_item_has_summary_data = old_summary
+                terminal_worker._stop_terminal_slot_for_release = old_stop_slot
+                terminal_worker.time.monotonic = old_monotonic
+
+            self.assertEqual(result["action"], "runner_death_requeued")
+            self.assertTrue(result["claim_released"])
+            self.assertEqual(stopped, ["T3"])
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status,verdict,claimed_by,payload_json "
+                    "FROM work_items WHERE id='wi-dead-runner'"
+                ).fetchone()
+            self.assertEqual(row[:3], ("pending", None, None))
+            payload = json.loads(row[3])
+            self.assertEqual(
+                payload["prior_failure"],
+                "runner_process_died_without_summary",
+            )
+            self.assertNotIn("pid", payload)
+
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_dl089_prerequisite_seed_uses_census_ram_class():
+    """OQ-SIBLING-SEED-RANK-20260902 follow-through: a DL-089 measurement-sibling
+    Q02 prerequisite seed is reserved like the census cells it unlocks (4 GB);
+    an ordinary Q02 row keeps the ordinary 8 GB class."""
+    seed = {"phase": "Q02", "symbol": "XAUUSD.DWX", "ea_id": "QM5_S"}
+    seed_payload = {"schema": "qm.dl089-measurement-q02-prerequisite/v1"}
+    plain = {"phase": "Q02", "symbol": "XAUUSD.DWX", "ea_id": "QM5_P"}
+    assert terminal_worker._ram_reservation_for_candidate(seed, seed_payload, False) == (
+        terminal_worker.RAM_CLASS_OPT_CENSUS_CELL, 4.0
+    )
+    assert terminal_worker._ram_reservation_for_candidate(plain, {}, False) == (
+        terminal_worker.MULTISYMBOL_COMMIT_CLASS_ORDINARY, 8.0
+    )
+    assert terminal_worker._ram_reservation_for_candidate(seed, seed_payload, True) != (
+        terminal_worker.RAM_CLASS_OPT_CENSUS_CELL, 4.0
+    )
+
+
+def test_ram_floor_for_class_census_cells_keep_eight_gb_after_reservation() -> None:
+    """2026-09-03: census cells (4 GB) are admitted from 12 GB free; every other
+    class keeps the full RAM_MIN_FREE_GB floor after its reservation."""
+    assert terminal_worker._ram_floor_for_class(terminal_worker.RAM_CLASS_OPT_CENSUS_CELL) == 8.0
+    assert terminal_worker._ram_floor_for_class("ordinary") == terminal_worker.RAM_MIN_FREE_GB
+    assert terminal_worker._ram_floor_for_class("") == terminal_worker.RAM_MIN_FREE_GB
