@@ -62,3 +62,22 @@ the worktree were left alone.
 
 No write to C:/QM/repo, no main/board-advisor advance, no terminal touched. Landing remains a
 Claude+OWNER close-out after review.
+
+## Router payload fix (publication blocker)
+
+The first `update-task --state REVIEW` was held (`unlanded_cited_commits`), as expected. The
+post-session publisher builds its explicit-cite list from `landing_pending_review.unlanded_commits`
+**plus** `payload.artifact_source_commits`. That list still held the round-2 sources
+6fa5c51fbec1 / df9542574d15 / 9e59d027c6aa, which exist only on `agents/claude-orchestration-1`
+and are not reachable from this lane. `_lane_commits_for_publication` would have rejected them as
+`cited_commit_outside_task_range`, the same defect that keeps fea22a93 stuck.
+
+Fix (via `update-task --state IN_PROGRESS --payload-json`, no SQL): `artifact_source_commits` set
+to [ee50a32a4eae, 3959de184d45]. The three old sources were moved to
+`artifact_superseded_source_commits` (round 2, refs/review/d6d04eca/2, superseded_by the two new
+commits). `landing_pending_review` was left intact. Read-only dry run of
+`_lane_commits_for_publication` with the new inputs → ok=true, commits
+[ee50a32a4eae, 3959de184d45, this evidence commit], rejected=[].
+
+Router defect to file separately: when a recycle is re-routed to a different lane, prior-round
+`artifact_source_commits` should not be fed back in as explicit cites.
