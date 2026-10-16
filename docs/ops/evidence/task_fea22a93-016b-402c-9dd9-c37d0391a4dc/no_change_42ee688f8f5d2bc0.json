@@ -1,0 +1,15 @@
+{
+  "task_id": "fea22a93-016b-402c-9dd9-c37d0391a4dc",
+  "gate_code": "REVIEW_REF_MISSING",
+  "reason": "unlanded_cited_commits",
+  "cited_commits": [
+    "ab6970b71f14348e7e2b8d8d9fc3eb2e1c8875fb",
+    "2ce440555c9f22a1031a0232cc6e7e01ce59c6a0"
+  ],
+  "cited_lane_branch": "agents/codex-orchestration-14",
+  "expected_canonical_branch": "agents/board-advisor",
+  "lane_claim_branch": "agents/claude-orchestration-2",
+  "lane_claim_base": "ab5b164915b83b2669a8bf8fcfbc971b5b332c48",
+  "lane_head": "85d337a68c93ec8814c7157981b061075e3eaaba",
+  "blocker": "This worktree cannot write C:/QM/repo or merge/cherry-pick into agents/board-advisor; landing the cited commits requires a Claude+OWNER close-out seat."
+}
