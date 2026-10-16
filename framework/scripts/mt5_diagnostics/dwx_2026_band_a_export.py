@@ -34,8 +34,6 @@ if str(REPO_ROOT) not in sys.path:
 if str(REPO_ROOT / "tools" / "strategy_farm") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "tools" / "strategy_farm"))
 
-from framework.scripts.mt5_diagnostics import dwx_m1_overlap_export as overlap_export
-from framework.scripts.mt5_diagnostics import dwx_tick_tail_probe as governance_guard
 from tools.dukascopy import common as dukascopy_common
 from tools.strategy_farm import custom_history_contract
 from tools.strategy_farm import custom_history_gate
@@ -44,7 +42,14 @@ from tools.strategy_farm import farmctl
 from tools.strategy_farm import ftmo_m1_bootstrap as boot
 from tools.strategy_farm import identity_hash
 from tools.strategy_farm import reload_idle_workers
+from tools.strategy_farm import start_terminal_workers
 from tools.strategy_farm.factory_mutation_lock import FactoryMutationLock
+# Imported last: dwx_m1_overlap_export pulls in dwx_m1_overlap_export_work_item,
+# which inserts the absolute C:/QM/repo into sys.path (task af1e6342). The
+# tools.strategy_farm namespace package then re-resolves to the canonical
+# checkout, so a worktree under test would bind the unpatched launcher.
+from framework.scripts.mt5_diagnostics import dwx_m1_overlap_export as overlap_export
+from framework.scripts.mt5_diagnostics import dwx_tick_tail_probe as governance_guard
 
 
 TASK_ID = "35eb350f-1fe2-4649-a349-58c38bd7e855"
@@ -55,6 +60,7 @@ METAEDITOR_BINARY = TERMINAL_ROOT / "MetaEditor64.exe"
 FARM_ROOT = Path("D:/QM/strategy_farm")
 ARTIFACT_ROOT = FARM_ROOT / "artifacts" / "ops" / f"task_{TASK_ID}" / "source"
 CANONICAL_REPO = Path("C:/QM/repo")
+RESTORE_LAUNCHER = REPO_ROOT / "tools" / "strategy_farm" / "start_terminal_workers.py"
 SOURCE = Path(__file__).with_name("QM_DWX_2026_Band_A_Export.mq5")
 PROBE_SOURCE = Path(__file__).with_name("QM_DWX_Native_Depth_Probe.mq5")
 PURGE_TASK = "QM_StrategyFarm_TesterCachePurge"
@@ -822,7 +828,11 @@ def _assert_t1_idle(*, expected_reservation: str | None = None) -> dict[str, Any
         raise ExportRefused("task-bound T1 reservation identity changed")
     workers = reload_idle_workers.workers()
     worker = workers.get(TERMINAL_NAME)
-    if worker is None or not reload_idle_workers.idle(TERMINAL_NAME, worker):
+    if worker is None or not reload_idle_workers.idle(
+        TERMINAL_NAME,
+        worker,
+        allow_reservation_owner=expected_reservation,
+    ):
         raise ExportRefused("T1 worker is absent, duplicated, or not stably idle")
     worker_identity = _worker_identity(worker)
     return {
@@ -939,20 +949,34 @@ def _restore_worker(
     if current is not None and current.get("reserved_by") != reserved_by:
         raise ExportRefused("T1 reservation changed before worker restoration")
     started_at = _utc_now()
-    expected_environment = _worker_environment_binding(environment)
+    canonical_environment = start_terminal_workers.canonical_worker_environment(
+        dict(environment)
+    )
+    expected_environment = _worker_environment_binding(canonical_environment)
     worker = reload_idle_workers.workers().get(TERMINAL_NAME)
     launcher_exit: int | None = None
+    released: dict[str, Any] | None = None
     if worker is None:
-        env = dict(environment)
+        # The governed launcher now correctly skips every live reservation.  We
+        # hold FACTORY_MUTATION.lock here, so release our exact reservation only
+        # at the restoration boundary, then let whichever governed restarter
+        # wins the benign race launch the same canonical environment.
+        if current is not None:
+            released = _release_exact_reservation(reserved_by)
+        env = dict(canonical_environment)
         env.pop("PYTHONHOME", None)
         env.pop("PYTHONPATH", None)
+        # REPO_ROOT, not CANONICAL_REPO: apply mode already refuses to run
+        # outside C:/QM/repo (validate_canonical_runtime), so production is
+        # unchanged, while a worktree or archive extract under test exercises
+        # its own launcher instead of the canonical one.
         completed = subprocess.run(
             [
                 sys.executable,
-                str(CANONICAL_REPO / "tools/strategy_farm/start_terminal_workers.py"),
+                str(RESTORE_LAUNCHER),
                 "--dedupe",
             ],
-            cwd=CANONICAL_REPO,
+            cwd=REPO_ROOT,
             env=env,
             capture_output=True,
             text=True,
@@ -965,6 +989,10 @@ def _restore_worker(
         worker = reload_idle_workers.workers().get(TERMINAL_NAME)
         restore_origin = "governed_launcher"
     else:
+        if current is not None:
+            raise ExportRefused(
+                "T1 worker appeared while its lifecycle reservation was live"
+            )
         restore_origin = "governed_watchdog_respawn"
     if (
         launcher_exit not in (None, 0)
@@ -989,9 +1017,8 @@ def _restore_worker(
     current_after = farmctl.terminal_reservation(FARM_ROOT, TERMINAL_NAME)
     if current_after is not None and current_after.get("reserved_by") != reserved_by:
         raise ExportRefused("T1 reservation changed during worker restoration")
-    released = (
-        _release_exact_reservation(reserved_by) if current_after is not None else None
-    )
+    if current_after is not None:
+        released = _release_exact_reservation(reserved_by)
     finished_at = _utc_now()
     restart_receipt = {
         "started_at": started_at,

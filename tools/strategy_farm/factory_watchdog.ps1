@@ -142,13 +142,58 @@ $detail = ''
 # reboot) is sawn off -> METATESTER_HUNG/REPORT_MISSING -> INFRA_FAIL, while
 # real-verdict yield collapses to ~0. Derive the target from the cap instead.
 $disabledTerminalsPath = 'D:\QM\strategy_farm\state\disabled_terminals.txt'
-$disabledCount = 0
+$disabledTerminals = @()
 if (Test-Path $disabledTerminalsPath) {
-    $disabledCount = @(Get-Content $disabledTerminalsPath -ErrorAction SilentlyContinue |
+    $disabledTerminals = @(Get-Content $disabledTerminalsPath -ErrorAction SilentlyContinue |
         ForEach-Object { $_.Trim() } |
-        Where-Object { $_ -match '^T(?:[1-9]|1[0-2])$' }).Count
+        Where-Object { $_ -match '^T(?:[1-9]|1[0-2])$' } |
+        Sort-Object -Unique)
 }
-$ExpectWorkers = [math]::Max(1, 12 - $disabledCount)
+$disabledCount = $disabledTerminals.Count
+
+# A live terminal reservation is an intentional capacity reduction for its
+# whole lifecycle, not merely a claim-time hint.  Without this adjustment the
+# 15-minute watchdog classified a quiesced T1 as missing and recreated its
+# worker during a long Band A export (2026-10-15 incident).  The central Python
+# starter repeats the authoritative farmctl reservation check immediately
+# before spawn, closing races with this observation-only precheck.
+function Get-LiveTerminalReservations {
+    # Read-only view of terminal_reservations.json with farmctl's live rule
+    # (factory terminal name + until_utc in the future).  ok=$false means the
+    # file exists but is unreadable; every caller treats that as "reserved".
+    # Disabled terminals are NOT filtered here: Factory_ON's clean slate kills
+    # every non-T_Live terminal64, so a reservation on a disabled terminal must
+    # still block a reset.
+    $path = 'D:\QM\strategy_farm\state\terminal_reservations.json'
+    if (-not (Test-Path -LiteralPath $path)) {
+        return [pscustomobject]@{ ok = $true; terminals = @() }
+    }
+    try {
+        $doc = Get-Content -LiteralPath $path -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+        $rows = if ($doc.reservations) { $doc.reservations } else { $doc }
+        $utcNow = (Get-Date).ToUniversalTime()
+        $names = @()
+        foreach ($property in $rows.PSObject.Properties) {
+            if ($property.Name -notmatch '^T(?:[1-9]|1[0-2])$') { continue }
+            try { $untilUtc = ([datetimeoffset]$property.Value.until_utc).UtcDateTime }
+            catch { continue }
+            if ($untilUtc -gt $utcNow) { $names += $property.Name.ToUpperInvariant() }
+        }
+        return [pscustomobject]@{ ok = $true; terminals = @($names | Sort-Object -Unique) }
+    } catch {
+        return [pscustomobject]@{ ok = $false; terminals = @() }
+    }
+}
+
+# Fail closed across every watchdog path, including clean-slate reset.
+# The central starter also rechecks immediately before each spawn.
+$reservationProbe = Get-LiveTerminalReservations
+$reservationProbeOk = [bool]$reservationProbe.ok
+$liveReservedTerminals = @($reservationProbe.terminals)
+# Capacity math subtracts only reservations not already counted as disabled.
+$reservedTerminals = @($liveReservedTerminals | Where-Object { $_ -notin $disabledTerminals })
+$reservedCount = $reservedTerminals.Count
+$ExpectWorkers = [math]::Max(1, 12 - $disabledCount - $reservedCount)
 # Heal only when BELOW the capped target (workers == cap reads healthy). Never
 # require more workers than the operator cap allows.
 $MinWorkers = [math]::Min($MinWorkers, $ExpectWorkers)
@@ -590,6 +635,25 @@ function Enter-GuardedFactoryReset {
         [string]$PythonExe
     )
 
+    # 2026-10-16 (task d6d04eca): a clean-slate reset kills every non-T_Live
+    # terminal64 and worker, so it would destroy an exclusive reserved session
+    # (Band A export).  Re-read reservations at the reset boundary, independent
+    # of which branch chose to reset; unreadable state fails closed.  No
+    # admission-block marker is written: workers keep claiming.
+    $reservationGate = Get-LiveTerminalReservations
+    if (-not [bool]$reservationGate.ok -or @($reservationGate.terminals).Count -gt 0) {
+        $reservationReason = if ([bool]$reservationGate.ok) {
+            "live terminal reservation(s) $(@($reservationGate.terminals) -join ',') own their terminal lifecycle; no clean-slate reset"
+        } else {
+            'terminal reservation state unreadable; refusing clean-slate reset'
+        }
+        return [pscustomobject]@{
+            allowed = $false
+            kind = 'terminal_reserved'
+            reason = $reservationReason
+            protection = $null
+        }
+    }
     $dirtyGate = Get-DirtyTreeDeferral -PythonExe $PythonExe
     if ($null -ne $dirtyGate -and [bool]$dirtyGate.defer) {
         # No admission-block marker is written: workers keep claiming.
@@ -942,6 +1006,9 @@ if ($factoryEnabled -and $sessionLost) {
     $autologonOn = ((Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -ErrorAction SilentlyContinue).AutoAdminLogon -eq '1')
     $tLiveRunning = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
                       Where-Object { $_.CommandLine -match 'T_Live' }).Count -gt 0
+    # A reboot ends every reserved exclusive session too; reservations are
+    # bounded by until_utc, so this guard delays recovery by at most that window.
+    $rebootReservationGate = Get-LiveTerminalReservations
 
     if (-not ($secretOk -and $autologonOn)) {
         $action = 'session_lost_no_autologon'
@@ -949,6 +1016,9 @@ if ($factoryEnabled -and $sessionLost) {
     } elseif ($tLiveRunning) {
         $action = 'session_lost_tlive_guard'
         $detail = "NO interactive $targetUser session but a T_Live terminal is running - refusing auto-reboot (Hard Rule)"
+    } elseif (-not [bool]$rebootReservationGate.ok -or @($rebootReservationGate.terminals).Count -gt 0) {
+        $action = 'session_lost_reservation_guard'
+        $detail = "NO interactive $targetUser session but terminal reservation(s) are live or unreadable (ok=$($rebootReservationGate.ok) reserved=$(@($rebootReservationGate.terminals) -join ',')) - refusing auto-reboot until they lapse"
     } elseif ($lastReboot -and ($nowDt - $lastReboot).TotalHours -lt 6) {
         $action = 'session_lost_cooldown'
         $detail = "NO interactive $targetUser session; auto-reboot suppressed (last heal-reboot $($st.last_reboot), 6h cooldown)"
@@ -1123,6 +1193,18 @@ elseif ($diskFreeGb -lt 40) {
     $detail = "D: free ${diskFreeGb}GB < 40GB while factory ON - workers pausing by design; kicking cache purge, NOT respawning"
     try { Start-ScheduledTask -TaskName 'QM_StrategyFarm_TesterCachePurge' -ErrorAction SilentlyContinue } catch {}
 }
+elseif (-not $reservationProbeOk) {
+    $action = 'noop_terminal_reservation_unknown'
+    $detail = 'terminal reservation state unreadable; refusing every worker restart/reset this cycle'
+}
+elseif ($reservedCount -gt 0 -and $nWorkers -ge $ExpectWorkers) {
+    # Reservation-protected absence is healthy.  This branch only covers a full
+    # unreserved fleet; a shortfall or stall falls through to the branches below,
+    # where the surgical refill skips reserved terminals (start_terminal_workers.py)
+    # and every clean-slate reset is refused at Enter-GuardedFactoryReset.
+    $action = 'noop_terminal_reserved'
+    $detail = "workers=$nWorkers/$ExpectWorkers; live lifecycle reservations=$($reservedTerminals -join ','); no worker restart/reset"
+}
 elseif ($nWorkers -lt $ExpectWorkers -and -not $realStall) {
     # Missing capacity is independent of a protected long-running backtest.
     # Previously realstall_guarded (or the 8-worker healthy floor) swallowed
@@ -1199,7 +1281,7 @@ elseif ($factoryEnabled -and $realStall) {
                           Where-Object { $_.CommandLine -match 'T_Live' }).Count -gt 0
         $resetGuard = Enter-GuardedFactoryReset -Reason 'realstall' -PythonExe $py
         if (-not $resetGuard.allowed) {
-            $action = if ($resetGuard.kind -eq 'dirty_tree') { 'realstall_deferred_dirty_tree' } else { 'realstall_guarded_fresh' }
+            $action = switch ($resetGuard.kind) { 'dirty_tree' { 'realstall_deferred_dirty_tree' } 'terminal_reserved' { 'realstall_guarded_reserved' } default { 'realstall_guarded_fresh' } }
             $detail = "REAL-STALL reset suppressed by fresh interlocked check: $($resetGuard.reason) ($realStallInfo)"
             @{ pending_since = $null; last_reset = $rst.last_reset } | ConvertTo-Json -Compress | Set-Content -Path $rsState -Encoding UTF8
         } else {
@@ -1308,7 +1390,7 @@ else {
             $detail += " | $dumpDetail"
             $resetGuard = Enter-GuardedFactoryReset -Reason 'dispatch_stall' -PythonExe $py
             if (-not $resetGuard.allowed) {
-                $action = if ($resetGuard.kind -eq 'dirty_tree') { 'heal_deferred_dirty_tree' } else { 'heal_deferred_fresh_protection' }
+                $action = switch ($resetGuard.kind) { 'dirty_tree' { 'heal_deferred_dirty_tree' } 'terminal_reserved' { 'heal_deferred_terminal_reserved' } default { 'heal_deferred_fresh_protection' } }
                 $detail += " | reset suppressed by fresh interlocked check: $($resetGuard.reason)"
             } else {
                 Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop

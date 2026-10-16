@@ -26,7 +26,7 @@ except ModuleNotFoundError:
 REPO = Path(__file__).resolve().parents[2]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
-from tools.strategy_farm import identity_hash  # noqa: E402
+from tools.strategy_farm import farmctl, identity_hash  # noqa: E402
 ROOT = Path('D:/QM/strategy_farm')
 WORKER = REPO / 'tools/strategy_farm/terminal_worker.py'
 MEMORY_LIMIT_FLAG = 'QM_TESTER_MEMORY_LIMIT_V1'
@@ -135,7 +135,19 @@ def workers() -> dict[str, psutil.Process]:
     return found
 
 
-def idle(term: str, proc: psutil.Process) -> bool:
+def idle(
+    term: str,
+    proc: psutil.Process,
+    *,
+    allow_reservation_owner: str | None = None,
+) -> bool:
+    # Reservations protect the worker lifecycle as well as claims.  A rolling
+    # reload must not remove a worker that an exclusive terminal session is in
+    # the process of quiescing, nor attempt a replacement the governed starter
+    # will correctly skip.
+    reservation = farmctl.terminal_reservation(ROOT, term)
+    if reservation is not None and reservation.get("reserved_by") != allow_reservation_owner:
+        return False
     if terminal_for(proc.cmdline()) != term or proc.children(recursive=True):
         return False
     with sqlite3.connect('file:D:/QM/strategy_farm/state/farm_state.sqlite?mode=ro', uri=True, timeout=2) as conn:

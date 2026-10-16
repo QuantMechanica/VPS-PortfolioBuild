@@ -6,64 +6,19 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$stateDir = Join-Path $FarmRoot "state"
-$logDir = Join-Path $FarmRoot "logs"
-$pidFile = Join-Path $stateDir "worker_pids.json"
-$worker = Join-Path $RepoRoot "tools\strategy_farm\terminal_worker.py"
-$factoryTerminals = 1..12 | ForEach-Object { "T$_" }
-$disabledTerminalsFile = Join-Path $stateDir "disabled_terminals.txt"
-
-New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
-New-Item -ItemType Directory -Force -Path $logDir | Out-Null
-
-$existing = @{}
-if (Test-Path $pidFile) {
-    try {
-        $json = Get-Content -Raw -Path $pidFile | ConvertFrom-Json
-        foreach ($prop in $json.PSObject.Properties) {
-            $existing[$prop.Name] = [int]$prop.Value
-        }
-    } catch {
-        $existing = @{}
-    }
+# One launch authority owns reservation filtering, duplicate detection,
+# resource admission, and the canonical machine-scoped worker environment.
+# Keeping a second PowerShell implementation here caused restarter drift.
+$starter = Join-Path $RepoRoot "tools\strategy_farm\start_terminal_workers.py"
+if (-not (Test-Path -LiteralPath $starter -PathType Leaf)) {
+    throw "Missing worker starter: $starter"
 }
+$python = (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+if (-not $python) { throw "python.exe is not available" }
 
-$disabledTerminals = @()
-if (Test-Path -LiteralPath $disabledTerminalsFile) {
-    $disabledTerminals = @(
-        Get-Content -LiteralPath $disabledTerminalsFile -ErrorAction SilentlyContinue |
-            ForEach-Object { ([string]$_).Trim().ToUpperInvariant() } |
-            Where-Object { $_ -match '^T(?:[1-9]|1[0-2])$' }
-    )
-}
-
-$updated = @{}
-$terminals = $factoryTerminals | Where-Object {
-    $_ -notin $disabledTerminals -and
-    (Test-Path -LiteralPath (Join-Path $Mt5Root (Join-Path $_ "terminal64.exe")) -PathType Leaf)
-}
-foreach ($terminal in $terminals) {
-    $workerPid = $existing[$terminal]
-    if ($workerPid) {
-        $proc = Get-Process -Id $workerPid -ErrorAction SilentlyContinue
-        if ($proc) {
-            $updated[$terminal] = $workerPid
-            continue
-        }
-    }
-
-    $logPath = Join-Path $logDir "terminal_worker_$terminal.log"
-    $pythonw = (Get-Command pythonw.exe -ErrorAction SilentlyContinue).Source
-    if (-not $pythonw) { $pythonw = (Get-Command python.exe).Source }
-    $proc = Start-Process -FilePath $pythonw `
-        -ArgumentList @("-u", $worker, "--terminal", $terminal, "--root", $FarmRoot) `
-        -WorkingDirectory $RepoRoot `
-        -WindowStyle Hidden `
-        -RedirectStandardOutput $logPath `
-        -RedirectStandardError "$logPath.err" `
-        -PassThru
-    $updated[$terminal] = $proc.Id
-}
-
-$updated | ConvertTo-Json | Set-Content -Path $pidFile -Encoding UTF8
-$updated | ConvertTo-Json
+& $python $starter `
+    --repo-root $RepoRoot `
+    --farm-root $FarmRoot `
+    --mt5-root $Mt5Root `
+    --dedupe
+exit $LASTEXITCODE

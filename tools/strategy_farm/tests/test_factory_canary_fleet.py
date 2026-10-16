@@ -28,8 +28,13 @@ def test_powershell_worker_and_watchdog_derive_ten_active_from_two_inert() -> No
     factory_on = (REPO / "tools/strategy_farm/Factory_ON.ps1").read_text(
         encoding="utf-8-sig"
     )
-    assert "$factoryTerminals = 1..12" in launcher
-    assert "$ExpectWorkers = [math]::Max(1, 12 - $disabledCount)" in watchdog
+    # Task d6d04eca: the PowerShell starter delegates fleet selection to the
+    # governed Python launcher (12-slot TERMINALS, disabled + reserved filter);
+    # the watchdog target subtracts disabled and live-reserved slots from 12.
+    assert "start_terminal_workers.py" in launcher
+    assert "--dedupe" in launcher
+    assert start_terminal_workers.TERMINALS == tuple(f"T{i}" for i in range(1, 13))
+    assert "$ExpectWorkers = [math]::Max(1, 12 - $disabledCount - $reservedCount)" in watchdog
     assert "$QM_OWNER_APPROVED_DISABLED_TERMINALS = @(\n    'T11','T12'" in factory_on
     assert "$derivedWorkerTerminals = @(1..12" in factory_on
 

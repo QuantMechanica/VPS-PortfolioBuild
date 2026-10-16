@@ -105,7 +105,12 @@ def _expected_terminals() -> set[str]:
     sys.path.insert(0, str(REPO_ROOT / "tools" / "strategy_farm"))
     import start_terminal_workers as spawner  # noqa: PLC0415 - path set above
 
-    return set(spawner._installed_terminals(Path(r"D:\QM\mt5")))
+    installed = set(spawner._installed_terminals(Path(r"D:\QM\mt5")))
+    # A live reservation deliberately makes its worker absent.  Do not treat
+    # that protected gap as missing capacity; the central spawner repeats the
+    # same check immediately before launch as the race-closing authority.
+    reserved = set(spawner.farmctl.terminal_reservations(FARM_ROOT))
+    return installed - reserved
 
 
 def _run_spawner() -> str:

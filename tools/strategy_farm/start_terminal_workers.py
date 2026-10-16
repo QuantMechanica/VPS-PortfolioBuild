@@ -16,6 +16,11 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm import resource_headroom
 
+try:
+    import farmctl
+except ModuleNotFoundError:
+    from tools.strategy_farm import farmctl
+
 
 TERMINALS = tuple(f"T{i}" for i in range(1, 13))
 FACTORY_TERMINAL_RE = re.compile(r"^T(?:[1-9]|1[0-2])$", re.IGNORECASE)
@@ -131,11 +136,24 @@ def _governed_terminals(
     installed: tuple[str, ...],
     discovered: dict[str, list[int]],
     decision: dict[str, object],
+    reserved: set[str] | frozenset[str] = frozenset(),
 ) -> tuple[str, ...]:
-    """Keep every live worker, then admit missing workers only up to the cap."""
+    """Keep every live worker, then admit unreserved missing workers up to the cap.
+
+    A reservation protects the whole terminal lifecycle, not only work-item
+    claims.  In particular, a watchdog must not recreate a deliberately
+    quiesced worker during a long terminal-exclusive maintenance session.
+    Already-live workers remain visible so this selector never removes or
+    rewrites an existing process.
+    """
     running = [terminal for terminal in installed if discovered.get(terminal)]
     target = max(len(running), int(decision.get("max_workers") or 0))
-    missing = [terminal for terminal in installed if terminal not in running]
+    reserved_upper = {str(terminal).upper() for terminal in reserved}
+    missing = [
+        terminal
+        for terminal in installed
+        if terminal not in running and terminal.upper() not in reserved_upper
+    ]
     return tuple(running + missing[: max(0, target - len(running))])
 
 
@@ -224,19 +242,41 @@ def machine_qm_environment() -> dict[str, str]:
 
 
 def merge_machine_qm_env(environ: dict[str, str], machine: dict[str, str]) -> dict[str, str]:
-    """Spawn environment = process env with every machine QM_* var filled in when absent.
+    """Return a spawn env carrying the machine-scoped factory values.
 
     Incident 2026-09-02: workers restarted from an interactive session inherited
     that session's environment, which lacked QM_TOPDOWN_GATE_PRIORITY_ENABLED,
     QM_ENABLE_DL089_PRUNING and QM_SQLITE_BUSY_TIMEOUT_MS, so the fleet ran the
-    cold claim order and without worker-side pruning for most of the day. An
-    explicitly set process value still wins (setdefault semantics).
+    cold claim order and without worker-side pruning for most of the day.
+
+    Incident 2026-10-15: the watchdog inherited a stale
+    DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST and recreated T1 with governance bytes
+    different from the pre-quiesce worker.  Machine scope is therefore the only
+    source for the exact DL089 scheduling keys: caller values are dropped and
+    replaced, and a key absent from machine scope is absent from the worker.
+
+    QM_* keys keep setdefault semantics (an explicit process value wins): the
+    tester memory-limit rollout uses a per-process ``QM_TESTER_MEMORY_LIMIT_V1=0``
+    as its rollback authority, which a machine-scope ``=1`` must not override.
     """
     merged = dict(environ)
+    for name in MACHINE_FACTORY_ENV_EXACT:
+        merged.pop(name, None)
     for name, value in machine.items():
-        if _is_machine_factory_var(name):
+        if str(name).upper() in MACHINE_FACTORY_ENV_EXACT:
+            merged[name] = value
+        elif _is_machine_factory_var(name):
             merged.setdefault(name, value)
     return merged
+
+
+def canonical_worker_environment(environ: dict[str, str] | None = None) -> dict[str, str]:
+    """Build the one governed environment used by every worker restarter."""
+    return merge_machine_qm_env(
+        dict(os.environ if environ is None else environ),
+        machine_qm_environment(),
+    )
+
 
 def main() -> int:
     # DL-065: spawned terminal workers inherit this env. The spawner and the
@@ -294,7 +334,7 @@ def main() -> int:
             updated[name] = recorded if recorded in live else live[0]
     stopped_duplicates: dict[str, list[int]] = {}
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-    spawn_env = merge_machine_qm_env(dict(os.environ), machine_qm_environment())
+    spawn_env = canonical_worker_environment()
     memory_limit_enabled = (
         str(spawn_env.get("QM_TESTER_MEMORY_LIMIT_V1", "")).strip() == "1"
     )
@@ -367,8 +407,15 @@ def main() -> int:
         installed_workers=len(installed_terminals),
         running_workers=running_installed,
     )
+    reservations = farmctl.terminal_reservations(farm_root)
+    reserved_terminals = frozenset(reservations)
+    skipped_reserved = {
+        terminal
+        for terminal in reserved_terminals
+        if terminal in installed_terminals and not discovered.get(terminal)
+    }
     governed_terminals = _governed_terminals(
-        installed_terminals, discovered, headroom_decision
+        installed_terminals, discovered, headroom_decision, reserved_terminals
     )
     if only_terminal:
         if only_terminal not in installed_terminals:
@@ -378,6 +425,14 @@ def main() -> int:
                 "only_terminal": only_terminal,
                 "installed_terminals": list(installed_terminals),
             }, sort_keys=True))
+            return 6
+        if only_terminal in reserved_terminals and not discovered.get(only_terminal):
+            print(json.dumps({
+                "launch_status": "REFUSED",
+                "reason": "target_terminal_reserved",
+                "only_terminal": only_terminal,
+                "reservation": reservations.get(only_terminal),
+            }, sort_keys=True, default=str))
             return 6
         if (
             only_terminal not in governed_terminals
@@ -410,6 +465,13 @@ def main() -> int:
             duplicates = [pid for pid in candidates if pid != keep]
             if args.dedupe and duplicates:
                 stopped_duplicates[terminal] = [pid for pid in duplicates if _stop_pid(pid)]
+            continue
+
+        # Close the selection-to-spawn race: an exclusive session may acquire
+        # its reservation after the fleet snapshot above.  Its own stable-worker
+        # check will abort if a launch wins the remaining sub-millisecond race.
+        if farmctl.terminal_reservation(farm_root, terminal) is not None:
+            skipped_reserved.add(terminal)
             continue
 
         log_path = log_dir / f"terminal_worker_{terminal}.log"
@@ -458,6 +520,7 @@ def main() -> int:
         "stopped_duplicates": stopped_duplicates,
         "installed_terminals": list(installed_terminals),
         "governed_terminals": list(terminals),
+        "reserved_terminals_skipped": sorted(skipped_reserved),
         "resource_headroom": headroom_decision,
     }, sort_keys=True))
     return 5 if shortfall else 0

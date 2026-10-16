@@ -64,3 +64,21 @@ def test_missing_capacity_heals_before_protected_progress_and_healthy_floor() ->
     assert "Start-ScheduledTask" not in branch
     assert "Enter-GuardedFactoryReset" not in branch
     assert "$nWorkers -ge $MinWorkers" not in branch
+
+
+def test_full_fleet_with_live_reservation_is_noop_before_refill() -> None:
+    # Reset paths are covered behaviourally in
+    # test_factory_watchdog_reservation_reset_guard.py (Enter-GuardedFactoryReset).
+    source = WATCHDOG.read_text(encoding="utf-8")
+    reservation_guard = source.index(
+        "elseif ($reservedCount -gt 0 -and $nWorkers -ge $ExpectWorkers)"
+    )
+    refill = source.index("elseif ($nWorkers -lt $ExpectWorkers -and -not $realStall)")
+    reset = source.index("# 3. heal: factory meant ON")
+
+    assert "terminal_reservations.json" in source
+    assert "12 - $disabledCount - $reservedCount" in source
+    assert reservation_guard < refill < reset
+    guarded_branch = source[reservation_guard:refill]
+    assert "noop_terminal_reserved" in guarded_branch
+    assert "no worker restart/reset" in guarded_branch

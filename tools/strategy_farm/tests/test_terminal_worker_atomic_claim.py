@@ -135,9 +135,33 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
         return state, _TrackingFactoryLock
 
     def test_legacy_worker_starter_honors_disabled_terminal_cap(self) -> None:
+        # Task d6d04eca: the PowerShell starter no longer re-implements terminal
+        # selection; it delegates to the governed Python launcher, which owns the
+        # disabled_terminals.txt cap and live-reservation filtering.
         source = LEGACY_WORKER_STARTER.read_text(encoding="utf-8")
-        self.assertIn('Join-Path $stateDir "disabled_terminals.txt"', source)
-        self.assertIn("$_ -notin $disabledTerminals", source)
+        self.assertIn(r'"tools\strategy_farm\start_terminal_workers.py"', source)
+        self.assertIn("--dedupe", source)
+        self.assertIn("exit $LASTEXITCODE", source)
+        self.assertNotIn("terminal_worker.py", source)
+        self.assertNotIn("Start-Process", source)
+
+        from tools.strategy_farm import start_terminal_workers as launcher
+
+        with self._root() as tmp:
+            root = Path(tmp)
+            mt5_root = root / "mt5"
+            for terminal in ("T1", "T2", "T3"):
+                (mt5_root / terminal).mkdir(parents=True)
+                (mt5_root / terminal / "terminal64.exe").write_bytes(b"")
+            disabled = root / "disabled_terminals.txt"
+            disabled.write_text("T2\n", encoding="utf-8")
+            with patch.object(launcher, "_DISABLED_TERMINALS_FILE", disabled):
+                installed = launcher._installed_terminals(mt5_root)
+            self.assertEqual(installed, ("T1", "T3"))
+            governed = launcher._governed_terminals(
+                installed, {}, {"max_workers": 12}, frozenset({"T3"})
+            )
+            self.assertEqual(governed, ("T1",))
 
     def test_enum_contract_preflight_refuses_symbolic_set_before_claim(self) -> None:
         with self._root() as tmp:

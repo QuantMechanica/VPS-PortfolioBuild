@@ -1,7 +1,9 @@
-"""Incident 2026-09-02: workers restarted from an interactive session lost the
-machine-level QM_* environment (top-down claim order, DL-089 pruning, SQLite
-busy timeout). The launcher must merge the machine QM_* values into the spawn
-environment while an explicit process value still wins."""
+"""Worker restarts honour live reservations and one governed spawn env.
+
+Incident 2026-09-02: restarts from an interactive session lost machine QM_*
+values. Incident 2026-10-15: a restart carried a stale caller-side DL089
+allowlist. Machine scope is authoritative for the exact DL089 keys; an explicit
+process QM_* value still wins (memory-limit rollback authority)."""
 from __future__ import annotations
 
 import json
@@ -9,6 +11,9 @@ import sys
 from pathlib import Path
 
 from tools.strategy_farm import start_terminal_workers as launcher
+
+
+POWERSHELL_STARTER = Path(__file__).resolve().parents[1] / "start_terminal_workers.ps1"
 
 
 def test_merge_fills_missing_machine_qm_vars_and_keeps_process_values():
@@ -295,4 +300,37 @@ def test_memory_limit_production_refuses_cap_other_than_one(
         monkeypatch.delenv(name, raising=False)
 
     assert launcher.main() == 6
+
+
+def test_machine_scope_overrides_stale_caller_dl089_allowlist():
+    merged = launcher.merge_machine_qm_env(
+        {"PATH": "x", "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "stale"},
+        {"DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "DL089_CANON"},
+    )
+    assert merged["DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST"] == "DL089_CANON"
+
+
+def test_retired_exact_dl089_value_is_not_inherited_from_caller():
+    merged = launcher.merge_machine_qm_env(
+        {"PATH": "x", "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "stale"},
+        {},
+    )
+    assert "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST" not in merged
+
+
+def test_governed_selection_never_fills_a_live_reserved_terminal():
+    governed = launcher._governed_terminals(
+        ("T1", "T2", "T3"),
+        {"T2": [202]},
+        {"max_workers": 3},
+        frozenset({"T1"}),
+    )
+    assert governed == ("T2", "T3")
+
+
+def test_legacy_powershell_starter_delegates_to_governed_launcher():
+    source = POWERSHELL_STARTER.read_text(encoding="utf-8")
+    assert "start_terminal_workers.py" in source
+    assert "terminal_worker.py" not in source
+    assert "Start-Process" not in source
 

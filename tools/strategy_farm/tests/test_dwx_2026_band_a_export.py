@@ -540,6 +540,9 @@ def test_restore_succeeds_after_own_reservation_lapses(
         exporter.farmctl, "terminal_reservation", lambda *_args: None
     )
     monkeypatch.setattr(
+        exporter.start_terminal_workers, "machine_qm_environment", lambda: {}
+    )
+    monkeypatch.setattr(
         exporter.reload_idle_workers, "workers", lambda: next(worker_scans)
     )
     monkeypatch.setattr(exporter.reload_idle_workers, "idle", lambda *_args: True)
@@ -587,7 +590,7 @@ def test_restore_succeeds_after_own_reservation_lapses(
     assert result["reservation_release"] is None
 
 
-def test_watchdog_respawn_is_accepted_only_with_matching_governance_environment(
+def test_watchdog_respawn_is_rejected_while_reserved_then_accepted_after_lapse(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     worker = object()
@@ -604,8 +607,14 @@ def test_watchdog_respawn_is_accepted_only_with_matching_governance_environment(
     releases: list[str] = []
     monkeypatch.setattr(exporter, "_active_t1_rows", lambda: [])
     monkeypatch.setattr(exporter, "_t1_mt5_processes", lambda: [])
+    reservation_state: dict[str, object] = {"value": reservation}
     monkeypatch.setattr(
-        exporter.farmctl, "terminal_reservation", lambda *_args: reservation
+        exporter.farmctl,
+        "terminal_reservation",
+        lambda *_args: reservation_state["value"],
+    )
+    monkeypatch.setattr(
+        exporter.start_terminal_workers, "machine_qm_environment", lambda: {}
     )
     monkeypatch.setattr(
         exporter.reload_idle_workers,
@@ -645,19 +654,29 @@ def test_watchdog_respawn_is_accepted_only_with_matching_governance_environment(
         ),
     )
 
+    before_identity = {
+        "pid": 101,
+        "created": 1.0,
+        "executable_path": "C:/Python/python.exe",
+        "command_line": ["python", "terminal_worker.py", "--terminal", "T1"],
+    }
+    with pytest.raises(exporter.ExportRefused, match="lifecycle reservation was live"):
+        exporter._restore_worker(
+            environment,
+            reservation["reserved_by"],
+            before_identity,
+        )
+    assert releases == []
+
+    reservation_state["value"] = None
     result = exporter._restore_worker(
         environment,
         reservation["reserved_by"],
-        {
-            "pid": 101,
-            "created": 1.0,
-            "executable_path": "C:/Python/python.exe",
-            "command_line": ["python", "terminal_worker.py", "--terminal", "T1"],
-        },
+        before_identity,
     )
     assert result["restore_origin"] == "governed_watchdog_respawn"
     assert result["starter_exit"] is None
-    assert releases == [reservation["reserved_by"]]
+    assert releases == []
 
     drifted = dict(environment)
     drifted["QM_RESEARCH_BACKTEST_MAX_ACTIVE"] = "8"
@@ -672,7 +691,7 @@ def test_watchdog_respawn_is_accepted_only_with_matching_governance_environment(
             reservation["reserved_by"],
             {"pid": 101, "created": 1.0},
         )
-    assert releases == [reservation["reserved_by"]]
+    assert releases == []
 
 
 def test_live_wrapper_reservation_real_starter_selection_restores_worker(
@@ -693,13 +712,19 @@ def test_live_wrapper_reservation_real_starter_selection_restores_worker(
     }
     worker = object()
     state: dict[str, object] = {}
+    reservation_state: dict[str, object] = {"value": reservation}
     selected: list[str] = []
     releases: list[str] = []
 
     monkeypatch.setattr(exporter, "_active_t1_rows", lambda: [])
     monkeypatch.setattr(exporter, "_t1_mt5_processes", lambda: [])
     monkeypatch.setattr(
-        exporter.farmctl, "terminal_reservation", lambda *_args: reservation
+        exporter.farmctl,
+        "terminal_reservation",
+        lambda *_args: reservation_state["value"],
+    )
+    monkeypatch.setattr(
+        exporter.start_terminal_workers, "machine_qm_environment", lambda: {}
     )
     monkeypatch.setattr(exporter.reload_idle_workers, "workers", lambda: dict(state))
     monkeypatch.setattr(exporter.reload_idle_workers, "idle", lambda *_args: True)
@@ -726,14 +751,24 @@ def test_live_wrapper_reservation_real_starter_selection_restores_worker(
     monkeypatch.setattr(
         exporter,
         "_release_exact_reservation",
-        lambda reserved_by: releases.append(reserved_by) or {"released": True},
+        lambda reserved_by: (
+            releases.append(reserved_by),
+            reservation_state.__setitem__("value", None),
+            {"released": True},
+        )[-1],
     )
 
-    def real_starter_selection(*_args, **_kwargs):
+    def real_starter_selection(command, **kwargs):
+        # The restore launches the launcher of THIS checkout (path-independent),
+        # the very module this test loaded as ``starter``.
+        assert Path(command[1]).resolve() == starter_path.resolve()
+        assert Path(kwargs["cwd"]).resolve() == starter_path.resolve().parents[2]
+        assert reservation_state["value"] is None
         governed = starter._governed_terminals(
             ("T1", "T2"),
             {"T2": [102]},
             {"max_workers": 2, "allow_new_workers": True},
+            frozenset(),
         )
         selected.extend(governed)
         assert "T1" in governed
@@ -2162,3 +2197,19 @@ def test_tick_counters_are_recorded_and_must_match_the_journal(
     )
     assert result["status"] == "FAIL"
     assert "lacks zero_tick_closed_session_chunks" in result["error"]
+
+
+def test_exporter_bindings_resolve_from_its_own_checkout() -> None:
+    # Task d6d04eca finding 4: run in isolation from a worktree, the restore
+    # path must exercise this checkout's launcher, not C:/QM/repo's.
+    root = exporter.REPO_ROOT.resolve()
+    for module in (
+        exporter.farmctl,
+        exporter.identity_hash,
+        exporter.reload_idle_workers,
+        exporter.start_terminal_workers,
+    ):
+        assert Path(module.__file__).resolve().is_relative_to(root), module.__file__
+    assert exporter.RESTORE_LAUNCHER.resolve() == (
+        root / "tools" / "strategy_farm" / "start_terminal_workers.py"
+    )
