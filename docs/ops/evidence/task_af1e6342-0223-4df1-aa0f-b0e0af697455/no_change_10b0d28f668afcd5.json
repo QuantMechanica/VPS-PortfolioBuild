@@ -1,0 +1,13 @@
+{
+  "task_id": "af1e6342-0223-4df1-aa0f-b0e0af697455",
+  "state_sha256": "10b0d28f668afcd555feff6fac26449f38df71ca644579e0aba94974d31a39fb",
+  "blocker": "fix_commit_not_ancestor_of_canonical_board_advisor",
+  "canonical_branch": "agents/board-advisor",
+  "canonical_head": "7aa1756eaf3cae223f8bf2c777ab3b5481ade08b",
+  "fix_commit": "95742fca35eed70e8cf925b2f21b10e31bcc894f",
+  "evidence_commit": "1838dfaa09a67d2cb105e04340cb00b26458f8fe",
+  "fix_commit_is_ancestor_of_canonical": false,
+  "evidence_commit_is_ancestor_of_canonical": false,
+  "note": "canonical_head advanced from 1e2347637febba8c4b0d60a0554952139545b781 to 7aa1756eaf3cae223f8bf2c777ab3b5481ade08b via an unrelated task a1c88eda commit; the af1e6342 fix+evidence commits remain unlanded on board-advisor",
+  "resolution_owner": "OWNER_or_board_advisor_close_out"
+}
