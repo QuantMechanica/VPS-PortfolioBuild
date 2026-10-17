@@ -1,0 +1,10 @@
+{
+  "task_id": "90f1a25d-6476-46c0-a593-3dd44cc71626",
+  "state_sha256": "1f2183a1f2d9887f912f2f91480585bc80941e8fb7ab11feed558492e9a3577b",
+  "checked_at_commit": "4eb7faf1b6ef32ad35e968cddb26bcd4f99ed0de",
+  "canonical_board_advisor_head": "7aa1756eaf3cae223f8bf2c777ab3b5481ade08b",
+  "finding": "The deliverable commit for this task, c6e1df329dad74700210f39e28f661f6205de401 (feat: pulse session-truth -- IN_PROGRESS vs live sessions + TICKET_WITHOUT_SESSION/SLOT_POOL_EMPTY alarms), is still NOT an ancestor of canonical agents/board-advisor HEAD. Landing gate unresolved; no change in substance for this task.",
+  "note_on_canonical_head_movement": "Canonical agents/board-advisor HEAD advanced to 7aa1756eaf3c this cycle, which happens to be the exact sha previously listed as one of three 'rejected_commits' for this task. That commit landed, but it is the deliverable of an unrelated task (a1c88eda: 'record governed Q08 provenance blockers'), not of this task (90f1a25d). Verified via git merge-base --is-ancestor: 05222cbdb7c0 (this task's prior no-change evidence commit) and c6e1df329dad (this task's actual feat commit) remain non-ancestors of the new canonical head; only the unrelated 7aa1756eaf3c is now an ancestor.",
+  "conclusion": "artifact_landing_conflict blocker still holds for this task's own deliverable. Resolution requires an OWNER/board-advisor close-out per CLAUDE.md worktree discipline; this worktree is barred from merging/cherry-picking into agents/board-advisor.",
+  "requested_artifact_path": "C:\\QM\\repo\\docs\\ops\\evidence\\task_90f1a25d-6476-46c0-a593-3dd44cc71626\\no_change_1f2183a1f2d9887f.json"
+}
