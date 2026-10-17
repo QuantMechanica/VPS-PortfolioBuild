@@ -1,0 +1,13 @@
+{
+  "task_id": "af1e6342-0223-4df1-aa0f-b0e0af697455",
+  "state_sha256": "e1d194594dff54f3ad5571ff327cb64e16043d9d0377ce6c052799268177a88b",
+  "blocker": "fix_commit_not_ancestor_of_canonical_board_advisor",
+  "canonical_branch": "agents/board-advisor",
+  "canonical_head": "8935e65f94fa1b39925791c946c3f30378430e9d",
+  "fix_commit": "95742fca35eed70e8cf925b2f21b10e31bcc894f",
+  "evidence_commit": "1838dfaa09a67d2cb105e04340cb00b26458f8fe",
+  "fix_commit_is_ancestor_of_canonical": false,
+  "evidence_commit_is_ancestor_of_canonical": false,
+  "note": "canonical_head on the C:/QM/repo local checkout advanced again to 8935e65f9 via an unrelated task 705806e2 commit; verified via git merge-base --is-ancestor against C:/QM/repo HEAD that the af1e6342 fix+evidence commits remain unlanded on board-advisor",
+  "resolution_owner": "OWNER_or_board_advisor_close_out"
+}
