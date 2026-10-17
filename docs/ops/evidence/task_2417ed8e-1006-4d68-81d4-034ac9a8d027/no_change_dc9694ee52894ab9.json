@@ -1,0 +1,15 @@
+{
+  "task_id": "2417ed8e-1006-4d68-81d4-034ac9a8d027",
+  "state_sha256": "dc9694ee52894ab90200f80410a8e57e8672ea57483dc6035db9e73df16c0f43",
+  "defect": "track_a_critical_path.py generic _task_step()/_normalise_task_state() maps source ticket state APPROVED/PASSED directly to step state DONE for DARWINEX_2026_BACKFILL and BOOK_CONSTRUCTION, instead of deriving DONE from durable outcome evidence (phase2 PASS count for backfill symbols; frozen A3 book artifact existence for book construction). Only A2_SERIES has a durable-evidence step function (_a2_step); STEP_SPECS[1:] all route through the generic ticket-state mapper.",
+  "defect_location": "tools/strategy_farm/track_a_critical_path.py lines 790-791 (dispatch) and lines 422-432 (_normalise_task_state APPROVED/PASSED -> DONE)",
+  "a2_exclusion_crash_subfix_status": "LANDED upstream on canonical board-advisor (commit a203589b85, fix: A2 exclusion-chain load must not crash pulse/brief import), confirmed present and unchanged at current canonical HEAD",
+  "backfill_book_construction_done_mapping_defect_status": "CONFIRMED STILL LIVE at current canonical board-advisor HEAD 058121059adbbfd900e1d67870ad9f775ac5e706 (verified by reading tools/strategy_farm/track_a_critical_path.py in C:/QM/repo read-only)",
+  "prior_fix_attempt_commit": "712a514254d77d66a997a118676a5f3958e4a6e2",
+  "prior_fix_attempt_lane": "agents/claude-orchestration-1",
+  "prior_fix_attempt_landing_status": "NOT an ancestor of agents/board-advisor canonical HEAD -- unlanded",
+  "this_worktree_blocker": "agents/claude-orchestration-2 HEAD and canonical board-advisor HEAD are mutual non-ancestors (git merge-base --is-ancestor fails both directions); tools/strategy_farm/track_a_critical_path.py is not present in `git ls-files` at this worktree's HEAD even though the blob is reachable in the shared object database via other branches (e.g. a203589b85) -- the file cannot be edited or committed from this working directory because this branch's tree never contains it",
+  "canonical_head_at_observation": "058121059adbbfd900e1d67870ad9f775ac5e706",
+  "canonical_head_source_task_unrelated": "058121059a and its parent 74558b6036 are no-change-recheck evidence commits for an unrelated task (90f1a25d), not a fix for this task's defect",
+  "resolution_requires": "a canonical agents/board-advisor write seat (board-advisor worktree/session) to cherry-pick or re-author the 712a5142 fix directly onto board-advisor HEAD; out of scope for agents/claude-orchestration-2 per CLAUDE.md worktree discipline (no cherry-pick/merge/commit onto board-advisor from this lane)"
+}
